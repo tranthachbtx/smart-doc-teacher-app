@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import TemplateEngine from "@/components/template-engine"
-import { Sparkles } from "lucide-react"
-import { DEPT_INFO } from "@/lib/department"
+import TemplateEngine from "@/components/template-engine";
+import { Sparkles } from "lucide-react";
+import { DEPT_INFO } from "@/lib/config/department";
 
 export default function Home() {
   return (
@@ -14,13 +14,17 @@ export default function Home() {
               <Sparkles className="w-8 h-8 text-blue-600" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-800 mb-2 text-balance">SmartDoc - {DEPT_INFO.name}</h1>
-          <p className="text-gray-600 text-lg text-pretty">{DEPT_INFO.school}</p>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2 text-balance">
+            SmartDoc - {DEPT_INFO.name}
+          </h1>
+          <p className="text-gray-600 text-lg text-pretty">
+            {DEPT_INFO.school}
+          </p>
         </header>
 
         {/* Main Content */}
         <TemplateEngine />
       </div>
     </main>
-  )
+  );
 }

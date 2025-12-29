@@ -1,135 +1,169 @@
-"use server"
+"use server";
 
-import { GoogleGenAI } from "@google/genai"
-import { HDTN_CURRICULUM } from "@/lib/hdtn-curriculum"
-import { getMeetingPrompt, getLessonIntegrationPrompt, getEventPrompt } from "@/lib/ai-prompts"
-import { getKHDHPrompt } from "@/lib/khdh-prompts"
+import { GoogleGenAI } from "@google/genai";
+import { HDTN_CURRICULUM } from "@/lib/hdtn-curriculum";
+import {
+  getMeetingPrompt,
+  getLessonIntegrationPrompt,
+  getEventPrompt,
+} from "@/lib/prompts/ai-prompts";
+import { getKHDHPrompt } from "@/lib/prompts/khdh-prompts";
 
-const MODELS = ["gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"]
+const MODELS = [
+  "gemini-2.5-flash",
+  "gemini-1.5-flash",
+  "gemini-1.5-pro",
+  "gemini-2.0-flash-exp",
+];
 
 function getApiKeys(): string[] {
-  const keys: string[] = []
-  const primaryKey = process.env.GEMINI_API_KEY
-  const backupKey = process.env.GEMINI_API_KEY_2
+  const keys: string[] = [];
+  const primaryKey = process.env.GEMINI_API_KEY;
+  const backupKey = process.env.GEMINI_API_KEY_2;
 
   if (primaryKey && primaryKey.trim() !== "") {
-    keys.push(primaryKey)
+    keys.push(primaryKey);
   }
   if (backupKey && backupKey.trim() !== "") {
-    keys.push(backupKey)
+    keys.push(backupKey);
   }
 
-  return keys
+  return keys;
 }
 
-async function callGeminiWithRetry(prompt: string, maxRetries = 2): Promise<string> {
-  const apiKeys = getApiKeys()
+async function callGeminiWithRetry(
+  prompt: string,
+  maxRetries = 2
+): Promise<string> {
+  const apiKeys = getApiKeys();
 
   if (apiKeys.length === 0) {
-    throw new Error("Chưa cấu hình API Key. Vui lòng thêm GEMINI_API_KEY vào Vars.")
+    throw new Error(
+      "Chưa cấu hình API Key. Vui lòng thêm GEMINI_API_KEY vào Vars."
+    );
   }
 
-  let lastError: Error | null = null
+  let lastError: Error | null = null;
 
   // Try each API key
   for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
-    const apiKey = apiKeys[keyIndex]
-    const genAI = new GoogleGenAI({ apiKey })
-    const keyLabel = keyIndex === 0 ? "Primary" : "Backup"
+    const apiKey = apiKeys[keyIndex];
+    const genAI = new GoogleGenAI({ apiKey });
+    const keyLabel = keyIndex === 0 ? "Primary" : "Backup";
 
-    console.log(`[v0] Using ${keyLabel} API Key...`)
+    console.log(`[v0] Using ${keyLabel} API Key...`);
 
     // Try each model with current API key
     for (const model of MODELS) {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          console.log(`[v0] [${keyLabel}] Trying model: ${model}, attempt: ${attempt + 1}`)
+          console.log(
+            `[v0] [${keyLabel}] Trying model: ${model}, attempt: ${attempt + 1}`
+          );
           const response = await genAI.models.generateContent({
             model,
             contents: prompt,
-          })
-          console.log(`[v0] [${keyLabel}] Success with model: ${model}`)
-          return response.text || ""
+          });
+          console.log(`[v0] [${keyLabel}] Success with model: ${model}`);
+          return response.text || "";
         } catch (error: any) {
-          lastError = error
-          const errorMsg = error?.message || ""
+          lastError = error;
+          const errorMsg = error?.message || "";
           const isQuotaError =
-            errorMsg.includes("429") || errorMsg.includes("quota") || errorMsg.includes("RESOURCE_EXHAUSTED")
+            errorMsg.includes("429") ||
+            errorMsg.includes("quota") ||
+            errorMsg.includes("RESOURCE_EXHAUSTED");
 
-          const isModelNotFound = errorMsg.includes("404") || errorMsg.includes("not found")
+          const isModelNotFound =
+            errorMsg.includes("404") || errorMsg.includes("not found");
 
           if (isModelNotFound) {
-            console.log(`[v0] [${keyLabel}] Model ${model} not available, trying next...`)
-            break
+            console.log(
+              `[v0] [${keyLabel}] Model ${model} not available, trying next...`
+            );
+            break;
           }
 
           if (isQuotaError) {
-            const retryMatch = errorMsg.match(/retry in (\d+)/i)
-            const retryDelay = retryMatch ? Number.parseInt(retryMatch[1]) * 1000 : (attempt + 1) * 5000
+            const retryMatch = errorMsg.match(/retry in (\d+)/i);
+            const retryDelay = retryMatch
+              ? Number.parseInt(retryMatch[1]) * 1000
+              : (attempt + 1) * 5000;
 
             if (attempt < maxRetries - 1) {
-              console.log(`[v0] [${keyLabel}] Quota limit hit, waiting ${retryDelay / 1000}s before retry...`)
-              await new Promise((resolve) => setTimeout(resolve, retryDelay))
-              continue
+              console.log(
+                `[v0] [${keyLabel}] Quota limit hit, waiting ${
+                  retryDelay / 1000
+                }s before retry...`
+              );
+              await new Promise((resolve) => setTimeout(resolve, retryDelay));
+              continue;
             } else {
-              console.log(`[v0] [${keyLabel}] Model ${model} quota exhausted, trying next model...`)
-              break
+              console.log(
+                `[v0] [${keyLabel}] Model ${model} quota exhausted, trying next model...`
+              );
+              break;
             }
           }
 
           // For other errors, try next model
-          console.log(`[v0] [${keyLabel}] Error with model ${model}:`, errorMsg.substring(0, 100))
-          break
+          console.log(
+            `[v0] [${keyLabel}] Error with model ${model}:`,
+            errorMsg.substring(0, 100)
+          );
+          break;
         }
       }
     }
 
     // All models failed with current key, try next key
     if (keyIndex < apiKeys.length - 1) {
-      console.log(`[v0] ${keyLabel} API Key exhausted all models, switching to next key...`)
+      console.log(
+        `[v0] ${keyLabel} API Key exhausted all models, switching to next key...`
+      );
     }
   }
 
   throw new Error(
     `Đã hết quota API cho tất cả các key và model. ` +
       `Vui lòng đợi 1-2 phút rồi thử lại. ` +
-      `Hoặc thêm GEMINI_API_KEY_2 dự phòng vào Vars.`,
-  )
+      `Hoặc thêm GEMINI_API_KEY_2 dự phòng vào Vars.`
+  );
 }
 
 function removeMarkdownBold(text: string): string {
-  if (!text) return text
-  return text.replace(/\*\*/g, "").replace(/\*/g, "")
+  if (!text) return text;
+  return text.replace(/\*\*/g, "").replace(/\*/g, "");
 }
 
 function parseGeminiJSON(text: string): any {
-  console.log("[v0] Raw response (first 500 chars):", text.substring(0, 500))
+  console.log("[v0] Raw response (first 500 chars):", text.substring(0, 500));
 
   const cleaned = text
     .replace(/```json\s*/gi, "")
     .replace(/```\s*/g, "")
-    .trim()
+    .trim();
 
-  const startIdx = cleaned.indexOf("{")
-  const endIdx = cleaned.lastIndexOf("}")
+  const startIdx = cleaned.indexOf("{");
+  const endIdx = cleaned.lastIndexOf("}");
 
   if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
-    console.log("[v0] No valid JSON brackets found")
-    throw new Error("Không tìm thấy JSON trong response")
+    console.log("[v0] No valid JSON brackets found");
+    throw new Error("Không tìm thấy JSON trong response");
   }
 
-  let jsonStr = cleaned.substring(startIdx, endIdx + 1)
+  let jsonStr = cleaned.substring(startIdx, endIdx + 1);
 
   try {
-    const result = JSON.parse(jsonStr)
+    const result = JSON.parse(jsonStr);
     for (const key of Object.keys(result)) {
       if (typeof result[key] === "string") {
-        result[key] = removeMarkdownBold(result[key])
+        result[key] = removeMarkdownBold(result[key]);
       }
     }
-    return result
+    return result;
   } catch (e) {
-    console.log("[v0] Direct parse failed, attempting fixes...")
+    console.log("[v0] Direct parse failed, attempting fixes...");
   }
 
   jsonStr = jsonStr.replace(/"([^"]*?)"/gs, (match, content) => {
@@ -138,40 +172,40 @@ function parseGeminiJSON(text: string): any {
       .replace(/\n/g, "\\n")
       .replace(/\r/g, "\\r")
       .replace(/\t/g, "\\t")
-      .replace(/"/g, '\\"')
-    return `"${fixed}"`
-  })
+      .replace(/"/g, '\\"');
+    return `"${fixed}"`;
+  });
 
   try {
-    const result = JSON.parse(jsonStr)
+    const result = JSON.parse(jsonStr);
     for (const key of Object.keys(result)) {
       if (typeof result[key] === "string") {
-        result[key] = removeMarkdownBold(result[key])
+        result[key] = removeMarkdownBold(result[key]);
       }
     }
-    return result
+    return result;
   } catch (e) {
-    console.log("[v0] Second parse failed, trying more aggressive fixes...")
+    console.log("[v0] Second parse failed, trying more aggressive fixes...");
   }
 
   jsonStr = jsonStr
     .replace(/,\s*}/g, "}")
     .replace(/,\s*]/g, "]")
     .replace(/[\x00-\x1F\x7F]/g, " ")
-    .replace(/\s+/g, " ")
+    .replace(/\s+/g, " ");
 
   try {
-    const result = JSON.parse(jsonStr)
+    const result = JSON.parse(jsonStr);
     for (const key of Object.keys(result)) {
       if (typeof result[key] === "string") {
-        result[key] = removeMarkdownBold(result[key])
+        result[key] = removeMarkdownBold(result[key]);
       }
     }
-    return result
+    return result;
   } catch (e: any) {
-    console.log("[v0] All parse attempts failed:", e.message)
+    console.log("[v0] All parse attempts failed:", e.message);
 
-    const result: any = {}
+    const result: any = {};
     const keys = [
       "tich_hop_nls",
       "tich_hop_dao_duc",
@@ -201,74 +235,88 @@ function parseGeminiJSON(text: string): any {
       "gv_chuan_bi",
       "hs_chuan_bi",
       "hoat_dong_duoi_co",
-    ]
+    ];
 
     for (const key of keys) {
-      const regex = new RegExp(`"${key}"\\s*:\\s*"([^"]*(?:\\\\.[^"]*)*)"`, "s")
-      const match = cleaned.match(regex)
+      const regex = new RegExp(
+        `"${key}"\\s*:\\s*"([^"]*(?:\\\\.[^"]*)*)"`,
+        "s"
+      );
+      const match = cleaned.match(regex);
       if (match) {
-        result[key] = removeMarkdownBold(match[1].replace(/\\n/g, "\n").replace(/\\"/g, '"'))
+        result[key] = removeMarkdownBold(
+          match[1].replace(/\\n/g, "\n").replace(/\\"/g, '"')
+        );
       }
     }
 
     if (Object.keys(result).length > 0) {
-      console.log("[v0] Manual extraction found keys:", Object.keys(result))
-      return result
+      console.log("[v0] Manual extraction found keys:", Object.keys(result));
+      return result;
     }
 
-    throw new Error(`Lỗi parse JSON: ${e.message}`)
+    throw new Error(`Lỗi parse JSON: ${e.message}`);
   }
 }
 
 function getThemesForMonth(month: string): string {
-  const themes: string[] = []
+  const themes: string[] = [];
   for (const grade of ["10", "11", "12"]) {
-    const theme = HDTN_CURRICULUM[grade]?.[month]
+    const theme = HDTN_CURRICULUM[grade]?.[month];
     if (theme) {
-      themes.push(`Khối ${grade}: ${theme.name || theme}`)
+      themes.push(`Khối ${grade}: ${theme.name || theme}`);
     }
   }
-  return themes.join("\n")
+  return themes.join("\n");
 }
 
 export async function generateMeetingMinutes(
   month: string,
   session: string,
-  keyContent: string,
+  keyContent: string
 ): Promise<{
-  success: boolean
+  success: boolean;
   data?: {
-    noi_dung_chinh: string
-    uu_diem: string
-    han_che: string
-    y_kien_dong_gop: string
-    ke_hoach_thang_toi: string
-  }
-  error?: string
+    noi_dung_chinh: string;
+    uu_diem: string;
+    han_che: string;
+    y_kien_dong_gop: string;
+    ke_hoach_thang_toi: string;
+  };
+  error?: string;
 }> {
-  const apiKeys = getApiKeys()
+  const apiKeys = getApiKeys();
 
   if (apiKeys.length === 0) {
     return {
       success: false,
-      error: "API Key không được cấu hình. Vui lòng thêm GEMINI_API_KEY vào Vars.",
-    }
+      error:
+        "API Key không được cấu hình. Vui lòng thêm GEMINI_API_KEY vào Vars.",
+    };
   }
 
   try {
-    const currentThemes = getThemesForMonth(month)
-    const nextMonth = month === "12" ? "1" : month === "5" ? "9" : String(Number(month) + 1)
-    const nextThemes = getThemesForMonth(nextMonth)
+    const currentThemes = getThemesForMonth(month);
+    const nextMonth =
+      month === "12" ? "1" : month === "5" ? "9" : String(Number(month) + 1);
+    const nextThemes = getThemesForMonth(nextMonth);
 
-    const prompt = getMeetingPrompt(month, session, keyContent, currentThemes, nextThemes, nextMonth)
+    const prompt = getMeetingPrompt(
+      month,
+      session,
+      keyContent,
+      currentThemes,
+      nextThemes,
+      nextMonth
+    );
 
-    console.log("[v0] Calling Gemini API for meeting minutes...")
+    console.log("[v0] Calling Gemini API for meeting minutes...");
 
-    const text = await callGeminiWithRetry(prompt)
-    console.log("[v0] Meeting minutes response received, length:", text.length)
+    const text = await callGeminiWithRetry(prompt);
+    console.log("[v0] Meeting minutes response received, length:", text.length);
 
-    const data = parseGeminiJSON(text)
-    console.log("[v0] Meeting minutes JSON parsed successfully")
+    const data = parseGeminiJSON(text);
+    console.log("[v0] Meeting minutes JSON parsed successfully");
 
     return {
       success: true,
@@ -279,13 +327,13 @@ export async function generateMeetingMinutes(
         y_kien_dong_gop: data.y_kien_dong_gop || "",
         ke_hoach_thang_toi: data.ke_hoach_thang_toi || "",
       },
-    }
+    };
   } catch (error: any) {
-    console.error("[v0] Meeting minutes generation error:", error.message)
+    console.error("[v0] Meeting minutes generation error:", error.message);
     return {
       success: false,
       error: error?.message || "Lỗi khi tạo biên bản họp",
-    }
+    };
   }
 }
 
@@ -295,54 +343,67 @@ export async function generateLessonPlan(
   fullPlan = false,
   duration?: string,
   customInstructions?: string,
-  tasks?: Array<{ name: string; description: string }>,
+  tasks?: Array<{ name: string; description: string }>
 ): Promise<{
-  success: boolean
+  success: boolean;
   data?: {
-    tich_hop_nls: string
-    tich_hop_dao_duc: string
-    ma_chu_de?: string
-    ten_bai?: string
-    muc_tieu_kien_thuc?: string
-    muc_tieu_nang_luc?: string
-    muc_tieu_pham_chat?: string
-    gv_chuan_bi?: string
-    hs_chuan_bi?: string
-    hoat_dong_duoi_co?: string
-    hoat_dong_khoi_dong?: string
-    hoat_dong_kham_pha?: string
-    hoat_dong_luyen_tap?: string
-    hoat_dong_van_dung?: string
-    ho_so_day_hoc?: string
-    huong_dan_ve_nha?: string
-  }
-  error?: string
+    tich_hop_nls: string;
+    tich_hop_dao_duc: string;
+    ma_chu_de?: string;
+    ten_bai?: string;
+    muc_tieu_kien_thuc?: string;
+    muc_tieu_nang_luc?: string;
+    muc_tieu_pham_chat?: string;
+    gv_chuan_bi?: string;
+    hs_chuan_bi?: string;
+    hoat_dong_duoi_co?: string;
+    hoat_dong_khoi_dong?: string;
+    hoat_dong_kham_pha?: string;
+    hoat_dong_luyen_tap?: string;
+    hoat_dong_van_dung?: string;
+    ho_so_day_hoc?: string;
+    huong_dan_ve_nha?: string;
+  };
+  error?: string;
 }> {
-  const apiKeys = getApiKeys()
+  const apiKeys = getApiKeys();
 
   if (apiKeys.length === 0) {
     return {
       success: false,
-      error: "API Key không được cấu hình. Vui lòng thêm GEMINI_API_KEY vào Vars.",
-    }
+      error:
+        "API Key không được cấu hình. Vui lòng thêm GEMINI_API_KEY vào Vars.",
+    };
   }
 
   try {
     let prompt = fullPlan
-      ? getKHDHPrompt(grade, lessonTopic, duration || "2 tiết", customInstructions, tasks)
-      : getLessonIntegrationPrompt(grade, lessonTopic)
+      ? getKHDHPrompt(
+          grade,
+          lessonTopic,
+          duration || "2 tiết",
+          customInstructions,
+          tasks
+        )
+      : getLessonIntegrationPrompt(grade, lessonTopic);
 
     if (!fullPlan && customInstructions && customInstructions.trim()) {
-      prompt += `\n\nYÊU CẦU BỔ SUNG TỪ GIÁO VIÊN:\n${customInstructions}\n\nLưu ý: Hãy tích hợp các yêu cầu trên vào nội dung một cách hợp lý và khoa học.`
+      prompt += `\n\nYÊU CẦU BỔ SUNG TỪ GIÁO VIÊN:\n${customInstructions}\n\nLưu ý: Hãy tích hợp các yêu cầu trên vào nội dung một cách hợp lý và khoa học.`;
     }
 
-    console.log("[v0] Calling Gemini API for lesson plan...", fullPlan ? "(Full Plan)" : "(Integration Only)")
+    console.log(
+      "[v0] Calling Gemini API for lesson plan...",
+      fullPlan ? "(Full Plan)" : "(Integration Only)"
+    );
 
-    const text = await callGeminiWithRetry(prompt)
-    console.log("[v0] Lesson plan response received, length:", text.length)
+    const text = await callGeminiWithRetry(prompt);
+    console.log("[v0] Lesson plan response received, length:", text.length);
 
-    const data = parseGeminiJSON(text)
-    console.log("[v0] Lesson plan JSON parsed successfully, keys:", Object.keys(data))
+    const data = parseGeminiJSON(text);
+    console.log(
+      "[v0] Lesson plan JSON parsed successfully, keys:",
+      Object.keys(data)
+    );
 
     if (fullPlan) {
       return {
@@ -365,7 +426,7 @@ export async function generateLessonPlan(
           ho_so_day_hoc: data.ho_so_day_hoc || "",
           huong_dan_ve_nha: data.huong_dan_ve_nha || "",
         },
-      }
+      };
     }
 
     return {
@@ -374,87 +435,87 @@ export async function generateLessonPlan(
         tich_hop_nls: data.tich_hop_nls || "",
         tich_hop_dao_duc: data.tich_hop_dao_duc || "",
       },
-    }
+    };
   } catch (error: any) {
-    console.error("[v0] Lesson plan generation error:", error.message)
+    console.error("[v0] Lesson plan generation error:", error.message);
     return {
       success: false,
       error: error?.message || "Lỗi khi tạo nội dung tích hợp",
-    }
+    };
   }
 }
 
 export async function generateAIContent(
-  prompt: string,
+  prompt: string
 ): Promise<{ success: boolean; content?: string; error?: string }> {
-  const apiKeys = getApiKeys()
+  const apiKeys = getApiKeys();
 
   if (apiKeys.length === 0) {
     return {
       success: false,
       error: "API Key chưa được cấu hình",
-    }
+    };
   }
 
   try {
-    console.log("[v0] Calling Gemini API...")
+    console.log("[v0] Calling Gemini API...");
 
-    const text = await callGeminiWithRetry(prompt)
+    const text = await callGeminiWithRetry(prompt);
 
-    console.log("[v0] Gemini API response received, length:", text.length)
+    console.log("[v0] Gemini API response received, length:", text.length);
 
     return {
       success: true,
       content: removeMarkdownBold(text),
-    }
+    };
   } catch (error: any) {
-    console.error("[v0] Gemini generation error:", error)
+    console.error("[v0] Gemini generation error:", error);
     return {
       success: false,
       error: error?.message || "Lỗi khi gọi Gemini API",
-    }
+    };
   }
 }
 
 export async function generateEventScript(
   grade: string,
   theme: string,
-  customInstructions?: string,
+  customInstructions?: string
 ): Promise<{
-  success: boolean
+  success: boolean;
   data?: {
-    ten_chu_de: string
-    nang_luc: string
-    pham_chat: string
-    muc_dich_yeu_cau: string
-    kich_ban_chi_tiet: string
-    thong_diep_ket_thuc: string
-  }
-  error?: string
+    ten_chu_de: string;
+    nang_luc: string;
+    pham_chat: string;
+    muc_dich_yeu_cau: string;
+    kich_ban_chi_tiet: string;
+    thong_diep_ket_thuc: string;
+  };
+  error?: string;
 }> {
-  const apiKeys = getApiKeys()
+  const apiKeys = getApiKeys();
 
   if (apiKeys.length === 0) {
     return {
       success: false,
       error: "API Key chưa được cấu hình",
-    }
+    };
   }
 
   try {
-    let prompt = getEventPrompt(grade, theme)
+    let prompt = getEventPrompt(grade, theme);
 
     if (customInstructions && customInstructions.trim()) {
-      prompt += `\n\nYÊU CẦU BỔ SUNG TỪ GIÁO VIÊN:\n${customInstructions}\n\nLưu ý: Hãy tích hợp các yêu cầu trên vào kịch bản một cách sáng tạo và phù hợp với đối tượng học sinh.`
+      prompt += `\n\nYÊU CẦU BỔ SUNG TỪ GIÁO VIÊN:\n${customInstructions}\n\nLưu ý: Hãy tích hợp các yêu cầu trên vào kịch bản một cách sáng tạo và phù hợp với đối tượng học sinh.`;
     }
 
-    console.log("[v0] Calling Gemini API for event script...")
+    console.log("[v0] Calling Gemini API for event script...");
 
-    const text = await callGeminiWithRetry(prompt)
-    console.log("[v0] Event script response received, length:", text.length)
+    const text = await callGeminiWithRetry(prompt);
+    console.log("[v0] Event script response received, length:", text.length);
 
-    const data = parseGeminiJSON(text)
-    console.log("[v0] Event script JSON parsed successfully")
+    const data = parseGeminiJSON(text);
+    console.log("[v0] Event script JSON parsed successfully");
 
     return {
       success: true,
@@ -466,40 +527,41 @@ export async function generateEventScript(
         kich_ban_chi_tiet: data.kich_ban_chi_tiet || "",
         thong_diep_ket_thuc: data.thong_diep_ket_thuc || "",
       },
-    }
+    };
   } catch (error: any) {
-    console.error("[v0] Event script generation error:", error.message)
+    console.error("[v0] Event script generation error:", error.message);
     return {
       success: false,
       error: error?.message || "Lỗi khi tạo kịch bản sự kiện",
-    }
+    };
   }
 }
 
 export async function checkApiKeyStatus(): Promise<{
-  configured: boolean
-  primaryKey: boolean
-  backupKey: boolean
-  error?: string
+  configured: boolean;
+  primaryKey: boolean;
+  backupKey: boolean;
+  error?: string;
 }> {
-  const primaryKey = process.env.GEMINI_API_KEY
-  const backupKey = process.env.GEMINI_API_KEY_2
+  const primaryKey = process.env.GEMINI_API_KEY;
+  const backupKey = process.env.GEMINI_API_KEY_2;
 
-  const hasPrimary = !!(primaryKey && primaryKey.trim() !== "")
-  const hasBackup = !!(backupKey && backupKey.trim() !== "")
+  const hasPrimary = !!(primaryKey && primaryKey.trim() !== "");
+  const hasBackup = !!(backupKey && backupKey.trim() !== "");
 
   if (!hasPrimary && !hasBackup) {
     return {
       configured: false,
       primaryKey: false,
       backupKey: false,
-      error: "Chưa cấu hình API Key nào. Vui lòng thêm GEMINI_API_KEY vào Vars.",
-    }
+      error:
+        "Chưa cấu hình API Key nào. Vui lòng thêm GEMINI_API_KEY vào Vars.",
+    };
   }
 
   return {
     configured: true,
     primaryKey: hasPrimary,
     backupKey: hasBackup,
-  }
+  };
 }
