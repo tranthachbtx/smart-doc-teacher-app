@@ -23,10 +23,14 @@
  * ============================================================
  */
 
-import { DEPT_INFO } from "@/lib/department"
-import { CURRICULUM_DATABASE, DIGITAL_LITERACY_FRAMEWORK, MORAL_EDUCATION_THEMES } from "@/lib/lesson-plan-prompts"
-import { getKHDHPrompt, getKHDHIntegrationPrompt } from "@/lib/khdh-prompts"
-import { getMeetingMinutesPrompt } from "@/lib/meeting-prompts"
+import { DEPT_INFO } from "@/lib/config/department";
+import {
+  CURRICULUM_DATABASE,
+  DIGITAL_LITERACY_FRAMEWORK,
+  MORAL_EDUCATION_THEMES,
+} from "./lesson-plan-prompts";
+import { getKHDHPrompt, getKHDHIntegrationPrompt } from "./khdh-prompts";
+import { getMeetingMinutesPrompt } from "./meeting-prompts";
 import {
   HUONG_DAN_TAO_KICH_BAN,
   getMauNgoaiKhoaTheoKhoi,
@@ -35,10 +39,19 @@ import {
   taoContextCauHoiTuongTac as taoContextCauHoiSauKich,
   taoContextKinhPhi,
   getThongDiepKetThuc,
-} from "@/lib/ngoai-khoa-templates"
-import { getChuDeTheoThang, taoContextNgoaiKhoa } from "@/lib/kntt-curriculum-database"
-import { getChuDeTheoThangFromActivities, getHoatDongTheoChuDe } from "@/lib/kntt-activities-database"
-import { getCauHoiTheoKhoi, taoContextCauHoiGoiMo } from "@/lib/cau-hoi-goi-mo-database"
+} from "@/lib/data/ngoai-khoa-templates";
+import {
+  getChuDeTheoThang,
+  taoContextNgoaiKhoa,
+} from "@/lib/data/kntt-curriculum-database";
+import {
+  getChuDeTheoThangFromActivities,
+  getHoatDongTheoChuDe,
+} from "@/lib/data/kntt-activities-database";
+import {
+  getCauHoiTheoKhoi,
+  taoContextCauHoiGoiMo,
+} from "@/lib/data/cau-hoi-goi-mo-database";
 
 // ============================================================
 // PHẦN 1: CẤU HÌNH CHUNG (SYSTEM INSTRUCTION)
@@ -72,7 +85,7 @@ QUY TẮC NGÔN NGỮ VÀ ĐỊNH DẠNG BẮT BUỘC:
 - HẠN CHẾ TỐI ĐA tiếng Anh, CHỈ dùng tiếng Anh cho tên nền tảng công nghệ (Canva, Padlet, Mentimeter, Kahoot, Google Drive, Zalo)
 - Viết hoàn toàn bằng tiếng Việt chuẩn mực, văn phong hành chính sư phạm
 - Giữa các đoạn văn PHẢI có dấu Enter: Xuống dòng mới, tạo một đoạn văn mới (paragraph).
-`
+`;
 
 // ============================================================
 // PHẦN 2: THÔNG TIN TÂM LÝ HỌC SINH THEO KHỐI
@@ -80,14 +93,18 @@ QUY TẮC NGÔN NGỮ VÀ ĐỊNH DẠNG BẮT BUỘC:
 
 export const GRADE_PSYCHOLOGY = {
   "10": {
-    profile: "học sinh lớp 10 - MỚI VÀO TRƯỜNG, đang bỡ ngỡ thích nghi môi trường THPT",
-    focus: "Nhu cầu kết bạn, làm quen, khám phá bản thân, xây dựng thói quen học tập mới",
+    profile:
+      "học sinh lớp 10 - MỚI VÀO TRƯỜNG, đang bỡ ngỡ thích nghi môi trường THPT",
+    focus:
+      "Nhu cầu kết bạn, làm quen, khám phá bản thân, xây dựng thói quen học tập mới",
     tone: "Cởi mở, vui nhộn, năng động, tạo không khí thân thiện",
     activities: "Trò chơi làm quen, Thử thách nhóm, Chia sẻ câu chuyện cá nhân",
-    bookFocus: "Thích ứng và Khám phá Bản thân - Giúp học sinh chuyển giao từ THCS sang THPT, định hình nhân cách",
+    bookFocus:
+      "Thích ứng và Khám phá Bản thân - Giúp học sinh chuyển giao từ THCS sang THPT, định hình nhân cách",
   },
   "11": {
-    profile: "học sinh lớp 11 - ĐÃ QUEN TRƯỜNG, đang phát triển kỹ năng và bản lĩnh",
+    profile:
+      "học sinh lớp 11 - ĐÃ QUEN TRƯỜNG, đang phát triển kỹ năng và bản lĩnh",
     focus: "Kỹ năng mềm, làm việc nhóm, thể hiện cái tôi, năng lực lãnh đạo",
     tone: "Sôi nổi, tranh biện, thử thách, khuyến khích sáng tạo",
     activities: "Tranh biện, Cuộc thi nhỏ, Dự án nhóm, Thuyết trình sáng tạo",
@@ -95,14 +112,17 @@ export const GRADE_PSYCHOLOGY = {
       "Kỹ năng Xã hội và Nhóm nghề Chuyên sâu - Phát triển kỹ năng mềm phức tạp và tìm hiểu thị trường lao động",
   },
   "12": {
-    profile: "học sinh lớp 12 - SẮP TỐT NGHIỆP, đối mặt áp lực thi cử và chọn nghề",
-    focus: "Định hướng nghề nghiệp, quản lý căng thẳng, kỹ năng sống, chia tay tuổi học trò",
+    profile:
+      "học sinh lớp 12 - SẮP TỐT NGHIỆP, đối mặt áp lực thi cử và chọn nghề",
+    focus:
+      "Định hướng nghề nghiệp, quản lý căng thẳng, kỹ năng sống, chia tay tuổi học trò",
     tone: "Sâu sắc, trưởng thành, truyền cảm hứng, đầy cảm xúc",
-    activities: "Tọa đàm với cựu học sinh, Hướng nghiệp thực chiến, Buổi chia sẻ tâm tình, Hộp thời gian",
+    activities:
+      "Tọa đàm với cựu học sinh, Hướng nghiệp thực chiến, Buổi chia sẻ tâm tình, Hộp thời gian",
     bookFocus:
       "Trưởng thành và Quyết định Nghề nghiệp - Sự trưởng thành toàn diện, trách nhiệm công dân và quyết định chọn trường, chọn nghề",
   },
-}
+};
 
 // ============================================================
 // PHẦN 3: PROMPT BIÊN BẢN HỌP TỔ
@@ -114,29 +134,47 @@ export function getMeetingPrompt(
   keyContent: string,
   currentThemes: string,
   nextThemes: string,
-  nextMonth: string,
+  nextMonth: string
 ): string {
   // Delegate to dedicated meeting prompts file
-  return getMeetingMinutesPrompt(month, session, keyContent, currentThemes, nextThemes, nextMonth)
+  return getMeetingMinutesPrompt(
+    month,
+    session,
+    keyContent,
+    currentThemes,
+    nextThemes,
+    nextMonth
+  );
 }
 
 // ============================================================
 // PHẦN 4: PROMPT KẾ HOẠCH BÀI DẠY - CÔNG VĂN 5512
 // ============================================================
 
-export function getLessonPrompt(grade: string, lessonTopic: string, duration?: string): string {
+export function getLessonPrompt(
+  grade: string,
+  lessonTopic: string,
+  duration?: string
+): string {
   // Sử dụng prompt mới từ khdh-prompts.ts
-  return getKHDHPrompt(grade, lessonTopic, duration || "2 tiết")
+  return getKHDHPrompt(grade, lessonTopic, duration || "2 tiết");
 }
 
-export function getLessonIntegrationPrompt(grade: string, lessonTopic: string, templateContent?: string): string {
+export function getLessonIntegrationPrompt(
+  grade: string,
+  lessonTopic: string,
+  templateContent?: string
+): string {
   if (templateContent) {
-    return getKHDHIntegrationPrompt(grade, lessonTopic, templateContent)
+    return getKHDHIntegrationPrompt(grade, lessonTopic, templateContent);
   }
 
   // Fallback to old behavior if no template
-  const gradeInfo = GRADE_PSYCHOLOGY[grade as keyof typeof GRADE_PSYCHOLOGY] || GRADE_PSYCHOLOGY["10"]
-  const curriculum = CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE]
+  const gradeInfo =
+    GRADE_PSYCHOLOGY[grade as keyof typeof GRADE_PSYCHOLOGY] ||
+    GRADE_PSYCHOLOGY["10"];
+  const curriculum =
+    CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE];
 
   return `VAI TRÒ: Bạn là Chuyên gia Tư vấn Giáo dục Phổ thông (Chương trình 2018) về môn Hoạt động trải nghiệm, Hướng nghiệp (HĐTN).
 Bạn am hiểu sâu sắc bộ sách "Kết nối tri thức với cuộc sống" và cách tích hợp NLS, đạo đức vào từng hoạt động cụ thể.
@@ -147,7 +185,9 @@ Nội dung tích hợp phải GẮN VỚI TỪNG HOẠT ĐỘNG cụ thể trong
 THÔNG TIN ĐẦU VÀO:
 - Tên Bài học/Chủ đề: "${lessonTopic}"
 - Khối lớp: ${grade}
-- Đặc điểm chương trình: ${curriculum?.title || "Hoạt động trải nghiệm, Hướng nghiệp"}
+- Đặc điểm chương trình: ${
+    curriculum?.title || "Hoạt động trải nghiệm, Hướng nghiệp"
+  }
 - Mức độ Bloom: ${curriculum?.bloomLevel || "Nhận biết, Hiểu"}
 - Đặc điểm học sinh: ${gradeInfo.profile}
 - Trọng tâm: ${gradeInfo.focus}
@@ -185,7 +225,7 @@ QUY TẮC ĐỊNH DẠNG BẮT BUỘC:
 {
   "tich_hop_nls": "TÍCH HỢP NĂNG LỰC SỐ THEO HOẠT ĐỘNG:\\n\\n- Hoạt động Khởi động: NLS [Mã] ([Tên]) - [Mô tả cụ thể: GV làm gì, HS làm gì, dùng công cụ gì].\\n\\n- Hoạt động Khám phá: NLS [Mã] ([Tên]) - [Mô tả cụ thể].\\n\\n- Hoạt động Luyện tập: NLS [Mã] ([Tên]) - [Mô tả cụ thể, sản phẩm số HS tạo ra].\\n\\n- Hoạt động Vận dụng: NLS [Mã] ([Tên]) - [Mô tả cụ thể, nhắc nhở an toàn thông tin].",
   "tich_hop_dao_duc": "TÍCH HỢP GIÁO DỤC ĐẠO ĐỨC THEO HOẠT ĐỘNG:\\n\\n- Hoạt động Khám phá: [Phẩm chất] - [Tình huống cụ thể để HS suy ngẫm].\\n\\n- Hoạt động Luyện tập: [Phẩm chất] - [Bài tập thực hành, ví dụ đóng vai xử lý tình huống].\\n\\n- Hoạt động Vận dụng: [Phẩm chất] - [Nội dung cam kết hành động cụ thể của HS]."
-}`
+}`;
 }
 
 // ============================================================
@@ -193,8 +233,9 @@ QUY TẮC ĐỊNH DẠNG BẮT BUỘC:
 // ============================================================
 
 function findTopicInCurriculum(grade: string, themeName: string) {
-  const gradeData = CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE]
-  if (!gradeData) return null
+  const gradeData =
+    CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE];
+  if (!gradeData) return null;
 
   // Search through all theme categories
   for (const category of Object.values(gradeData.themes)) {
@@ -202,84 +243,122 @@ function findTopicInCurriculum(grade: string, themeName: string) {
       // Match by partial name (flexible matching)
       if (
         themeName.toLowerCase().includes(topic.name.toLowerCase()) ||
-        topic.name.toLowerCase().includes(themeName.toLowerCase().replace(/chủ đề \d+:\s*/i, ""))
+        topic.name
+          .toLowerCase()
+          .includes(themeName.toLowerCase().replace(/chủ đề \d+:\s*/i, ""))
       ) {
         return {
           ...topic,
           categoryName: category.name,
           gradeTitle: gradeData.title,
           bloomLevel: gradeData.bloomLevel,
-        }
+        };
       }
     }
   }
-  return null
+  return null;
 }
 
 function xacDinhLoaiChuDe(tenChuDe: string): string {
-  const tuKhoa = tenChuDe.toLowerCase()
+  const tuKhoa = tenChuDe.toLowerCase();
 
   if (tuKhoa.includes("trưởng thành") || tuKhoa.includes("truong thanh")) {
-    return "truong_thanh"
+    return "truong_thanh";
   }
-  if (tuKhoa.includes("tự tin") || tuKhoa.includes("tu tin") || tuKhoa.includes("thay đổi")) {
-    return "tu_tin"
+  if (
+    tuKhoa.includes("tự tin") ||
+    tuKhoa.includes("tu tin") ||
+    tuKhoa.includes("thay đổi")
+  ) {
+    return "tu_tin";
   }
-  if (tuKhoa.includes("truyền thống") || tuKhoa.includes("bùi thị xuân") || tuKhoa.includes("nhà trường")) {
-    return "truyen_thong"
+  if (
+    tuKhoa.includes("truyền thống") ||
+    tuKhoa.includes("bùi thị xuân") ||
+    tuKhoa.includes("nhà trường")
+  ) {
+    return "truyen_thong";
   }
-  if (tuKhoa.includes("gia đình") || tuKhoa.includes("trách nhiệm") || tuKhoa.includes("yêu thương")) {
-    return "trach_nhiem_gia_dinh"
+  if (
+    tuKhoa.includes("gia đình") ||
+    tuKhoa.includes("trách nhiệm") ||
+    tuKhoa.includes("yêu thương")
+  ) {
+    return "trach_nhiem_gia_dinh";
   }
   if (tuKhoa.includes("cộng đồng") || tuKhoa.includes("xã hội")) {
-    return "cong_dong"
+    return "cong_dong";
   }
-  if (tuKhoa.includes("môi trường") || tuKhoa.includes("thiên nhiên") || tuKhoa.includes("cảnh quan")) {
-    return "moi_truong"
+  if (
+    tuKhoa.includes("môi trường") ||
+    tuKhoa.includes("thiên nhiên") ||
+    tuKhoa.includes("cảnh quan")
+  ) {
+    return "moi_truong";
   }
-  if (tuKhoa.includes("nghề") || tuKhoa.includes("hướng nghiệp") || tuKhoa.includes("lao động")) {
-    return "nghe_nghiep"
+  if (
+    tuKhoa.includes("nghề") ||
+    tuKhoa.includes("hướng nghiệp") ||
+    tuKhoa.includes("lao động")
+  ) {
+    return "nghe_nghiep";
   }
 
-  return "truong_thanh" // default
+  return "truong_thanh"; // default
 }
 
-export function getEventPrompt(grade: string, theme: string, month?: number): string {
-  const gradeInfo = GRADE_PSYCHOLOGY[grade as keyof typeof GRADE_PSYCHOLOGY] || GRADE_PSYCHOLOGY["10"]
-  const gradeNumber = Number.parseInt(grade) || 10
+export function getEventPrompt(
+  grade: string,
+  theme: string,
+  month?: number
+): string {
+  const gradeInfo =
+    GRADE_PSYCHOLOGY[grade as keyof typeof GRADE_PSYCHOLOGY] ||
+    GRADE_PSYCHOLOGY["10"];
+  const gradeNumber = Number.parseInt(grade) || 10;
 
-  const topicData = findTopicInCurriculum(grade, theme)
+  const topicData = findTopicInCurriculum(grade, theme);
 
-  let chuDeContext = ""
-  let hoatDongContext = ""
-  let mauKichBanContext = ""
-  let cauHoiContext = ""
-  let vanBanHanhChinhContext = ""
-  let kinhPhiContext = ""
-  let cauHoiSauKichContext = ""
-  let thongDiepContext = ""
+  let chuDeContext = "";
+  let hoatDongContext = "";
+  let mauKichBanContext = "";
+  let cauHoiContext = "";
+  let vanBanHanhChinhContext = "";
+  let kinhPhiContext = "";
+  let cauHoiSauKichContext = "";
+  let thongDiepContext = "";
 
   // Lấy thông tin chủ đề từ kntt-curriculum-database
   if (month) {
-    const chuDe = getChuDeTheoThang(gradeNumber as 10 | 11 | 12, month)
+    const chuDe = getChuDeTheoThang(gradeNumber as 10 | 11 | 12, month);
     if (chuDe) {
-      chuDeContext = taoContextNgoaiKhoa(chuDe)
+      chuDeContext = taoContextNgoaiKhoa(chuDe);
     }
 
     // Lấy danh sách hoạt động chi tiết
-    const chuDeInfo = getChuDeTheoThangFromActivities(gradeNumber as 10 | 11 | 12, month)
+    const chuDeInfo = getChuDeTheoThangFromActivities(
+      gradeNumber as 10 | 11 | 12,
+      month
+    );
     if (chuDeInfo) {
-      const hoatDongList = getHoatDongTheoChuDe(gradeNumber as 10 | 11 | 12, chuDeInfo.so_chu_de)
+      const hoatDongList = getHoatDongTheoChuDe(
+        gradeNumber as 10 | 11 | 12,
+        chuDeInfo.so_chu_de
+      );
       if (hoatDongList.length > 0) {
         hoatDongContext = `
-DANH SÁCH HOẠT ĐỘNG CÓ THỂ TỔ CHỨC NGOẠI KHÓA (${hoatDongList.length} hoạt động):
-${hoatDongList.map((hd, i) => `${i + 1}. ${hd.ten}${hd.mo_ta ? ` - ${hd.mo_ta}` : ""}`).join("\n")}
-`
+DANH SÁCH HOẠT ĐỘNG CÓ THỂ TỔ CHỨC NGOẠI KHÓA (${
+          hoatDongList.length
+        } hoạt động):
+${hoatDongList
+  .map((hd, i) => `${i + 1}. ${hd.ten}${hd.mo_ta ? ` - ${hd.mo_ta}` : ""}`)
+  .join("\n")}
+`;
       }
     }
   }
 
-  const khoiCauHoi = getCauHoiTheoKhoi(gradeNumber)
+  const khoiCauHoi = getCauHoiTheoKhoi(gradeNumber);
   if (khoiCauHoi) {
     cauHoiContext = `
 ============================================================
@@ -296,13 +375,13 @@ HƯỚNG DẪN SỬ DỤNG CÂU HỎI TRONG NGOẠI KHÓA:
 - Sử dụng câu hỏi PHAN_BIEN, DA_CHIEU trong phần HOẠT ĐỘNG CHÍNH để thúc đẩy thảo luận
 - Sử dụng câu hỏi GIA_TRI, CAM_XUC, TONG_HOP trong phần KẾT THÚC để đúc kết bài học
 - Có thể điều chỉnh câu hỏi để người dẫn chương trình sử dụng hoặc đưa vào kịch bản
-`
+`;
   }
 
   // Lấy mẫu kịch bản từ ngoai-khoa-templates
-  const mauTheoKhoi = getMauNgoaiKhoaTheoKhoi(gradeNumber)
+  const mauTheoKhoi = getMauNgoaiKhoaTheoKhoi(gradeNumber);
   if (mauTheoKhoi.length > 0) {
-    mauKichBanContext = taoContextNgoaiKhoaChiTiet(gradeNumber, theme)
+    mauKichBanContext = taoContextNgoaiKhoaChiTiet(gradeNumber, theme);
   }
 
   vanBanHanhChinhContext = taoContextVanBanHanhChinh({
@@ -312,18 +391,18 @@ HƯỚNG DẪN SỬ DỤNG CÂU HỎI TRONG NGOẠI KHÓA:
     thang: new Date().getMonth() + 1,
     nam: new Date().getFullYear(),
     ten_chu_de: theme,
-  })
+  });
 
-  kinhPhiContext = taoContextKinhPhi()
+  kinhPhiContext = taoContextKinhPhi();
 
-  const loaiChuDe = xacDinhLoaiChuDe(theme)
-  cauHoiSauKichContext = taoContextCauHoiSauKich(loaiChuDe)
+  const loaiChuDe = xacDinhLoaiChuDe(theme);
+  cauHoiSauKichContext = taoContextCauHoiSauKich(loaiChuDe);
 
-  const thongDiepList = getThongDiepKetThuc(loaiChuDe)
+  const thongDiepList = getThongDiepKetThuc(loaiChuDe);
   thongDiepContext = `
 === THÔNG ĐIỆP KẾT THÚC GỢI Ý ===
 ${thongDiepList.map((td, i) => `${i + 1}. "${td}"`).join("\n")}
-`
+`;
 
   // Hướng dẫn tạo kịch bản
   const huongDanKichBan = `
@@ -334,21 +413,30 @@ ${HUONG_DAN_TAO_KICH_BAN.nguyen_tac_chung.map((n) => `- ${n}`).join("\n")}
 
 2. CẤU TRÚC TIÊU CHUẨN (45 phút):
 - Tổng thời gian: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.tong_thoi_gian}
-- Khởi động: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.thoi_gian} - ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.muc_dich}
+- Khởi động: ${
+    HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.thoi_gian
+  } - ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.muc_dich}
 - Phần chính: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.phan_chinh.thoi_gian}
 - Kết thúc: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.ket_thuc.thoi_gian}
 
 3. CÁC LOẠI KỊCH BẢN HIỆU QUẢ:
-${HUONG_DAN_TAO_KICH_BAN.loai_kich_ban_hieu_qua.map((kb, i) => `${i + 1}. ${kb.ten}: ${kb.mo_ta} (Phù hợp: ${kb.phu_hop_voi.join(", ")})`).join("\n")}
+${HUONG_DAN_TAO_KICH_BAN.loai_kich_ban_hieu_qua
+  .map(
+    (kb, i) =>
+      `${i + 1}. ${kb.ten}: ${kb.mo_ta} (Phù hợp: ${kb.phu_hop_voi.join(", ")})`
+  )
+  .join("\n")}
 
 4. KỸ THUẬT SÂN KHẤU:
 - Âm thanh: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.am_thanh.join(", ")}
 - Sân khấu: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.san_khau.join(", ")}
-- Diễn viên: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.dien_vien.join(", ")}
-`
+- Diễn viên: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.dien_vien.join(
+    ", "
+  )}
+`;
 
   // Build curriculum context string (giữ nguyên logic cũ)
-  let curriculumContext = ""
+  let curriculumContext = "";
   if (topicData) {
     curriculumContext = `
 THÔNG TIN CHỦ ĐỀ TỪ CHƯƠNG TRÌNH SÁCH "KẾT NỐI TRI THỨC":
@@ -361,7 +449,7 @@ ${topicData.outcomes.map((o: string) => `  + ${o}`).join("\n")}
 - Phương pháp gợi ý từ sách:
 ${topicData.methods.map((m: string) => `  + ${m}`).join("\n")}
 - Mức độ Bloom: ${topicData.bloomLevel}
-`
+`;
   }
 
   return `${SYSTEM_INSTRUCTION}
@@ -459,5 +547,5 @@ QUY TẮC ĐỊNH DẠNG VĂN BẢN - CỰC KỲ QUAN TRỌNG:
   "muc_dich_yeu_cau": "- [Kết quả 1 - tương đồng với kết quả cần đạt của chủ đề].\\n\\n- [Kết quả 2].\\n\\n- [Kết quả 3].",
   "kich_ban_chi_tiet": "PHẦN 1: MỞ ĐẦU (5-7 phút)\\n\\nNgười dẫn chương trình: [Lời chào và dẫn dắt chi tiết]\\n\\n[Hoạt động khởi động - trò chơi/âm nhạc/chia sẻ]\\n\\nPHẦN 2: HOẠT ĐỘNG CHÍNH (20-25 phút)\\n\\n[Nội dung chi tiết thực hiện HOẠT ĐỘNG CỐT LÕI]\\n\\nKỊCH NGẮN: [TÊN KỊCH]\\n\\nNhân vật: [Danh sách]\\n\\nCảnh 1: [Tên cảnh]\\n\\n[Tên nhân vật]: [Lời thoại]\\n\\nCảnh 2: [Tên cảnh]\\n\\n[Tiếp tục...]\\n\\nPHẦN 3: CÂU HỎI TƯƠNG TÁC (10 phút)\\n\\nMC: [Lời dẫn vào phần hỏi đáp]\\n\\nCâu 1 (Dễ): [Câu hỏi trắc nghiệm]\\n\\nCâu 2 (Trung bình): [Câu hỏi]\\n\\nCâu 3 (Mở): [Câu hỏi thảo luận]\\n\\nPHẦN 4: KẾT THÚC (5 phút)\\n\\n[Tổng kết và thông điệp]",
   "thong_diep_ket_thuc": "Thông điệp truyền cảm hứng 2-3 câu dành cho học sinh, gắn với KẾT QUẢ CẦN ĐẠT của chủ đề."
-}`
+}`;
 }

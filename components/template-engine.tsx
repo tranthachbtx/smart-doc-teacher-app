@@ -75,7 +75,10 @@ import {
 // Import curriculum related functions and types
 import { getPPCTTheoKhoi, type PPCTChuDe } from "@/lib/data/ppct-database";
 import { getCurriculumTasksByTopic } from "@/lib/data/kntt-activities-database";
-import { getChuDeTheoThang } from "@/lib/data/kntt-curriculum-database";
+import {
+  getChuDeTheoThang,
+  timChuDeTheoTen,
+} from "@/lib/data/kntt-curriculum-database";
 
 // Types imported from @/lib/types
 
@@ -261,39 +264,72 @@ const TemplateEngine = () => {
     }
   }, [lessonGrade]);
 
-  // Sửa đổi logic để lấy task từ kntt-activities-database dựa trên tên chủ đề
+  // Sửa đổi logic để lấy task từ kntt-curriculum-database chi tiết
   useEffect(() => {
-    // Use lessonMonth derived from selectedChuDeSo
-    if (lessonGrade && lessonMonth) {
+    // Use selectedChuDe directly if available, or try based on month
+    if (lessonGrade && (selectedChuDe || lessonAutoFilledTheme)) {
       const gradeNum = Number.parseInt(lessonGrade) as 10 | 11 | 12;
-      const monthNum = Number.parseInt(lessonMonth);
+      const themeName = selectedChuDe?.ten || lessonAutoFilledTheme;
 
-      const chuDe = getChuDeTheoThang(gradeNum, monthNum);
-      const chuDeName = chuDe?.ten_chu_de || lessonAutoFilledTheme; // Use auto-filled theme if chuDe.ten_chu_de is missing
+      if (themeName) {
+        // Try to get detailed theme data first
+        const chuDeDetailed = timChuDeTheoTen(gradeNum, themeName);
 
-      if (chuDeName) {
-        const curriculumTasksFromDB = getCurriculumTasksByTopic(
-          gradeNum,
-          chuDeName
-        );
+        let allTasks: LessonTask[] = [];
 
-        const allTasks: LessonTask[] = (curriculumTasksFromDB || []).map(
-          (task, index) => ({
-            id: `curriculum-${index}`,
-            name: task.ten,
-            content: task.mo_ta || "",
-            source: "curriculum",
-            kyNangCanDat: task.ky_nang_can_dat
-              ? task.ky_nang_can_dat.split(";").map((s) => s.trim())
-              : [], // Split skills
-            sanPhamDuKien: task.san_pham_du_kien || "",
-            thoiLuongDeXuat: task.thoi_luong_de_xuat || "",
-            selected: true, // Default to selected
-            time: task.thoi_luong_de_xuat
-              ? Number.parseInt(task.thoi_luong_de_xuat.split(" ")[0])
-              : 10, // Default time
-          })
-        );
+        if (chuDeDetailed && chuDeDetailed.hoat_dong) {
+          // If we found the detailed structure from `kntt-curriculum-database.ts`
+          let taskIndex = 0;
+          chuDeDetailed.hoat_dong.forEach((hd) => {
+            // Add each activity's tasks
+            if (hd.nhiem_vu && hd.nhiem_vu.length > 0) {
+              hd.nhiem_vu.forEach((nv) => {
+                let timeVal = 0;
+                if (nv.thoi_luong_de_xuat) {
+                  const match = nv.thoi_luong_de_xuat.match(/(\d+)/);
+                  if (match) timeVal = Number.parseInt(match[1]);
+                }
+
+                allTasks.push({
+                  id: `curriculum-nv-${taskIndex++}`,
+                  name: nv.ten,
+                  content: nv.mo_ta || "",
+                  source: "curriculum",
+                  kyNangCanDat: nv.ky_nang_can_dat || [],
+                  sanPhamDuKien: nv.san_pham_du_kien || "",
+                  thoiLuongDeXuat: nv.thoi_luong_de_xuat || "",
+                  selected: true,
+                  time: timeVal > 0 ? timeVal : undefined,
+                });
+              });
+            } else {
+              // Fallback if activity has no sub-tasks, treat activity itself as a task
+              allTasks.push({
+                id: `curriculum-hd-${taskIndex++}`,
+                name: hd.ten,
+                content: hd.mo_ta || "",
+                source: "curriculum",
+                selected: true,
+              });
+            }
+          });
+        } else {
+          // Fallback to old activities database if not found in detailed one
+          const curriculumTasksFromDB = getCurriculumTasksByTopic(
+            gradeNum,
+            themeName
+          );
+          allTasks = (curriculumTasksFromDB || []).map((task, index) => {
+            return {
+              id: `curriculum-${index}`,
+              name: task.ten,
+              content: task.mo_ta || "",
+              source: "curriculum",
+              selected: true,
+            };
+          });
+        }
+
         setCurriculumTasks(allTasks);
       } else {
         setCurriculumTasks([]);
@@ -301,7 +337,7 @@ const TemplateEngine = () => {
     } else {
       setCurriculumTasks([]);
     }
-  }, [lessonGrade, lessonMonth, lessonAutoFilledTheme]); // Added lessonAutoFilledTheme to dependency array
+  }, [lessonGrade, lessonMonth, lessonAutoFilledTheme, selectedChuDe]);
 
   useEffect(() => {
     if (lessonGrade && lessonMonth) {
@@ -398,8 +434,19 @@ const TemplateEngine = () => {
     }
   };
 
+  /*
+   * Enhanced Time Distribution:
+   * 1. Prioritize explicitly set time (if user locked it or previous set).
+   * 2. Parse 'thoiLuongDeXuat' from DB if available.
+   * 3. Distribute remaining time intelligently.
+   */
   const distributeTimeForTasks = useCallback(() => {
-    const totalMinutes = Number.parseInt(lessonDuration) * 45; // 1 tiết = 45 phút
+    let totalMinutes = 90; // Default
+    const periodsMatch = lessonDuration.match(/(\d+)/);
+    if (periodsMatch) {
+      totalMinutes = Number.parseInt(periodsMatch[1]) * 45;
+    }
+
     const allTasks = [
       ...curriculumTasks.filter((t) => t.selected),
       ...lessonTasks.filter((t) => t.source === "user" && t.selected),
@@ -411,32 +458,84 @@ const TemplateEngine = () => {
     }
 
     const distribution: Record<string, number> = {};
-    let remainingTime = totalMinutes;
+    let usedTime = 0;
 
-    // Prioritize tasks with specified time
-    const tasksWithTime = allTasks.filter((t) => t.time && t.time > 0);
-    const tasksWithoutTime = allTasks.filter((t) => !t.time || t.time <= 0);
+    // 1. First pass: Assign time based on DB suggestion (thoiLuongDeXuat)
+    const tasksWithSuggestedTime: string[] = [];
+    const tasksWithoutSuggestion: string[] = [];
 
-    // Distribute time for tasks that have explicit time set
-    tasksWithTime.forEach((task) => {
-      distribution[task.id] = task.time as number;
-      remainingTime -= task.time as number;
+    allTasks.forEach((task) => {
+      let allocatedTime = 0;
+
+      // Try to parse thoiLuongDeXuat if available (e.g., "15 phút", "10-15 phút")
+      if (task.thoiLuongDeXuat) {
+        const timeMatch = task.thoiLuongDeXuat.match(/(\d+)/);
+        if (timeMatch) {
+          allocatedTime = Number.parseInt(timeMatch[1]);
+        }
+      }
+
+      // If user manually set time previously (and it's > 0), prioritize it?
+      // Actually, if this function is called via "Redistribute" button, we might want to reset to suggested.
+      // But if it's auto-effect, we should respect state.
+      // For now, let's say this function *resets* to smart defaults.
+
+      if (allocatedTime > 0) {
+        distribution[task.id] = allocatedTime;
+        usedTime += allocatedTime;
+        tasksWithSuggestedTime.push(task.id);
+      } else {
+        tasksWithoutSuggestion.push(task.id);
+      }
     });
 
-    // If there's remaining time and tasks without explicit time, distribute evenly
-    if (remainingTime > 0 && tasksWithoutTime.length > 0) {
-      const timePerTask = Math.floor(remainingTime / tasksWithoutTime.length);
-      tasksWithoutTime.forEach((task) => {
-        distribution[task.id] = timePerTask;
-      });
-    } else if (remainingTime < 0) {
-      // If total time exceeds available time, cap at 0 for tasks without time
-      tasksWithoutTime.forEach((task) => {
-        distribution[task.id] = 0;
-      });
+    // 2. Adjust if total used time exceeds limit or we have remaining time
+    let remainingTime = totalMinutes - usedTime;
+
+    // Reserve some time for Start/End if not explicit tasks?
+    // Usually Start=5, End=5.
+    // If allTasks are just the "Body" of the lesson, we should reserve ~10-15 mins.
+    const reservedTime = 10;
+    remainingTime -= reservedTime; // Safe buffer
+
+    // If we have tasks without suggestion, distribute remaining time to them
+    if (tasksWithoutSuggestion.length > 0) {
+      if (remainingTime > 0) {
+        const timePerTask = Math.floor(
+          remainingTime / tasksWithoutSuggestion.length
+        );
+        tasksWithoutSuggestion.forEach((id) => {
+          distribution[id] = Math.max(5, timePerTask); // At least 5 mins
+          usedTime += distribution[id];
+        });
+      } else {
+        // No time left, assign minimum 5 mins and we will overflow (user can adjust)
+        tasksWithoutSuggestion.forEach((id) => {
+          distribution[id] = 5;
+          usedTime += 5;
+        });
+      }
     }
 
-    setTaskTimeDistribution(distribution);
+    // 3. Final refinement: Scale if significantly over/under
+    // If we are over budget (excluding reserved), we might need to shrink proportionally
+    // But respecting "thoiLuongDeXuat" is important.
+    // Let's just update the state.
+
+    // Update the lessonTasks state with these new times so inputs reflect it
+    if (Object.keys(distribution).length > 0) {
+      setTaskTimeDistribution(distribution); // Keep for legacy compatibility if used elsewhere
+
+      // Also update the actual task objects so the UI input fields update
+      setLessonTasks((prev) =>
+        prev.map((t) => {
+          if (distribution[t.id] !== undefined) {
+            return { ...t, time: distribution[t.id] };
+          }
+          return t;
+        })
+      );
+    }
   }, [lessonDuration, curriculumTasks, lessonTasks]);
 
   // Handle lesson plan generation
@@ -572,15 +671,28 @@ const TemplateEngine = () => {
     setError(null);
 
     try {
+      let result: { success: boolean; method: "clipboard" | "download" } = {
+        success: false,
+        method: "clipboard",
+      };
+
       if (type === "meeting") {
         if (!meetingResult) {
           setError("Chưa có nội dung biên bản. Vui lòng tạo nội dung trước.");
           setIsExporting(false);
           return;
         }
-        await ExportService.exportMeeting(
+        // Try to get template (current or default)
+        let templateToUse = meetingTemplate;
+        if (!templateToUse) {
+          const defaultTmpl = await getTemplate("default_meeting");
+          if (defaultTmpl)
+            templateToUse = { name: defaultTmpl.name, data: defaultTmpl.data };
+        }
+
+        result = await ExportService.exportMeeting(
           meetingResult,
-          meetingTemplate,
+          templateToUse,
           selectedMonth,
           selectedSession
         );
@@ -590,7 +702,15 @@ const TemplateEngine = () => {
           setIsExporting(false);
           return;
         }
-        await ExportService.exportLesson(lessonResult, lessonTemplate, {
+
+        let templateToUse = lessonTemplate;
+        if (!templateToUse) {
+          const defaultTmpl = await getTemplate("default_lesson");
+          if (defaultTmpl)
+            templateToUse = { name: defaultTmpl.name, data: defaultTmpl.data };
+        }
+
+        result = await ExportService.exportLesson(lessonResult, templateToUse, {
           grade: lessonGrade,
           topic: lessonTopic || lessonAutoFilledTheme,
           month: lessonMonth,
@@ -614,7 +734,15 @@ const TemplateEngine = () => {
           setIsExporting(false);
           return;
         }
-        await ExportService.exportEvent(eventResult, eventTemplate, {
+
+        let templateToUse = eventTemplate;
+        if (!templateToUse) {
+          const defaultTmpl = await getTemplate("default_event");
+          if (defaultTmpl)
+            templateToUse = { name: defaultTmpl.name, data: defaultTmpl.data };
+        }
+
+        result = await ExportService.exportEvent(eventResult, templateToUse, {
           grade: selectedGradeEvent,
           month: selectedEventMonth,
           budget: eventBudget,
@@ -623,7 +751,13 @@ const TemplateEngine = () => {
         });
       }
 
-      setSuccess("Xuất file thành công!");
+      if (result.method === "download") {
+        setSuccess("Xuất file Word thành công!");
+      } else {
+        setSuccess(
+          "Đã copy nội dung vào Clipboard (do không tìm thấy mẫu Word)"
+        );
+      }
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       console.error("Export error:", err);
@@ -1029,10 +1163,6 @@ const TemplateEngine = () => {
     if (ppctFileRef.current) ppctFileRef.current.value = "";
   };
 
-  useEffect(() => {
-    distributeTimeForTasks();
-  }, [distributeTimeForTasks]);
-
   const updateTaskTime = (taskId: string, minutes: number) => {
     setTaskTimeDistribution((prev) => ({
       ...prev,
@@ -1049,31 +1179,13 @@ const TemplateEngine = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-              <FileText className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-800">
-                SmartDoc - {DEPT_INFO.shortName}
-              </h1>
-              <p className="text-xs text-slate-500">{DEPT_INFO.school}</p>
-            </div>
-          </div>
-
-          {/* Thêm nút "Cài đặt mẫu" vào header */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all duration-200">
+        <div className="container mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSettings(true)}
-              className="gap-2"
-            >
-              <Settings className="w-4 h-4" />
-              Cài đặt mẫu
-            </Button>
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
+              <FileText className="w-4 h-4 text-white" />
+            </div>
+            <h1 className="text-base font-semibold text-slate-700">SmartDoc</h1>
           </div>
         </div>
       </header>
@@ -1112,29 +1224,44 @@ const TemplateEngine = () => {
           onValueChange={(v) => setActiveMode(v as TemplateType)}
           className="space-y-6"
         >
-          <TabsList className="grid grid-cols-3 w-full max-w-2xl mx-auto bg-white shadow-md rounded-xl p-1">
-            <TabsTrigger
-              value="meeting"
-              className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg"
+          <div className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-4xl mx-auto">
+            <TabsList className="grid grid-cols-3 w-full max-w-2xl bg-white shadow-md rounded-xl p-1">
+              <TabsTrigger
+                value="meeting"
+                className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="hidden sm:inline">Biên bản Họp</span>
+                <span className="sm:hidden">Họp</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="lesson"
+                className="gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span className="hidden sm:inline">Kế hoạch Bài dạy</span>
+                <span className="sm:hidden">KHBD</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="event"
+                className="gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
+              >
+                <Calendar className="w-4 h-4" />
+                <span className="hidden sm:inline">Kế hoạch Ngoại khóa</span>
+                <span className="sm:hidden">Ngoại khóa</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSettings(true)}
+              className="bg-white border-slate-200 shadow-sm text-slate-600 hover:text-blue-600 hover:border-blue-300 h-10 px-4 rounded-xl whitespace-nowrap"
             >
-              <FileText className="w-4 h-4" />
-              Biên bản Họp
-            </TabsTrigger>
-            <TabsTrigger
-              value="lesson"
-              className="gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white rounded-lg"
-            >
-              <BookOpen className="w-4 h-4" />
-              Kế hoạch Bài dạy
-            </TabsTrigger>
-            <TabsTrigger
-              value="event"
-              className="gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white rounded-lg"
-            >
-              <Calendar className="w-4 h-4" />
-              Kế hoạch Ngoại khóa
-            </TabsTrigger>
-          </TabsList>
+              <Settings className="w-4 h-4 mr-2" />
+              Cài đặt mẫu
+            </Button>
+          </div>
 
           {/* Meeting Tab */}
           <TabsContent value="meeting">
@@ -1774,13 +1901,36 @@ const TemplateEngine = () => {
                                     }
                                     className="data-[state=checked]:bg-green-500"
                                   />
-                                  <span className="font-medium text-sm text-green-800 dark:text-green-200">
-                                    {task.name}
-                                  </span>
+                                  <Input
+                                    value={task.name}
+                                    onChange={(e) =>
+                                      updateLessonTask(
+                                        task.id,
+                                        "name",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="h-7 text-sm font-medium text-green-800 dark:text-green-200 border-none bg-transparent focus:ring-0 px-0"
+                                  />
                                 </div>
-                                <p className="text-sm text-gray-600 dark:text-gray-300">
-                                  {task.content}
-                                </p>
+                                <Textarea
+                                  value={task.content}
+                                  onChange={(e) =>
+                                    updateLessonTask(
+                                      task.id,
+                                      "content",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="text-sm text-gray-600 dark:text-gray-300 min-h-[60px] resize-y bg-transparent border-gray-200"
+                                />
+
+                                {task.thoiLuongDeXuat && (
+                                  <p className="text-xs text-orange-600 italic">
+                                    * Thời lượng đề xuất từ SGK:{" "}
+                                    {task.thoiLuongDeXuat}
+                                  </p>
+                                )}
 
                                 {/* Skills, products, duration */}
                                 <div className="flex flex-wrap gap-2 text-xs">

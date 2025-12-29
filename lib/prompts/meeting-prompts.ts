@@ -21,7 +21,7 @@ import {
   getChuDeTheoThangFromActivities,
   getHoatDongTheoChuDe,
 } from "@/lib/data/kntt-activities-database";
-import { HUONG_DAN_SU_PHAM } from "@/lib/hdtn-pedagogical-guide";
+import { HUONG_DAN_SU_PHAM } from "@/lib/data/hdtn-pedagogical-guide";
 
 // ============================================================
 // PHẦN 1: VAI TRÒ VÀ BỐI CẢNH
@@ -172,9 +172,9 @@ ${grades
   .map((g) => {
     const chuDe = getChuDeTheoThang(g, monthNumber);
     if (chuDe) {
-      return `- Khối ${g}: ${chuDe.ten} (${
-        chuDe.ma
-      }) - Mục tiêu: ${chuDe.muc_tieu.slice(0, 2).join("; ")}`;
+      return `- Khối ${g}: ${chuDe.ten} (${chuDe.ma}) - Mục tiêu: ${
+        chuDe.muc_tieu ? chuDe.muc_tieu.slice(0, 2).join("; ") : ""
+      }`;
     }
     return `- Khối ${g}: Theo kế hoạch`;
   })
@@ -191,7 +191,11 @@ ${grades
       const soHoatDong = hoatDongInfo
         ? getHoatDongTheoChuDe(g, hoatDongInfo.so_chu_de).length
         : 0;
-      return `- Khối ${g}: ${chuDe.ten} (${soHoatDong} hoạt động) - Trọng tâm: ${chuDe.muc_tieu[0]}`;
+      return `- Khối ${g}: ${
+        chuDe.ten
+      } (${soHoatDong} hoạt động) - Trọng tâm: ${
+        chuDe.muc_tieu ? chuDe.muc_tieu[0] : ""
+      }`;
     }
     return `- Khối ${g}: Theo kế hoạch`;
   })
@@ -217,9 +221,11 @@ HƯỚNG DẪN SƯ PHẠM (Tham khảo khi viết đánh giá và kế hoạch):
 - Cấu trúc thời lượng: ${
     HUONG_DAN_SU_PHAM.cau_truc_thoi_luong.tong_tiet_nam
   } tiết/năm
-- Phương pháp khuyến khích: ${HUONG_DAN_SU_PHAM.phuong_phap.nguyen_tac
-    .slice(0, 3)
-    .join(", ")}
+- Phương pháp khuyến khích: ${
+    HUONG_DAN_SU_PHAM.phuong_phap?.nguyen_tac
+      ? HUONG_DAN_SU_PHAM.phuong_phap.nguyen_tac.slice(0, 3).join(", ")
+      : ""
+  }
 
 ============================================================
 THÔNG TIN CUỘC HỌP

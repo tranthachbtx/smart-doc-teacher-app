@@ -13,7 +13,8 @@
 export const TRIET_LY_CHUONG_TRINH = {
   ten: "Kết nối tri thức với cuộc sống",
   triet_ly_cot_loi: "Mang cuộc sống vào bài học và đưa bài học vào cuộc sống",
-  mo_hinh_giao_duc: "Chuyển đổi từ trang bị kiến thức sang phát triển toàn diện phẩm chất và năng lực",
+  mo_hinh_giao_duc:
+    "Chuyển đổi từ trang bị kiến thức sang phát triển toàn diện phẩm chất và năng lực",
 
   muc_tieu_cot_loi: {
     nang_luc_dac_thu: [
@@ -29,20 +30,35 @@ export const TRIET_LY_CHUONG_TRINH = {
     khoi_10: {
       chu_de_chinh: "Thích ứng và Khám phá",
       trong_tam: "Sự thích ứng và khám phá bản thân",
-      tu_khoa: ["thích ứng", "khám phá", "tìm hiểu bản thân", "làm quen môi trường mới"],
+      tu_khoa: [
+        "thích ứng",
+        "khám phá",
+        "tìm hiểu bản thân",
+        "làm quen môi trường mới",
+      ],
     },
     khoi_11: {
       chu_de_chinh: "Phát triển và Bản sắc",
       trong_tam: "Mở rộng kỹ năng xã hội và tìm hiểu nhóm nghề",
-      tu_khoa: ["kỹ năng xã hội", "nhóm nghề", "phát triển bản thân", "quan hệ xã hội"],
+      tu_khoa: [
+        "kỹ năng xã hội",
+        "nhóm nghề",
+        "phát triển bản thân",
+        "quan hệ xã hội",
+      ],
     },
     khoi_12: {
       chu_de_chinh: "Trưởng thành và Chuyển tiếp",
       trong_tam: "Bản lĩnh trưởng thành và ra quyết định nghề nghiệp",
-      tu_khoa: ["trưởng thành", "ra quyết định", "lựa chọn nghề", "kế hoạch tương lai"],
+      tu_khoa: [
+        "trưởng thành",
+        "ra quyết định",
+        "lựa chọn nghề",
+        "kế hoạch tương lai",
+      ],
     },
   },
-}
+};
 
 // ============================================
 // 2. CẤU TRÚC THỜI LƯỢNG VÀ LOẠI HÌNH HOẠT ĐỘNG
@@ -114,7 +130,7 @@ export const CAU_TRUC_THOI_LUONG = {
       ],
     },
   },
-}
+};
 
 // ============================================
 // 3. PHƯƠNG PHÁP SƯ PHẠM
@@ -123,7 +139,8 @@ export const CAU_TRUC_THOI_LUONG = {
 export const PHUONG_PHAP_SU_PHAM = {
   nguyen_tac_to_chuc: {
     lay_hoc_sinh_lam_trung_tam: {
-      mo_ta: "Học sinh là chủ thể của hoạt động, giáo viên là người hướng dẫn, hỗ trợ",
+      mo_ta:
+        "Học sinh là chủ thể của hoạt động, giáo viên là người hướng dẫn, hỗ trợ",
       thuc_hien: [
         "Tạo cơ hội cho HS tự khám phá, trải nghiệm",
         "Khuyến khích HS đề xuất ý tưởng",
@@ -134,7 +151,12 @@ export const PHUONG_PHAP_SU_PHAM = {
 
     hoc_qua_trai_nghiem: {
       mo_ta: "Kiến thức được hình thành từ trải nghiệm thực tế",
-      chu_trinh: ["Trải nghiệm cụ thể", "Quan sát, phản ánh", "Khái quát hóa", "Thử nghiệm tích cực"],
+      chu_trinh: [
+        "Trải nghiệm cụ thể",
+        "Quan sát, phản ánh",
+        "Khái quát hóa",
+        "Thử nghiệm tích cực",
+      ],
       thuc_hien: [
         "Thiết kế hoạt động gắn với thực tiễn",
         "Tạo tình huống để HS giải quyết vấn đề",
@@ -157,35 +179,59 @@ export const PHUONG_PHAP_SU_PHAM = {
   phuong_phap_cu_the: {
     thao_luan_nhom: {
       mo_ta: "Học sinh làm việc theo nhóm để giải quyết vấn đề",
-      uu_diem: ["Phát triển kỹ năng hợp tác", "Học hỏi lẫn nhau", "Đa dạng góc nhìn"],
+      uu_diem: [
+        "Phát triển kỹ năng hợp tác",
+        "Học hỏi lẫn nhau",
+        "Đa dạng góc nhìn",
+      ],
       luu_y: ["Phân công rõ ràng", "Quy mô nhóm 4-6 HS", "Có sản phẩm cụ thể"],
     },
 
     dong_vai: {
       mo_ta: "Học sinh đóng vai các nhân vật trong tình huống giả định",
-      uu_diem: ["Trải nghiệm đa chiều", "Phát triển kỹ năng giao tiếp", "Hiểu góc nhìn khác"],
-      luu_y: ["Tình huống sát thực tế", "Không ép buộc", "Thảo luận rút kinh nghiệm"],
+      uu_diem: [
+        "Trải nghiệm đa chiều",
+        "Phát triển kỹ năng giao tiếp",
+        "Hiểu góc nhìn khác",
+      ],
+      luu_y: [
+        "Tình huống sát thực tế",
+        "Không ép buộc",
+        "Thảo luận rút kinh nghiệm",
+      ],
     },
 
     du_an: {
       mo_ta: "Học sinh thực hiện dự án trong thời gian dài",
-      uu_diem: ["Phát triển năng lực tổng hợp", "Gắn với thực tiễn", "Sản phẩm cụ thể"],
+      uu_diem: [
+        "Phát triển năng lực tổng hợp",
+        "Gắn với thực tiễn",
+        "Sản phẩm cụ thể",
+      ],
       luu_y: ["Hướng dẫn rõ ràng", "Theo dõi tiến độ", "Đánh giá quá trình"],
     },
 
     trai_nghiem_thuc_te: {
       mo_ta: "Học sinh tham gia hoạt động thực tế ngoài lớp học",
       uu_diem: ["Học từ thực tế", "Mở rộng hiểu biết", "Tạo động lực học tập"],
-      luu_y: ["Đảm bảo an toàn", "Chuẩn bị kỹ", "Rút kinh nghiệm sau hoạt động"],
+      luu_y: [
+        "Đảm bảo an toàn",
+        "Chuẩn bị kỹ",
+        "Rút kinh nghiệm sau hoạt động",
+      ],
     },
 
     tro_choi: {
       mo_ta: "Sử dụng trò chơi để truyền tải nội dung giáo dục",
       uu_diem: ["Tạo hứng thú", "Học mà chơi", "Phát triển kỹ năng mềm"],
-      luu_y: ["Phù hợp lứa tuổi", "Có mục tiêu giáo dục rõ", "Tổng kết sau trò chơi"],
+      luu_y: [
+        "Phù hợp lứa tuổi",
+        "Có mục tiêu giáo dục rõ",
+        "Tổng kết sau trò chơi",
+      ],
     },
   },
-}
+};
 
 // ============================================
 // 4. CẤU TRÚC BÀI HỌC CHUẨN
@@ -209,7 +255,11 @@ export const CAU_TRUC_BAI_HOC = {
         "Chia sẻ trải nghiệm cá nhân",
         "Tình huống mở đầu",
       ],
-      luu_y: ["Ngắn gọn, hấp dẫn", "Liên quan trực tiếp đến nội dung bài", "Tạo không khí vui vẻ, thoải mái"],
+      luu_y: [
+        "Ngắn gọn, hấp dẫn",
+        "Liên quan trực tiếp đến nội dung bài",
+        "Tạo không khí vui vẻ, thoải mái",
+      ],
     },
 
     hoat_dong_kham_pha: {
@@ -250,7 +300,12 @@ export const CAU_TRUC_BAI_HOC = {
         "Thảo luận nhóm mở rộng",
         "Đánh giá chéo giữa các nhóm",
       ],
-      luu_y: ["Tình huống đa dạng, phong phú", "Tăng dần độ khó", "Khuyến khích sáng tạo", "Phản hồi kịp thời"],
+      luu_y: [
+        "Tình huống đa dạng, phong phú",
+        "Tăng dần độ khó",
+        "Khuyến khích sáng tạo",
+        "Phản hồi kịp thời",
+      ],
     },
 
     hoat_dong_van_dung: {
@@ -268,7 +323,12 @@ export const CAU_TRUC_BAI_HOC = {
         "Chia sẻ với người thân",
         "Viết nhật ký trải nghiệm",
       ],
-      luu_y: ["Cụ thể, khả thi", "Phù hợp điều kiện HS", "Có hướng dẫn rõ ràng", "Theo dõi, đánh giá kết quả"],
+      luu_y: [
+        "Cụ thể, khả thi",
+        "Phù hợp điều kiện HS",
+        "Có hướng dẫn rõ ràng",
+        "Theo dõi, đánh giá kết quả",
+      ],
     },
   },
 
@@ -282,7 +342,11 @@ export const CAU_TRUC_BAI_HOC = {
         "Quy định thời gian",
         "Kiểm tra HS đã hiểu nhiệm vụ",
       ],
-      cau_hoi_kiem_tra: ["Các em đã rõ nhiệm vụ chưa?", "Còn thắc mắc gì không?", "Ai có thể nhắc lại nhiệm vụ?"],
+      cau_hoi_kiem_tra: [
+        "Các em đã rõ nhiệm vụ chưa?",
+        "Còn thắc mắc gì không?",
+        "Ai có thể nhắc lại nhiệm vụ?",
+      ],
     },
 
     buoc_2_thuc_hien_nhiem_vu: {
@@ -328,10 +392,15 @@ export const CAU_TRUC_BAI_HOC = {
         "Khen ngợi, động viên HS",
         "Rút ra bài học, thông điệp",
       ],
-      luu_y: ["Ngắn gọn, súc tích", "Nhấn mạnh điểm quan trọng", "Liên hệ thực tiễn", "Tạo cảm xúc tích cực"],
+      luu_y: [
+        "Ngắn gọn, súc tích",
+        "Nhấn mạnh điểm quan trọng",
+        "Liên hệ thực tiễn",
+        "Tạo cảm xúc tích cực",
+      ],
     },
   },
-}
+};
 
 // ============================================
 // 5. HƯỚNG DẪN TÍCH HỢP NĂNG LỰC SỐ
@@ -379,7 +448,7 @@ export const TICH_HOP_NANG_LUC_SO = {
     "Báo cáo nội dung không phù hợp",
     "Tôn trọng bản quyền",
   ],
-}
+};
 
 // ============================================
 // 6. ĐÁNH GIÁ KẾT QUẢ HỌC TẬP
@@ -397,26 +466,44 @@ export const DANH_GIA_KET_QUA = {
     quan_sat: {
       mo_ta: "GV quan sát HS trong quá trình hoạt động",
       cong_cu: ["Sổ ghi chép", "Bảng kiểm", "Thang đánh giá"],
-      noi_dung_quan_sat: ["Thái độ tham gia", "Kỹ năng hợp tác", "Sự sáng tạo", "Tinh thần trách nhiệm"],
+      noi_dung_quan_sat: [
+        "Thái độ tham gia",
+        "Kỹ năng hợp tác",
+        "Sự sáng tạo",
+        "Tinh thần trách nhiệm",
+      ],
     },
     san_pham: {
       mo_ta: "Đánh giá qua sản phẩm học tập của HS",
-      loai_san_pham: ["Bài viết", "Poster", "Video", "Dự án", "Bài thuyết trình", "Portfolio"],
+      loai_san_pham: [
+        "Bài viết",
+        "Poster",
+        "Video",
+        "Dự án",
+        "Bài thuyết trình",
+        "Portfolio",
+      ],
       tieu_chi: ["Nội dung", "Hình thức", "Sáng tạo", "Thực tiễn"],
     },
     ho_so: {
       mo_ta: "Đánh giá qua hồ sơ học tập tích lũy",
-      thanh_phan: ["Nhật ký trải nghiệm", "Sản phẩm tiêu biểu", "Phiếu tự đánh giá", "Nhận xét của GV/bạn bè"],
+      thanh_phan: [
+        "Nhật ký trải nghiệm",
+        "Sản phẩm tiêu biểu",
+        "Phiếu tự đánh giá",
+        "Nhận xét của GV/bạn bè",
+      ],
     },
   },
 
   rubric_mau: {
-    muc_tot: "Hoàn thành xuất sắc nhiệm vụ, thể hiện sự sáng tạo và chủ động cao",
+    muc_tot:
+      "Hoàn thành xuất sắc nhiệm vụ, thể hiện sự sáng tạo và chủ động cao",
     muc_kha: "Hoàn thành tốt nhiệm vụ, có sự cố gắng và tiến bộ rõ rệt",
     muc_dat: "Hoàn thành nhiệm vụ cơ bản, cần cải thiện một số kỹ năng",
     muc_chua_dat: "Chưa hoàn thành nhiệm vụ, cần hỗ trợ thêm",
   },
-}
+};
 
 // ============================================
 // 7. GỢI Ý HOẠT ĐỘNG NGOẠI KHÓA THEO CHỦ ĐỀ
@@ -425,7 +512,12 @@ export const DANH_GIA_KET_QUA = {
 export const GOI_Y_NGOAI_KHOA = {
   theo_mach_noi_dung: {
     ban_than: {
-      tro_choi: ["Ai là ai? (tìm hiểu bản thân)", "Vòng tròn tài năng", "Chiếc hộp bí mật", "Bingo cá tính"],
+      tro_choi: [
+        "Ai là ai? (tìm hiểu bản thân)",
+        "Vòng tròn tài năng",
+        "Chiếc hộp bí mật",
+        "Bingo cá tính",
+      ],
       hoat_dong: [
         "Workshop khám phá bản thân",
         "Talkshow: Câu chuyện của tôi",
@@ -434,11 +526,26 @@ export const GOI_Y_NGOAI_KHOA = {
       ],
     },
     gia_dinh: {
-      tro_choi: ["Gia đình tôi", "Truyền thống gia đình", "Món ăn gia đình", "Kỷ niệm đẹp"],
-      hoat_dong: ["Triển lãm ảnh gia đình", "Cuộc thi nấu ăn", "Viết thư cho người thân", "Ngày hội gia đình"],
+      tro_choi: [
+        "Gia đình tôi",
+        "Truyền thống gia đình",
+        "Món ăn gia đình",
+        "Kỷ niệm đẹp",
+      ],
+      hoat_dong: [
+        "Triển lãm ảnh gia đình",
+        "Cuộc thi nấu ăn",
+        "Viết thư cho người thân",
+        "Ngày hội gia đình",
+      ],
     },
     cong_dong: {
-      tro_choi: ["Xây dựng thành phố", "Giải cứu cộng đồng", "Công dân số", "Tình nguyện viên"],
+      tro_choi: [
+        "Xây dựng thành phố",
+        "Giải cứu cộng đồng",
+        "Công dân số",
+        "Tình nguyện viên",
+      ],
       hoat_dong: [
         "Chiến dịch tình nguyện",
         "Quyên góp từ thiện",
@@ -447,7 +554,12 @@ export const GOI_Y_NGOAI_KHOA = {
       ],
     },
     tu_nhien: {
-      tro_choi: ["Thám hiểm thiên nhiên", "Phân loại rác", "Bảo vệ động vật", "Xanh - Sạch - Đẹp"],
+      tro_choi: [
+        "Thám hiểm thiên nhiên",
+        "Phân loại rác",
+        "Bảo vệ động vật",
+        "Xanh - Sạch - Đẹp",
+      ],
       hoat_dong: [
         "Trồng cây xanh",
         "Dọn rác bãi biển/công viên",
@@ -456,26 +568,49 @@ export const GOI_Y_NGOAI_KHOA = {
       ],
     },
     huong_nghiep: {
-      tro_choi: ["Nghề nghiệp tương lai", "Phỏng vấn tuyển dụng", "Khởi nghiệp", "Ngày hội việc làm"],
-      hoat_dong: ["Tham quan doanh nghiệp", "Gặp gỡ người thành công", "Workshop kỹ năng nghề", "Hội chợ hướng nghiệp"],
+      tro_choi: [
+        "Nghề nghiệp tương lai",
+        "Phỏng vấn tuyển dụng",
+        "Khởi nghiệp",
+        "Ngày hội việc làm",
+      ],
+      hoat_dong: [
+        "Tham quan doanh nghiệp",
+        "Gặp gỡ người thành công",
+        "Workshop kỹ năng nghề",
+        "Hội chợ hướng nghiệp",
+      ],
     },
   },
 
   cau_truc_kich_ban_ngoai_khoa: {
     phan_mo_dau: {
       thoi_luong: "5-10 phút",
-      noi_dung: ["Văn nghệ chào mừng", "Giới thiệu chương trình", "Khởi động sôi nổi"],
+      noi_dung: [
+        "Văn nghệ chào mừng",
+        "Giới thiệu chương trình",
+        "Khởi động sôi nổi",
+      ],
     },
     phan_noi_dung_chinh: {
       thoi_luong: "30-40 phút",
-      noi_dung: ["Hoạt động theo chủ đề tháng", "Trò chơi/cuộc thi", "Talkshow/chia sẻ", "Hoạt động nhóm"],
+      noi_dung: [
+        "Hoạt động theo chủ đề tháng",
+        "Trò chơi/cuộc thi",
+        "Talkshow/chia sẻ",
+        "Hoạt động nhóm",
+      ],
     },
     phan_ket_thuc: {
       thoi_luong: "5-10 phút",
-      noi_dung: ["Tổng kết, trao giải", "Thông điệp kết thúc", "Văn nghệ kết thúc"],
+      noi_dung: [
+        "Tổng kết, trao giải",
+        "Thông điệp kết thúc",
+        "Văn nghệ kết thúc",
+      ],
     },
   },
-}
+};
 
 // ============================================
 // 8. HÀM TRUY XUẤT HƯỚNG DẪN
@@ -488,44 +623,57 @@ export function getHuongDanLoaiHinh(loaiHinh: "SHDC" | "SHL" | "HDGD") {
   const loaiHinhMap = {
     SHDC: CAU_TRUC_THOI_LUONG.loai_hinh_hoat_dong.sinh_hoat_duoi_co,
     SHL: CAU_TRUC_THOI_LUONG.loai_hinh_hoat_dong.sinh_hoat_lop,
-    HDGD: CAU_TRUC_THOI_LUONG.loai_hinh_hoat_dong.hoat_dong_giao_duc_theo_chu_de,
-  }
-  return loaiHinhMap[loaiHinh]
+    HDGD: CAU_TRUC_THOI_LUONG.loai_hinh_hoat_dong
+      .hoat_dong_giao_duc_theo_chu_de,
+  };
+  return loaiHinhMap[loaiHinh];
 }
 
 /**
  * Lấy cấu trúc bài học theo hoạt động
  */
-export function getCauTrucHoatDong(tenHoatDong: "khoi_dong" | "kham_pha" | "luyen_tap" | "van_dung") {
+export function getCauTrucHoatDong(
+  tenHoatDong: "khoi_dong" | "kham_pha" | "luyen_tap" | "van_dung"
+) {
   const hoatDongMap = {
     khoi_dong: CAU_TRUC_BAI_HOC.cac_hoat_dong.hoat_dong_khoi_dong,
     kham_pha: CAU_TRUC_BAI_HOC.cac_hoat_dong.hoat_dong_kham_pha,
     luyen_tap: CAU_TRUC_BAI_HOC.cac_hoat_dong.hoat_dong_luyen_tap,
     van_dung: CAU_TRUC_BAI_HOC.cac_hoat_dong.hoat_dong_van_dung,
-  }
-  return hoatDongMap[tenHoatDong]
+  };
+  return hoatDongMap[tenHoatDong];
 }
 
 /**
  * Lấy gợi ý ngoại khóa theo mạch nội dung
  */
-export function getGoiYNgoaiKhoa(machNoiDung: "ban_than" | "gia_dinh" | "cong_dong" | "tu_nhien" | "huong_nghiep") {
-  return GOI_Y_NGOAI_KHOA.theo_mach_noi_dung[machNoiDung]
+export function getGoiYNgoaiKhoa(
+  machNoiDung:
+    | "ban_than"
+    | "gia_dinh"
+    | "cong_dong"
+    | "tu_nhien"
+    | "huong_nghiep"
+) {
+  return GOI_Y_NGOAI_KHOA.theo_mach_noi_dung[machNoiDung];
 }
 
 /**
  * Lấy trọng tâm giáo dục theo khối
  */
 export function getTrongTamTheoKhoi(khoi: 10 | 11 | 12) {
-  const khoiKey = `khoi_${khoi}` as "khoi_10" | "khoi_11" | "khoi_12"
-  return TRIET_LY_CHUONG_TRINH.trong_tam_theo_khoi[khoiKey]
+  const khoiKey = `khoi_${khoi}` as "khoi_10" | "khoi_11" | "khoi_12";
+  return TRIET_LY_CHUONG_TRINH.trong_tam_theo_khoi[khoiKey];
 }
 
 /**
  * Tạo context hướng dẫn sư phạm cho AI
  */
-export function taoContextSuPham(khoi: 10 | 11 | 12, loaiTaiLieu: "KHBD" | "NgoaiKhoa" | "BienBan") {
-  const trongTam = getTrongTamTheoKhoi(khoi)
+export function taoContextSuPham(
+  khoi: 10 | 11 | 12,
+  loaiTaiLieu: "KHBD" | "NgoaiKhoa" | "BienBan"
+) {
+  const trongTam = getTrongTamTheoKhoi(khoi);
 
   let context = `
 ## HƯỚNG DẪN SƯ PHẠM CHO ${loaiTaiLieu}
@@ -539,7 +687,7 @@ export function taoContextSuPham(khoi: 10 | 11 | 12, loaiTaiLieu: "KHBD" | "Ngoa
 1. Lấy học sinh làm trung tâm - HS là chủ thể, GV là người hướng dẫn
 2. Học qua trải nghiệm - Kiến thức hình thành từ trải nghiệm thực tế
 3. Phân hóa cá nhân - Điều chỉnh phù hợp đặc điểm từng HS
-`
+`;
 
   if (loaiTaiLieu === "KHBD") {
     context += `
@@ -554,7 +702,7 @@ export function taoContextSuPham(khoi: 10 | 11 | 12, loaiTaiLieu: "KHBD" | "Ngoa
 2. Thực hiện nhiệm vụ: HS làm việc, GV quan sát hỗ trợ
 3. Báo cáo, thảo luận: HS trình bày, thảo luận chung
 4. Kết luận, nhận định: GV chốt kiến thức, rút bài học
-`
+`;
   }
 
   if (loaiTaiLieu === "NgoaiKhoa") {
@@ -566,10 +714,10 @@ export function taoContextSuPham(khoi: 10 | 11 | 12, loaiTaiLieu: "KHBD" | "Ngoa
 
 ### Gợi ý hoạt động:
 ${JSON.stringify(GOI_Y_NGOAI_KHOA.theo_mach_noi_dung, null, 2)}
-`
+`;
   }
 
-  return context
+  return context;
 }
 
 // ============================================
@@ -584,17 +732,20 @@ export const PHAN_TICH_DOC_XOAN_OC = {
     ban_than: {
       lop_10: {
         muc_do: "Thích ứng & Nhận diện",
-        noi_dung: "Khám phá tính cách, sở thích, điểm mạnh/yếu. Làm quen với quản lý tài chính cơ bản.",
+        noi_dung:
+          "Khám phá tính cách, sở thích, điểm mạnh/yếu. Làm quen với quản lý tài chính cơ bản.",
         bloom_level: "Nhận biết, Hiểu",
       },
       lop_11: {
         muc_do: "Phát triển & Phân tích",
-        noi_dung: "Tự tin thể hiện bản sắc. Thích ứng với sự thay đổi. Quản lý cảm xúc trong các mối quan hệ phức tạp.",
+        noi_dung:
+          "Tự tin thể hiện bản sắc. Thích ứng với sự thay đổi. Quản lý cảm xúc trong các mối quan hệ phức tạp.",
         bloom_level: "Phân tích, Đánh giá",
       },
       lop_12: {
         muc_do: "Trưởng thành & Quyết định",
-        noi_dung: "Khẳng định sự trưởng thành, tư duy độc lập. Tự chủ tài chính, lập kế hoạch tài chính dài hạn.",
+        noi_dung:
+          "Khẳng định sự trưởng thành, tư duy độc lập. Tự chủ tài chính, lập kế hoạch tài chính dài hạn.",
         bloom_level: "Đánh giá, Sáng tạo",
       },
     },
@@ -602,12 +753,14 @@ export const PHAN_TICH_DOC_XOAN_OC = {
     gia_dinh: {
       lop_10: {
         muc_do: "Thích ứng & Nhận diện",
-        noi_dung: "Tham gia lao động, làm việc nhà. Hiểu sơ lược về kinh tế gia đình.",
+        noi_dung:
+          "Tham gia lao động, làm việc nhà. Hiểu sơ lược về kinh tế gia đình.",
         bloom_level: "Nhận biết, Hiểu",
       },
       lop_11: {
         muc_do: "Phát triển & Phân tích",
-        noi_dung: "Hóa giải mâu thuẫn thế hệ. Chăm sóc người ốm. Lập kế hoạch chi tiêu gia đình.",
+        noi_dung:
+          "Hóa giải mâu thuẫn thế hệ. Chăm sóc người ốm. Lập kế hoạch chi tiêu gia đình.",
         bloom_level: "Áp dụng, Phân tích",
       },
       lop_12: {
@@ -626,12 +779,14 @@ export const PHAN_TICH_DOC_XOAN_OC = {
       },
       lop_11: {
         muc_do: "Phát triển & Phân tích",
-        noi_dung: "Xây dựng văn hóa mạng xã hội. Quản lý dự án cộng đồng. Ứng xử văn minh.",
+        noi_dung:
+          "Xây dựng văn hóa mạng xã hội. Quản lý dự án cộng đồng. Ứng xử văn minh.",
         bloom_level: "Phân tích, Đánh giá",
       },
       lop_12: {
         muc_do: "Trưởng thành & Quyết định",
-        noi_dung: "Hội nhập văn hóa quốc tế. Tôn trọng sự khác biệt. Thực hiện dự án nhân đạo quy mô.",
+        noi_dung:
+          "Hội nhập văn hóa quốc tế. Tôn trọng sự khác biệt. Thực hiện dự án nhân đạo quy mô.",
         bloom_level: "Đánh giá, Sáng tạo",
       },
     },
@@ -644,12 +799,14 @@ export const PHAN_TICH_DOC_XOAN_OC = {
       },
       lop_11: {
         muc_do: "Phát triển & Phân tích",
-        noi_dung: "Phân tích tác động của kinh tế đến môi trường. Đề xuất kiến nghị chính sách.",
+        noi_dung:
+          "Phân tích tác động của kinh tế đến môi trường. Đề xuất kiến nghị chính sách.",
         bloom_level: "Phân tích, Đánh giá",
       },
       lop_12: {
         muc_do: "Trưởng thành & Quyết định",
-        noi_dung: "Đề xuất giải pháp sáng tạo bảo tồn. Bảo vệ đa dạng sinh học và động vật hoang dã.",
+        noi_dung:
+          "Đề xuất giải pháp sáng tạo bảo tồn. Bảo vệ đa dạng sinh học và động vật hoang dã.",
         bloom_level: "Đánh giá, Sáng tạo",
       },
     },
@@ -657,22 +814,25 @@ export const PHAN_TICH_DOC_XOAN_OC = {
     nghe_nghiep: {
       lop_10: {
         muc_do: "Thích ứng & Nhận diện",
-        noi_dung: "Tìm hiểu nghề truyền thống địa phương. Trải nghiệm nghề nghiệp sơ khởi.",
+        noi_dung:
+          "Tìm hiểu nghề truyền thống địa phương. Trải nghiệm nghề nghiệp sơ khởi.",
         bloom_level: "Nhận biết, Hiểu",
       },
       lop_11: {
         muc_do: "Phát triển & Phân tích",
-        noi_dung: "Phân tích thị trường lao động 4.0. Yêu cầu của nhà tuyển dụng. An toàn lao động.",
+        noi_dung:
+          "Phân tích thị trường lao động 4.0. Yêu cầu của nhà tuyển dụng. An toàn lao động.",
         bloom_level: "Phân tích, Đánh giá",
       },
       lop_12: {
         muc_do: "Trưởng thành & Quyết định",
-        noi_dung: "Tính chuyên nghiệp. Khả năng chuyển đổi nghề nghiệp. Ra quyết định chọn trường/nghề cuối cùng.",
+        noi_dung:
+          "Tính chuyên nghiệp. Khả năng chuyển đổi nghề nghiệp. Ra quyết định chọn trường/nghề cuối cùng.",
         bloom_level: "Đánh giá, Sáng tạo",
       },
     },
   },
-}
+};
 
 // ============================================
 // 10. CHỈ DẪN KỸ THUẬT CHO AI (GEMINI)
@@ -684,23 +844,49 @@ export const CHI_DAN_KY_THUAT_AI = {
       "Khi người dùng yêu cầu soạn giáo án, AI phải tham chiếu ngay vào Bảng phân tích dọc để xác định mức độ yêu cầu phù hợp",
     vi_du: [
       { khoi: 10, hoat_dong: "Tìm hiểu", bloom: "Nhận biết, Hiểu" },
-      { khoi: 11, hoat_dong: "Phân tích/Đánh giá", bloom: "Phân tích, Đánh giá" },
-      { khoi: 12, hoat_dong: "Quyết định/Giải quyết", bloom: "Đánh giá, Sáng tạo" },
+      {
+        khoi: 11,
+        hoat_dong: "Phân tích/Đánh giá",
+        bloom: "Phân tích, Đánh giá",
+      },
+      {
+        khoi: 12,
+        hoat_dong: "Quyết định/Giải quyết",
+        bloom: "Đánh giá, Sáng tạo",
+      },
     ],
     bien_dia_phuong:
       "Đối với các chủ đề về Môi trường và Nghề nghiệp, AI cần yêu cầu người dùng cung cấp tên tỉnh/thành để điền dữ liệu danh lam thắng cảnh hoặc làng nghề cụ thể",
   },
 
   cau_truc_giao_an_chuan_cv5512: {
-    mo_ta: "Mọi kế hoạch bài dạy (Tiết 2 - Hoạt động giáo dục) do AI sinh ra bắt buộc phải tuân thủ khung này",
+    mo_ta:
+      "Mọi kế hoạch bài dạy (Tiết 2 - Hoạt động giáo dục) do AI sinh ra bắt buộc phải tuân thủ khung này",
     cau_truc: {
       ten_bai_hoc: "Theo SGK Kết nối tri thức",
       muc_tieu: {
         kien_thuc: "Trích xuất từ phần Hoạt động cốt lõi",
-        nang_luc: ["Tự chủ", "Giao tiếp", "Giải quyết vấn đề", "Định hướng nghề nghiệp"],
-        pham_chat: ["Trách nhiệm", "Trung thực", "Nhân ái", "Chăm chỉ", "Yêu nước"],
+        nang_luc: [
+          "Tự chủ",
+          "Giao tiếp",
+          "Giải quyết vấn đề",
+          "Định hướng nghề nghiệp",
+        ],
+        pham_chat: [
+          "Trách nhiệm",
+          "Trung thực",
+          "Nhân ái",
+          "Chăm chỉ",
+          "Yêu nước",
+        ],
       },
-      thiet_bi_day_hoc: ["Máy chiếu", "Tranh ảnh", "Video", "Phiếu học tập", "Bảng nhóm"],
+      thiet_bi_day_hoc: [
+        "Máy chiếu",
+        "Tranh ảnh",
+        "Video",
+        "Phiếu học tập",
+        "Bảng nhóm",
+      ],
       tien_trinh_day_hoc: {
         hoat_dong_1_khoi_dong: {
           muc_dich: "Kích thích tò mò",
@@ -708,12 +894,14 @@ export const CHI_DAN_KY_THUAT_AI = {
         },
         hoat_dong_2_kham_pha: {
           muc_dich: "Hình thành kiến thức mới",
-          hinh_thuc: "Thảo luận nhóm, nghiên cứu tình huống (Case study), thuyết trình",
+          hinh_thuc:
+            "Thảo luận nhóm, nghiên cứu tình huống (Case study), thuyết trình",
           luu_y: "Đây là trọng tâm của bài học",
         },
         hoat_dong_3_luyen_tap: {
           muc_dich: "Củng cố kiến thức kỹ năng",
-          hinh_thuc: "Đóng vai (Role-play), xử lý tình huống giả định, bài tập thực hành",
+          hinh_thuc:
+            "Đóng vai (Role-play), xử lý tình huống giả định, bài tập thực hành",
         },
         hoat_dong_4_van_dung: {
           muc_dich: "Kết nối với cuộc sống thực",
@@ -733,7 +921,8 @@ export const CHI_DAN_KY_THUAT_AI = {
     ],
     cau_truc_kich_ban: {
       phan_1_chao_co: "5 phút - Nghi lễ chào cờ, hát Quốc ca",
-      phan_2_nhan_xet_tuan: "5-7 phút - Nhận xét tuần học, tuyên dương/nhắc nhở",
+      phan_2_nhan_xet_tuan:
+        "5-7 phút - Nhận xét tuần học, tuyên dương/nhắc nhở",
       phan_3_chuong_trinh_chu_de: "15-20 phút - Hoạt động theo chủ đề tháng",
       phan_4_phat_dong: "5 phút - Phát động hoạt động tuần/tháng tới",
     },
@@ -754,7 +943,7 @@ export const CHI_DAN_KY_THUAT_AI = {
       phan_4_ke_hoach: "5 phút - Xây dựng kế hoạch tuần tới",
     },
   },
-}
+};
 
 // ============================================
 // 11. HÀM TRUY XUẤT CHỈ DẪN AI
@@ -764,7 +953,9 @@ export const CHI_DAN_KY_THUAT_AI = {
  * Lấy mức độ Bloom phù hợp theo khối
  */
 export function getMucDoBloomTheoKhoi(khoi: 10 | 11 | 12) {
-  return CHI_DAN_KY_THUAT_AI.quy_tac_phan_tich_ngu_canh.vi_du.find((v) => v.khoi === khoi)
+  return CHI_DAN_KY_THUAT_AI.quy_tac_phan_tich_ngu_canh.vi_du.find(
+    (v) => v.khoi === khoi
+  );
 }
 
 /**
@@ -772,18 +963,22 @@ export function getMucDoBloomTheoKhoi(khoi: 10 | 11 | 12) {
  */
 export function getPhanTichDocTheoMach(
   mach: "ban_than" | "gia_dinh" | "cong_dong" | "moi_truong" | "nghe_nghiep",
-  khoi: 10 | 11 | 12,
+  khoi: 10 | 11 | 12
 ) {
-  const khoiKey = `lop_${khoi}` as "lop_10" | "lop_11" | "lop_12"
-  return PHAN_TICH_DOC_XOAN_OC.bang_phan_tich[mach][khoiKey]
+  const khoiKey = `lop_${khoi}` as "lop_10" | "lop_11" | "lop_12";
+  return PHAN_TICH_DOC_XOAN_OC.bang_phan_tich[mach][khoiKey];
 }
 
 /**
  * Tạo context chi tiết cho AI thiết kế KHBD theo CV 5512
  */
-export function taoContextKHBD_CV5512(khoi: 10 | 11 | 12, tenChuDe: string, machNoiDung: string) {
-  const bloom = getMucDoBloomTheoKhoi(khoi)
-  const trongTam = getTrongTamTheoKhoi(khoi)
+export function taoContextKHBD_CV5512(
+  khoi: 10 | 11 | 12,
+  tenChuDe: string,
+  machNoiDung: string
+) {
+  const bloom = getMucDoBloomTheoKhoi(khoi);
+  const trongTam = getTrongTamTheoKhoi(khoi);
 
   return `
 ## CHỈ DẪN THIẾT KẾ KẾ HOẠCH BÀI DẠY (THEO CV 5512)
@@ -798,49 +993,22 @@ export function taoContextKHBD_CV5512(khoi: 10 | 11 | 12, tenChuDe: string, mach
 - Trọng tâm: ${trongTam.trong_tam}
 - Mức độ Bloom: ${bloom?.bloom}
 - Động từ hành động: ${bloom?.hoat_dong}
-
-### Cấu trúc bài học bắt buộc:
-1. **Hoạt động 1 - Khởi động (10%)**: Trò chơi, video, câu hỏi gợi mở
-2. **Hoạt động 2 - Khám phá (50%)**: Thảo luận nhóm, Case study, thuyết trình (TRỌNG TÂM)
-3. **Hoạt động 3 - Luyện tập (25%)**: Đóng vai, xử lý tình huống, bài tập
-4. **Hoạt động 4 - Vận dụng (15%)**: Nhiệm vụ về nhà, dự án, cam kết
-
-### Mỗi hoạt động phải có 4 bước:
-a) Mục tiêu: Hoạt động này nhằm đạt mục tiêu gì?
-b) Nội dung: GV giao nhiệm vụ gì? HS thực hiện như thế nào? + Tích hợp NLS và Đạo đức
-c) Sản phẩm: MÔ TẢ CỤ THỂ sản phẩm đầu ra của HS
-d) Tổ chức thực hiện:
-   - Bước 1: Chuyển giao nhiệm vụ
-   - Bước 2: Thực hiện nhiệm vụ  
-   - Bước 3: Báo cáo, thảo luận
-   - Bước 4: Kết luận, nhận định
-`
+`;
 }
 
-// Export tất cả
-export const HDTN_PEDAGOGICAL_GUIDE = {
-  TRIET_LY_CHUONG_TRINH,
-  CAU_TRUC_THOI_LUONG,
-  PHUONG_PHAP_SU_PHAM,
-  CAU_TRUC_BAI_HOC,
-  TICH_HOP_NANG_LUC_SO,
-  DANH_GIA_KET_QUA,
-  GOI_Y_NGOAI_KHOA,
-}
-
-// Export thêm các module mới
-export const HDTN_PEDAGOGICAL_GUIDE_EXTENDED = {
-  ...HDTN_PEDAGOGICAL_GUIDE,
-  PHAN_TICH_DOC_XOAN_OC,
-  CHI_DAN_KY_THUAT_AI,
-}
-
+/**
+ * Tổng hợp hướng dẫn sư phạm (cho tương thích các prompt cũ)
+ */
 export const HUONG_DAN_SU_PHAM = {
   triet_ly: TRIET_LY_CHUONG_TRINH,
   cau_truc_thoi_luong: CAU_TRUC_THOI_LUONG,
-  phuong_phap: PHUONG_PHAP_SU_PHAM,
-  cau_truc_bai_hoc: CAU_TRUC_BAI_HOC,
-  tich_hop_nls: TICH_HOP_NANG_LUC_SO,
-  danh_gia: DANH_GIA_KET_QUA,
-  goi_y_ngoai_khoa: GOI_Y_NGOAI_KHOA,
-}
+  phuong_phap: {
+    ...PHUONG_PHAP_SU_PHAM,
+    // Add backward compatibility/shim for logic expecting an array
+    nguyen_tac: [
+      "Lấy học sinh làm trung tâm",
+      "Học qua trải nghiệm",
+      "Phân hóa cá nhân",
+    ],
+  },
+};

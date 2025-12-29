@@ -15,15 +15,49 @@
  * ============================================================
  */
 
-import { CURRICULUM_DATABASE, DIGITAL_LITERACY_FRAMEWORK, MORAL_EDUCATION_THEMES } from "./lesson-plan-prompts"
-import { getChuDeTheoThang, timChuDeTheoTen, taoPromptContextTuChuDe } from "./kntt-curriculum-database"
-import { getHoatDongTheoChuDe, getChuDeTheoThangFromActivities } from "./kntt-activities-database"
-import { getMucDoBloomTheoKhoi, taoContextKHBD_CV5512, getTrongTamTheoKhoi } from "./hdtn-pedagogical-guide"
-import { getCauHoiTheoKhoi, taoContextCauHoiGoiMo } from "./cau-hoi-goi-mo-database"
-import { taoContextPhieuHocTap, taoContextRubric, taoContextDanhGiaKHBD } from "./phieu-hoc-tap-rubric-database"
-import { taoContextSHDC_SHL, taoContextTieuChiDanhGia, taoContextBangBieu } from "./shdc-shl-templates"
-import { taoContextNLSChiTiet, goiYNLSTheoChuDe } from "./nang-luc-so-database"
-import { getPPCTChuDe, taoContextPPCT, HUONG_DAN_AI_SU_DUNG_PPCT, taoContextPhanBoThoiGian } from "./ppct-database"
+import {
+  CURRICULUM_DATABASE,
+  DIGITAL_LITERACY_FRAMEWORK,
+  MORAL_EDUCATION_THEMES,
+} from "./lesson-plan-prompts";
+import {
+  getChuDeTheoThang,
+  timChuDeTheoTen,
+  taoPromptContextTuChuDe,
+} from "../data/kntt-curriculum-database";
+import {
+  getHoatDongTheoChuDe,
+  getChuDeTheoThangFromActivities,
+} from "../data/kntt-activities-database";
+import {
+  getMucDoBloomTheoKhoi,
+  taoContextKHBD_CV5512,
+  getTrongTamTheoKhoi,
+} from "../data/hdtn-pedagogical-guide";
+import {
+  getCauHoiTheoKhoi,
+  taoContextCauHoiGoiMo,
+} from "../data/cau-hoi-goi-mo-database";
+import {
+  taoContextPhieuHocTap,
+  taoContextRubric,
+  taoContextDanhGiaKHBD,
+} from "../data/phieu-hoc-tap-rubric-database";
+import {
+  taoContextSHDC_SHL,
+  taoContextTieuChiDanhGia,
+  taoContextBangBieu,
+} from "../data/shdc-shl-templates";
+import {
+  taoContextNLSChiTiet,
+  goiYNLSTheoChuDe,
+} from "../data/nang-luc-so-database";
+import {
+  getPPCTChuDe,
+  taoContextPPCT,
+  HUONG_DAN_AI_SU_DUNG_PPCT,
+  taoContextPhanBoThoiGian,
+} from "../data/ppct-database";
 
 // ============================================================
 // PHẦN 1: VAI TRÒ VÀ BỐI CẢNH
@@ -39,7 +73,7 @@ BỐI CẢNH
 - Bạn am hiểu sâu sắc bộ sách "Kết nối tri thức với cuộc sống"
 - Bạn nắm vững cấu trúc 4 hoạt động: Khởi động - Khám phá - Luyện tập - Vận dụng
 - Bạn biết cách tích hợp NLS và đạo đức một cách tự nhiên, không gượng ép
-`
+`;
 
 // ============================================================
 // PHẦN 2: NHIỆM VỤ
@@ -55,7 +89,7 @@ Nhiệm vụ của bạn là thiết kế Kế hoạch dạy học đầy đủ 
 3. TIẾN TRÌNH DẠY HỌC: 4 hoạt động theo chuẩn CV5512
 4. TÍCH HỢP: NLS và Đạo đức được chèn VÀO TỪNG HOẠT ĐỘNG cụ thể
 5. HỒ SƠ DẠY HỌC: Phiếu học tập, bảng kiểm đánh giá
-`
+`;
 
 // ============================================================
 // PHẦN 3: QUY TẮC TÍCH HỢP NLS VÀ ĐẠO ĐỨC
@@ -132,7 +166,7 @@ Hoạt động LUYỆN TẬP:
 Hoạt động VẬN DỤNG:
 - Cam kết hành động cụ thể thể hiện phẩm chất
 - Ví dụ: "Viết 3 cam kết cụ thể để rèn luyện phẩm chất Trách nhiệm trong tuần tới"
-`
+`;
 
 // ============================================================
 // PHẦN 4: CẤU TRÚC HOẠT ĐỘNG CHI TIẾT (CHUẨN CV5512)
@@ -211,7 +245,7 @@ HƯỚNG DẪN TÍCH HỢP THEO TỪNG HOẠT ĐỘNG:
 4. HOẠT ĐỘNG VẬN DỤNG:
    - NLS phù hợp: 2.2 (Chia sẻ nội dung số), 4.1 (Bảo vệ thiết bị và dữ liệu) - HS chia sẻ bài học lên Padlet, Class Dojo
    - Đạo đức: Cam kết hành động cụ thể thể hiện phẩm chất đã học
-`
+`;
 
 // ============================================================
 // PHẦN 5: QUY TẮC ĐỊNH DẠNG
@@ -228,16 +262,16 @@ LƯU Ý QUAN TRỌNG VỀ ĐỊNH DẠNG:
 6. CHỈ dùng tiếng Anh cho tên công cụ công nghệ (Canva, Mentimeter, Kahoot, Google Drive, Padlet)
 7. Giữ nguyên cấu trúc đề mục a), b), c), d)
 8. Tự động thêm các cụm từ chuyển tiếp để văn bản trôi chảy
-`
+`;
 
 // ============================================================
 // PHẦN 6: HÀM TẠO PROMPT ĐẦY ĐỦ - CẬP NHẬT TÍCH HỢP DATABASE
 // ============================================================
 
 export interface ActivitySuggestions {
-  shdc?: string
-  hdgd?: string
-  shl?: string
+  shdc?: string;
+  hdgd?: string;
+  shl?: string;
 }
 
 export function getKHDHPrompt(
@@ -247,86 +281,131 @@ export function getKHDHPrompt(
   additionalRequirements?: string,
   tasks?: Array<{ name: string; description: string; time?: number }>,
   month?: number,
-  activitySuggestions?: ActivitySuggestions,
+  activitySuggestions?: ActivitySuggestions
 ): string {
-  const curriculum = CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE]
+  const curriculum =
+    CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE];
 
-  const gradeNumber = Number.parseInt(grade) || 10
+  const gradeNumber = (Number.parseInt(grade) || 10) as 10 | 11 | 12;
 
-  let ppctContext = ""
-  let phanBoThoiGianContext = ""
-  let chuDeSo = 1
+  // Calculate total minutes based on duration string
+  let totalMinutes = 90; // Default 2 periods
+  const periodsMatch = duration.match(/(\d+)/);
+  if (periodsMatch) {
+    totalMinutes = Number.parseInt(periodsMatch[1]) * 45;
+  }
+
+  const timeInstruction = `
+LƯU Ý ĐẶC BIỆT VỀ PHÂN BỔ THỜI GIAN:
+- Tổng thời lượng bài học là: ${duration} (tương đương ${totalMinutes} phút).
+- BẠN BẮT BUỘC PHẢI PHÂN PHỐI THỜI GIAN CỤ THỂ CHO TỪNG HOẠT ĐỘNG SAO CHO TỔNG THỜI GIAN XẤP XỈ ${totalMinutes} PHÚT.
+- Tỷ lệ gợi ý:
+  + Khởi động: ~5-10% (khoảng ${Math.round(totalMinutes * 0.1)} phút)
+  + Khám phá: ~40-50% (khoảng ${Math.round(totalMinutes * 0.45)} phút)
+  + Luyện tập: ~30-40% (khoảng ${Math.round(totalMinutes * 0.35)} phút)
+  + Vận dụng: ~10-15% (khoảng ${Math.round(totalMinutes * 0.1)} phút)
+- Nếu có nhiệm vụ cụ thể từ người dùng, hãy ưu tiên thời gian cho các nhiệm vụ đó.
+`;
+
+  let ppctContext = "";
+  let phanBoThoiGianContext = "";
+  let chuDeSo = 1;
   if (month) {
     // Map month to chu_de_so (simplified - can be more accurate with actual mapping)
-    const monthToChuDe: Record<number, number> = { 9: 1, 10: 2, 11: 3, 12: 4, 1: 5, 2: 6, 3: 7, 4: 8, 5: 9 }
-    chuDeSo = monthToChuDe[month] || 1
+    const monthToChuDe: Record<number, number> = {
+      9: 1,
+      10: 2,
+      11: 3,
+      12: 4,
+      1: 5,
+      2: 6,
+      3: 7,
+      4: 8,
+      5: 9,
+    };
+    chuDeSo = monthToChuDe[month] || 1;
 
-    const ppctInfo = getPPCTChuDe(gradeNumber, chuDeSo)
+    const ppctInfo = getPPCTChuDe(gradeNumber, chuDeSo);
     if (ppctInfo) {
-      ppctContext = taoContextPPCT(gradeNumber, chuDeSo)
-      phanBoThoiGianContext = taoContextPhanBoThoiGian(gradeNumber, chuDeSo)
+      ppctContext = taoContextPPCT(gradeNumber, chuDeSo);
+      phanBoThoiGianContext = taoContextPhanBoThoiGian(gradeNumber, chuDeSo);
     }
   }
 
   // Lấy chủ đề từ kntt-curriculum-database
-  let chuDeContext = ""
-  let tenChuDe = topic
-  let machNoiDung = "ban_than"
+  let chuDeContext = "";
+  let tenChuDe = topic;
+  let machNoiDung = "ban_than";
 
   if (month) {
-    const chuDe = getChuDeTheoThang(gradeNumber, month)
+    const chuDe = getChuDeTheoThang(gradeNumber, month);
     if (chuDe) {
-      chuDeContext = taoPromptContextTuChuDe(chuDe)
-      tenChuDe = chuDe.ten
+      chuDeContext = taoPromptContextTuChuDe(chuDe, gradeNumber);
+      tenChuDe = chuDe.ten;
       // Xác định mạch nội dung từ chủ đề
       if (
         chuDe.ten.toLowerCase().includes("gia đình") ||
         chuDe.ten.toLowerCase().includes("trách nhiệm với gia đình")
       ) {
-        machNoiDung = "gia_dinh"
-      } else if (chuDe.ten.toLowerCase().includes("cộng đồng") || chuDe.ten.toLowerCase().includes("xã hội")) {
-        machNoiDung = "cong_dong"
-      } else if (chuDe.ten.toLowerCase().includes("môi trường") || chuDe.ten.toLowerCase().includes("thiên nhiên")) {
-        machNoiDung = "moi_truong"
-      } else if (chuDe.ten.toLowerCase().includes("nghề") || chuDe.ten.toLowerCase().includes("hướng nghiệp")) {
-        machNoiDung = "nghe_nghiep"
+        machNoiDung = "gia_dinh";
+      } else if (
+        chuDe.ten.toLowerCase().includes("cộng đồng") ||
+        chuDe.ten.toLowerCase().includes("xã hội")
+      ) {
+        machNoiDung = "cong_dong";
+      } else if (
+        chuDe.ten.toLowerCase().includes("môi trường") ||
+        chuDe.ten.toLowerCase().includes("thiên nhiên")
+      ) {
+        machNoiDung = "moi_truong";
+      } else if (
+        chuDe.ten.toLowerCase().includes("nghề") ||
+        chuDe.ten.toLowerCase().includes("hướng nghiệp")
+      ) {
+        machNoiDung = "nghe_nghiep";
       }
-      const match = chuDe.ma.match(/\d+\.(\d+)/)
-      if (match) chuDeSo = Number.parseInt(match[1])
+      const match = chuDe.ma.match(/\d+\.(\d+)/);
+      if (match) chuDeSo = Number.parseInt(match[1]);
     }
   } else {
-    const chuDe = timChuDeTheoTen(gradeNumber, topic)
+    const chuDe = timChuDeTheoTen(gradeNumber, topic);
     if (chuDe) {
-      chuDeContext = taoPromptContextTuChuDe(chuDe)
-      tenChuDe = chuDe.ten
-      const match = chuDe.ma.match(/\d+\.(\d+)/)
-      if (match) chuDeSo = Number.parseInt(match[1])
+      chuDeContext = taoPromptContextTuChuDe(chuDe, gradeNumber);
+      tenChuDe = chuDe.ten;
+      const match = chuDe.ma.match(/\d+\.(\d+)/);
+      if (match) chuDeSo = Number.parseInt(match[1]);
     }
   }
 
   // Lấy danh sách hoạt động chi tiết từ kntt-activities-database
-  let hoatDongContext = ""
+  let hoatDongContext = "";
   if (month) {
-    const chuDeInfo = getChuDeTheoThangFromActivities(gradeNumber, month)
+    const chuDeInfo = getChuDeTheoThangFromActivities(gradeNumber, month);
     if (chuDeInfo && chuDeInfo.length > 0) {
-      const firstChuDe = chuDeInfo[0]
-      const hoatDongList = getHoatDongTheoChuDe(gradeNumber, firstChuDe.so_chu_de)
+      const firstChuDe = chuDeInfo[0];
+      const hoatDongList = getHoatDongTheoChuDe(gradeNumber, firstChuDe.stt);
       if (hoatDongList.length > 0) {
         hoatDongContext = `
 DANH SÁCH HOẠT ĐỘNG CHI TIẾT TỪ SGK (${hoatDongList.length} hoạt động):
-${hoatDongList.map((hd, i) => `${i + 1}. ${hd.ten}${hd.mo_ta ? ` - ${hd.mo_ta}` : ""}`).join("\n")}
-`
+${hoatDongList
+  .map((hd, i) => `${i + 1}. ${hd.ten}${hd.mo_ta ? ` - ${hd.mo_ta}` : ""}`)
+  .join("\n")}
+`;
       }
     }
   }
 
   // Lấy hướng dẫn sư phạm từ hdtn-pedagogical-guide
-  const bloomInfo = getMucDoBloomTheoKhoi(gradeNumber)
-  const cv5512Context = taoContextKHBD_CV5512(gradeNumber, tenChuDe, machNoiDung)
+  const bloomInfo = getMucDoBloomTheoKhoi(gradeNumber);
+  const cv5512Context = taoContextKHBD_CV5512(
+    gradeNumber,
+    tenChuDe,
+    machNoiDung
+  );
 
   // Lấy câu hỏi gợi mở
-  let cauHoiContext = ""
-  const khoiCauHoi = getCauHoiTheoKhoi(gradeNumber)
+  let cauHoiContext = "";
+  const khoiCauHoi = getCauHoiTheoKhoi(gradeNumber);
   if (khoiCauHoi) {
     cauHoiContext = `
 ============================================================
@@ -346,19 +425,24 @@ HƯỚNG DẪN SỬ DỤNG CÂU HỎI GỢI MỞ:
   + THUC_HANH, CHIEN_LUOC, HANH_DONG: Dùng cho Hoạt động Luyện tập
   + TONG_HOP, GIA_TRI, CAM_XUC: Dùng cho Hoạt động Vận dụng
 - Có thể điều chỉnh câu hỏi cho phù hợp với bối cảnh cụ thể của bài học
-`
+`;
   }
 
-  const shdcShlContext = taoContextSHDC_SHL(gradeNumber, chuDeSo)
-  const tieuChiDanhGiaContext = taoContextTieuChiDanhGia(topic, gradeNumber)
-  const bangBieuContext = taoContextBangBieu(topic)
+  const shdcShlContext = taoContextSHDC_SHL(gradeNumber, chuDeSo);
+  const tieuChiDanhGiaContext = taoContextTieuChiDanhGia(topic, gradeNumber);
+  const bangBieuContext = taoContextBangBieu(topic);
 
-  const phieuHocTapContext = taoContextPhieuHocTap(topic, topic)
-  const rubricContext = taoContextRubric(topic)
-  const danhGiaKHBDContext = taoContextDanhGiaKHBD()
+  const phieuHocTapContext = taoContextPhieuHocTap(topic, topic);
+  const rubricContext = taoContextRubric(topic);
+  const danhGiaKHBDContext = taoContextDanhGiaKHBD(topic, []);
 
-  let activitySuggestionsContext = ""
-  if (activitySuggestions && (activitySuggestions.shdc || activitySuggestions.hdgd || activitySuggestions.shl)) {
+  let activitySuggestionsContext = "";
+  if (
+    activitySuggestions &&
+    (activitySuggestions.shdc ||
+      activitySuggestions.hdgd ||
+      activitySuggestions.shl)
+  ) {
     activitySuggestionsContext = `
 ============================================================
 GỢI Ý CỤ THỂ TỪ GIÁO VIÊN CHO TỪNG LOẠI HOẠT ĐỘNG
@@ -404,37 +488,40 @@ ${activitySuggestions.shl}
 `
     : ""
 }
-`
+`;
   }
 
-  const nlsContext = taoContextNLSChiTiet(gradeNumber, topic)
+  const nlsContext = taoContextNLSChiTiet(gradeNumber, topic);
 
   // Tìm topic trong curriculum cũ (backup)
-  let topicInfo = null
+  let topicInfo = null;
   if (curriculum) {
     for (const category of Object.values(curriculum.themes)) {
       for (const t of category.topics) {
-        if (topic.toLowerCase().includes(t.name.toLowerCase()) || t.name.toLowerCase().includes(topic.toLowerCase())) {
+        if (
+          topic.toLowerCase().includes(t.name.toLowerCase()) ||
+          t.name.toLowerCase().includes(topic.toLowerCase())
+        ) {
           topicInfo = {
             ...t,
             categoryName: category.name,
-          }
-          break
+          };
+          break;
         }
       }
-      if (topicInfo) break
+      if (topicInfo) break;
     }
   }
 
   const nlsFramework = Object.entries(DIGITAL_LITERACY_FRAMEWORK)
     .map(([k, v]) => `- NLS ${k}: ${v.name} - ${v.description}`)
-    .join("\n")
+    .join("\n");
 
   const moralThemes = Object.entries(MORAL_EDUCATION_THEMES)
     .map(([k, v]) => `- ${v.name}: ${v.description}`)
-    .join("\n")
+    .join("\n");
 
-  let tasksSection = ""
+  let tasksSection = "";
   if (tasks && tasks.length > 0) {
     tasksSection = `
 DANH SÁCH NHIỆM VỤ CẦN THIẾT KẾ CHI TIẾT:
@@ -445,10 +532,10 @@ Nhiệm vụ ${i + 1}: ${t.name}
 - Nội dung yêu cầu: ${t.description}
 - Thời lượng: ${t.time || "N/A"}
 - Cần tạo: Mục tiêu, Nội dung chi tiết, Kỹ năng cần đạt, Sản phẩm dự kiến, và 4 bước tổ chức thực hiện
-`,
+`
   )
   .join("\n")}
-`
+`;
   }
 
   return `${KHDH_ROLE}
@@ -459,13 +546,18 @@ ${KHDH_TASK}
 PHÂN PHỐI CHƯƠNG TRÌNH (PPCT) - THÔNG TƯ SỐ TIẾT
 ============================================================
 
-${ppctContext || `Chưa có thông tin PPCT chi tiết cho Khối ${grade}, Chủ đề ${chuDeSo}. Sử dụng thời lượng: ${duration}`}
+${
+  ppctContext ||
+  `Chưa có thông tin PPCT chi tiết cho Khối ${grade}, Chủ đề ${chuDeSo}. Sử dụng thời lượng: ${duration}`
+}
 
 ============================================================
 HƯỚNG DẪN PHÂN BỔ THỜI GIAN CHI TIẾT
 ============================================================
 
 ${phanBoThoiGianContext || HUONG_DAN_AI_SU_DUNG_PPCT}
+
+${timeInstruction}
 
 ${HUONG_DAN_AI_SU_DUNG_PPCT}
 
@@ -535,7 +627,9 @@ DỮ LIỆU ĐẦU VÀO (USER INPUT)
 ============================================================
 
 Khối lớp: ${grade}
-Đặc điểm chương trình: ${curriculum?.title || "Hoạt động trải nghiệm, Hướng nghiệp"}
+Đặc điểm chương trình: ${
+    curriculum?.title || "Hoạt động trải nghiệm, Hướng nghiệp"
+  }
 Chủ đề/Bài học: "${topic}"
 Thời lượng: ${duration}
 ${
@@ -631,23 +725,28 @@ Hãy soạn Kế hoạch dạy học và trả về JSON thuần túy với cấ
   "ky_thuat_day_hoc": "KHUNG KỸ THUẬT DẠY HỌC:\\n\\n- [KyThuatDayHoc1]\\n\\n- [KyThuatDayHoc2]",
   "tich_hop_dao_duc_va_bai_hat": "TỔNG HỢP ĐẠO ĐỨC VÀ BÀI HÁT:\\n\\n- Hoạt động Khám phá: [Phẩm chất] - [Bài hát/video gợi mở].\\n\\n- Hoạt động Luyện tập: [Phẩm chất] - [Bài hát/video liên quan].\\n\\n- Hoạt động Vận dụng: [Phẩm chất] - [Bài hát/video kết thúc].",
   "huong_dan_ve_nha": "- [Yêu cầu 1: Ôn tập/chuẩn bị gì?].\\n\\n- [Yêu cầu 2: Thực hành gì ở nhà?].\\n\\n- [Yêu cầu 3: Chuẩn bị cho bài tiếp theo]."
-}`
+}`;
 }
 
 // ============================================================
 // PHẦN 7: HÀM TẠO PROMPT TÍCH HỢP (KHI CÓ MẪU SẴN)
 // ============================================================
 
-export function getKHDHIntegrationPrompt(grade: string, topic: string, templateContent: string): string {
-  const curriculum = CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE]
+export function getKHDHIntegrationPrompt(
+  grade: string,
+  topic: string,
+  templateContent: string
+): string {
+  const curriculum =
+    CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE];
 
   const nlsFramework = Object.entries(DIGITAL_LITERACY_FRAMEWORK)
     .map(([k, v]) => `- NLS ${k}: ${v.name} - ${v.description}`)
-    .join("\n")
+    .join("\n");
 
   const moralThemes = Object.entries(MORAL_EDUCATION_THEMES)
     .map(([k, v]) => `- ${v.name}: ${v.description}`)
-    .join("\n")
+    .join("\n");
 
   return `${KHDH_ROLE}
 
@@ -698,7 +797,7 @@ ${FORMAT_RULES}
   "tich_hop_dao_duc": "TÍCH HỢP GIÁO DỤC ĐẠO ĐỨC THEO HOẠT ĐỘNG:\\n\\n- Hoạt động Khám phá: [Phẩm chất] - [Tình huống/nội dung cụ thể từ mẫu để HS suy ngẫm].\\n\\n- Hoạt động Luyện tập: [Phẩm chất] - [Bài tập đóng vai/xử lý tình huống].\\n\\n- Hoạt động Vận dụng: [Phẩm chất] - [Cam kết hành động cụ thể].",
   "ky_thuat_day_hoc": "KHUNG KỸ THUẬT DẠY HỌC:\\n\\n- [KyThuatDayHoc1]\\n\\n- [KyThuatDayHoc2]",
   "tich_hop_dao_duc_va_bai_hat": "TỔNG HỢP ĐẠO ĐỨC VÀ BÀI HÁT:\\n\\n- Hoạt động Khám phá: [Phẩm chất] - [Bài hát/video gợi mở].\\n\\n- Hoạt động Luyện tập: [Phẩm chất] - [Bài hát/video liên quan].\\n\\n- Hoạt động Vận dụng: [Phẩm chất] - [Bài hát/video kết thúc]."
-}`
+}`;
 }
 
 // ============================================================
@@ -713,4 +812,4 @@ export default {
   FORMAT_RULES,
   getKHDHPrompt,
   getKHDHIntegrationPrompt,
-}
+};
