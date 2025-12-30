@@ -46,7 +46,8 @@ import {
   ListOrdered,
   Upload,
 } from "lucide-react";
-import { checkApiKeyStatus } from "@/lib/actions/gemini";
+import { checkApiKeyStatus, generateAssessmentPlan } from "@/lib/actions/gemini";
+import { ASSESSMENT_PRODUCT_TYPES } from "@/lib/prompts/assessment-prompts";
 import {
   saveTemplate,
   getTemplate,
@@ -90,6 +91,10 @@ import {
   getChuDeTheoThang,
   timChuDeTheoTen,
 } from "@/lib/data/kntt-curriculum-database";
+import { MeetingTab } from "@/components/template-engine/MeetingTab";
+import { LessonTab } from "@/components/template-engine/LessonTab";
+import { EventTab } from "@/components/template-engine/EventTab";
+import { AssessmentTab } from "@/components/template-engine/AssessmentTab";
 
 // Types imported from @/lib/types
 
@@ -166,6 +171,14 @@ const TemplateEngine = () => {
   const [hdgdSuggestion, setHdgdSuggestion] = useState("");
   const [shlSuggestion, setShlSuggestion] = useState("");
 
+  // Assessment state
+  const [assessmentGrade, setAssessmentGrade] = useState("10");
+  const [assessmentTerm, setAssessmentTerm] = useState("Giữa kì 1");
+  const [assessmentProductType, setAssessmentProductType] = useState("");
+  const [assessmentTopic, setAssessmentTopic] = useState("");
+  const [assessmentResult, setAssessmentResult] = useState<any>(null);
+  const [assessmentTemplate, setAssessmentTemplate] = useState<TemplateData | null>(null);
+
   // PPCT state
   const [ppctData, setPpctData] = useState<PPCTItem[]>([]);
   const [showPPCTDialog, setShowPPCTDialog] = useState(false);
@@ -206,14 +219,19 @@ const TemplateEngine = () => {
       const meeting = await getTemplate("meeting");
       const event = await getTemplate("event");
       const lesson = await getTemplate("lesson");
+      const assessment = await getTemplate("assessment"); // Load assessment session template
+
       const defaultMeeting = await getTemplate("default_meeting");
       const defaultEvent = await getTemplate("default_event");
       const defaultLesson = await getTemplate("default_lesson");
+      const defaultAssessment = await getTemplate("default_assessment"); // Load default assessment template
 
       if (meeting)
         setMeetingTemplate({ name: meeting.name, data: meeting.data });
       if (event) setEventTemplate({ name: event.name, data: event.data });
       if (lesson) setLessonTemplate({ name: lesson.name, data: lesson.data });
+      if (assessment) setAssessmentTemplate({ name: assessment.name, data: assessment.data });
+      else if (defaultAssessment) setAssessmentTemplate({ name: defaultAssessment.name, data: defaultAssessment.data }); // Fallback to default if no session template
 
       setHasDefaultMeetingTemplate(!!defaultMeeting);
       setHasDefaultEventTemplate(!!defaultEvent);
@@ -424,6 +442,8 @@ const TemplateEngine = () => {
       } else if (type === "lesson") {
         setLessonTemplate(templateData);
         setHasDefaultLessonTemplate(false); // User uploaded a new template
+      } else if (type === "assessment") {
+        setAssessmentTemplate(templateData);
       }
 
       setSuccess(`Đã tải mẫu "${file.name}" thành công!`);
@@ -661,6 +681,95 @@ const TemplateEngine = () => {
     }
   };
 
+  const handleGenerateAssessment = async () => {
+    if (!assessmentGrade) {
+      setError("Vui lòng chọn khối");
+      return;
+    }
+    if (!assessmentProductType) {
+      setError("Vui lòng chọn loại sản phẩm");
+      return;
+    }
+    if (!assessmentTopic) {
+      setError("Vui lòng nhập chủ đề/nội dung");
+      return;
+    }
+
+    // Set local loading state if needed, or rely on global isGenerating if wired up
+    // For now we assume consistent isGenerating usage or add a local one? 
+    // The hook useTemplateGeneration handles generic state, but for this custom func we might need to toggle it manually if not passed through hook.
+    // However, looking at hook usage, it wraps main generations. We might extend the hook later.
+    // For now, let's just call the action directly and manage state locally or via setError/setSuccess.
+
+    // We'll mimic the pattern:
+    try {
+      setSuccess("Đang tạo kế hoạch kiểm tra...");
+      const result = await generateAssessmentPlan(
+        assessmentGrade,
+        assessmentTerm,
+        assessmentProductType,
+        assessmentTopic
+      );
+
+      if (result.success && result.data) {
+        setAssessmentResult(result.data);
+        setSuccess("Đã tạo kế hoạch kiểm tra thành công!");
+
+        // Auto-save
+        await saveProject({
+          id: `assessment_${Date.now()}`,
+          type: "assessment",
+          title: `Kiểm tra ${assessmentTerm} - Khối ${assessmentGrade}`,
+          data: result.data,
+          grade: assessmentGrade
+        });
+        loadProjects();
+        setTimeout(() => setSuccess(null), 3000);
+      } else {
+        setError(result.error || "Lỗi khi tạo kế hoạch");
+      }
+    } catch (e: any) {
+      setError(e.message);
+    }
+  };
+
+  const handleExportAssessment = async () => {
+    setIsExporting(true);
+    setError(null);
+    try {
+      if (!assessmentResult) {
+        setError("Chưa có nội dung. Vui lòng tạo trước.");
+        setIsExporting(false);
+        return;
+      }
+
+      // Use default template retrieval logic if we add "assessment" type support
+      // For now, pass null or a generic one
+      const templateToUse = assessmentTemplate || await getTemplate("default_meeting"); // Fallback to meeting template as base if needed
+
+      const result = await ExportService.exportAssessmentPlan(
+        assessmentResult,
+        templateToUse,
+        {
+          grade: assessmentGrade,
+          term: assessmentTerm,
+          productType: assessmentProductType
+        }
+      );
+
+      if (result.success) {
+        setSuccess(result.method === "download" ? "Đã tải xuống file Word!" : "Đã copy nội dung!");
+      } else {
+        // Fallback
+      }
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      setError("Lỗi xuất file: " + err.message);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const handleAudit = async () => {
     if (!lessonResult) return;
     setIsAuditing(true);
@@ -693,6 +802,11 @@ const TemplateEngine = () => {
       setEventResult(project.data as EventResult);
       if (project.grade) setSelectedGradeEvent(project.grade);
       if (project.month) setSelectedEventMonth(project.month);
+    } else if (project.type === "assessment") {
+      setAssessmentResult(project.data);
+      if (project.grade) setAssessmentGrade(project.grade);
+      // Try to parse term from title if stored or just let user set it?
+      // For now just load generic data
     }
     setSuccess(`Đã tải dự án: ${project.title}`);
     setTimeout(() => setSuccess(null), 3000);
@@ -1259,7 +1373,7 @@ const TemplateEngine = () => {
           className="space-y-6"
         >
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-4xl mx-auto">
-            <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-white shadow-md rounded-xl p-1">
+            <TabsList className="grid grid-cols-5 w-full bg-white shadow-md rounded-xl p-1">
               <TabsTrigger
                 value="meeting"
                 className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
@@ -1280,16 +1394,24 @@ const TemplateEngine = () => {
                 value="event"
                 className="gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
-                <Calendar className="w-4 h-4" />
+                <Sparkles className="w-4 h-4" />
                 <span className="hidden sm:inline">Ngoại khóa</span>
-                <span className="sm:hidden">NK</span>
+                <span className="sm:hidden">HĐNK</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="assessment"
+                className="gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">Đánh giá</span>
+                <span className="sm:hidden">ĐG</span>
               </TabsTrigger>
               <TabsTrigger
                 value="history"
-                className="gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
+                className="gap-2 data-[state=active]:bg-slate-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <Archive className="w-4 h-4" />
-                <span className="hidden sm:inline">Thư viện</span>
+                <span className="hidden sm:inline">Lưu trữ</span>
                 <span className="sm:hidden">Kho</span>
               </TabsTrigger>
             </TabsList>
@@ -1307,2121 +1429,337 @@ const TemplateEngine = () => {
 
           {/* Meeting Tab */}
           <TabsContent value="meeting">
-            <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
-              <CardContent className="p-6 space-y-6">
-                {/* Removed template upload section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Chọn Tháng</Label>
-                    <Select
-                      value={selectedMonth}
-                      onValueChange={setSelectedMonth}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn tháng..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ACADEMIC_MONTHS.map((m) => (
-                          <SelectItem key={m.value} value={m.value}>
-                            {m.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Lần họp</Label>
-                    <Select
-                      value={selectedSession}
-                      onValueChange={setSelectedSession}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Lần 1 (đầu tháng)</SelectItem>
-                        <SelectItem value="2">Lần 2 (cuối tháng)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Theme Info */}
-                {selectedMonth && (
-                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-sm font-medium text-blue-800 mb-2">
-                      Chủ đề tháng {selectedMonth}:
-                    </p>
-                    <ul className="text-sm text-blue-700 space-y-1">
-                      <li>
-                        • Khối 10:{" "}
-                        {getThemeForMonth("10", selectedMonth) || "N/A"}
-                      </li>
-                      <li>
-                        • Khối 11:{" "}
-                        {getThemeForMonth("11", selectedMonth) || "N/A"}
-                      </li>
-                      <li>
-                        • Khối 12:{" "}
-                        {getThemeForMonth("12", selectedMonth) || "N/A"}
-                      </li>
-                    </ul>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label>Nội dung trọng tâm (tùy chọn)</Label>
-                  <Textarea
-                    placeholder="VD: Triển khai hoạt động 20/11, tổ chức sinh hoạt chuyên môn theo nghiên cứu bài học, phân công giáo viên dự giờ, thảo luận về phương pháp dạy học tích cực..."
-                    value={meetingKeyContent}
-                    onChange={(e) => setMeetingKeyContent(e.target.value)}
-                    rows={5}
-                    className="resize-y"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Nhập các nội dung trọng tâm cần thảo luận trong cuộc họp. AI
-                    sẽ phân tích và tạo biên bản chi tiết dựa trên nội dung này.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Kết luận cuộc họp (tùy chọn)</Label>
-                  <Textarea
-                    placeholder="Nhập nội dung kết luận cuộc họp nếu có sẵn..."
-                    value={meetingConclusion}
-                    onChange={(e) => setMeetingConclusion(e.target.value)}
-                    rows={5}
-                    className="resize-y"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Nếu bạn có sẵn nội dung kết luận, hãy nhập vào đây. AI sẽ
-                    tham khảo để tạo biên bản phù hợp.
-                  </p>
-                </div>
-
-                {/* Generate Button */}
-                <Button
-                  onClick={handleGenerateMeeting}
-                  disabled={isGenerating || !selectedMonth}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white gap-2"
-                  size="lg"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Đang tạo biên bản...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-5 h-5" />
-                      Tạo Biên bản AI
-                    </>
-                  )}
-                </Button>
-
-                {/* Results */}
-                {meetingResult && (
-                  <div className="space-y-4 mt-6">
-                    <h3 className="font-semibold text-lg text-slate-800">
-                      Kết quả tạo biên bản:
-                    </h3>
-
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-blue-700 font-medium">
-                            Nội dung chính:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(meetingResult.noi_dung_chinh)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={meetingResult.noi_dung_chinh}
-                          onChange={(e) =>
-                            setMeetingResult({
-                              ...meetingResult,
-                              noi_dung_chinh: e.target.value,
-                            })
-                          }
-                          className="min-h-[150px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-orange-700 font-medium">
-                            Ưu điểm:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(meetingResult.uu_diem)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={meetingResult.uu_diem}
-                          onChange={(e) =>
-                            setMeetingResult({
-                              ...meetingResult,
-                              uu_diem: e.target.value,
-                            })
-                          }
-                          className="min-h-[100px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-red-700 font-medium">
-                            Hạn chế:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(meetingResult.han_che)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={meetingResult.han_che}
-                          onChange={(e) =>
-                            setMeetingResult({
-                              ...meetingResult,
-                              han_che: e.target.value,
-                            })
-                          }
-                          className="min-h-[100px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-blue-700 font-medium">
-                            Ý kiến đóng góp:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(meetingResult.y_kien_dong_gop)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={meetingResult.y_kien_dong_gop}
-                          onChange={(e) =>
-                            setMeetingResult({
-                              ...meetingResult,
-                              y_kien_dong_gop: e.target.value,
-                            })
-                          }
-                          className="min-h-[100px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-blue-700 font-medium">
-                            Kế hoạch tháng tới:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(meetingResult.ke_hoach_thang_toi)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={meetingResult.ke_hoach_thang_toi}
-                          onChange={(e) =>
-                            setMeetingResult({
-                              ...meetingResult,
-                              ke_hoach_thang_toi: e.target.value,
-                            })
-                          }
-                          className="min-h-[100px]"
-                        />
-                      </div>
-
-                      {meetingResult.ket_luan_cuoc_hop && (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label className="font-medium text-purple-700">
-                              Kết luận cuộc họp
-                            </Label>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                copyToClipboard(
-                                  meetingResult.ket_luan_cuoc_hop || ""
-                                )
-                              }
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          <Textarea
-                            value={meetingResult.ket_luan_cuoc_hop || ""}
-                            onChange={(e) =>
-                              setMeetingResult({
-                                ...meetingResult,
-                                ket_luan_cuoc_hop: e.target.value,
-                              })
-                            }
-                            rows={4}
-                            className="bg-purple-50"
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Export Button */}
-                    <Button
-                      onClick={() => handleExport("meeting")}
-                      disabled={isExporting}
-                      className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white gap-2"
-                      size="lg"
-                    >
-                      {isExporting ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Đang xuất file...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-5 h-5" />
-                          Xuất file Word
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <MeetingTab
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              selectedSession={selectedSession}
+              setSelectedSession={setSelectedSession}
+              meetingKeyContent={meetingKeyContent}
+              setMeetingKeyContent={setMeetingKeyContent}
+              meetingConclusion={meetingConclusion}
+              setMeetingConclusion={setMeetingConclusion}
+              meetingResult={meetingResult}
+              setMeetingResult={setMeetingResult}
+              isGenerating={isGenerating}
+              onGenerate={handleGenerateMeeting}
+              isExporting={isExporting}
+              onExport={() => handleExport("meeting")}
+              copyToClipboard={copyToClipboard}
+            />
           </TabsContent>
 
           {/* Lesson Tab */}
           <TabsContent value="lesson" className="space-y-4">
-            <Card>
-              <CardContent className="space-y-4">
-                {/* Grade and Topic selection */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Chọn Khối</Label>
-                    <Select
-                      value={lessonGrade}
-                      onValueChange={(value) => {
-                        setLessonGrade(value);
-                        setSelectedChuDeSo(""); // Reset chu de when grade changes
-                        setLessonAutoFilledTheme("");
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn khối..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">Khối 10</SelectItem>
-                        <SelectItem value="11">Khối 11</SelectItem>
-                        <SelectItem value="12">Khối 12</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+            <LessonTab
+              lessonGrade={lessonGrade}
+              setLessonGrade={setLessonGrade}
+              selectedChuDeSo={selectedChuDeSo}
+              setSelectedChuDeSo={setSelectedChuDeSo}
+              lessonAutoFilledTheme={lessonAutoFilledTheme}
+              setLessonAutoFilledTheme={setLessonAutoFilledTheme}
+              lessonDuration={lessonDuration}
+              setLessonDuration={setLessonDuration}
+              setSelectedChuDe={setSelectedChuDe}
+              setLessonMonth={setLessonMonth}
+              lessonFullPlanMode={lessonFullPlanMode}
+              setLessonFullPlanMode={setLessonFullPlanMode}
+              shdcSuggestion={shdcSuggestion}
+              setShdcSuggestion={setShdcSuggestion}
+              hdgdSuggestion={hdgdSuggestion}
+              setHdgdSuggestion={setHdgdSuggestion}
+              shlSuggestion={shlSuggestion}
+              setShlSuggestion={setShlSuggestion}
+              curriculumTasks={curriculumTasks}
+              distributeTimeForTasks={distributeTimeForTasks}
+              showCurriculumTasks={showCurriculumTasks}
+              setShowCurriculumTasks={setShowCurriculumTasks}
+              lessonTasks={lessonTasks}
+              updateLessonTask={updateLessonTask}
+              removeLessonTask={removeLessonTask}
+              addLessonTask={addLessonTask}
+              lessonCustomInstructions={lessonCustomInstructions}
+              setLessonCustomInstructions={setLessonCustomInstructions}
+              lessonResult={lessonResult}
+              setLessonResult={setLessonResult}
+              isGenerating={isGenerating}
+              onGenerate={handleGenerateLesson}
+              isExporting={isExporting}
+              onExport={() => handleExport("lesson")}
+              copyToClipboard={copyToClipboard}
+              isAuditing={isAuditing}
+              onAudit={handleAudit}
+              auditResult={auditResult}
+              setSuccess={setSuccess}
+              lessonTopic={lessonTopic}
+            />
+          </TabsContent>
+      <TabsContent value="event">
+        <EventTab
+          selectedGradeEvent={selectedGradeEvent}
+          setSelectedGradeEvent={setSelectedGradeEvent}
+          selectedEventMonth={selectedEventMonth}
+          setSelectedEventMonth={setSelectedEventMonth}
+          autoFilledTheme={autoFilledTheme}
+          eventBudget={eventBudget}
+          setEventBudget={setEventBudget}
+          eventChecklist={eventChecklist}
+          setEventChecklist={setEventChecklist}
+          eventCustomInstructions={eventCustomInstructions}
+          setEventCustomInstructions={setEventCustomInstructions}
+          eventResult={eventResult}
+          setEventResult={setEventResult}
+          isGenerating={isGenerating}
+          onGenerate={handleGenerateEvent}
+          isExporting={isExporting}
+          onExport={() => handleExport("event")}
+          copyToClipboard={copyToClipboard}
+        />
+      </TabsContent>
+<TabsContent value="assessment">
+  <AssessmentTab
+    assessmentGrade={assessmentGrade}
+    setAssessmentGrade={setAssessmentGrade}
+    assessmentTerm={assessmentTerm}
+    setAssessmentTerm={setAssessmentTerm}
+    assessmentProductType={assessmentProductType}
+    setAssessmentProductType={setAssessmentProductType}
+    assessmentTopic={assessmentTopic}
+    setAssessmentTopic={setAssessmentTopic}
+    assessmentTemplate={assessmentTemplate}
+    onTemplateUpload={(file) => handleTemplateUpload(file, "assessment" as any)}
+    assessmentResult={assessmentResult}
+    isGenerating={isGenerating}
+    onGenerate={handleGenerateAssessment}
+    isExporting={isExporting}
+    onExport={handleExportAssessment}
+  />
+</TabsContent>
+<TabsContent value="history">
+  <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
+    <CardContent className="p-6 space-y-6">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+        <Input
+          placeholder="Tìm kiếm dự án (tên bài, tháng, loại)..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 h-11 bg-slate-50 border-slate-200 rounded-xl focus:ring-amber-500 focus:border-amber-500"
+        />
+      </div>
 
-                  <div className="space-y-2">
-                    <Label>Chọn Chủ Đề</Label>
-                    <Select
-                      value={selectedChuDeSo}
-                      onValueChange={(value) => {
-                        setSelectedChuDeSo(value);
-                        const chuDeList = getChuDeListByKhoi(lessonGrade);
-                        const chuDe = chuDeList.find(
-                          (cd) => cd.chu_de_so === Number.parseInt(value)
-                        );
-                        if (chuDe) {
-                          setLessonAutoFilledTheme(chuDe.ten);
-                          setLessonDuration(chuDe.tong_tiet.toString());
-                          setSelectedChuDe(chuDe);
-                          // Map chu de to month for curriculum tasks
-                          setLessonMonth(value);
-                        }
-                      }}
-                      disabled={!lessonGrade}
-                    >
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            lessonGrade ? "Chọn chủ đề..." : "Chọn khối trước"
-                          }
-                        />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {lessonGrade &&
-                          getChuDeListByKhoi(lessonGrade).map((chuDe) => (
-                            <SelectItem
-                              key={chuDe.chu_de_so}
-                              value={chuDe.chu_de_so.toString()}
-                            >
-                              CĐ{chuDe.chu_de_so}: {chuDe.ten} (
-                              {chuDe.tong_tiet} tiết)
-                            </SelectItem>
-                          ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {projects
+          .filter(p =>
+            !searchQuery ||
+            p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.type.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+          .map((project) => (
+            <div
+              key={project.id}
+              className="group relative p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-200"
+            >
+              <div className="flex justify-between items-start mb-3">
+                <div className={`p-2 rounded-lg ${project.type === 'meeting' ? 'bg-blue-50 text-blue-600' :
+                  project.type === 'lesson' ? 'bg-green-50 text-green-600' :
+                    'bg-purple-50 text-purple-600'
+                  }`}>
+                  {project.type === 'meeting' ? <FileText className="w-4 h-4" /> :
+                    project.type === 'lesson' ? <BookOpen className="w-4 h-4" /> :
+                      <Calendar className="w-4 h-4" />}
                 </div>
-
-                {/* PPCT Management Section */}
-                <div className="flex flex-wrap gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
-                  <div className="w-full text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-2">
-                    <ListOrdered className="w-3 h-3" /> Quản lý Phân phối Chương trình (PPCT)
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-white hover:bg-blue-50 text-blue-600 border-blue-200 h-8 text-xs"
-                    onClick={handleDownloadPPCTTemplate}
-                    disabled={!lessonGrade}
-                  >
-                    <Download className="w-3 h-3 mr-1" /> Xuất PPCT chi tiết (Excel)
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-white hover:bg-green-50 text-green-600 border-green-200 h-8 text-xs"
-                    onClick={() => ppctFileRef.current?.click()}
-                    disabled={!lessonGrade}
-                  >
-                    <Upload className="w-3 h-3 mr-1" /> Nhập PPCT từ file
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="bg-white hover:bg-indigo-50 text-indigo-600 border-indigo-200 h-8 text-xs"
-                    onClick={() => setShowPPCTDialog(true)}
-                    disabled={!lessonGrade}
-                  >
-                    <Plus className="w-3 h-3 mr-1" /> Thêm mục
-                  </Button>
-                  <input
-                    type="file"
-                    ref={ppctFileRef}
-                    onChange={handleUploadPPCTFile}
-                    className="hidden"
-                    accept=".xlsx,.xls,.docx,.txt,.csv"
-                  />
-                  {ppctData.length > 0 && (
-                    <div className="w-full mt-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-                      <div className="text-[10px] text-slate-500 mb-2">
-                        Đang sử dụng {ppctData.length} mục PPCT cho khối {lessonGrade}.
-                        <Button
-                          variant="link"
-                          size="sm"
-                          className="h-auto p-0 ml-2 text-[10px] text-red-500"
-                          onClick={() => { if (confirm('Xóa toàn bộ PPCT hiện tại?')) setPpctData([]) }}
-                        >
-                          Xóa hết
-                        </Button>
-                      </div>
-                      <div className="max-h-40 overflow-y-auto space-y-1">
-                        {ppctData.map((item, idx) => (
-                          <div key={idx} className="flex items-center justify-between text-xs p-2 bg-white dark:bg-slate-800 rounded border border-slate-100 group">
-                            <div className="truncate flex-1">
-                              <span className="font-bold text-blue-600 mr-2">T{item.month}</span>
-                              {item.theme}
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600"
-                              onClick={() => handleRemovePPCTItem(idx)}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Auto-filled theme display with PPCT info */}
-                {selectedChuDe && (
-                  <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
-                    <div className="flex items-start gap-2">
-                      <Info className="h-4 w-4 text-blue-600 mt-0.5" />
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                          Chủ đề {selectedChuDe.chu_de_so}:{" "}
-                          {lessonAutoFilledTheme}
-                        </p>
-                        <p className="text-xs text-blue-600 dark:text-blue-400">
-                          PPCT: {selectedChuDe.tong_tiet} tiết (SHDC:{" "}
-                          {selectedChuDe.shdc}, HĐGD: {selectedChuDe.hdgd}, SHL:{" "}
-                          {selectedChuDe.shl})
-                          {selectedChuDe.tuan_bat_dau &&
-                            selectedChuDe.tuan_ket_thuc && (
-                              <span>
-                                {" "}
-                                • Tuần {selectedChuDe.tuan_bat_dau}-
-                                {selectedChuDe.tuan_ket_thuc}
-                              </span>
-                            )}
-                        </p>
-                        {selectedChuDe.ghi_chu && (
-                          <p className="text-xs text-blue-500 italic">
-                            {selectedChuDe.ghi_chu}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Lesson topic input */}
-                <div className="space-y-2">
-                  <Label>
-                    Tên bài học cụ thể (tùy chọn nếu đã chọn chủ đề)
-                  </Label>
-                  <Input
-                    placeholder="VD: Thể hiện phẩm chất tốt đẹp của người học sinh..."
-                    value={lessonTopic}
-                    onChange={(e) => setLessonTopic(e.target.value)}
-                  />
-                </div>
-
-                {/* Full plan mode toggle */}
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="space-y-0.5">
-                    <Label>Chế độ KHBD đầy đủ</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Tạo toàn bộ KHBD thay vì chỉ nội dung tích hợp
-                    </p>
-                  </div>
-                  <Switch
-                    checked={lessonFullPlanMode}
-                    onCheckedChange={setLessonFullPlanMode}
-                  />
-                </div>
-
-                {/* Duration selection - only show in full plan mode */}
-                {lessonFullPlanMode && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-indigo-600" />
-                        Thời gian thực hiện (Số tiết hoặc Phút)
-                      </Label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="VD: 3 tiết, 90 phút..."
-                          value={lessonDuration}
-                          onChange={(e) => setLessonDuration(e.target.value)}
-                          className="flex-1"
-                        />
-                        <Select
-                          value={lessonDuration.match(/^\d+$/) ? lessonDuration : ""}
-                          onValueChange={(val) => setLessonDuration(val)}
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Chọn nhanh..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {selectedChuDe?.tong_tiet ? (
-                              Array.from(
-                                { length: selectedChuDe.tong_tiet },
-                                (_, i) => i + 1
-                              ).map((num) => (
-                                <SelectItem key={num} value={num.toString()}>
-                                  {num} tiết ({Math.ceil(num / 3)} tuần)
-                                </SelectItem>
-                              ))
-                            ) : (
-                              <>
-                                <SelectItem value="3">3 tiết (1 tuần)</SelectItem>
-                                <SelectItem value="6">6 tiết (2 tuần)</SelectItem>
-                                <SelectItem value="9">9 tiết (3 tuần)</SelectItem>
-                                <SelectItem value="12">12 tiết (4 tuần)</SelectItem>
-                                <SelectItem value="15">15 tiết (5 tuần)</SelectItem>
-                              </>
-                            )}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    {lessonGrade && selectedChuDeSo && (
-                      <div className="text-xs text-muted-foreground mt-1 space-y-1">
-                        <div>
-                          <strong>Tổng thời gian:</strong> {totalAvailableTime} phút (
-                          {lessonDuration} tiết x 45 phút)
-                        </div>
-                        {selectedChuDe && (
-                          <div className="text-indigo-600 bg-indigo-50 p-2 rounded-md border border-indigo-100">
-                            <div className="font-semibold mb-1">
-                              Phân bổ chuẩn PPCT:
-                            </div>
-                            <div className="grid grid-cols-3 gap-1 text-[10px]">
-                              <div>
-                                <span className="block font-medium">HĐGD</span>
-                                {selectedChuDe.hdgd} tiết (
-                                {selectedChuDe.hdgd * 45}p)
-                              </div>
-                              <div>
-                                <span className="block font-medium">SHDC</span>
-                                {selectedChuDe.shdc} tiết (
-                                {selectedChuDe.shdc * 45}p)
-                              </div>
-                              <div>
-                                <span className="block font-medium">SHL</span>
-                                {selectedChuDe.shl} tiết (
-                                {selectedChuDe.shl * 45}p)
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {curriculumTasks.length > 0 && (
-                      <div className="mt-2">
-                        {(() => {
-                          const maxTaskTime = selectedChuDe
-                            ? selectedChuDe.hdgd * 45
-                            : totalAvailableTime;
-                          const isOver = totalDistributedTime > maxTaskTime;
-
-                          return (
-                            <div
-                              className={`text-xs font-medium ${isOver ? "text-red-500" : "text-green-600"
-                                }`}
-                            >
-                              Đã phân bổ cho nhiệm vụ (HĐGD): {totalDistributedTime}/{maxTaskTime}{" "}
-                              phút
-                              {isOver && " (Vượt quá!)"}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {lessonFullPlanMode && (
-                  <div className="space-y-4 p-4 bg-indigo-50 dark:bg-indigo-950 rounded-lg border border-indigo-200 dark:border-indigo-800">
-                    <div className="flex items-center gap-2">
-                      <Info className="h-4 w-4 text-indigo-600" />
-                      <Label className="text-indigo-800 dark:text-indigo-200 font-medium">
-                        Gợi ý nội dung theo loại hoạt động (tùy chọn)
-                      </Label>
-                    </div>
-                    <p className="text-xs text-indigo-600 dark:text-indigo-400">
-                      Nhập gợi ý cụ thể để AI tạo nội dung chuyên sâu hơn cho
-                      từng loại hoạt động
-                    </p>
-
-                    <div className="space-y-3">
-                      {/* SHDC Suggestion */}
-                      <div className="space-y-1">
-                        <Label className="text-sm text-indigo-700 dark:text-indigo-300">
-                          Sinh hoạt dưới cờ (SHDC)
-                        </Label>
-                        <Textarea
-                          placeholder="VD: Tổ chức diễn đàn về ý nghĩa truyền thống nhà trường, mời cựu HS chia sẻ..."
-                          value={shdcSuggestion}
-                          onChange={(e) => setShdcSuggestion(e.target.value)}
-                          className="min-h-[60px] text-sm"
-                        />
-                      </div>
-
-                      {/* HDGD Suggestion */}
-                      <div className="space-y-1">
-                        <Label className="text-sm text-indigo-700 dark:text-indigo-300">
-                          Hoạt động giáo dục (HĐGD)
-                        </Label>
-                        <Textarea
-                          placeholder="VD: Thảo luận nhóm về các giá trị cốt lõi, đóng vai tình huống thực tế..."
-                          value={hdgdSuggestion}
-                          onChange={(e) => setHdgdSuggestion(e.target.value)}
-                          className="min-h-[60px] text-sm"
-                        />
-                      </div>
-
-                      {/* SHL Suggestion */}
-                      <div className="space-y-1">
-                        <Label className="text-sm text-indigo-700 dark:text-indigo-300">
-                          Sinh hoạt lớp (SHL)
-                        </Label>
-                        <Textarea
-                          placeholder="VD: Chia sẻ cảm nhận cá nhân, lập kế hoạch hành động, đánh giá lẫn nhau..."
-                          value={shlSuggestion}
-                          onChange={(e) => setShlSuggestion(e.target.value)}
-                          className="min-h-[60px] text-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {curriculumTasks.length > 0 && (
-                  <div className="space-y-3 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4 text-green-600" />
-                        <Label className="text-green-800 dark:text-green-200 font-medium">
-                          Nhiệm vụ gợi ý từ SGK (
-                          {curriculumTasks.filter((t) => t.selected).length} /{" "}
-                          {curriculumTasks.length} nhiệm vụ đã chọn)
-                        </Label>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={distributeTimeForTasks}
-                          className="text-green-700 hover:text-green-800 text-xs bg-transparent"
-                        >
-                          <Clock className="h-3 w-3 mr-1" />
-                          Phân bổ lại
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() =>
-                            setShowCurriculumTasks(!showCurriculumTasks)
-                          }
-                          className="text-green-700 hover:text-green-800"
-                        >
-                          {showCurriculumTasks ? "Ẩn" : "Hiện"}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {showCurriculumTasks && (
-                      <div className="space-y-3">
-                        {lessonTasks.filter(t => t.source !== 'user').map((task) => (
-                          <div
-                            key={task.id}
-                            className="p-3 bg-white dark:bg-green-900 rounded-md border border-green-300 dark:border-green-700"
-                          >
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <Switch
-                                    checked={task.selected || false}
-                                    onCheckedChange={(checked) =>
-                                      updateLessonTask(
-                                        task.id,
-                                        "selected",
-                                        checked
-                                      )
-                                    }
-                                    className="data-[state=checked]:bg-green-500"
-                                  />
-                                  <Input
-                                    value={task.name}
-                                    onChange={(e) =>
-                                      updateLessonTask(
-                                        task.id,
-                                        "name",
-                                        e.target.value
-                                      )
-                                    }
-                                    className="h-7 text-sm font-medium text-green-800 dark:text-green-200 border-none bg-transparent focus:ring-0 px-0"
-                                  />
-                                </div>
-                                <Textarea
-                                  value={task.content}
-                                  onChange={(e) =>
-                                    updateLessonTask(
-                                      task.id,
-                                      "content",
-                                      e.target.value
-                                    )
-                                  }
-                                  className="text-sm text-gray-600 dark:text-gray-300 min-h-[60px] resize-y bg-transparent border-gray-200"
-                                />
-
-                                {task.thoiLuongDeXuat && (
-                                  <p className="text-xs text-orange-600 italic">
-                                    * Thời lượng đề xuất từ SGK:{" "}
-                                    {task.thoiLuongDeXuat}
-                                  </p>
-                                )}
-
-                                {/* Skills, products, duration */}
-                                <div className="flex flex-wrap gap-2 text-xs">
-                                  {task.kyNangCanDat &&
-                                    task.kyNangCanDat.length > 0 && (
-                                      <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                        Kỹ năng: {task.kyNangCanDat.join(", ")}
-                                      </span>
-                                    )}
-                                  {task.sanPhamDuKien && (
-                                    <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                                      Sản phẩm: {task.sanPhamDuKien}
-                                    </span>
-                                  )}
-                                  <div className="flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-1 rounded">
-                                    <Clock className="h-3 w-3" />
-                                    <input
-                                      type="number"
-                                      min="0"
-                                      max="999"
-                                      value={task.time || 0}
-                                      onChange={(e) =>
-                                        updateLessonTask(
-                                          task.id,
-                                          "time",
-                                          Number.parseInt(e.target.value) || 0
-                                        )
-                                      }
-                                      className="w-12 bg-transparent border-none text-center text-xs font-medium focus:outline-none focus:ring-1 focus:ring-orange-400 rounded disabled:opacity-50"
-                                      disabled={!task.selected}
-                                    />
-                                    <span>phút</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-
-                        <p className="text-xs text-green-600 italic">
-                          * Các nhiệm vụ này được trích xuất từ cơ sở dữ liệu
-                          SGK "Kết nối Tri thức" và sẽ được AI sử dụng khi tạo
-                          KHBD. Bạn có thể chọn nhiệm vụ, chỉnh sửa thời gian
-                          hoặc thêm nhiệm vụ tùy chỉnh.
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* User-added tasks */}
-                {lessonTasks.filter((t) => t.source === "user").length > 0 && (
-                  <div className="space-y-3 p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                    <div className="flex items-center gap-2">
-                      <Plus className="h-4 w-4 text-yellow-600" />
-                      <Label className="text-yellow-800 dark:text-yellow-200 font-medium">
-                        Nhiệm vụ bạn thêm (
-                        {lessonTasks.filter((t) => t.source === "user").length})
-                      </Label>
-                    </div>
-                    <div className="space-y-2">
-                      {lessonTasks
-                        .filter((t) => t.source === "user")
-                        .map((task, index) => (
-                          <div
-                            key={task.id}
-                            className="flex items-start gap-2 p-2 bg-white dark:bg-yellow-900 rounded border"
-                          >
-                            <div className="flex-1 space-y-2">
-                              <div className="flex items-center gap-2">
-                                <Switch
-                                  checked={task.selected || false}
-                                  onCheckedChange={(checked) =>
-                                    updateLessonTask(task.id, "selected", checked)
-                                  }
-                                  className="data-[state=checked]:bg-yellow-500"
-                                />
-                                <Input
-                                  value={task.name}
-                                  onChange={(e) =>
-                                    updateLessonTask(task.id, "name", e.target.value)
-                                  }
-                                  placeholder="Tên nhiệm vụ"
-                                  className="text-sm font-medium"
-                                />
-                              </div>
-                              <Textarea
-                                value={task.content}
-                                onChange={(e) =>
-                                  updateLessonTask(task.id, "content", e.target.value)
-                                }
-                                placeholder="Mô tả nhiệm vụ"
-                                rows={2}
-                                className="text-sm bg-transparent"
-                              />
-                              <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded w-fit">
-                                <Clock className="h-3 w-3" />
-                                <input
-                                  type="number"
-                                  min="0"
-                                  value={task.time || 0}
-                                  onChange={(e) =>
-                                    updateLessonTask(
-                                      task.id,
-                                      "time",
-                                      Number.parseInt(e.target.value) || 0
-                                    )
-                                  }
-                                  className="w-10 bg-transparent border-none text-center text-xs font-medium focus:outline-none"
-                                />
-                                <span className="text-[10px]">phút</span>
-                              </div>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeLessonTask(task.id)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Add task button */}
                 <Button
-                  variant="outline"
-                  onClick={addLessonTask}
-                  className="w-full border-dashed bg-transparent"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Thêm nhiệm vụ tùy chỉnh
-                </Button>
-
-                {/* Custom instructions */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    Chỉ dẫn thêm cho AI (tùy chọn)
-                  </Label>
-                  <Textarea
-                    placeholder="VD: Tập trung vào kỹ năng giao tiếp, sử dụng nhiều hoạt động nhóm, tích hợp video minh họa..."
-                    value={lessonCustomInstructions}
-                    onChange={(e) =>
-                      setLessonCustomInstructions(e.target.value)
+                  variant="ghost"
+                  size="icon"
+                  className="text-slate-300 hover:text-red-500 h-8 w-8"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (confirm('Bạn có chắc muốn xóa dự án này?')) {
+                      await deleteProject(project.id);
+                      loadProjects();
                     }
-                    rows={3}
-                  />
-                  <p className="text-xs text-slate-500">
-                    AI sẽ cập nhật nội dung dựa trên chỉ dẫn của bạn
-                  </p>
-                </div>
-
-                {/* Generate button */}
-                <Button
-                  className="w-full"
-                  onClick={handleGenerateLesson}
-                  disabled={
-                    isGenerating ||
-                    !lessonGrade ||
-                    (!lessonTopic && !lessonAutoFilledTheme) ||
-                    !selectedChuDeSo
-                  }
+                  }}
                 >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Đang tạo...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      {lessonFullPlanMode
-                        ? "Tạo KHBD đầy đủ"
-                        : "Tạo nội dung tích hợp"}
-                    </>
-                  )}
+                  <Trash2 className="w-4 h-4" />
                 </Button>
+              </div>
 
-                {/* Results display */}
-                {lessonResult && (
-                  <div className="space-y-4 mt-4">
-                    <div className="flex items-center gap-2 text-green-600">
-                      <CheckCircle className="h-5 w-5" />
-                      <span className="font-medium">
-                        Kết quả tạo nội dung - Chỉnh sửa trước khi xuất file
-                      </span>
-                    </div>
+              <h3 className="font-semibold text-slate-800 line-clamp-2 mb-2 group-hover:text-amber-700">
+                {project.title}
+              </h3>
 
-                    {/* Integration results - editable */}
-                    {lessonResult.tich_hop_nls && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-blue-700 font-medium">
-                            Tích hợp Năng lực số (NLS):
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(lessonResult.tich_hop_nls)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.tich_hop_nls}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              tich_hop_nls: e.target.value,
-                            })
-                          }
-                          className="min-h-[120px] bg-blue-50"
-                        />
-                      </div>
-                    )}
-
-                    {lessonResult.tich_hop_dao_duc && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-purple-700 font-medium">
-                            Tích hợp Giáo dục đạo đức:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(lessonResult.tich_hop_dao_duc)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.tich_hop_dao_duc}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              tich_hop_dao_duc: e.target.value,
-                            })
-                          }
-                          className="min-h-[120px] bg-purple-50"
-                        />
-                      </div>
-                    )}
-
-                    {/* Full plan results - editable */}
-                    {lessonFullPlanMode && lessonResult.muc_tieu_kien_thuc && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-slate-700 font-medium">
-                            Mục tiêu kiến thức:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(
-                                lessonResult.muc_tieu_kien_thuc || ""
-                              )
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.muc_tieu_kien_thuc || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              muc_tieu_kien_thuc: e.target.value,
-                            })
-                          }
-                          className="min-h-[100px] bg-slate-50"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.muc_tieu_nang_luc && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-slate-700 font-medium">
-                            Mục tiêu năng lực:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(
-                                lessonResult.muc_tieu_nang_luc || ""
-                              )
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.muc_tieu_nang_luc || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              muc_tieu_nang_luc: e.target.value,
-                            })
-                          }
-                          className="min-h-[100px] bg-slate-50"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.muc_tieu_pham_chat && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-slate-700 font-medium">
-                            Mục tiêu phẩm chất:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(
-                                lessonResult.muc_tieu_pham_chat || ""
-                              )
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.muc_tieu_pham_chat || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              muc_tieu_pham_chat: e.target.value,
-                            })
-                          }
-                          className="min-h-[100px] bg-slate-50"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && (lessonResult.gv_chuan_bi || lessonResult.hs_chuan_bi || lessonResult.thiet_bi_day_hoc) && (
-                      <div className="space-y-4">
-                        <div className="p-3 bg-slate-100 rounded-lg">
-                          <Label className="text-slate-800 font-bold block mb-2">II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</Label>
-
-                          {lessonResult.gv_chuan_bi && (
-                            <div className="space-y-2 mb-4">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-indigo-700 font-medium italic">1. Đối với giáo viên (Tích hợp NLS & Đạo đức):</Label>
-                                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(lessonResult.gv_chuan_bi || "")}>
-                                  <Copy className="w-4 h-4" />
-                                </Button>
-                              </div>
-                              <Textarea
-                                value={lessonResult.gv_chuan_bi || ""}
-                                onChange={(e) => setLessonResult({ ...lessonResult, gv_chuan_bi: e.target.value })}
-                                className="min-h-[100px] bg-slate-50"
-                              />
-                            </div>
-                          )}
-
-                          {lessonResult.hs_chuan_bi && (
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-indigo-700 font-medium italic">2. Đối với học sinh và Hướng dẫn về nhà (Tích hợp NLS & Đạo đức):</Label>
-                                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(lessonResult.hs_chuan_bi || "")}>
-                                  <Copy className="w-4 h-4" />
-                                </Button>
-                              </div>
-                              <Textarea
-                                value={lessonResult.hs_chuan_bi || ""}
-                                onChange={(e) => setLessonResult({ ...lessonResult, hs_chuan_bi: e.target.value })}
-                                className="min-h-[100px] bg-slate-50"
-                              />
-                            </div>
-                          )}
-
-                          {!lessonResult.gv_chuan_bi && !lessonResult.hs_chuan_bi && lessonResult.thiet_bi_day_hoc && (
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <Label className="text-slate-700 font-medium italic">Thiết bị dạy học & Học liệu:</Label>
-                                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(lessonResult.thiet_bi_day_hoc || "")}>
-                                  <Copy className="w-4 h-4" />
-                                </Button>
-                              </div>
-                              <Textarea
-                                value={lessonResult.thiet_bi_day_hoc || ""}
-                                onChange={(e) => setLessonResult({ ...lessonResult, thiet_bi_day_hoc: e.target.value })}
-                                className="min-h-[80px] bg-slate-50"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.shdc && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-indigo-700 font-medium">
-                            Sinh hoạt dưới cờ (SHDC):
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(lessonResult.shdc || "")
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.shdc || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              shdc: e.target.value,
-                            })
-                          }
-                          className="min-h-[150px] bg-indigo-50 border-indigo-100"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.shl && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-indigo-700 font-medium">
-                            Sinh hoạt lớp (SHL):
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(lessonResult.shl || "")
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.shl || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              shl: e.target.value,
-                            })
-                          }
-                          className="min-h-[150px] bg-indigo-50 border-indigo-100"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.hoat_dong_khoi_dong && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-green-700 font-medium">
-                            Hoạt động Khởi động:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(
-                                lessonResult.hoat_dong_khoi_dong || ""
-                              )
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.hoat_dong_khoi_dong || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              hoat_dong_khoi_dong: e.target.value,
-                            })
-                          }
-                          className="min-h-[150px] bg-green-50"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.hoat_dong_kham_pha && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-yellow-700 font-medium">
-                            Hoạt động Khám phá:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(
-                                lessonResult.hoat_dong_kham_pha || ""
-                              )
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.hoat_dong_kham_pha || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              hoat_dong_kham_pha: e.target.value,
-                            })
-                          }
-                          className="min-h-[200px] bg-yellow-50"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.hoat_dong_luyen_tap && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-orange-700 font-medium">
-                            Hoạt động Luyện tập:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(
-                                lessonResult.hoat_dong_luyen_tap || ""
-                              )
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.hoat_dong_luyen_tap || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              hoat_dong_luyen_tap: e.target.value,
-                            })
-                          }
-                          className="min-h-[150px] bg-orange-50"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.hoat_dong_van_dung && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-red-700 font-medium">
-                            Hoạt động Vận dụng:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(
-                                lessonResult.hoat_dong_van_dung || ""
-                              )
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.hoat_dong_van_dung || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              hoat_dong_van_dung: e.target.value,
-                            })
-                          }
-                          className="min-h-[150px] bg-red-50"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.ho_so_day_hoc && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-slate-700 font-medium">
-                            Hồ sơ dạy học:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(lessonResult.ho_so_day_hoc || "")
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.ho_so_day_hoc || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              ho_so_day_hoc: e.target.value,
-                            })
-                          }
-                          className="min-h-[80px] bg-slate-50"
-                        />
-                      </div>
-                    )}
-
-                    {lessonFullPlanMode && lessonResult.huong_dan_ve_nha && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-blue-700 font-medium font-bold">
-                            Hướng dẫn về nhà & Chuẩn bị bài sau:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(lessonResult.huong_dan_ve_nha || "")
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={lessonResult.huong_dan_ve_nha || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              huong_dan_ve_nha: e.target.value,
-                            })
-                          }
-                          className="min-h-[100px] bg-blue-50 border-blue-200"
-                        />
-                      </div>
-                    )}
-
-                    {/* Copy, Audit and Export buttons */}
-                    <div className="flex flex-wrap gap-2 pt-4 border-t">
-                      <Button
-                        variant="outline"
-                        className="bg-white border-slate-200 h-11 px-6 rounded-xl shadow-sm text-slate-600 hover:text-blue-600"
-                        onClick={() => {
-                          const content = lessonFullPlanMode
-                            ? `TÊN BÀI: ${lessonResult.ten_bai || lessonTopic
-                            }\n\nMỤC TIÊU KIẾN THỨC:\n${lessonResult.muc_tieu_kien_thuc
-                            }\n\nMỤC TIÊU NĂNG LỰC:\n${lessonResult.muc_tieu_nang_luc
-                            }\n\nMỤC TIÊU PHẨM CHẤT:\n${lessonResult.muc_tieu_pham_chat
-                            }\n\nTHIẾT BỊ DẠY HỌC & HỌC LIỆU:\n${lessonResult.thiet_bi_day_hoc
-                            }\n\nSINH HOẠT DƯỚI CỜ:\n${lessonResult.shdc
-                            }\n\nSINH HOẠT LỚP:\n${lessonResult.shl
-                            }\n\nHOẠT ĐỘNG KHỞI ĐỘNG:\n${lessonResult.hoat_dong_khoi_dong
-                            }\n\nHOẠT ĐỘNG KHÁM PHÁ:\n${lessonResult.hoat_dong_kham_pha
-                            }\n\nHOẠT ĐỘNG LUYỆN TẬP:\n${lessonResult.hoat_dong_luyen_tap
-                            }\n\nHOẠT ĐỘNG VẬN DỤNG:\n${lessonResult.hoat_dong_van_dung
-                            }\n\nHƯỚNG DẪN VỀ NHÀ:\n${lessonResult.huong_dan_ve_nha
-                            }\n\nTÍCH HỢP NLS:\n${lessonResult.tich_hop_nls
-                            }\n\nTÍCH HỢP ĐẠO ĐỨC:\n${lessonResult.tich_hop_dao_duc
-                            }`
-                            : `TÍCH HỢP NLS:\n${lessonResult.tich_hop_nls}\n\nTÍCH HỢP ĐẠO ĐỨC:\n${lessonResult.tich_hop_dao_duc}`;
-                          navigator.clipboard.writeText(content);
-                          setSuccess("Đã copy vào clipboard!");
-                        }}
-                      >
-                        <Copy className="mr-2 h-4 w-4" />
-                        Copy nội dung
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        className="bg-indigo-50 border-indigo-100 h-11 px-6 rounded-xl shadow-sm text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30"
-                        onClick={handleAudit}
-                        disabled={isAuditing}
-                      >
-                        {isAuditing ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        ) : (
-                          <Sparkles className="mr-2 h-4 w-4" />
-                        )}
-                        Kiểm định bài dạy (AI Check)
-                      </Button>
-
-                      <Button
-                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-11 px-6 rounded-xl shadow-md gap-2 ml-auto"
-                        onClick={() => handleExport("lesson")}
-                      >
-                        <Download className="h-4 w-4" />
-                        Xuất file Word
-                      </Button>
-                    </div>
-
-                    {/* Audit Result Display */}
-                    {auditResult && (
-                      <div className="mt-6 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950 dark:to-blue-950 rounded-2xl border border-indigo-100 dark:border-indigo-800 animate-in fade-in slide-in-from-top-4 duration-300">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
-                            <Sparkles className="w-5 h-5" />
-                            <h4 className="font-bold">Kết quả Kiểm định Sư phạm</h4>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 text-indigo-400 hover:text-indigo-600"
-                            onClick={() => setAuditResult(null)}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <div className="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
-                          {auditResult}
-                        </div>
-                        <div className="mt-4 pt-4 border-t border-indigo-100 dark:border-indigo-800 flex justify-end">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-indigo-600 border-indigo-200"
-                            onClick={() => {
-                              copyToClipboard(auditResult);
-                              setSuccess("Đã copy bản kiểm định!");
-                            }}
-                          >
-                            <Copy className="w-3 h-3 mr-2" />
-                            Copy bản kiểm định
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-slate-100 text-slate-500 rounded">
+                  {project.type === 'meeting' ? 'Họp Tổ' :
+                    project.type === 'lesson' ? 'Bài dạy' : 'Sự kiện'}
+                </span>
+                {project.grade && (
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-blue-100 text-blue-600 rounded">
+                    Lớp {project.grade}
+                  </span>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Event Tab */}
-          <TabsContent value="event">
-            <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
-              <CardContent className="p-6 space-y-6">
-                {/* Input Fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Chọn Khối</Label>
-                    <Select
-                      value={selectedGradeEvent}
-                      onValueChange={setSelectedGradeEvent}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn khối..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">Khối 10</SelectItem>
-                        <SelectItem value="11">Khối 11</SelectItem>
-                        <SelectItem value="12">Khối 12</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label>Chọn Tháng</Label>
-                    <Select
-                      value={selectedEventMonth}
-                      onValueChange={setSelectedEventMonth}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn tháng..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ACADEMIC_MONTHS.map((m) => (
-                          <SelectItem key={m.value} value={m.value}>
-                            {m.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Auto-filled Theme */}
-                {autoFilledTheme && (
-                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                    <p className="text-sm font-medium text-purple-800 mb-2">
-                      Chủ đề từ SGK:
-                    </p>
-                    <p className="text-purple-700 font-semibold">
-                      {autoFilledTheme}
-                    </p>
-                    {eventThemeDetails && (
-                      <div className="mt-3 space-y-2 text-sm text-purple-700">
-                        <p>
-                          <strong>Mục tiêu:</strong>{" "}
-                          {eventThemeDetails.objectives.join("; ")}
-                        </p>
-                        <p>
-                          <strong>Hoạt động gợi ý:</strong>{" "}
-                          {eventThemeDetails.activities.join(", ")}
-                        </p>
-                        <p>
-                          <strong>Kỹ năng:</strong>{" "}
-                          {eventThemeDetails.skills.join(", ")}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                {project.month && (
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-100 text-amber-600 rounded">
+                    Tháng {project.month}
+                  </span>
                 )}
+              </div>
 
-                <div className="space-y-2">
-                  <Label>Dự toán kinh phí (tùy chọn)</Label>
-                  <Textarea
-                    placeholder="Nhập dự toán kinh phí nếu cần...&#10;VD: Banner: 500.000đ, Phần thưởng: 1.000.000đ..."
-                    value={eventBudget}
-                    onChange={(e) => setEventBudget(e.target.value)}
-                    rows={3}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    AI sẽ cố gắng bám sát dự toán bạn cung cấp để xây dựng kế
-                    hoạch.
-                  </p>
+              <div className="flex items-center justify-between text-xs text-slate-400">
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {new Date(project.createdAt).toLocaleDateString('vi-VN')}
                 </div>
-
-                <div className="space-y-2">
-                  <Label>Checklist chuẩn bị (tùy chọn)</Label>
-                  <Textarea
-                    placeholder="Nhập danh sách cần chuẩn bị...&#10;VD: Âm thanh, ánh sáng, phông nền, quà tặng..."
-                    value={eventChecklist}
-                    onChange={(e) => setEventChecklist(e.target.value)}
-                    rows={3}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    AI sẽ sử dụng checklist này để làm gợi ý cho phần chuẩn bị.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-purple-600" />
-                    Chỉ dẫn thêm cho AI (tùy chọn)
-                  </Label>
-                  <Textarea
-                    placeholder="Nhập yêu cầu bổ sung cho AI, ví dụ: Thêm kịch ngắn về chủ đề gia đình, có mini game Kahoot, mời cựu học sinh chia sẻ..."
-                    value={eventCustomInstructions}
-                    onChange={(e) => setEventCustomInstructions(e.target.value)}
-                    className="min-h-[80px] resize-none"
-                  />
-                  <p className="text-xs text-slate-500">
-                    AI sẽ cập nhật nội dung dựa trên chỉ dẫn của bạn
-                  </p>
-                </div>
-
-                {/* Generate Button */}
                 <Button
-                  onClick={handleGenerateEvent}
-                  disabled={
-                    isGenerating || !selectedGradeEvent || !selectedEventMonth
-                  }
-                  className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white gap-2"
-                  size="lg"
+                  variant="ghost"
+                  size="sm"
+                  className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 gap-1 h-7"
+                  onClick={() => loadProjectToWorkbench(project)}
                 >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Đang tạo kịch bản...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-5 h-5" />
-                      Tạo Kịch bản Ngoại khóa AI
-                    </>
-                  )}
+                  <ExternalLink className="w-3 h-3" />
+                  Mở lại
                 </Button>
+              </div>
+            </div>
+          ))}
 
-                {/* Results */}
-                {eventResult && (
-                  <div className="space-y-4 mt-6">
-                    <h3 className="font-semibold text-lg text-slate-800">
-                      Kết quả kịch bản ngoại khóa:
-                    </h3>
+        {projects.length === 0 && (
+          <div className="col-span-full py-20 text-center space-y-3">
+            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+              <Archive className="w-8 h-8 text-slate-300" />
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-slate-500">Thư viện trống</p>
+              <p className="text-sm text-slate-400">Các nội dung bạn tạo sẽ tự động được lưu tại đây.</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </CardContent>
+  </Card>
+</TabsContent>
+    </Tabs >
+      </main >
 
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-purple-700 font-medium">
-                            Tên chủ đề:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(eventResult.ten_chu_de)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Input
-                          value={eventResult.ten_chu_de}
-                          onChange={(e) =>
-                            setEventResult({
-                              ...eventResult,
-                              ten_chu_de: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-purple-700 font-medium">
-                            Mục đích yêu cầu:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(eventResult.muc_dich_yeu_cau)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={eventResult.muc_dich_yeu_cau}
-                          onChange={(e) =>
-                            setEventResult({
-                              ...eventResult,
-                              muc_dich_yeu_cau: e.target.value,
-                            })
-                          }
-                          className="min-h-[100px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-purple-700 font-medium">
-                            Kịch bản chi tiết:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(eventResult.kich_ban_chi_tiet)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={eventResult.kich_ban_chi_tiet}
-                          onChange={(e) =>
-                            setEventResult({
-                              ...eventResult,
-                              kich_ban_chi_tiet: e.target.value,
-                            })
-                          }
-                          className="min-h-[300px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-purple-700 font-medium">
-                            Thông điệp kết thúc:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(eventResult.thong_diep_ket_thuc)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={eventResult.thong_diep_ket_thuc}
-                          onChange={(e) =>
-                            setEventResult({
-                              ...eventResult,
-                              thong_diep_ket_thuc: e.target.value,
-                            })
-                          }
-                          className="min-h-[80px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-purple-700 font-medium">
-                            Năng lực:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(eventResult.nang_luc)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={eventResult.nang_luc}
-                          onChange={(e) =>
-                            setEventResult({
-                              ...eventResult,
-                              nang_luc: e.target.value,
-                            })
-                          }
-                          className="min-h-[80px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-purple-700 font-medium">
-                            Phẩm chất:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(eventResult.pham_chat)
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
-                        </div>
-                        <Textarea
-                          value={eventResult.pham_chat}
-                          onChange={(e) =>
-                            setEventResult({
-                              ...eventResult,
-                              pham_chat: e.target.value,
-                            })
-                          }
-                          className="min-h-[80px]"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="font-medium text-amber-700">
-                          Dự toán kinh phí
-                        </Label>
-                        <Textarea
-                          value={
-                            eventResult.du_toan_kinh_phi ||
-                            eventBudget ||
-                            "Không có"
-                          }
-                          onChange={(e) =>
-                            setEventResult({
-                              ...eventResult,
-                              du_toan_kinh_phi: e.target.value,
-                            })
-                          }
-                          rows={3}
-                          className="bg-amber-50"
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="font-medium text-cyan-700">
-                          Checklist chuẩn bị
-                        </Label>
-                        <Textarea
-                          value={
-                            eventResult.checklist_chuan_bi ||
-                            eventChecklist ||
-                            ""
-                          }
-                          onChange={(e) =>
-                            setEventResult({
-                              ...eventResult,
-                              checklist_chuan_bi: e.target.value,
-                            })
-                          }
-                          rows={4}
-                          className="bg-cyan-50"
-                          placeholder="- Chuẩn bị âm thanh, ánh sáng&#10;- In ấn tài liệu&#10;- Liên hệ khách mời..."
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label className="font-medium text-rose-700">
-                          Mẫu đánh giá sau hoạt động
-                        </Label>
-                        <Textarea
-                          value={
-                            eventResult.danh_gia_sau_hoat_dong ||
-                            `1. Mức độ hoàn thành mục tiêu: __/10\n2. Sự tham gia của học sinh: __/10\n3. Công tác tổ chức: __/10\n4. Bài học kinh nghiệm:\n5. Đề xuất cải tiến:`
-                          }
-                          onChange={(e) =>
-                            setEventResult({
-                              ...eventResult,
-                              danh_gia_sau_hoat_dong: e.target.value,
-                            })
-                          }
-                          rows={6}
-                          className="bg-rose-50"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Export Button */}
-                    <Button
-                      onClick={() => handleExport("event")}
-                      disabled={isExporting}
-                      className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white gap-2"
-                      size="lg"
-                    >
-                      {isExporting ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          Đang xuất file...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-5 h-5" />
-                          Xuất file Word
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          {/* History / Library Tab */}
-          <TabsContent value="history">
-            <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
-              <CardContent className="p-6 space-y-6">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                  <Input
-                    placeholder="Tìm kiếm dự án (tên bài, tháng, loại)..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-11 bg-slate-50 border-slate-200 rounded-xl focus:ring-amber-500 focus:border-amber-500"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {projects
-                    .filter(p =>
-                      !searchQuery ||
-                      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                      p.type.toLowerCase().includes(searchQuery.toLowerCase())
-                    )
-                    .map((project) => (
-                      <div
-                        key={project.id}
-                        className="group relative p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-200"
-                      >
-                        <div className="flex justify-between items-start mb-3">
-                          <div className={`p-2 rounded-lg ${project.type === 'meeting' ? 'bg-blue-50 text-blue-600' :
-                            project.type === 'lesson' ? 'bg-green-50 text-green-600' :
-                              'bg-purple-50 text-purple-600'
-                            }`}>
-                            {project.type === 'meeting' ? <FileText className="w-4 h-4" /> :
-                              project.type === 'lesson' ? <BookOpen className="w-4 h-4" /> :
-                                <Calendar className="w-4 h-4" />}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-slate-300 hover:text-red-500 h-8 w-8"
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              if (confirm('Bạn có chắc muốn xóa dự án này?')) {
-                                await deleteProject(project.id);
-                                loadProjects();
-                              }
-                            }}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-
-                        <h3 className="font-semibold text-slate-800 line-clamp-2 mb-2 group-hover:text-amber-700">
-                          {project.title}
-                        </h3>
-
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-slate-100 text-slate-500 rounded">
-                            {project.type === 'meeting' ? 'Họp Tổ' :
-                              project.type === 'lesson' ? 'Bài dạy' : 'Sự kiện'}
-                          </span>
-                          {project.grade && (
-                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-blue-100 text-blue-600 rounded">
-                              Lớp {project.grade}
-                            </span>
-                          )}
-                          {project.month && (
-                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-100 text-amber-600 rounded">
-                              Tháng {project.month}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-between text-xs text-slate-400">
-                          <div className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {new Date(project.createdAt).toLocaleDateString('vi-VN')}
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 gap-1 h-7"
-                            onClick={() => loadProjectToWorkbench(project)}
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                            Mở lại
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-
-                  {projects.length === 0 && (
-                    <div className="col-span-full py-20 text-center space-y-3">
-                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
-                        <Archive className="w-8 h-8 text-slate-300" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="font-medium text-slate-500">Thư viện trống</p>
-                        <p className="text-sm text-slate-400">Các nội dung bạn tạo sẽ tự động được lưu tại đây.</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
-
-      {/* Template Manager Dialog */}
-      <TemplateManager
-        open={showSettings}
-        onOpenChange={setShowSettings}
-        onTemplateSelect={(template, type) => {
-          if (type === "meeting") setMeetingTemplate(template);
-          else if (type === "lesson") setLessonTemplate(template);
-          else if (type === "event") setEventTemplate(template);
-        }}
-        defaultTemplateStatus={{
-          meeting: hasDefaultMeetingTemplate,
-          lesson: hasDefaultLessonTemplate,
-          event: hasDefaultEventTemplate,
+  {/* Template Manager Dialog */ }
+  < TemplateManager
+open = { showSettings }
+onOpenChange = { setShowSettings }
+onTemplateSelect = {(template, type) => {
+  if (type && type.includes("meeting")) setMeetingTemplate(template);
+  else if (type && type.includes("lesson")) setLessonTemplate(template);
+  else if (type && type.includes("event")) setEventTemplate(template);
+  else if (type && type.includes("assessment")) setAssessmentTemplate(template);
+}}
+defaultTemplateStatus = {{
+  meeting: hasDefaultMeetingTemplate,
+    lesson: hasDefaultLessonTemplate,
+      event: hasDefaultEventTemplate,
         }}
       />
 
-      <Dialog open={showPPCTDialog} onOpenChange={setShowPPCTDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Thêm Phân phốiChương trình</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Tháng</Label>
-              <Select
-                value={newPPCTItem.month}
-                onValueChange={(v) =>
-                  setNewPPCTItem({ ...newPPCTItem, month: v })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn tháng" />
-                </SelectTrigger>
-                <SelectContent>
-                  {["9", "10", "11", "12", "1", "2", "3", "4", "5"].map((m) => (
-                    <SelectItem key={m} value={m}>
-                      Tháng {m}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Chủ đề / Nội dung</Label>
-              <Input
-                placeholder="VD: Thể hiện phẩm chất tốt đẹp của người học sinh"
-                value={newPPCTItem.theme}
-                onChange={(e) =>
-                  setNewPPCTItem({ ...newPPCTItem, theme: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Số tiết</Label>
-              <Select
-                value={newPPCTItem.periods.toString()}
-                onValueChange={(v) =>
-                  setNewPPCTItem({
-                    ...newPPCTItem,
-                    periods: Number.parseInt(v),
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
-                    <SelectItem key={n} value={n.toString()}>
-                      {n} tiết
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Danh sách Hoạt động (mỗi dòng một hoạt động)</Label>
-              <Textarea
-                placeholder="VD: Tìm hiểu nội quy trường lớp&#10;Tìm hiểu truyền thống nhà trường"
-                value={newPPCTItem.activities?.join("\n") || ""}
-                onChange={(e) =>
-                  setNewPPCTItem({
-                    ...newPPCTItem,
-                    activities: e.target.value.split("\n").filter(a => a.trim() !== ""),
-                  })
-                }
-                className="min-h-[100px]"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Ghi chú (tùy chọn)</Label>
-              <Input
-                placeholder="VD: Kết hợp với chào mừng 20/11"
-                value={newPPCTItem.notes || ""}
-                onChange={(e) =>
-                  setNewPPCTItem({ ...newPPCTItem, notes: e.target.value })
-                }
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowPPCTDialog(false)}
-              >
-                Hủy
-              </Button>
-              <Button
-                onClick={() => {
-                  handleAddPPCTItem();
-                }}
-              >
-                Thêm
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+  < Dialog open = { showPPCTDialog } onOpenChange = { setShowPPCTDialog } >
+    <DialogContent className="max-w-md">
+      <DialogHeader>
+        <DialogTitle>Thêm Phân phốiChương trình</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Tháng</Label>
+          <Select
+            value={newPPCTItem.month}
+            onValueChange={(v) =>
+              setNewPPCTItem({ ...newPPCTItem, month: v })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Chọn tháng" />
+            </SelectTrigger>
+            <SelectContent>
+              {["9", "10", "11", "12", "1", "2", "3", "4", "5"].map((m) => (
+                <SelectItem key={m} value={m}>
+                  Tháng {m}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Chủ đề / Nội dung</Label>
+          <Input
+            placeholder="VD: Thể hiện phẩm chất tốt đẹp của người học sinh"
+            value={newPPCTItem.theme}
+            onChange={(e) =>
+              setNewPPCTItem({ ...newPPCTItem, theme: e.target.value })
+            }
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Số tiết</Label>
+          <Select
+            value={newPPCTItem.periods.toString()}
+            onValueChange={(v) =>
+              setNewPPCTItem({
+                ...newPPCTItem,
+                periods: Number.parseInt(v),
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
+                <SelectItem key={n} value={n.toString()}>
+                  {n} tiết
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Danh sách Hoạt động (mỗi dòng một hoạt động)</Label>
+          <Textarea
+            placeholder="VD: Tìm hiểu nội quy trường lớp&#10;Tìm hiểu truyền thống nhà trường"
+            value={newPPCTItem.activities?.join("\n") || ""}
+            onChange={(e) =>
+              setNewPPCTItem({
+                ...newPPCTItem,
+                activities: e.target.value.split("\n").filter(a => a.trim() !== ""),
+              })
+            }
+            className="min-h-[100px]"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Ghi chú (tùy chọn)</Label>
+          <Input
+            placeholder="VD: Kết hợp với chào mừng 20/11"
+            value={newPPCTItem.notes || ""}
+            onChange={(e) =>
+              setNewPPCTItem({ ...newPPCTItem, notes: e.target.value })
+            }
+          />
+        </div>
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowPPCTDialog(false)}
+          >
+            Hủy
+          </Button>
+          <Button
+            onClick={() => {
+              handleAddPPCTItem();
+            }}
+          >
+            Thêm
+          </Button>
+        </div>
+      </div>
+    </DialogContent>
+      </Dialog >
+    </div >
   );
 };
 

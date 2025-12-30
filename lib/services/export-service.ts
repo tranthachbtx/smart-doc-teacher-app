@@ -430,7 +430,56 @@ export const ExportService = {
         `1. Mức độ hoàn thành mục tiêu: __/10\n2. Sự tham gia của học sinh: __/10\n3. Công tác tổ chức: __/10\n4. Bài học kinh nghiệm:\n5. Đề xuất cải tiến:`
       ),
     };
-    const fileName = `KH_Ngoaikhoa_K${grade}_T${month}.docx`;
+    const fileName = `KH_Ngoaikhoa_KG_${grade}_T${month}.docx`;
+    return processTemplate(data, template?.data || null, fileName);
+  },
+
+  async exportAssessmentPlan(
+    result: any,
+    template: TemplateData | null,
+    options: {
+      grade: string;
+      term: string;
+      productType: string;
+    }
+  ) {
+    const { grade, term, productType } = options;
+
+    // Helper to format Matrix as a text table
+    const formatMatrix = (matrix: any[]) => {
+      if (!Array.isArray(matrix)) return "";
+      return matrix.map(m => `+ Mức độ: ${m.muc_do}\n  Mô tả: ${m.mo_ta}`).join("\n\n");
+    };
+
+    // Helper to format Rubric as a text table
+    const formatRubric = (rubric: any[]) => {
+      if (!Array.isArray(rubric)) return "";
+      return rubric.map(r => {
+        const levels = r.muc_do;
+        let levelText = "";
+        if (typeof levels === 'string') {
+          levelText = levels;
+        } else {
+          levelText = `\n  - Xuất sắc: ${levels.xuat_sac || ''}\n  - Tốt: ${levels.tot || ''}\n  - Đạt: ${levels.dat || ''}\n  - Chưa đạt: ${levels.chua_dat || ''}`;
+        }
+        return `+ Tiêu chí: ${r.tieu_chi} (Trọng số: ${r.trong_so})${levelText}`;
+      }).join("\n\n");
+    };
+
+    const data = {
+      ten_ke_hoach: result.ten_ke_hoach,
+      muc_tieu: formatForWord(Array.isArray(result.muc_tieu) ? result.muc_tieu.join("\n") : result.muc_tieu),
+      noi_dung_nhiem_vu: formatForWord(result.noi_dung_nhiem_vu),
+      hinh_thuc_to_chuc: formatForWord(result.hinh_thuc_to_chuc),
+      ma_tran_dac_ta: formatForWord(formatMatrix(result.ma_tran_dac_ta)),
+      bang_kiem_rubric: formatForWord(formatRubric(result.bang_kiem_rubric)),
+      loi_khuyen: formatForWord(result.loi_khuyen),
+      khoi: grade,
+      ky_danh_gia: term,
+      loai_san_pham: productType,
+    };
+
+    const fileName = `KH_KiemTra_${term}_Khoi${grade}.docx`.replace(/\s+/g, "_");
     return processTemplate(data, template?.data || null, fileName);
   },
 };

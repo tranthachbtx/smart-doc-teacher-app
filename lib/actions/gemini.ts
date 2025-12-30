@@ -7,6 +7,7 @@ import {
   getLessonIntegrationPrompt,
   getEventPrompt,
 } from "@/lib/prompts/ai-prompts";
+import { getAssessmentPrompt } from "@/lib/prompts/assessment-prompts";
 import { getKHDHPrompt } from "@/lib/prompts/khdh-prompts";
 
 const MODELS = [
@@ -165,6 +166,11 @@ function parseGeminiJSON(text: string): any {
     console.log("[v0] Direct parse failed, attempting fixes...");
   }
 
+  // Common fix: Unescaped newlines in JSON strings
+  // This is a naive heuristic but often helps with LLM output
+  // We try to escape newlines that are NOT followed by a control character or key start
+  jsonStr = jsonStr.replace(/(?<!\\)\n/g, "\\n");
+
   jsonStr = jsonStr.replace(/"([^"]*?)"/g, (match, content) => {
     const fixed = content
       .replace(/\\/g, "\\\\")
@@ -234,6 +240,13 @@ function parseGeminiJSON(text: string): any {
       "gv_chuan_bi",
       "hs_chuan_bi",
       "hoat_dong_duoi_co",
+      "ten_ke_hoach",
+      "muc_tieu",
+      "noi_dung_nhiem_vu",
+      "hinh_thuc_to_chuc",
+      "ma_tran_dac_ta",
+      "bang_kiem_rubric",
+      "loi_khuyen"
     ];
 
     for (const key of keys) {
@@ -627,4 +640,62 @@ export async function checkApiKeyStatus(): Promise<{
     primaryKey: hasPrimary,
     backupKey: hasBackup,
   };
+}
+
+export async function generateAssessmentPlan(
+  grade: string,
+  term: string,
+  productType: string,
+  topic: string
+): Promise<{
+  success: boolean;
+  data?: {
+    ten_ke_hoach: string;
+    muc_tieu: string[];
+    noi_dung_nhiem_vu: string;
+    hinh_thuc_to_chuc: string;
+    ma_tran_dac_ta: Array<{ muc_do: string; mo_ta: string }>;
+    bang_kiem_rubric: Array<{ tieu_chi: string; trong_so: string; muc_do: any }>;
+    loi_khuyen: string;
+  };
+  error?: string;
+}> {
+  const apiKeys = getApiKeys();
+
+  if (apiKeys.length === 0) {
+    return {
+      success: false,
+      error: "API Key chưa được cấu hình",
+    };
+  }
+
+  try {
+    const prompt = getAssessmentPrompt(grade, term, productType, topic);
+    console.log("[v0] Calling Gemini API for Assessment Plan...");
+
+    const text = await callGeminiWithRetry(prompt);
+    console.log("[v0] Assessment Plan response received, length:", text.length);
+
+    const data = parseGeminiJSON(text);
+    console.log("[v0] Assessment JSON parsed successfully");
+
+    return {
+      success: true,
+      data: {
+        ten_ke_hoach: data.ten_ke_hoach || `Kế hoạch kiểm tra ${term}`,
+        muc_tieu: Array.isArray(data.muc_tieu) ? data.muc_tieu : [data.muc_tieu],
+        noi_dung_nhiem_vu: data.noi_dung_nhiem_vu || "",
+        hinh_thuc_to_chuc: data.hinh_thuc_to_chuc || "",
+        ma_tran_dac_ta: Array.isArray(data.ma_tran_dac_ta) ? data.ma_tran_dac_ta : [],
+        bang_kiem_rubric: Array.isArray(data.bang_kiem_rubric) ? data.bang_kiem_rubric : [],
+        loi_khuyen: data.loi_khuyen || "",
+      },
+    };
+  } catch (error: any) {
+    console.error("[v0] Assessment generation error:", error.message);
+    return {
+      success: false,
+      error: error?.message || "Lỗi khi tạo kế hoạch kiểm tra",
+    };
+  }
 }

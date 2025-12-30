@@ -821,3 +821,9 @@ export function taoContextPhanBoThoiGian(khoi: number, chuDeSo: number): string 
 
   return result
 }
+
+export function getChuDeListByKhoi(khoi: string): PPCTChuDe[] {
+  const khoiNum = Number.parseInt(khoi);
+  const ppct = getPPCTTheoKhoi(khoiNum);
+  return ppct?.chu_de || [];
+}

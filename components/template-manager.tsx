@@ -35,6 +35,9 @@ import {
   Save,
   X,
   BookOpen,
+  Sparkles,
+  CheckCircle,
+  HelpCircle,
 } from "lucide-react";
 import {
   saveTemplate,
@@ -52,6 +55,12 @@ import {
   type PPCTKhoi,
 } from "@/lib/data/ppct-database";
 import type { Document as DocxDocument } from "docx";
+import {
+  createMeetingTemplate,
+  createLessonTemplate,
+  createEventTemplate,
+  createAssessmentTemplate,
+} from "@/lib/docx-templates";
 
 interface TemplateInfo {
   name: string;
@@ -71,6 +80,7 @@ export function TemplateManager({
   open,
   onOpenChange,
   onPPCTChange,
+  onTemplateSelect,
 }: TemplateManagerProps) {
   const [activeTab, setActiveTab] = useState("default");
 
@@ -81,6 +91,8 @@ export function TemplateManager({
     useState<TemplateInfo | null>(null);
   const [defaultLessonTemplate, setDefaultLessonTemplate] =
     useState<TemplateInfo | null>(null);
+  const [defaultAssessmentTemplate, setDefaultAssessmentTemplate] =
+    useState<TemplateInfo | null>(null);
 
   // Session templates state
   const [sessionMeetingTemplate, setSessionMeetingTemplate] =
@@ -88,6 +100,8 @@ export function TemplateManager({
   const [sessionEventTemplate, setSessionEventTemplate] =
     useState<TemplateInfo | null>(null);
   const [sessionLessonTemplate, setSessionLessonTemplate] =
+    useState<TemplateInfo | null>(null);
+  const [sessionAssessmentTemplate, setSessionAssessmentTemplate] =
     useState<TemplateInfo | null>(null);
 
   // PPCT state
@@ -129,17 +143,19 @@ export function TemplateManager({
     setIsLoading(true);
     try {
       // Load default templates
-      const [defaultMeeting, defaultEvent, defaultLesson] = await Promise.all([
+      const [defaultMeeting, defaultEvent, defaultLesson, defaultAssessment] = await Promise.all([
         getTemplate("default_meeting"),
         getTemplate("default_event"),
         getTemplate("default_lesson"),
+        getTemplate("default_assessment"),
       ]);
 
       // Load session templates
-      const [sessionMeeting, sessionEvent, sessionLesson] = await Promise.all([
+      const [sessionMeeting, sessionEvent, sessionLesson, sessionAssessment] = await Promise.all([
         getTemplate("meeting"),
         getTemplate("event"),
         getTemplate("lesson"),
+        getTemplate("assessment"),
       ]);
 
       if (defaultMeeting)
@@ -163,6 +179,13 @@ export function TemplateManager({
         });
       else setDefaultLessonTemplate(null);
 
+      if (defaultAssessment)
+        setDefaultAssessmentTemplate({
+          name: defaultAssessment.name,
+          data: defaultAssessment.data,
+        });
+      else setDefaultAssessmentTemplate(null);
+
       if (sessionMeeting)
         setSessionMeetingTemplate({
           name: sessionMeeting.name,
@@ -183,6 +206,13 @@ export function TemplateManager({
           data: sessionLesson.data,
         });
       else setSessionLessonTemplate(null);
+
+      if (sessionAssessment)
+        setSessionAssessmentTemplate({
+          name: sessionAssessment.name,
+          data: sessionAssessment.data,
+        });
+      else setSessionAssessmentTemplate(null);
 
       // Show setup guide if no default templates exist
       if (!defaultMeeting && !defaultEvent && !defaultLesson) {
@@ -606,10 +636,10 @@ export function TemplateManager({
   }) => (
     <Card
       className={`p-4 border-2 transition-all ${template
-          ? isDefault
-            ? "border-amber-300 bg-amber-50/50"
-            : "border-green-300 bg-green-50/50"
-          : "border-dashed border-gray-300 bg-gray-50/50"
+        ? isDefault
+          ? "border-amber-300 bg-amber-50/50"
+          : "border-green-300 bg-green-50/50"
+        : "border-dashed border-gray-300 bg-gray-50/50"
         } rounded-xl`}
     >
       <div className="space-y-3">
@@ -617,10 +647,10 @@ export function TemplateManager({
           <div className="flex items-center gap-3">
             <div
               className={`w-9 h-9 rounded-lg flex items-center justify-center ${template
-                  ? isDefault
-                    ? "bg-amber-100 text-amber-600"
-                    : "bg-green-100 text-green-600"
-                  : "bg-gray-100 text-gray-400"
+                ? isDefault
+                  ? "bg-amber-100 text-amber-600"
+                  : "bg-green-100 text-green-600"
+                : "bg-gray-100 text-gray-400"
                 }`}
             >
               {template ? (
@@ -644,8 +674,8 @@ export function TemplateManager({
           <div className="space-y-2">
             <div
               className={`flex items-center gap-2 text-xs ${isDefault
-                  ? "text-amber-700 bg-amber-100"
-                  : "text-green-700 bg-green-100"
+                ? "text-amber-700 bg-amber-100"
+                : "text-green-700 bg-green-100"
                 } px-2 py-1.5 rounded-lg`}
             >
               {isDefault ? (
@@ -709,363 +739,9 @@ export function TemplateManager({
     </Card>
   );
 
-  const downloadMeetingWordTemplate = async () => {
+    const downloadMeetingWordTemplate = async () => {
     try {
-      const {
-        Document,
-        Packer,
-        Paragraph,
-        TextRun,
-        Table,
-        TableRow,
-        TableCell,
-        WidthType,
-        AlignmentType,
-        BorderStyle,
-      } = await import("docx");
-
-      const doc = new Document({
-        sections: [
-          {
-            properties: {},
-            children: [
-              // Header - 2 columns layout simulation
-              new Table({
-                width: { size: 100, type: WidthType.PERCENTAGE },
-                borders: {
-                  top: { style: BorderStyle.NONE },
-                  bottom: { style: BorderStyle.NONE },
-                  left: { style: BorderStyle.NONE },
-                  right: { style: BorderStyle.NONE },
-                  insideHorizontal: { style: BorderStyle.NONE },
-                  insideVertical: { style: BorderStyle.NONE },
-                },
-                rows: [
-                  new TableRow({
-                    children: [
-                      new TableCell({
-                        width: { size: 40, type: WidthType.PERCENTAGE },
-                        children: [
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "TRƯỜNG THPT",
-                                bold: true,
-                                size: 24,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "{{ten_truong}}",
-                                bold: true,
-                                size: 24,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "TỔ {{to_chuyen_mon}}",
-                                size: 22,
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                      new TableCell({
-                        width: { size: 60, type: WidthType.PERCENTAGE },
-                        children: [
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
-                                bold: true,
-                                size: 24,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "Độc lập - Tự do - Hạnh phúc",
-                                bold: true,
-                                size: 24,
-                                underline: {},
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Title
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({ text: "BIÊN BẢN", bold: true, size: 32 }),
-                ],
-              }),
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({
-                    text: "Sinh hoạt định kỳ của tổ/nhóm chuyên môn tháng: {{thang}}/{{nam}}",
-                    size: 26,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text: "Lần: {{lan_hop}}", size: 24 })],
-              }),
-              new Paragraph({
-                text: "----------",
-                alignment: AlignmentType.CENTER,
-              }),
-              new Paragraph({ text: "" }),
-              // Section I
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "I. Thời gian và địa điểm:",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Thời gian: Vào lúc......giờ........ phút, ngày .......tháng ...... năm {{nam}}",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Tại trường THPT {{ten_truong}}",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Section II
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "II. Thành phần:",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "Chủ trì: {{chu_tri}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "Thư ký: {{thu_ky}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "Thành viên: {{thanh_vien}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Vắng: ........ Lí do...................................",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Section III
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "III. Nội dung:", bold: true, size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Tổ trưởng thông qua mục đích, yêu cầu và nội dung của buổi họp và tiến hành từng nội dung cụ thể như sau:",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "1. Đánh giá hoạt động tuần – tháng qua",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Nội dung chính: {{noi_dung_chinh}}",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "a) Ưu điểm: {{uu_diem}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "b) Hạn chế: {{han_che}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "2. Triển khai kế hoạch tuần – tháng tới",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{ke_hoach_thang_toi}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "3. Ý kiến thảo luận",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{y_kien_dong_gop}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "4. Kết luận của chủ trì cuộc họp",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Các thành viên đồng ý hoàn toàn với ý kiến thảo luận và đóng góp trên.",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Biên bản kết thúc lúc......giờ......phút cùng ngày.",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({ text: "" }),
-              // Signatures
-              new Table({
-                width: { size: 100, type: WidthType.PERCENTAGE },
-                borders: {
-                  top: { style: BorderStyle.NONE },
-                  bottom: { style: BorderStyle.NONE },
-                  left: { style: BorderStyle.NONE },
-                  right: { style: BorderStyle.NONE },
-                  insideHorizontal: { style: BorderStyle.NONE },
-                  insideVertical: { style: BorderStyle.NONE },
-                },
-                rows: [
-                  new TableRow({
-                    children: [
-                      new TableCell({
-                        width: { size: 50, type: WidthType.PERCENTAGE },
-                        children: [
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "CHỦ TRÌ CUỘC HỌP",
-                                bold: true,
-                                size: 24,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({ text: "{{chu_tri}}", size: 24 }),
-                            ],
-                          }),
-                        ],
-                      }),
-                      new TableCell({
-                        width: { size: 50, type: WidthType.PERCENTAGE },
-                        children: [
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "THƯ KÝ",
-                                bold: true,
-                                size: 24,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({ text: "{{thu_ky}}", size: 24 }),
-                            ],
-                          }),
-                        ],
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-            ],
-          },
-        ],
-      });
-
-      const blob = await Packer.toBlob(doc as DocxDocument);
+      const blob = await createMeetingTemplate();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -1074,302 +750,14 @@ export function TemplateManager({
       URL.revokeObjectURL(url);
       showMessage("success", "Đã tải mẫu Biên bản Họp Tổ");
     } catch (error) {
-      console.error("Error creating meeting template:", error);
-      showMessage("error", "Không thể tạo mẫu Word");
+       console.error("Error creating meeting template:", error);
+       showMessage("error", "Không thể tạo mẫu Word");
     }
   };
 
   const downloadLessonWordTemplate = async () => {
     try {
-      const { Document, Packer, Paragraph, TextRun, AlignmentType } =
-        await import("docx");
-
-      const doc = new Document({
-        sections: [
-          {
-            properties: {},
-            children: [
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({
-                    text: "KẾ HOẠCH GIÁO DỤC CHỦ ĐỀ",
-                    bold: true,
-                    size: 32,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Trường: THPT {{ten_truong}}",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "Tổ: {{to_chuyen_mon}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Họ và tên giáo viên: {{ten_giao_vien}}",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "Ngày soạn: {{ngay_soan}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Chủ đề {{chu_de}}: {{ten_chu_de}}",
-                    bold: true,
-                    size: 26,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Môn học: Hoạt động trải nghiệm, hướng nghiệp; lớp: {{lop}}",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "Thời gian thực hiện: ({{so_tiet}})",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Section I - Mục tiêu
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "I. MỤC TIÊU", bold: true, size: 26 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "1. Yêu cầu cần đạt:",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{muc_tieu_kien_thuc}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "2. Năng lực", bold: true, size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{muc_tieu_nang_luc}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "3. Phẩm chất", bold: true, size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{muc_tieu_pham_chat}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Section II - Thiết bị
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "II. THIẾT BỊ DẠY HỌC",
-                    bold: true,
-                    size: 26,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "1. Đối với giáo viên",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: "{{gv_chuanbi}}", size: 24 })],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "2. Đối với học sinh",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: "{{hs_chuanbi}}", size: 24 })],
-              }),
-              new Paragraph({ text: "" }),
-              // Section III - Hoạt động
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "III. CÁC HOẠT ĐỘNG DẠY HỌC",
-                    bold: true,
-                    size: 26,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "GỢI Ý NỘI DUNG SINH HOẠT DƯỚI CỜ VÀ SINH HOẠT LỚP",
-                    bold: true,
-                    size: 24,
-                    underline: {},
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{hoat_dong_duoi_co}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "HOẠT ĐỘNG GIÁO DỤC THEO CHỦ ĐỀ",
-                    bold: true,
-                    size: 24,
-                    underline: {},
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "A. HOẠT ĐỘNG KHỞI ĐỘNG",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{hoat_dong_khoi_dong}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "B. HOẠT ĐỘNG KHÁM PHÁ",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{hoat_dong_kham_pha}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "C. HOẠT ĐỘNG LUYỆN TẬP",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{hoat_dong_luyen_tap}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "D. HOẠT ĐỘNG VẬN DỤNG",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{hoat_dong_van_dung}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "E. Tích hợp và hồ sơ:",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: "{{tich_hop_nls}}", size: 24 })],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{tich_hop_dao_duc}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{ho_so_day_hoc}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "HƯỚNG DẪN VỀ NHÀ",
-                    bold: true,
-                    size: 24,
-                    underline: {},
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{huong_dan_on_tap}}", size: 24 }),
-                ],
-              }),
-            ],
-          },
-        ],
-      });
-
-      const blob = await Packer.toBlob(doc as DocxDocument);
+      const blob = await createLessonTemplate();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -1378,415 +766,28 @@ export function TemplateManager({
       URL.revokeObjectURL(url);
       showMessage("success", "Đã tải mẫu Kế hoạch Bài dạy");
     } catch (error) {
-      console.error("Error creating lesson template:", error);
-      showMessage("error", "Không thể tạo mẫu Word");
+       console.error("Error creating lesson template:", error);
+       showMessage("error", "Không thể tạo mẫu Word");
     }
+  };
+
+  const downloadAssessmentWordTemplate = async () => {
+      try {
+        const blob = await createAssessmentTemplate();
+         // Save to IDB as default_assessment
+        const arrayBuffer = await blob.arrayBuffer();
+        await saveTemplate("default_assessment" as any, "Mau_Ke_Hoach_Kiem_Tra.docx", arrayBuffer);
+        await loadTemplates();
+        showMessage("success", "Đã tạo mẫu Kế hoạch Kiểm tra chuẩn");
+      } catch (error) {
+        console.error("Error creating Assessment Word template:", error);
+        showMessage("error", "Không thể tạo file mẫu Word");
+      }
   };
 
   const downloadEventWordTemplate = async () => {
     try {
-      const {
-        Document,
-        Packer,
-        Paragraph,
-        TextRun,
-        Table,
-        TableRow,
-        TableCell,
-        WidthType,
-        AlignmentType,
-        BorderStyle,
-      } = await import("docx");
-
-      const doc = new Document({
-        sections: [
-          {
-            properties: {},
-            children: [
-              // Header
-              new Table({
-                width: { size: 100, type: WidthType.PERCENTAGE },
-                borders: {
-                  top: { style: BorderStyle.NONE },
-                  bottom: { style: BorderStyle.NONE },
-                  left: { style: BorderStyle.NONE },
-                  right: { style: BorderStyle.NONE },
-                  insideHorizontal: { style: BorderStyle.NONE },
-                  insideVertical: { style: BorderStyle.NONE },
-                },
-                rows: [
-                  new TableRow({
-                    children: [
-                      new TableCell({
-                        width: { size: 40, type: WidthType.PERCENTAGE },
-                        children: [
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "TRƯỜNG THPT {{ten_truong}}",
-                                bold: true,
-                                size: 22,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "TỔ {{to_chuyen_mon}}",
-                                size: 22,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "Số: {{so_ke_hoach}}/KHNK-HĐTN-HN",
-                                size: 20,
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                      new TableCell({
-                        width: { size: 60, type: WidthType.PERCENTAGE },
-                        children: [
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
-                                bold: true,
-                                size: 24,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "Độc lập – Tự do – Hạnh phúc",
-                                bold: true,
-                                size: 24,
-                                underline: {},
-                              }),
-                            ],
-                          }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "{{dia_diem}}, ngày ... tháng {{thang}} năm {{nam}}",
-                                italics: true,
-                                size: 22,
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Title
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({ text: "KẾ HOẠCH", bold: true, size: 32 }),
-                ],
-              }),
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({
-                    text: 'Ngoại khoá khối {{khoi_lop}} - Chủ đề {{chu_de}} "{{ten_chu_de}}"',
-                    bold: true,
-                    size: 26,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Section I - Mục tiêu
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "I. MỤC TIÊU", bold: true, size: 26 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "1. Yêu cầu cần đạt:",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{muc_dich_yeu_cau}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "2. Năng lực:", bold: true, size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: "{{nang_luc}}", size: 24 })],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "3. Phẩm chất:", bold: true, size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: "{{pham_chat}}", size: 24 })],
-              }),
-              new Paragraph({ text: "" }),
-              // Section II - Thời gian địa điểm
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "II. THỜI GIAN – ĐỊA ĐIỂM",
-                    bold: true,
-                    size: 26,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "1. Thời gian: {{thoi_gian}}",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "2. Địa điểm: {{dia_diem}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "3. Yêu cầu: Nghiêm túc thực hiện, giáo viên đánh giá tiết dạy theo quy định nhà trường.",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Section III - Kinh phí
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "III. KINH PHÍ THỰC HIỆN",
-                    bold: true,
-                    size: 26,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: "{{kinh_phi}}", size: 24 })],
-              }),
-              new Paragraph({ text: "" }),
-              // Thành phần tham dự
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "THÀNH PHẦN THAM DỰ",
-                    bold: true,
-                    size: 26,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "1. Toàn thể cán bộ, giáo viên, nhân viên.",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "2. Giáo viên phụ trách chính (Giảng dạy môn HĐTN, HN): {{giao_vien_phu_trach}}",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "3. Học sinh: Học sinh khối {{khoi_lop}}.",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "4. Trang phục: Đồng phục trường.",
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Tổ chức thực hiện
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "TỔ CHỨC THỰC HIỆN:",
-                    bold: true,
-                    size: 26,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "1. Chuẩn bị:", bold: true, size: 24 }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: "{{chuan_bi}}", size: 24 })],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "2. Nội dung, hình thức thực hiện:",
-                    bold: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{kich_ban_chi_tiet}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "{{thong_diep_ket_thuc}}", size: 24 }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: 'Trên đây là Kế hoạch tổ chức chương trình ngoại khóa chủ đề "{{ten_chu_de}}" của tổ hoạt động trải nghiệm, hướng nghiệp. Giáo viên và học sinh khối {{khoi_lop}} tham gia nghiêm túc, nhiệt tình để kế hoạch được thực hiện thành công tốt đẹp./.',
-                    italics: true,
-                    size: 24,
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              new Paragraph({ text: "" }),
-              // Signatures
-              new Table({
-                width: { size: 100, type: WidthType.PERCENTAGE },
-                borders: {
-                  top: { style: BorderStyle.NONE },
-                  bottom: { style: BorderStyle.NONE },
-                  left: { style: BorderStyle.NONE },
-                  right: { style: BorderStyle.NONE },
-                  insideHorizontal: { style: BorderStyle.NONE },
-                  insideVertical: { style: BorderStyle.NONE },
-                },
-                rows: [
-                  new TableRow({
-                    children: [
-                      new TableCell({
-                        width: { size: 50, type: WidthType.PERCENTAGE },
-                        children: [
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "TỔ TRƯỞNG CHUYÊN MÔN",
-                                bold: true,
-                                size: 24,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({ text: "{{to_truong}}", size: 24 }),
-                            ],
-                          }),
-                        ],
-                      }),
-                      new TableCell({
-                        width: { size: 50, type: WidthType.PERCENTAGE },
-                        children: [
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "HIỆU TRƯỞNG",
-                                bold: true,
-                                size: 24,
-                              }),
-                            ],
-                          }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({ text: "" }),
-                          new Paragraph({
-                            alignment: AlignmentType.CENTER,
-                            children: [
-                              new TextRun({
-                                text: "{{hieu_truong}}",
-                                size: 24,
-                              }),
-                            ],
-                          }),
-                        ],
-                      }),
-                    ],
-                  }),
-                ],
-              }),
-              new Paragraph({ text: "" }),
-              // Nơi nhận
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: "* Nơi nhận:",
-                    bold: true,
-                    italics: true,
-                    size: 22,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: "- BGH (Chỉ đạo)", size: 22 })],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "- Tổ HĐTN-HN (thực hiện)", size: 22 }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({ text: "- Lớp ....... (Thực hiện)", size: 22 }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: "- Lưu", size: 22 })],
-              }),
-            ],
-          },
-        ],
-      });
-
-      const blob = await Packer.toBlob(doc as DocxDocument);
+      const blob = await createEventTemplate();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -1795,10 +796,11 @@ export function TemplateManager({
       URL.revokeObjectURL(url);
       showMessage("success", "Đã tải mẫu Kế hoạch Ngoại khóa");
     } catch (error) {
-      console.error("Error creating event template:", error);
-      showMessage("error", "Không thể tạo mẫu Word");
+       console.error("Error creating event template:", error);
+       showMessage("error", "Không thể tạo mẫu Word");
     }
   };
+
   // End of Word template download functions
 
   return (
@@ -1819,8 +821,8 @@ export function TemplateManager({
           {message && (
             <div
               className={`p-3 rounded-lg text-sm ${message.type === "success"
-                  ? "bg-green-50 text-green-800 border border-green-200"
-                  : "bg-red-50 text-red-800 border border-red-200"
+                ? "bg-green-50 text-green-800 border border-green-200"
+                : "bg-red-50 text-red-800 border border-red-200"
                 }`}
             >
               {message.text}
@@ -1849,18 +851,17 @@ export function TemplateManager({
 
             {/* Default Templates Tab */}
             <TabsContent value="default" className="space-y-4 mt-4">
-              {/* Setup Guide for First-time Users */}
-              {showSetupGuide && defaultTemplateCount === 0 && (
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 space-y-3">
-                  <div className="flex items-start gap-3">
+              {/* Setup Guide */}
+              {showSetupGuide && defaultTemplateCount < 4 && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start justify-between">
+                  <div className="flex gap-3">
                     <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-blue-900 text-sm">
                         Thiết lập mẫu mặc định lần đầu
                       </h4>
                       <p className="text-xs text-blue-700 mt-1">
-                        Tải lên 3 file mẫu Word (.docx) bên dưới. Chỉ cần làm 1
-                        lần, sau đó mẫu sẽ được lưu vĩnh viễn.
+                        Tải lên các file mẫu Word (.docx). Chỉ cần làm 1 lần, sau đó mẫu sẽ được lưu vĩnh viễn.
                       </p>
                     </div>
                   </div>
@@ -1876,22 +877,22 @@ export function TemplateManager({
               )}
 
               {/* Progress indicator */}
-              {defaultTemplateCount > 0 && defaultTemplateCount < 3 && (
+              {defaultTemplateCount > 0 && defaultTemplateCount < 4 && (
                 <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
                   <div className="flex items-center gap-2 text-sm text-amber-800">
                     <Star className="w-4 h-4 text-amber-600" />
                     <span>
-                      Đã thiết lập {defaultTemplateCount}/3 mẫu mặc định
+                      Đã thiết lập {defaultTemplateCount} mẫu mặc định
                     </span>
                   </div>
                 </div>
               )}
 
-              {defaultTemplateCount === 3 && (
+              {defaultTemplateCount === 4 && (
                 <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 text-sm text-green-800">
                     <Check className="w-4 h-4 text-green-600" />
-                    <span>Đã thiết lập đầy đủ 3 mẫu mặc định!</span>
+                    <span>Đã thiết lập đầy đủ các mẫu mặc định!</span>
                   </div>
                 </div>
               )}
@@ -1923,6 +924,28 @@ export function TemplateManager({
                     template={defaultLessonTemplate}
                     isDefault
                   />
+                  <div className="pt-4 border-t border-dashed">
+                    <TemplateCard
+                      type="default_assessment"
+                      title="Mẫu Kế Hoạch Kiểm Tra"
+                      description="Template mặc định cho kế hoạch kiểm tra đánh giá"
+                      template={defaultAssessmentTemplate}
+                      isDefault
+                    />
+                    {!defaultAssessmentTemplate && (
+                      <div className="flex justify-end mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-indigo-600 border-indigo-200 bg-indigo-50 hover:bg-indigo-100"
+                          onClick={downloadAssessmentWordTemplate}
+                        >
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Tạo mẫu Kiểm tra chuẩn
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </TabsContent>
@@ -1961,9 +984,16 @@ export function TemplateManager({
                     description="Template cho KHBD (phiên này)"
                     template={sessionLessonTemplate}
                   />
+                  <TemplateCard
+                    type="assessment"
+                    title="Mẫu Kế Hoạch Kiểm Tra"
+                    description="Template cho Kế hoạch kiểm tra (phiên này)"
+                    template={sessionAssessmentTemplate}
+                  />
                 </div>
               )}
             </TabsContent>
+
 
             {/* PPCT Tab */}
             <TabsContent value="ppct" className="space-y-4 mt-4">
@@ -2454,10 +1484,10 @@ export function TemplateManager({
             </TabsContent>
           </Tabs>
         </DialogContent>
-      </Dialog>
+      </Dialog >
 
       {/* Add PPCT Item Dialog */}
-      <Dialog open={showAddPPCTDialog} onOpenChange={setShowAddPPCTDialog}>
+      < Dialog open={showAddPPCTDialog} onOpenChange={setShowAddPPCTDialog} >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Thêm mục PPCT</DialogTitle>
@@ -2547,7 +1577,7 @@ export function TemplateManager({
             </div>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog >
     </>
   );
 }

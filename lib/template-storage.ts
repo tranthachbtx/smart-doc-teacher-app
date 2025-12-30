@@ -5,7 +5,7 @@ const STORE_NAME = "templates"
 const PPCT_STORE_NAME = "ppct"
 const PROJECT_STORE_NAME = "projects" // New store for History/Projects
 
-export type TemplateType = "meeting" | "event" | "lesson" | "default_meeting" | "default_event" | "default_lesson"
+export type TemplateType = "meeting" | "event" | "lesson" | "assessment" | "default_meeting" | "default_event" | "default_lesson" | "default_assessment"
 
 export interface StoredTemplate {
   type: TemplateType
@@ -39,7 +39,7 @@ export interface StoredPPCT {
 
 export interface ProjectHistory {
   id: string
-  type: "meeting" | "lesson" | "event"
+  type: "meeting" | "lesson" | "event" | "assessment"
   title: string
   data: any
   grade?: string
