@@ -451,7 +451,42 @@ export const TICH_HOP_NANG_LUC_SO = {
 };
 
 // ============================================
-// 6. ĐÁNH GIÁ KẾT QUẢ HỌC TẬP
+// 6. TÍCH HỢP GIÁO DỤC LÝ TƯỞNG, ĐẠO ĐỨC, LỐI SỐNG
+// ============================================
+
+export const TICH_HOP_DAO_DUC = {
+  triet_ly: "Thẩm thấu tự nhiên (osmosis) thông qua trải nghiệm thực tiễn",
+  cac_tru__cot_gia_tri: [
+    { ma: "1.1", ten: "Yêu nước", bieu_hien: "Tự hào dân tộc, giữ gìn bản sắc" },
+    { ma: "1.3", ten: "Trách nhiệm", bieu_hien: "Gánh vác công việc gia đình, cộng đồng" },
+    { ma: "2.1", ten: "Tôn trọng", bieu_hien: "Văn hóa ứng xử, đối thoại văn minh" },
+    { ma: "2.2", ten: "Nhân ái", bieu_hien: "Thấu cảm, chia sẻ, vị tha" },
+    { ma: "2.3", ten: "Trung thực", bieu_hien: "Liêm chính, minh bạch trong tài chính/hành vi" },
+    { ma: "3.2", ten: "Kỷ cương", bieu_hien: "Tuân thủ pháp luật, lối sống lành mạnh" },
+  ],
+
+  hinh_thuc_tich_hop: {
+    kham_pha: {
+      ten: "Nhận diện giá trị",
+      thuc_hien: "Đưa tình huống 'có vấn đề' để HS tự khám phá bản chất đạo đức",
+    },
+    the_nghiem: {
+      ten: "Tương tác - Đối thoại",
+      thuc_hien: "Sử dụng đóng vai (Role-play), tranh biện để giải quyết xung đột giá trị",
+    },
+    cong_hien: {
+      ten: "Hành động thực tế",
+      thuc_hien: "Cam kết hành động, dự án cá nhân/gia đình để chuyển hóa nhận thức",
+    },
+    nghien_cuu: {
+      ten: "Phân tích vĩ mô",
+      thuc_hien: "Kết nối trải nghiệm cá nhân với các vấn đề xã hội, truyền thống",
+    },
+  },
+};
+
+// ============================================
+// 7. ĐÁNH GIÁ KẾT QUẢ HỌC TẬP
 // ============================================
 
 export const DANH_GIA_KET_QUA = {
@@ -702,6 +737,12 @@ export function taoContextSuPham(
 2. Thực hiện nhiệm vụ: HS làm việc, GV quan sát hỗ trợ
 3. Báo cáo, thảo luận: HS trình bày, thảo luận chung
 4. Kết luận, nhận định: GV chốt kiến thức, rút bài học
+
+### CHIẾN LƯỢC TÍCH HỢP GIÁO DỤC ĐẠO ĐỨC (MỚI):
+- Chuyển từ "thuyết giảng" sang "thẩm thấu" qua tình huống.
+- Các trụ cột: Yêu nước (1.1), Trách nhiệm (1.3), Trung thực (2.3), Nhân ái (2.2).
+- Phương pháp: Đóng vai (Role-play), Tranh biện (Debate), Case Study.
+- Yêu cầu: Kết luận sư phạm phải chuyển hóa thành cam kết hành động cụ thể của HS.
 `;
   }
 

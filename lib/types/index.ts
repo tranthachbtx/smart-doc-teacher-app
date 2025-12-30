@@ -32,6 +32,8 @@ export interface LessonResult {
   hs_chuan_bi?: string;
   thiet_bi_day_hoc?: string;
   hoat_dong_duoi_co?: string;
+  shdc?: string;
+  shl?: string;
   hoat_dong_khoi_dong?: string;
   hoat_dong_kham_pha?: string;
   hoat_dong_luyen_tap?: string;

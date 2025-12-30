@@ -92,8 +92,7 @@ async function callGeminiWithRetry(
 
             if (attempt < maxRetries - 1) {
               console.log(
-                `[v0] [${keyLabel}] Quota limit hit, waiting ${
-                  retryDelay / 1000
+                `[v0] [${keyLabel}] Quota limit hit, waiting ${retryDelay / 1000
                 }s before retry...`
               );
               await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -126,8 +125,8 @@ async function callGeminiWithRetry(
 
   throw new Error(
     `Đã hết quota API cho tất cả các key và model. ` +
-      `Vui lòng đợi 1-2 phút rồi thử lại. ` +
-      `Hoặc thêm GEMINI_API_KEY_2 dự phòng vào Vars.`
+    `Vui lòng đợi 1-2 phút rồi thử lại. ` +
+    `Hoặc thêm GEMINI_API_KEY_2 dự phòng vào Vars.`
   );
 }
 
@@ -166,7 +165,7 @@ function parseGeminiJSON(text: string): any {
     console.log("[v0] Direct parse failed, attempting fixes...");
   }
 
-  jsonStr = jsonStr.replace(/"([^"]*?)"/gs, (match, content) => {
+  jsonStr = jsonStr.replace(/"([^"]*?)"/g, (match, content) => {
     const fixed = content
       .replace(/\\/g, "\\\\")
       .replace(/\n/g, "\\n")
@@ -240,7 +239,7 @@ function parseGeminiJSON(text: string): any {
     for (const key of keys) {
       const regex = new RegExp(
         `"${key}"\\s*:\\s*"([^"]*(?:\\\\.[^"]*)*)"`,
-        "s"
+        "g"
       );
       const match = cleaned.match(regex);
       if (match) {
@@ -264,7 +263,7 @@ function getThemesForMonth(month: string): string {
   for (const grade of ["10", "11", "12"]) {
     const theme = HDTN_CURRICULUM[grade]?.[month];
     if (theme) {
-      themes.push(`Khối ${grade}: ${theme.name || theme}`);
+      themes.push(`Khối ${grade}: ${theme}`);
     }
   }
   return themes.join("\n");
@@ -343,7 +342,9 @@ export async function generateLessonPlan(
   fullPlan = false,
   duration?: string,
   customInstructions?: string,
-  tasks?: Array<{ name: string; description: string }>
+  tasks?: Array<{ name: string; description: string }>,
+  month?: number,
+  activitySuggestions?: { shdc?: string; hdgd?: string; shl?: string }
 ): Promise<{
   success: boolean;
   data?: {
@@ -357,6 +358,8 @@ export async function generateLessonPlan(
     gv_chuan_bi?: string;
     hs_chuan_bi?: string;
     hoat_dong_duoi_co?: string;
+    shdc?: string;
+    shl?: string;
     hoat_dong_khoi_dong?: string;
     hoat_dong_kham_pha?: string;
     hoat_dong_luyen_tap?: string;
@@ -379,12 +382,14 @@ export async function generateLessonPlan(
   try {
     let prompt = fullPlan
       ? getKHDHPrompt(
-          grade,
-          lessonTopic,
-          duration || "2 tiết",
-          customInstructions,
-          tasks
-        )
+        grade,
+        lessonTopic,
+        duration || "2 tiết",
+        customInstructions,
+        tasks,
+        month,
+        activitySuggestions
+      )
       : getLessonIntegrationPrompt(grade, lessonTopic);
 
     if (!fullPlan && customInstructions && customInstructions.trim()) {
@@ -419,6 +424,8 @@ export async function generateLessonPlan(
           gv_chuan_bi: data.gv_chuan_bi || "",
           hs_chuan_bi: data.hs_chuan_bi || "",
           hoat_dong_duoi_co: data.hoat_dong_duoi_co || "",
+          shdc: data.shdc || "",
+          shl: data.shl || "",
           hoat_dong_khoi_dong: data.hoat_dong_khoi_dong || "",
           hoat_dong_kham_pha: data.hoat_dong_kham_pha || "",
           hoat_dong_luyen_tap: data.hoat_dong_luyen_tap || "",
@@ -533,6 +540,61 @@ export async function generateEventScript(
     return {
       success: false,
       error: error?.message || "Lỗi khi tạo kịch bản sự kiện",
+    };
+  }
+}
+
+export async function auditLessonPlan(
+  lessonData: any,
+  grade: string,
+  topic: string
+): Promise<{ success: boolean; audit?: string; error?: string }> {
+  const apiKeys = getApiKeys();
+
+  if (apiKeys.length === 0) {
+    return {
+      success: false,
+      error: "API Key chưa được cấu hình",
+    };
+  }
+
+  try {
+    const prompt = `
+BẠN LÀ MỘT CHUYÊN GIA KIỂM ĐỊNH SƯ PHẠM CAO CẤP.
+Nhiệm vụ: Đánh giá Kế hoạch bài dạy (KHBD) dưới đây dựa trên tiêu chuẩn Công văn 5512 và các mục tiêu phát triển năng lực của Bộ GD&ĐT.
+
+THÔNG TIN KHBD:
+- Khối: ${grade}
+- Chủ đề: ${topic}
+- Nội dung chi tiết: ${JSON.stringify(lessonData, null, 2)}
+
+TIÊU CHÍ KIỂM ĐỊNH:
+1. ĐÚNG CẤU TRÚC 5512: Các hoạt động đã đủ 4 bước (Chuyển giao, Thực hiện, Báo cáo, Kết luận) chưa?
+2. TÍNH KHẢ THI: Các nhiệm vụ có phù hợp với thời lượng và đặc điểm tâm lý học sinh lớp ${grade} không?
+3. SẢN PHẨM ĐẦU RA: Sản phẩm dự kiến có cụ thể và có thể đánh giá được không?
+4. TÍCH HỢP (QUAN TRỌNG): Năng lực số và Giáo dục Đạo đức đã được lồng ghép một cách tự nhiên ("thẩm thấu tự nhiên") hay còn gượng ép?
+
+HÃY ĐƯA RA BẢN ĐÁNH GIÁ CHI TIẾT THEO CẤU TRÚC:
+- [ƯU ĐIỂM]: Những điểm tốt nhất.
+- [HẠN CHẾ & LỖI]: Những điểm cần chỉnh sửa ngay.
+- [ĐIỂM SƯ PHẠM]: Gợi ý để bài dạy "sáng tạo" và "bay bổng" hơn.
+- [KẾT LUẬN]: ĐẠT hay CẦN CHỈNH SỬA?
+
+Lưu ý: Viết bằng ngôn ngữ chuyên môn, khích lệ nhưng khắt khe về chất lượng. Không dùng Markdown đậm (**).
+`;
+
+    console.log("[v0] Calling Gemini API for pedagogical audit...");
+    const text = await callGeminiWithRetry(prompt);
+
+    return {
+      success: true,
+      audit: removeMarkdownBold(text),
+    };
+  } catch (error: any) {
+    console.error("[v0] Audit generation error:", error.message);
+    return {
+      success: false,
+      error: error?.message || "Lỗi khi kiểm định sư phạm",
     };
   }
 }

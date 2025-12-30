@@ -230,13 +230,18 @@ export function TemplateManager({
       const templateName = type.includes("meeting")
         ? "Biên bản Họp"
         : type.includes("event")
-        ? "Kế hoạch Ngoại khóa"
-        : "Kế hoạch Bài dạy";
+          ? "Kế hoạch Ngoại khóa"
+          : "Kế hoạch Bài dạy";
       const isDefault = type.startsWith("default_");
       showMessage(
         "success",
         `Đã lưu mẫu ${isDefault ? "mặc định " : ""}${templateName}`
       );
+
+      // Notify parent component if callback exists
+      if (onTemplateSelect && !isDefault) {
+        onTemplateSelect({ name: file.name, data: arrayBuffer }, type);
+      }
 
       // Hide setup guide after first upload
       if (isDefault) {
@@ -259,13 +264,18 @@ export function TemplateManager({
       const templateName = type.includes("meeting")
         ? "Biên bản Họp"
         : type.includes("event")
-        ? "Kế hoạch Ngoại khóa"
-        : "Kế hoạch Bài dạy";
+          ? "Kế hoạch Ngoại khóa"
+          : "Kế hoạch Bài dạy";
       const isDefault = type.startsWith("default_");
       showMessage(
         "success",
         `Đã xóa mẫu ${isDefault ? "mặc định " : ""}${templateName}`
       );
+
+      // Notify parent component if callback exists
+      if (onTemplateSelect && !isDefault) {
+        onTemplateSelect(null, type);
+      }
     } catch (error) {
       console.error("Error deleting template:", error);
       showMessage("error", "Không thể xóa template. Vui lòng thử lại.");
@@ -595,25 +605,23 @@ export function TemplateManager({
     isDefault?: boolean;
   }) => (
     <Card
-      className={`p-4 border-2 transition-all ${
-        template
+      className={`p-4 border-2 transition-all ${template
           ? isDefault
             ? "border-amber-300 bg-amber-50/50"
             : "border-green-300 bg-green-50/50"
           : "border-dashed border-gray-300 bg-gray-50/50"
-      } rounded-xl`}
+        } rounded-xl`}
     >
       <div className="space-y-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div
-              className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                template
+              className={`w-9 h-9 rounded-lg flex items-center justify-center ${template
                   ? isDefault
                     ? "bg-amber-100 text-amber-600"
                     : "bg-green-100 text-green-600"
                   : "bg-gray-100 text-gray-400"
-              }`}
+                }`}
             >
               {template ? (
                 isDefault ? (
@@ -635,11 +643,10 @@ export function TemplateManager({
         {template ? (
           <div className="space-y-2">
             <div
-              className={`flex items-center gap-2 text-xs ${
-                isDefault
+              className={`flex items-center gap-2 text-xs ${isDefault
                   ? "text-amber-700 bg-amber-100"
                   : "text-green-700 bg-green-100"
-              } px-2 py-1.5 rounded-lg`}
+                } px-2 py-1.5 rounded-lg`}
             >
               {isDefault ? (
                 <Star className="w-3 h-3" />
@@ -1811,11 +1818,10 @@ export function TemplateManager({
           {/* Message */}
           {message && (
             <div
-              className={`p-3 rounded-lg text-sm ${
-                message.type === "success"
+              className={`p-3 rounded-lg text-sm ${message.type === "success"
                   ? "bg-green-50 text-green-800 border border-green-200"
                   : "bg-red-50 text-red-800 border border-red-200"
-              }`}
+                }`}
             >
               {message.text}
             </div>

@@ -1,0 +1,1278 @@
+--- FILE: Xây dựng Prompt Hoạt động Trải nghiệm.docx ---
+Báo cáo Nghiên cứu Chuyên sâu: Chiến lược Triển khai Môn Hoạt động Trải nghiệm, Hướng nghiệp (GDPT 2018), Phân tích Bộ sách Giáo khoa và Ứng dụng Trí tuệ Nhân tạo trong Tự động hóa Soạn thảo Kế hoạch Dạy học
+
+1. Tổng quan và Cơ sở Lý luận của Hoạt động Trải nghiệm, Hướng nghiệp trong Kỷ nguyên Số
+
+Sự chuyển dịch căn bản của nền giáo dục Việt Nam từ tiếp cận nội dung sang tiếp cận năng lực được cụ thể hóa rõ nét nhất thông qua Chương trình Giáo dục Phổ thông 2018 (GDPT 2018). Trong cấu trúc chương trình mới này, Hoạt động trải nghiệm (cấp Tiểu học) và Hoạt động trải nghiệm, hướng nghiệp (cấp Trung học cơ sở và Trung học phổ thông) không còn là các hoạt động ngoại khóa mang tính bổ trợ tùy nghi, mà đã trở thành hoạt động giáo dục bắt buộc. Báo cáo này cung cấp một phân tích toàn diện, sâu sắc về cấu trúc sư phạm của môn học này thông qua hai bộ sách giáo khoa chủ đạo là "Chân trời sáng tạo" (Bản 1) và "Kết nối tri thức với cuộc sống", đồng thời đề xuất một quy trình kỹ thuật tiên tiến sử dụng Generative AI (Gemini) để tự động hóa việc xây dựng kế hoạch dạy học tuân thủ nghiêm ngặt các quy định của Bộ Giáo dục và Đào tạo.
+
+1.1. Vị trí và Đặc thù của Hoạt động Giáo dục trong GDPT 2018
+
+Khác với các môn văn hóa truyền thống, Hoạt động trải nghiệm, hướng nghiệp được thiết kế để học sinh "nhúng mình" vào thực tiễn. Mục tiêu tối thượng không phải là ghi nhớ kiến thức lý thuyết, mà là hình thành và phát triển các phẩm chất chủ yếu, năng lực cốt lõi thông qua thao tác thực hành. Theo thiết kế chương trình, hoạt động này xoay quanh bốn mối quan hệ cốt lõi: mối quan hệ với bản thân, mối quan hệ với xã hội, mối quan hệ với tự nhiên, và mối quan hệ với nghề nghiệp.
+
+Sự thách thức lớn nhất đối với đội ngũ giáo viên hiện nay không nằm ở nội dung kiến thức, mà nằm ở phương pháp tổ chức và cấu trúc hồ sơ dạy học. Việc chuyển đổi từ giáo án truyền thống sang Kế hoạch bài dạy (KHBD) theo định hướng phát triển năng lực đòi hỏi một tư duy thiết kế sư phạm chặt chẽ, tuân thủ các công văn hướng dẫn như 5512/BGDĐT-GDTrH (đối với trung học) và 2345/BGDĐT-GDTH (đối với tiểu học). Báo cáo này lập luận rằng, việc ứng dụng AI không chỉ dừng lại ở công cụ hỗ trợ, mà cần được xem như một giải pháp chiến lược để chuẩn hóa quy trình này, đảm bảo tính đồng bộ và tuân thủ pháp lý cao nhất.
+
+1.2. Phạm vi và Phương pháp Nghiên cứu
+
+Nghiên cứu này tập trung phân tích sâu vào hai bộ sách giáo khoa được sử dụng rộng rãi:
+
+Chân trời sáng tạo (Bản 1): Nổi bật với triết lý giáo dục khai phóng, chú trọng vào sự sáng tạo và trải nghiệm cá nhân hóa.
+
+Kết nối tri thức với cuộc sống: Nhấn mạnh vào tính thực tiễn, cập nhật các vấn đề xã hội đương đại và kết nối trực tiếp bài học với đời sống thực tế.
+
+Dữ liệu phân tích được tổng hợp từ các văn bản quy phạm pháp luật, sách giáo khoa điện tử, tài liệu tập huấn giáo viên và các nguồn dữ liệu mở về kỹ thuật Prompt Engineering, nhằm xây dựng một mô hình tích hợp giữa sư phạm và công nghệ.
+
+2. Phân tích Chuyên sâu Cấu trúc Sư phạm và Nội dung Hai Bộ Sách Giáo khoa
+
+Việc hiểu rõ "DNA" của từng bộ sách là tiền đề bắt buộc để huấn luyện AI (Gemini) tạo ra các kịch bản dạy học chính xác. AI không thể tạo ra một giáo án tốt nếu không "hiểu" được luồng tư duy (flow) của tác giả sách giáo khoa.
+
+2.1. Bộ sách "Chân trời sáng tạo" (Bản 1): Triết lý và Cấu trúc
+
+Bộ sách "Chân trời sáng tạo" tiếp cận Hoạt động trải nghiệm theo hướng "vòng xoáy trôn ốc" (spiral curriculum), nơi các chủ đề được lặp lại ở các cấp học khác nhau nhưng với mức độ phức tạp và yêu cầu năng lực ngày càng cao.
+
+2.1.1. Cấu trúc Hoạt động Đặc trưng
+
+Thông qua phân tích tài liệu sách giáo khoa lớp 6 và lớp 10 , có thể thấy chuỗi hoạt động của bộ sách này thường tuân theo quy trình 5 bước chặt chẽ:
+
+Khám phá – Kết nối kinh nghiệm: Học sinh được kích hoạt kiến thức nền và kinh nghiệm cá nhân liên quan đến chủ đề.
+
+Rèn luyện kỹ năng: Thực hành các hành vi, kỹ năng mới thông qua các tình huống giả định hoặc thực tế.
+
+Vận dụng – Mở rộng: Áp dụng kỹ năng vào bối cảnh mới, phức tạp hơn ngoài lớp học.
+
+Tự đánh giá: Học sinh tự soi chiếu sự tiến bộ của bản thân so với mục tiêu đầu ra.
+
+Sinh hoạt dưới cờ và Sinh hoạt lớp: Đây là hai mảnh ghép không thể tách rời, tạo nên sự toàn diện của chủ đề.
+
+2.1.2. Phân tích Nội dung theo Khối lớp
+
+Khối lớp 1: Tại cấp độ nền tảng này, chương trình tập trung mạnh mẽ vào việc giúp học sinh thích nghi với môi trường giáo dục mới. Phân phối chương trình cho thấy sự ưu tiên cho các chủ đề về nhận biết bản thân, vệ sinh cá nhân và làm quen với bạn bè, thầy cô. Các hoạt động được thiết kế đơn giản, trực quan, phù hợp với tâm lý lứa tuổi tiểu học, đặt nền móng cho năng lực tự chủ.
+
+Khối lớp 6 (Trung học cơ sở): Bước vào cấp 2, "Chân trời sáng tạo" mở rộng phạm vi sang các kỹ năng xã hội phức tạp hơn. Các chủ đề như "Rèn luyện sự kiên trì và chăm chỉ", "Giải quyết bất đồng với bạn bè" hay "Chi tiêu có kế hoạch" cho thấy sự chuyển dịch từ quan hệ bản thân sang quan hệ xã hội và kinh tế. Đặc biệt, chủ đề "Giữ gìn truyền thống nhà trường" và "Góp phần giảm thiểu hiệu ứng nhà kính" thể hiện rõ trách nhiệm công dân và ý thức sinh thái.
+
+Khối lớp 10 (Trung học phổ thông): Ở cấp độ này, tính "Hướng nghiệp" trở nên chủ đạo. Phân tích mục lục sách giáo khoa lớp 10 cho thấy sự xuất hiện của các chủ đề mang tính chiến lược cho tương lai học sinh:
+
+Xây dựng quan điểm sống: Học sinh phải định hình hệ giá trị cá nhân, rèn luyện tư duy phản biện và làm chủ cảm xúc.
+
+Tài chính cá nhân: Không chỉ là tiết kiệm, học sinh được học cách "Xây dựng kế hoạch tài chính" và tìm hiểu về các hoạt động kinh tế gia đình. Đây là một điểm mới tiến bộ so với chương trình cũ.
+
+Hướng nghiệp: Các nhiệm vụ tập trung vào việc tìm hiểu nghề nghiệp địa phương, an toàn lao động và đánh giá phẩm chất người lao động.
+
+Khối lớp 12: Đây là giai đoạn "về đích". Các chủ đề tập trung vào sự trưởng thành (Maturity) và sẵn sàng tham gia thị trường lao động. Nội dung như "Thực hiện kế hoạch tài chính trong cuộc sống" hay "Xu hướng phát triển nghề nghiệp" đòi hỏi giáo viên phải có kiến thức thực tế sâu rộng để hướng dẫn học sinh.
+
+2.2. Bộ sách "Kết nối tri thức với cuộc sống": Tính Thực tiễn và Hệ thống
+
+Bộ sách "Kết nối tri thức" có cấu trúc tiếp cận vấn đề trực diện, thường đi từ quan sát thực tế đến đúc rút bài học kinh nghiệm. Cấu trúc bài học thường gãy gọn, logic và dễ triển khai đại trà.
+
+2.2.1. Phân tích Nội dung theo Khối lớp
+
+Khối lớp 3 và 4: Ở bậc tiểu học, bộ sách này xây dựng các chủ đề rất gần gũi. Ví dụ, lớp 3 có chủ đề "Tự giới thiệu về mình" (Chân dung em) và "Làm bạn với thiên nhiên". Lên lớp 4, trọng tâm chuyển sang "Mái ấm gia đình" và "Kỷ niệm gia đình". Sự tiến tiến này giúp học sinh xây dựng tình cảm gia đình bền vững trước khi bước ra xã hội rộng lớn hơn. Cách tiếp cận của "Kết nối tri thức" thường tích hợp chặt chẽ với Sinh hoạt dưới cờ để tạo không khí thi đua.
+
+Khối lớp 6: Tương tự như Chân trời sáng tạo, lớp 6 của Kết nối tri thức cũng tập trung vào sự thích nghi môi trường mới. Tuy nhiên, cách đặt vấn đề thường mang tính "giải quyết vấn đề" (problem-solving) nhiều hơn. Sách giáo viên và sách bài tập hỗ trợ rất cụ thể các tình huống sư phạm , giúp giáo viên dễ dàng hình dung kịch bản lên lớp.
+
+Khối lớp 10: Sự khác biệt rõ nét nhất nằm ở cách phân chia chủ đề hướng nghiệp. Bộ sách này dành hẳn các chủ đề lớn cho việc "Tìm hiểu hoạt động sản xuất, kinh doanh, dịch vụ của địa phương" và "Định hướng học tập rèn luyện theo nhóm nghề lựa chọn".
+
+Chủ đề Tài chính: Tập trung vào "Xây dựng kế hoạch tài chính cá nhân và phát triển kinh tế gia đình", nhấn mạnh vào vai trò của cá nhân trong kinh tế hộ gia đình.
+
+Chủ đề Môi trường: "Bảo vệ cảnh quan thiên nhiên và môi trường tự nhiên" được tách thành một mảng lớn, yêu cầu học sinh thực hiện các dự án thực tế tại địa phương.
+
+2.3. So sánh và Tổng hợp cho Dữ liệu Huấn luyện AI
+
+Để xây dựng prompt hiệu quả, chúng ta cần bảng đối sánh dữ liệu đầu vào cho AI:
+
+Tiêu chí
+
+Chân trời sáng tạo (Bản 1)
+
+Kết nối tri thức với cuộc sống
+
+Triết lý chủ đạo
+
+Sáng tạo, Khai phóng, Trải nghiệm cá nhân hóa.
+
+Thực tiễn, Hệ thống, Giải quyết vấn đề.
+
+Cấu trúc bài học
+
+Khám phá -> Kết nối -> Rèn luyện -> Vận dụng.
+
+Quan sát -> Phản hồi -> Hình thành kiến thức -> Thực hành.
+
+Điểm nhấn Lớp 10
+
+Xây dựng quan điểm sống, Tư duy phản biện.
+
+Sản xuất kinh doanh địa phương, Nhóm nghề.
+
+Điểm nhấn Tài chính
+
+Kế hoạch tài chính cá nhân chi tiết.
+
+Kinh tế gia đình và vai trò thành viên.
+
+3. Giải mã Khung Pháp lý: Hướng dẫn Thực hiện Kế hoạch Dạy học
+
+Bất kỳ sản phẩm nào do AI tạo ra đều vô giá trị trong môi trường giáo dục công lập nếu nó không tuân thủ nghiêm ngặt các văn bản quy định của Bộ Giáo dục và Đào tạo. Đây là "khuôn mẫu" (schema) bắt buộc cho prompt.
+
+3.1. Đối với Cấp Tiểu học (Công văn 2345/BGDĐT-GDTH)
+
+Kế hoạch bài dạy cấp tiểu học tuân theo Phụ lục 3 của Công văn 2345. AI cần được lập trình để hiểu rằng giáo án tiểu học nhẹ nhàng hơn về mặt cấu trúc hành chính nhưng lại yêu cầu cao về tính trực quan và hoạt động vui chơi.
+
+Cấu trúc chuẩn 2345:
+
+Yêu cầu cần đạt (Objectives): Phải trích xuất từ chương trình tổng thể, phù hợp với bài học.
+
+Đồ dùng dạy học (Materials): Liệt kê cụ thể tranh ảnh, video, thẻ từ.
+
+Các hoạt động dạy học chủ yếu (Main Activities):
+
+Khởi động: Tạo hứng thú, kết nối bài cũ.
+
+Khám phá: Hình thành kiến thức/kỹ năng mới.
+
+Luyện tập: Thực hành kỹ năng.
+
+Vận dụng: Áp dụng vào thực tế gia đình/địa phương.
+
+Điều chỉnh sau bài dạy (Reflections): Phần dành cho giáo viên ghi chú sau khi dạy.
+
+3.2. Đối với Cấp Trung học (Công văn 5512/BGDĐT-GDTrH)
+
+Đây là văn bản phức tạp nhất và là cơn ác mộng hành chính đối với nhiều giáo viên. Phụ lục IV của Công văn 5512 quy định một cấu trúc rất chi tiết mà AI cần tuân thủ tuyệt đối từng mục nhỏ.
+
+Cấu trúc chuẩn 5512 (Phân tích chi tiết cho Prompt):
+
+Mục tiêu (Objectives):
+
+Kiến thức: Học sinh biết gì sau bài học?
+
+Năng lực: Phải chia rõ Năng lực chung (Tự chủ, Giao tiếp, Hợp tác) và Năng lực đặc thù (Thích ứng cuộc sống, Thiết kế và tổ chức hoạt động, Định hướng nghề nghiệp).
+
+Phẩm chất: Yêu nước, Nhân ái, Chăm chỉ, Trung thực, Trách nhiệm.
+
+Thiết bị dạy học và học liệu: Liệt kê chi tiết thiết bị cho GV và HS.
+
+Tiến trình dạy học (Procedures): Đây là phần cốt lõi. Mỗi hoạt động (Activity) trong tiến trình này BẮT BUỘC phải có 4 tiểu mục con:
+
+a) Mục tiêu: Mục tiêu riêng của hoạt động này là gì?
+
+b) Nội dung: Giáo viên giao nhiệm vụ gì? Học sinh làm gì? (Đọc, xem, thảo luận, đóng vai...).
+
+c) Sản phẩm: Yếu tố quan trọng nhất. AI phải định nghĩa được sản phẩm đầu ra cụ thể (Câu trả lời của HS, Phiếu học tập đã điền, Bảng kế hoạch, Kịch bản đóng vai).
+
+d) Tổ chức thực hiện: Mô tả 4 bước sư phạm: Chuyển giao nhiệm vụ -> Thực hiện nhiệm vụ -> Báo cáo, thảo luận -> Kết luận, nhận định.
+
+Insight: Sự thất bại của các giáo án do ChatGPT thông thường tạo ra là thường bỏ qua mục "Sản phẩm" hoặc gộp chung các bước tổ chức thực hiện. Prompt cho Gemini trong v0 phải khắc phục triệt để điểm này bằng các ràng buộc cứng (hard constraints).
+
+4. Chiến lược Prompt Engineering cho Gemini trong Môi trường v0
+
+Để xây dựng một ứng dụng (app) trên v0 có khả năng tạo ra các kế hoạch dạy học chất lượng cao, chúng ta cần thiết kế một System Prompt (Câu lệnh hệ thống) mạnh mẽ. System Prompt này đóng vai trò như bộ não chuyên gia, chỉ đạo Gemini cách xử lý thông tin đầu vào từ người dùng.
+
+4.1. Định nghĩa Persona (Vai trò)
+
+Đầu tiên, cần thiết lập vai trò chuyên gia cho AI để kích hoạt kho dữ liệu chuyên ngành.
+
+Prompt Persona: "Bạn là Chuyên gia Giáo dục cao cấp của Bộ Giáo dục và Đào tạo Việt Nam, chuyên trách môn Hoạt động trải nghiệm, hướng nghiệp. Bạn am hiểu tường tận chương trình GDPT 2018, nội dung hai bộ sách 'Chân trời sáng tạo' và 'Kết nối tri thức'. Bạn tuân thủ tuyệt đối các quy định về soạn thảo văn bản hành chính sư phạm theo Công văn 5512 (Trung học) và 2345 (Tiểu học)."
+
+4.2. Cấu trúc Prompt Động (Dynamic Prompting)
+
+Trong môi trường app v0, người dùng sẽ nhập các biến số (Variables). Prompt gửi đến Gemini sẽ là sự kết hợp giữa System Instruction và User Input.
+
+Các biến đầu vào (Inputs):
+
+{GRADE}: Khối lớp (VD: 10).
+
+{BOOK}: Bộ sách (VD: Kết nối tri thức).
+
+{TOPIC}: Tên chủ đề/bài học (VD: Xây dựng kế hoạch tài chính).
+
+{DURATION}: Thời lượng (VD: 2 tiết).
+
+{TASKS}: Các nhiệm vụ cụ thể trong sách (VD: Nhiệm vụ 1, 2, 3).
+
+4.3. Kịch bản Prompt Mẫu (Template) cho App v0
+
+Dưới đây là thiết kế prompt chi tiết để nhúng vào logic của app:
+
+4.3.1. Prompt Tạo Kế hoạch Bài dạy (Trung học - CV 5512)
+
+SYSTEM INSTRUCTION
+
+Bạn hãy soạn thảo một "Kế hoạch bài dạy" (Giáo án) cho môn Hoạt động trải nghiệm, hướng nghiệp. Dữ liệu đầu vào:
+
+Lớp: {GRADE}
+
+Bộ sách: {BOOK}
+
+Chủ đề: {TOPIC}
+
+Thời lượng: {DURATION}
+
+Nội dung chi tiết: {TASKS}
+
+YÊU CẦU CẤU TRÚC (BẮT BUỘC TUÂN THỦ CÔNG VĂN 5512 - PHỤ LỤC IV):
+
+I. MỤC TIÊU
+
+Kiến thức: Xác định rõ kiến thức đạt được.
+
+Năng lực:
+
+Năng lực chung: Tự chủ, giao tiếp, giải quyết vấn đề.
+
+Năng lực đặc thù: Thích ứng, thiết kế tổ chức, định hướng nghề nghiệp (chọn phù hợp với nội dung).
+
+Phẩm chất: Yêu nước, nhân ái, chăm chỉ, trung thực, trách nhiệm.
+
+II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU Liệt kê cụ thể cho GV và HS.
+
+III. TIẾN TRÌNH DẠY HỌC Chia thành 4 hoạt động lớn: Mở đầu, Hình thành kiến thức, Luyện tập, Vận dụng. VỚI MỖI HOẠT ĐỘNG, PHẢI CÓ ĐỦ 4 TIỂU MỤC SAU: a) Mục tiêu: Mục tiêu riêng của hoạt động. b) Nội dung: Mô tả hành động của GV và HS. c) Sản phẩm: MÔ TẢ CỤ THỂ SẢN PHẨM ĐẦU RA (VD: Câu trả lời, phiếu bài tập, kết quả thảo luận nhóm, sắm vai). d) Tổ chức thực hiện: Viết rõ 4 bước (Chuyển giao -> Thực hiện -> Báo cáo -> Kết luận).
+
+LƯU Ý QUAN TRỌNG:
+
+Ngôn ngữ: Tiếng Việt sư phạm chuẩn mực, trang trọng.
+
+Định dạng: Sử dụng Markdown (Heading 1, 2, 3, in đậm) để cấu trúc rõ ràng.
+
+Nội dung sáng tạo: Dựa trên {TASKS}, hãy sáng tạo các tình huống, câu hỏi gợi mở cụ thể, kịch bản sắm vai chi tiết để giáo viên có thể dùng ngay.
+
+4.3.2. Prompt Tạo Kế hoạch Ngoại khóa (Kế hoạch Giáo dục)
+
+SYSTEM INSTRUCTION
+
+Bạn hãy xây dựng "Kế hoạch tổ chức hoạt động giáo dục ngoài giờ lên lớp" (Ngoại khóa/Sinh hoạt dưới cờ) cho môn Hoạt động trải nghiệm, hướng nghiệp. Dữ liệu đầu vào:
+
+Khối lớp: {GRADE}
+
+Bộ sách: {BOOK}
+
+YÊU CẦU ĐẦU RA: Tạo một bảng Markdown chi tiết bao gồm các cột sau:
+
+Tháng (Theo năm học từ tháng 9 đến tháng 5).
+
+Chủ đề tháng (Theo chủ điểm Đoàn/Đội và Sách giáo khoa).
+
+Tên hoạt động cụ thể.
+
+Mục tiêu cần đạt.
+
+Hình thức tổ chức (Sân khấu hóa, Rung chuông vàng, Hội chợ, Tọa đàm...).
+
+Đối tượng tham gia.
+
+Người phụ trách.
+
+LƯU Ý:
+
+Tích hợp các ngày lễ lớn của Việt Nam (20/11, 22/12, 26/3, 19/5).
+
+Đảm bảo hoạt động phù hợp với tâm lý lứa tuổi của khối {GRADE}.
+
+5. Giải pháp Kỹ thuật: Xuất Bản Nội dung ra File Word (Docx)
+
+Yêu cầu "xuất nội dung, file word" là một thách thức kỹ thuật trong môi trường web app như v0, vì trình duyệt không thể trực tiếp tạo file binary.docx từ văn bản thuần túy. Giải pháp tối ưu là sử dụng quy trình chuyển đổi phía máy trạm (Client-side processing).
+
+5.1. Quy trình Xử lý Dữ liệu
+
+Generation: Gemini tạo ra nội dung dưới dạng Markdown có cấu trúc chặt chẽ (như quy định ở phần Prompt).
+
+Parsing: Sử dụng một thư viện JavaScript để phân tích cú pháp Markdown.
+
+Conversion: Chuyển đổi cây cú pháp Markdown thành cấu trúc XML của định dạng Office Open XML (.docx).
+
+Blobbing: Đóng gói dữ liệu thành một Blob object và kích hoạt tải xuống.
+
+5.2. Công nghệ Khuyến nghị
+
+Dựa trên các nghiên cứu về thư viện mã nguồn mở , giải pháp khả thi nhất để tích hợp vào v0 (hoặc bất kỳ React/Next.js app nào) là sử dụng thư viện docx kết hợp với markdown-to-jsx hoặc các thư viện wrapper như markdown-docx.
+
+Đoạn mã giả định (Pseudo-code) cho logic xuất file:
+
+import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";import { saveAs } from "file-saver";// Hàm xử lý khi người dùng bấm nút "Xuất Word"async function exportToWord(markdownContent) {    // 1. Phân tích Markdown (Giả lập đơn giản: Tách theo dòng)    // Trong thực tế cần parser phức tạp hơn để xử lý bảng biểu    const lines = markdownContent.split("\n");    const docChildren =;    lines.forEach(line => {        if (line.startsWith("# ")) {            // Xử lý Heading 1            docChildren.push(new Paragraph({                text: line.replace("# ", ""),                heading: HeadingLevel.HEADING_1,                run: { font: "Times New Roman", size: 28, bold: true } // Size 14pt = 28 half-points            }));        } else if (line.startsWith("## ")) {             // Xử lý Heading 2            docChildren.push(new Paragraph({                text: line.replace("## ", ""),                heading: HeadingLevel.HEADING_2,                run: { font: "Times New Roman", size: 26, bold: true }            }));        } else {            // Xử lý văn bản thường            docChildren.push(new Paragraph({                children:            }));        }    });    // 2. Tạo Document    const doc = new Document({        sections: [{            properties: {},            children: docChildren,        }],    });    // 3. Đóng gói và Tải xuống    const blob = await Packer.toBlob(doc);    saveAs(blob, "Ke_hoach_bai_day_Gemini.docx");}
+
+Lưu ý: Việc hỗ trợ bảng (table) trong Markdown sang Docx khá phức tạp. Khuyến nghị sử dụng thư viện chuyên dụng như html-docx-js (convert Markdown -> HTML -> Docx) để giữ nguyên định dạng bảng biểu của kế hoạch dạy học.
+
+6. Xây dựng Kế hoạch Giáo dục (Ngoại khóa) theo Khối và Chủ đề
+
+Đáp ứng yêu cầu "Kế hoạch ngoại khóa theo từng khối, chủ đề", phần này cung cấp các ma trận mẫu được xây dựng dựa trên sự tổng hợp nội dung sách giáo khoa và các chủ điểm năm học của ngành giáo dục.
+
+6.1. Ma trận Kế hoạch Ngoại khóa Khối 10 (Hướng nghiệp & Cộng đồng)
+
+Áp dụng chung cho cả 2 bộ sách do tính tương đồng về chủ điểm tháng.
+
+Thời gian
+
+Chủ đề Tháng
+
+Nội dung Hoạt động (Quy mô Trường/Khối)
+
+Hình thức
+
+Người phụ trách
+
+Tháng 9
+
+Thanh niên với truyền thống nhà trường
+
+- Diễn đàn: "Tự hào truyền thống trường ta". - Chào đón học sinh khối 10 (Welcome Grade 10).
+
+Sân khấu hóa, Trò chơi lớn
+
+Đoàn Thanh niên, GVCN Khối 10
+
+Tháng 10
+
+Thanh niên với tình bạn, tình yêu và gia đình
+
+- Tọa đàm: "Xây dựng tình bạn đẹp - Nói không với bạo lực học đường". - Hội thi: "Nét đẹp nữ sinh" (20/10).
+
+Tọa đàm đối thoại, Thi thanh lịch
+
+Ban Nữ công, Tổ Tâm lý
+
+Tháng 11
+
+Biết ơn thầy cô giáo
+
+- Hội diễn văn nghệ: "Lời tri ân". - Làm báo tường/Video clip về thầy cô.
+
+Hội diễn văn nghệ, Triển lãm số
+
+Đoàn trường, Các CLB
+
+Tháng 12
+
+Thanh niên với sự nghiệp xây dựng và bảo vệ Tổ quốc
+
+- Hành trình về nguồn: Thăm địa chỉ đỏ. - Hội thao Quốc phòng an ninh.
+
+Tham quan thực tế, Thi đấu thể thao
+
+Tổ Giáo dục QP-AN
+
+Tháng 1
+
+Thanh niên với văn hóa truyền thống
+
+- Hội chợ Xuân: "Phiên chợ khởi nghiệp". - Gói bánh chưng tặng người nghèo.
+
+Hội chợ thương mại, Hoạt động thiện nguyện
+
+Nhóm Hướng nghiệp, Hội Chữ thập đỏ
+
+Tháng 2
+
+Thanh niên với lý tưởng cách mạng
+
+- Kết nạp Đoàn viên mới (Lớp cảm tình Đoàn). - Diễn đàn: "Đảng và mùa xuân đất nước".
+
+Lễ kết nạp trang trọng
+
+Chi bộ nhà trường
+
+Tháng 3
+
+Thanh niên lập nghiệp
+
+- Ngày hội tư vấn tuyển sinh, hướng nghiệp. - Giao lưu với doanh nhân/cựu học sinh thành đạt.
+
+Workshop, Talkshow
+
+Ban Giám hiệu, Đại học liên kết
+
+Tháng 4
+
+Thanh niên với hòa bình hữu nghị
+
+- Cuộc thi Rung chuông vàng: Kiến thức Lịch sử và Hội nhập. - Giao lưu văn hóa quốc tế (nếu có).
+
+Thi kiến thức
+
+Tổ Xã hội (Sử-Địa-GDCD)
+
+Tháng 5
+
+Thanh niên với Bác Hồ
+
+- Lễ báo công dâng Bác. - Tổng kết năm học - Chiến dịch Hoa phượng đỏ.
+
+Lễ mít tinh
+
+Ban Giám hiệu
+
+6.2. Ma trận Kế hoạch Ngoại khóa Khối 6 (Thích nghi & Rèn luyện)
+
+Thời gian
+
+Chủ đề (Kết nối tri thức / Chân trời sáng tạo)
+
+Nội dung Hoạt động
+
+Hình thức
+
+Tháng 9
+
+Em là học sinh lớp 6
+
+- Tour tham quan nhà trường (School Tour). - Học nội quy và phương pháp học tập cấp 2.
+
+Trải nghiệm thực tế
+
+Tháng 10
+
+Chăm ngoan học giỏi
+
+- Phát động "Tuần lễ học tốt". - Chia sẻ phương pháp học tập các môn mới.
+
+Sinh hoạt dưới cờ
+
+Tháng 11
+
+Tôn sư trọng đạo
+
+- Làm thiệp chúc mừng thầy cô. - Hái hoa dân chủ tìm hiểu về nhà giáo Việt Nam.
+
+Hoạt động tại lớp
+
+Tháng 12
+
+Tiếp bước cha anh
+
+- Kể chuyện tấm gương anh bộ đội Cụ Hồ. - Thi nghi thức Đội.
+
+Kể chuyện, Thi nghi thức
+
+Tháng 1
+
+Mùa xuân yêu thương
+
+- Nuôi heo đất giúp bạn nghèo ăn Tết. - Tìm hiểu phong tục Tết cổ truyền.
+
+Quyên góp
+
+Tháng 2
+
+Em yêu thiên nhiên
+
+- Tết trồng cây. - Ngày hội tái chế rác thải nhựa.
+
+Lao động công ích
+
+Tháng 3
+
+Tiến bước lên Đoàn
+
+- Hội trại 26/3 (nếu có điều kiện). - Tìm hiểu về Đoàn TNCS Hồ Chí Minh.
+
+Cắm trại/Picnic
+
+Tháng 4
+
+Hòa bình và hữu nghị
+
+- Thi vẽ tranh "Em yêu hòa bình".
+
+Thi vẽ tranh
+
+Tháng 5
+
+Bác Hồ kính yêu
+
+- Kể chuyện về Bác. - Chuẩn bị kỹ năng an toàn hè (đuối nước).
+
+Tuyên truyền
+
+7. Kết luận và Kiến nghị Triển khai
+
+Báo cáo nghiên cứu này đã thiết lập một nền tảng lý luận và kỹ thuật vững chắc cho việc tự động hóa công tác soạn thảo kế hoạch dạy học môn Hoạt động trải nghiệm, hướng nghiệp. Bằng cách kết hợp sự thấu hiểu sâu sắc về cấu trúc sư phạm của hai bộ sách "Chân trời sáng tạo" và "Kết nối tri thức" với sức mạnh của công nghệ Generative AI (Gemini), chúng ta có thể giải phóng giáo viên khỏi gánh nặng hành chính để tập trung vào thực chất giáo dục.
+
+Các kiến nghị cốt lõi:
+
+Chuẩn hóa dữ liệu đầu vào: Khi xây dựng app trên v0, cần thiết lập sẵn cơ sở dữ liệu về tên bài học và mục tiêu của từng bài trong sách giáo khoa để AI không phải "đoán" nội dung.
+
+Kiểm soát chất lượng bằng con người (Human-in-the-loop): AI chỉ nên đóng vai trò người soạn thảo bản nháp (draft). Giáo viên cần được khuyến cáo luôn rà soát lại phần "Tổ chức thực hiện" để phù hợp với điều kiện cơ sở vật chất thực tế của nhà trường.
+
+Linh hoạt trong xuất bản: Công cụ xuất file Word cần hỗ trợ định dạng bảng biểu tốt để giữ nguyên cấu trúc của Công văn 5512, giúp giáo viên có thể in ấn và trình ký ngay lập tức.
+
+Cập nhật liên tục: Prompt cần được tinh chỉnh định kỳ dựa trên các văn bản chỉ đạo mới nhất của Bộ Giáo dục và Đào tạo và các bản cập nhật của sách giáo khoa (Tái bản).
+
+Với chiến lược này, việc ứng dụng công nghệ vào giáo dục không chỉ là xu hướng mà trở thành giải pháp thực tiễn, nâng cao hiệu suất và chất lượng dạy học trong bối cảnh đổi mới căn bản và toàn diện nền giáo dục nước nhà.
+
+Nguồn trích dẫn
+
+1. Giải trải nghiệm hướng nghiệp lớp 10 Chân trời sáng tạo, https://loigiaihay.com/sgk-hoat-dong-trai-nghiem-huong-nghiep-10-chan-troi-sang-tao-c918.html 2. Hoạt động trải nghiệm hướng nghiệp 6 - Nhà xuất bản Giáo Dục, https://sachdientu.sachthietbigiaoduc.vn/sgk-hdtnhn6.html 3. Phân phối chương trình Hoạt động trải nghiệm lớp 1 Chân Trời Sáng Tạo - VnDoc.com, https://vndoc.com/phan-phoi-chuong-trinh-hoat-dong-trai-nghiem-lop-1-sach-chan-troi-sang-tao-203110 4. PPCT hoạt động trải nghiệm 3 kết nối tri thức - Kênh giáo viên, https://kenhgiaovien.com/tai-lieu/ppct-hoat-dong-trai-nghiem-3-ket-noi-tri-thuc 5. Hoạt động trải nghiệm, hướng nghiệp 10 - Nhà xuất bản Giáo Dục, https://sachdientu.sachthietbigiaoduc.vn/hdtn-hn10.html 6. PPCT hoạt động trải nghiệm 4 kết nối tri thức - Kênh giáo viên, https://kenhgiaovien.com/tai-lieu/ppct-hoat-dong-trai-nghiem-4-ket-noi-tri-thuc 7. Sách giáo viên Hoạt động trải nghiệm, hướng nghiệp 6 (Kết nối tri thức với cuộc sống), http://thcsxuantan.edu.vn/trang-chu/lien-doi-xuan-tan/sach-dien-tu/tai-lieu-huong-dan-giang-day-theo-chuong-trinh-gdpt-2818/sach-nxb-giao-duc-ket-noi-tri-thuc-/sach-giao-vien-hoat-dong-trai-nghiem-huong-nghiep-6-ket-noi-tri-thuc-voi-cuoc-song-.html 8. Giải trải nghiệm hướng nghiệp lớp 10 Kết nối tri thức - Loigiaihay.com, https://loigiaihay.com/hoat-dong-trai-nghiem-huong-nghiep-lop-10-c917.html 9. Phụ lục 3 theo CV 2345/BGD&ĐT ngày 07/6/2021 kế hoạch xây dựng bài học - Tự nhiên và Xã hội - Phan Ngọc Ẩn - Website tieuhocmyhung - Violet, https://th-anthanh-bentre.violet.vn/present/phu-luc-3-theo-cv-2345-bgd-dt-ngay-07-6-2021-ke-hoach-xay-dung-bai-hoc-13108836.html 10. Khung Kế Hoạch Bài Dạy Tiểu Học - cv2345 | PDF - Scribd, https://www.scribd.com/document/917282189/Khung-K%E1%BA%BF-Ho%E1%BA%A1ch-Bai-D%E1%BA%A1y-Ti%E1%BB%83u-H%E1%BB%8Dc-cv2345 11. Phụ lục IV KHUNG KẾ HOẠCH BÀI DẠY (Kèm theo Công văn số, https://lhpdl.edu.vn/wp-content/uploads/5512.-Phu-luc-4-Khung-Ke-hoach-bai-day-giao-an.pdf 12. Phụ lục IV KHUNG KẾ HOẠCH BÀI DẠY (Kèm theo Công văn số 5512/BGDĐT-GDTrH ngày 18 tháng 12 năm 2020 của Bộ GDĐT), https://thcsandong.haiphong.edu.vn/van-ban-bo-gddt/phu-luc-iv-khung-ke-hoach-bai-day-kem-theo-cong-van-so-5512bgddt-gdtrh-ngay-18/vbctmb/20343/86957 13. Prompt Engineering - Winchester Public Schools, https://www.wps.k12.va.us/departments/technology/generative-ai-guidance/prompt-engineering 14. Hướng dẫn viết prompt trong Gemini for Google Workspace hiệu quả - hvn group, https://hvn.vn/huong-dan-viet-prompt-trong-gemini-for-google-workspace/ 15. Prompt 101: Cấu trúc căn bản của 1 prompt để bắt ChatGPT/Copilot/Gemini làm việc đúng ý, https://tinhte.vn/thread/prompt-101-cau-truc-can-ban-cua-1-prompt-de-bat-chatgpt-copilot-gemini-lam-viec-dung-y.3777407/ 16. mohtasham/md-to-docx - NPM, https://www.npmjs.com/package/@mohtasham/md-to-docx 17. markdown-docx CDN by jsDelivr - A CDN for npm and GitHub, https://www.jsdelivr.com/package/npm/markdown-docx 18. benbalter/word-to-markdown-js: Convert Word documents to beautiful Markdown. Via command line or in your browser. - GitHub, https://github.com/benbalter/word-to-markdown-js 19. Automating Markdown to .docx without pandoc? - Reddit, https://www.reddit.com/r/Markdown/comments/18mh3si/automating_markdown_to_docx_without_pandoc/
+
+
+--- END FILE ---
+
+--- FILE: Báo cáo Dữ liệu & Prompt Engineering_ HĐTN Hướng n....docx ---
+PHẦN 1: DỮ LIỆU CẤU TRÚC CHƯƠNG TRÌNH THPT - BỘ "KẾT NỐI TRI THỨC"
+
+Phần này cung cấp dữ liệu nền tảng (Knowledge Base) để huấn luyện hoặc cung cấp ngữ cảnh cho AI. Bộ sách "Kết nối tri thức" tại cấp THPT có tính liên kết chặt chẽ, đi từ Khám phá bản thân (Lớp 10) đến Phát triển kỹ năng xã hội (Lớp 11) và Quyết định nghề nghiệp (Lớp 12).
+
+1. Lớp 10: Thích ứng và Khám phá Bản thân
+
+Trọng tâm: Giúp học sinh chuyển giao từ môi trường THCS sang THPT, định hình nhân cách và bắt đầu tìm hiểu nhóm nghề cơ bản.
+
+Chủ đề 1: Phát huy truyền thống nhà trường (Thích ứng môi trường mới).
+
+Chủ đề 2: Khám phá bản thân (Tính cách, quan điểm sống).
+
+Chủ đề 3: Rèn luyện bản thân (Điều chỉnh tư duy, tư duy phản biện).
+
+Chủ đề 4: Chủ động, tự tin trong học tập và giao tiếp.
+
+Chủ đề 5: Trách nhiệm với gia đình.
+
+Chủ đề 6: Tham gia xây dựng cộng đồng (Văn hóa ứng xử nơi công cộng).
+
+Chủ đề 7: Bảo tồn cảnh quan thiên nhiên.
+
+Chủ đề 8: Bảo vệ môi trường tự nhiên.
+
+Chủ đề 9: Tìm hiểu nghề nghiệp (Sản xuất, kinh doanh tại địa phương).
+
+Chủ đề 10: Hiểu bản thân để chọn nghề phù hợp.
+
+Chủ đề 11: Lập kế hoạch học tập, rèn luyện theo định hướng nghề nghiệp.[][]
+
+2. Lớp 11: Kỹ năng Xã hội và Nhóm nghề Chuyên sâu
+
+Trọng tâm: Phát triển các kỹ năng mềm phức tạp (quản lý cảm xúc, giải quyết mâu thuẫn) và tìm hiểu sâu về thị trường lao động.
+
+Chủ đề 1: Xây dựng và phát triển nhà trường (Xây dựng quan hệ thầy trò, bạn bè).
+
+Chủ đề 2: Khám phá bản thân (Quản lý cảm xúc, ứng xử văn minh).
+
+Chủ đề 3: Rèn luyện bản thân (Tư duy độc lập, chịu trách nhiệm).
+
+Chủ đề 4: Trách nhiệm với gia đình (Giải quyết mâu thuẫn gia đình).
+
+Chủ đề 5: Phát triển cộng đồng (An sinh xã hội, tình nguyện).
+
+Chủ đề 6: Bảo tồn cảnh quan thiên nhiên.
+
+Chủ đề 7: Bảo vệ môi trường (Biến đổi khí hậu).
+
+Chủ đề 8: Các nhóm nghề cơ bản và yêu cầu của thị trường lao động.
+
+Chủ đề 9: Rèn luyện phẩm chất, năng lực phù hợp với nhóm nghề lựa chọn.
+
+Chủ đề 10: Xây dựng và thực hiện kế hoạch học tập theo định hướng ngành, nghề lựa chọn.
+
+3. Lớp 12: Trưởng thành và Quyết định Nghề nghiệp
+
+Trọng tâm: Sự trưởng thành toàn diện (Maturity), trách nhiệm công dân và đưa ra quyết định chọn trường, chọn nghề cuối cùng.
+
+Chủ đề 1: Phát triển các mối quan hệ tốt đẹp với thầy cô và các bạn (Nuôi dưỡng quan hệ, xử lý khủng hoảng truyền thông học đường).
+
+Chủ đề 2: Tôi trưởng thành (Sự tự chủ, độc lập).
+
+Chủ đề 3: Hoàn thiện bản thân (Tuân thủ pháp luật, kỷ luật lao động).
+
+Chủ đề 4: Trách nhiệm với gia đình (Tổ chức cuộc sống gia đình, tài chính).
+
+Chủ đề 5: Xây dựng cộng đồng (Đoàn kết dân tộc, hội nhập quốc tế).
+
+Chủ đề 6: Chung tay gìn giữ, bảo tồn cảnh quan thiên nhiên.
+
+Chủ đề 7: Bảo vệ thế giới tự nhiên (Động vật hoang dã).
+
+Chủ đề 8: Nghề nghiệp và những yêu cầu với người lao động trong xã hội hiện đại (An toàn lao động, văn hóa công sở).
+
+Chủ đề 9: Rèn luyện phẩm chất, năng lực phù hợp với định hướng nghề nghiệp (Sẵn sàng chuyển đổi nghề).
+
+Chủ đề 10: Quyết định lựa chọn nghề phù hợp và chuẩn bị tâm lý thích ứng với môi trường mới (Chọn trường, chọn ngành).
+
+PHẦN 2: BỘ PROMPT MASTER CHO APP (TỐI ƯU HÓA CHO GEMINI)
+
+Đây là cấu trúc Prompt (System Instruction) được thiết kế để bạn nhúng vào code của App. Prompt này bao gồm cả logic xử lý theo Công văn 5512 và dữ liệu đặc thù của bộ sách Kết nối tri thức.
+
+Biến số đầu vào (User Inputs):
+
+Khi người dùng nhập liệu vào App, bạn hãy điền giá trị vào các vị trí sau trong prompt:
+
+{{GRADE}}: Khối lớp (10, 11, hoặc 12).
+
+{{TOPIC_NAME}}: Tên chủ đề (Ví dụ: Tìm hiểu nghề nghiệp).
+
+{{DURATION}}: Thời lượng (Ví dụ: 3 tiết).
+
+{{SPECIFIC_TASK}}: Yêu cầu cụ thể (nếu có, ví dụ: Tập trung vào hoạt động sắm vai).
+
+NỘI DUNG PROMPT (Copy đoạn dưới đây vào cấu hình AI):
+
+ROLE
+
+Bạn là Chuyên gia Giáo dục Phổ thông Trung học (THPT) hàng đầu Việt Nam, chuyên sâu về bộ sách giáo khoa "Kết nối tri thức với cuộc sống". Nhiệm vụ của bạn là soạn thảo Kế hoạch bài dạy (Giáo án) môn Hoạt động trải nghiệm, hướng nghiệp tuân thủ nghiêm ngặt Công văn 5512/BGDĐT-GDTrH.
+
+CONTEXT & KNOWLEDGE BASE
+
+Bạn đang soạn giáo án cho Lớp {{GRADE}}, Bộ sách Kết nối tri thức. Đặc điểm bộ sách này tại lớp {{GRADE}} là:
+
+Lớp 10: Tập trung vào sự thích ứng, khám phá bản thân và làm quen với hướng nghiệp.
+
+Lớp 11: Tập trung vào kỹ năng xã hội phức tạp và tìm hiểu sâu nhóm nghề.
+
+Lớp 12: Tập trung vào sự trưởng thành, trách nhiệm công dân và quyết định chọn nghề dứt khoát.
+
+TASK
+
+Soạn thảo Kế hoạch bài dạy cho Chủ đề: "{{TOPIC_NAME}}". Thời lượng: {{DURATION}}. Yêu cầu bổ sung: {{SPECIFIC_TASK}}.
+
+FORMAT REQUIREMENT (STRICT)
+
+Bạn phải xuất ra định dạng Markdown, sử dụng cấu trúc chuẩn của Phụ lục IV - Công văn 5512 như sau:
+
+I. MỤC TIÊU
+
+Kiến thức: Nêu rõ học sinh biết/hiểu gì sau bài học.
+
+Năng lực:
+
+Năng lực chung: Tự chủ và tự học, Giao tiếp và hợp tác, Giải quyết vấn đề.
+
+Năng lực đặc thù: Thích ứng với cuộc sống, Thiết kế và tổ chức hoạt động, Định hướng nghề nghiệp.
+
+Phẩm chất: Yêu nước, Nhân ái, Chăm chỉ, Trung thực, Trách nhiệm.
+
+II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU
+
+Liệt kê thiết bị cho Giáo viên (GV) và Học sinh (HS).
+
+Lưu ý: Bộ Kết nối tri thức thường sử dụng các video thực tế, phiếu khảo sát địa phương.
+
+III. TIẾN TRÌNH DẠY HỌC Hãy thiết kế chuỗi hoạt động (Khởi động -> Khám phá -> Luyện tập -> Vận dụng). VỚI MỖI HOẠT ĐỘNG, BẮT BUỘC PHẢI CÓ CẤU TRÚC SAU:
+
+Hoạt động: a) Mục tiêu: (Hoạt động này nhằm đạt mục tiêu gì?) b) Nội dung: (GV giao nhiệm vụ gì? HS thực hiện ntn?) c) Sản phẩm: (MÔ TẢ CỤ THỂ sản phẩm đầu ra. VD: Phiếu học tập đã điền, Kịch bản sắm vai, Sơ đồ tư duy, Câu trả lời miệng). Đây là phần quan trọng nhất để đánh giá. d) Tổ chức thực hiện:
+
+Bước 1: Chuyển giao nhiệm vụ (GV giao lệnh...)
+
+Bước 2: Thực hiện nhiệm vụ (HS làm việc cá nhân/nhóm...)
+
+Bước 3: Báo cáo, thảo luận (GV mời đại diện, HS nhận xét...)
+
+Bước 4: Kết luận, nhận định (GV chốt kiến thức/kỹ năng...)
+
+IV. HỒ SƠ DẠY HỌC (PHỤ LỤC)
+
+Tạo mẫu Phiếu học tập, Bảng kiểm (Checklist) hoặc Câu hỏi trắc nghiệm liên quan đến bài học để giáo viên có thể in ra sử dụng ngay.
+
+TONE & STYLE
+
+Ngôn ngữ: Tiếng Việt sư phạm, trang trọng, rõ ràng.
+
+Nội dung: Phải mang tính thực tiễn cao, đặc trưng của bộ "Kết nối tri thức" (gắn với đời sống, địa phương).
+
+Trình bày: Sử dụng Bold, Italic, Bullet points để dễ đọc.
+
+PHẦN 3: HƯỚNG DẪN TẠO KẾ HOẠCH NGOẠI KHÓA (EVENT) CHO APP
+
+Để tạo kế hoạch ngoại khóa (Sinh hoạt dưới cờ/Sự kiện toàn trường) cho cấp THPT, bạn cần một prompt khác tập trung vào quy mô và tính tổ chức.
+
+Prompt Tạo Kế hoạch Ngoại khóa:
+
+ROLE
+
+Bạn là Tổng phụ trách Đội/Bí thư Đoàn trường THPT năng động, sáng tạo.
+
+TASK
+
+Lập Kế hoạch tổ chức hoạt động trải nghiệm quy mô toàn trường (Ngoại khóa/Sinh hoạt dưới cờ) cho Lớp {{GRADE}} dựa trên chủ đề "{{TOPIC_NAME}}" của bộ sách Kết nối tri thức.
+
+OUTPUT FORMAT
+
+Vui lòng trình bày dưới dạng bảng Markdown với các cột:
+
+Tên Hoạt động (Đặt tên hấp dẫn, "bắt trend" học sinh THPT).
+
+Hình thức tổ chức (Rung chuông vàng, Talkshow, Sân khấu hóa, Flashmob, Hội chợ...).
+
+Thời lượng (phút).
+
+Kịch bản chi tiết (Các bước tiến hành).
+
+Phân công nhiệm vụ (Ban giám hiệu, Đoàn thanh niên, GVCN, Học sinh).
+
+Dự trù kinh phí & Thiết bị (Âm thanh, Loa đài, Backdrop...).
+
+CONSTRAINT
+
+Hoạt động phải sôi nổi, phù hợp tâm lý lứa tuổi 16-18.
+
+Tích hợp các ngày lễ lớn trong năm học nếu phù hợp.
+
+PHẦN 4: LƯU Ý KHI TÍCH HỢP VÀO APP v0
+
+Xử lý "Sản phẩm" (Product Output): Trong Công văn 5512, phần "Sản phẩm" ở mục III là quan trọng nhất nhưng AI thường viết chung chung (VD: "HS hiểu bài"). Bạn cần tinh chỉnh prompt để ép AI viết ra sản phẩm vật lý (VD: "Bảng kế hoạch tài chính cá nhân trên giấy A4").
+
+Mapping Dữ liệu: Sử dụng danh sách chủ đề ở Phần 1 để tạo dropdown menu trong App v0 của bạn, giúp người dùng chọn chính xác tên bài học theo sách giáo khoa thay vì phải gõ tay.
+
+Tính năng Xuất File: Khi Gemini trả về nội dung Markdown từ Prompt trên, bạn sử dụng thư viện docx (như đã đề cập ở báo cáo trước) để map các thẻ Heading (#, ##) thành các Style tương ứng trong file Word để đảm bảo khi in ra đúng chuẩn hành chính.
+
+Nguồn trích dẫn
+
+1. Giải trải nghiệm hướng nghiệp lớp 10 Kết nối tri thức - Loigiaihay.com, https://loigiaihay.com/hoat-dong-trai-nghiem-huong-nghiep-lop-10-c917.html
+
+
+--- END FILE ---
+
+--- FILE: Xây dựng kế hoạch dạy học HĐTN, HN.docx ---
+Báo cáo Nghiên cứu Toàn diện: Cơ sở Dữ liệu và Kiến trúc Sư phạm cho Hệ thống Thiết kế Kế hoạch Dạy học môn Hoạt động Trải nghiệm, Hướng nghiệp (Bộ sách Kết nối Tri thức với Cuộc sống)
+
+1. Cơ sở Lý luận và Kiến trúc Sư phạm Tổng thể
+
+Trong bối cảnh đổi mới căn bản và toàn diện giáo dục theo Chương trình Giáo dục Phổ thông 2018 (CT GDPT 2018), môn học Hoạt động trải nghiệm, hướng nghiệp (HĐTN, HN) đóng vai trò then chốt trong việc chuyển dịch từ nền giáo dục nặng về truyền thụ kiến thức sang nền giáo dục phát triển phẩm chất và năng lực. Báo cáo này cung cấp một phân tích chuyên sâu, đa chiều về nội dung, cấu trúc và logic sư phạm của bộ sách giáo khoa (SGK) "Kết nối tri thức với cuộc sống" cho cả ba khối lớp 10, 11 và 12. Mục đích tối thượng của báo cáo là thiết lập một hệ tham chiếu chuẩn xác, giàu dữ liệu để Gemini – hoặc bất kỳ hệ thống trí tuệ nhân tạo nào – có thể dựa vào đó để thiết kế các kế hoạch dạy học (giáo án) không chỉ đúng về mặt nội dung mà còn tinh tế về mặt phương pháp, tuân thủ chặt chẽ các quy định hiện hành của Bộ Giáo dục và Đào tạo.
+
+1.1. Triết lý "Kết nối Tri thức" và Sự chuyển dịch Sư phạm
+
+Bộ sách "Kết nối tri thức với cuộc sống" được xây dựng dựa trên quan điểm đưa bài học vào thực tiễn cuộc sống và đưa cuộc sống vào bài học. Điều này đòi hỏi các kế hoạch dạy học được thiết kế bởi AI phải vượt thoát khỏi khuôn mẫu thuyết giảng truyền thống. Thay vào đó, AI cần kiến tạo các kịch bản sư phạm nơi học sinh là trung tâm của sự trải nghiệm, chiêm nghiệm và đúc kết.
+
+Dữ liệu nghiên cứu cho thấy chương trình được thiết kế theo mô hình xoắn ốc (spiral curriculum). Các chủ đề cốt lõi như "Bản thân", "Gia đình", "Cộng đồng", "Môi trường" và "Nghề nghiệp" được lặp lại ở cả ba khối lớp nhưng với mức độ yêu cầu cần đạt (learning outcomes) tăng tiến về chiều sâu và độ phức tạp.
+
+Khối 10: Tập trung vào sự thích ứng và nhận diện. Học sinh vừa bước vào môi trường THPT, cần định vị bản thân và làm quen với các khái niệm nghề nghiệp cơ bản.
+
+Khối 11: Tập trung vào sự phát triển và kết nối. Học sinh mở rộng các mối quan hệ xã hội, rèn luyện kỹ năng chuyên sâu và phân tích thị trường lao động.
+
+Khối 12: Tập trung vào sự trưởng thành và quyết định. Học sinh hoàn thiện nhân cách, tự chủ tài chính và đưa ra quyết định nghề nghiệp quan trọng.
+
+1.2. Cấu trúc Thời lượng và Hình thức Tổ chức Dạy học
+
+Để Gemini thiết kế được một thời khóa biểu hay kế hoạch bài dạy hợp lý, việc nắm vững "khung xương" của chương trình là điều kiện tiên quyết. Phân tích các tài liệu phân phối chương trình cho thấy sự nhất quán trong kiến trúc chương trình ở cả ba khối lớp:
+
+Tham số Cấu trúc
+
+Thông số Chi tiết
+
+Ý nghĩa Sư phạm và Chỉ dẫn cho AI
+
+Tổng thời lượng
+
+105 tiết / năm học
+
+AI cần phân bổ quỹ thời gian này đều đặn, tránh dồn ứ nội dung vào cuối kỳ.
+
+Thời gian thực hiện
+
+35 tuần thực học
+
+Học kỳ I thường kéo dài 18 tuần (54 tiết), Học kỳ II là 17 tuần (51 tiết).
+
+Mật độ dạy học
+
+3 tiết / tuần
+
+Đây là tham số quan trọng nhất. Mỗi tuần học sinh sẽ trải qua 3 loại hình hoạt động khác nhau nhưng cùng xoay quanh một chủ đề nhánh.
+
+Hệ thống AI cần được lập trình để hiểu rằng 3 tiết học trong một tuần không phải là 3 bài giảng rời rạc, mà là một chuỗi hoạt động liên hoàn (sequence) với ba hình thức tổ chức đặc thù:
+
+Sinh hoạt dưới cờ (Tiết 1/tuần):
+
+Tính chất: Quy mô toàn trường hoặc khối lớp. Mang tính định hướng, truyền thông, cổ động.
+
+Nội dung: Thường gắn với các ngày lễ lớn, phát động chủ đề tháng, hoặc các diễn đàn thanh niên.
+
+Chỉ dẫn cho AI: Kịch bản cần hướng đến hoạt động tập thể lớn, diễn văn truyền cảm hứng, kịch ngắn, hoặc talkshow với chuyên gia/khách mời.
+
+Hoạt động giáo dục theo chủ đề (Tiết 2/tuần):
+
+Tính chất: Quy mô lớp học. Đây là tiết học "lõi" để hình thành kiến thức và kỹ năng mới.
+
+Cấu trúc sư phạm: Tuân thủ quy trình 4 bước của học qua trải nghiệm: Khám phá - Kết nối (Tạo tri thức mới) - Thực hành (Luyện tập) - Vận dụng.
+
+Chỉ dẫn cho AI: Đây là nơi AI cần tạo ra các giáo án chi tiết nhất, bao gồm mục tiêu (kiến thức, năng lực, phẩm chất), thiết bị dạy học, và tiến trình hoạt động cụ thể (Giáo viên làm gì? Học sinh làm gì?).
+
+Sinh hoạt lớp (Tiết 3/tuần):
+
+Tính chất: Quy mô lớp học, do Giáo viên chủ nhiệm (GVCN) chủ trì.
+
+Nội dung: Sơ kết tuần, đánh giá thi đua, và đặc biệt là phản hồi/cam kết thực hiện các nội dung đã học trong tuần.
+
+Chỉ dẫn cho AI: Kịch bản cần thiên về thảo luận nhóm, tự đánh giá, xây dựng kế hoạch hành động cá nhân hoặc nhóm.
+
+2. Phân tích Chuyên sâu Khối 10: Nền tảng Thích ứng và Khám phá
+
+Lớp 10 là giai đoạn "bản lề" trong lộ trình giáo dục phổ thông. Dữ liệu từ các tài liệu phân phối chương trình chỉ ra rằng trọng tâm của lớp 10 là giúp học sinh chuyển đổi trạng thái tâm lý từ THCS sang THPT và bắt đầu hành trình khám phá bản thân một cách khoa học.
+
+2.1. Phân tích Chi tiết Các Chủ đề và Hoạt động (Khối 10)
+
+Bộ sách Kết nối tri thức lớp 10 bao gồm 11 chủ đề lớn. Dưới đây là phân tích chi tiết các yêu cầu cần đạt và hoạt động đặc trưng mà AI cần bám sát.
+
+Chủ đề 1: Phát huy truyền thống nhà trường
+
+Chủ đề này đặt nền móng cho văn hóa học đường.
+
+Hoạt động cốt lõi:
+
+Tìm hiểu nội quy và truyền thống: Không chỉ là đọc văn bản, học sinh cần thảo luận về biện pháp thực hiện nội quy trường, lớp và quy định cộng đồng.
+
+Giáo dục truyền thống: Hoạt động yêu cầu học sinh lựa chọn một truyền thống nổi bật để lập kế hoạch giáo dục/tuyên truyền.
+
+Xây dựng kế hoạch rèn luyện: Học sinh phải xác định các rào cản cá nhân trong việc thực hiện nội quy và lập kế hoạch vượt qua.
+
+Chỉ dẫn thiết kế: AI cần đề xuất các hoạt động như "Tham quan phòng truyền thống ảo", "Phỏng vấn cựu học sinh thành đạt", hoặc "Cuộc thi tìm hiểu lịch sử nhà trường".
+
+Chủ đề 2: Khám phá bản thân
+
+Đây là bước đầu tiên của quy trình hướng nghiệp.
+
+Hoạt động cốt lõi:
+
+Nhận diện tính cách: Xác định các đặc điểm tính cách, sở thích, điểm mạnh, điểm yếu của bản thân.
+
+Tư duy tích cực: Phát huy điểm mạnh và hạn chế điểm yếu.
+
+Chỉ dẫn thiết kế: AI nên tích hợp các công cụ trắc nghiệm tâm lý đơn giản hoặc các bài tập "Cửa sổ Johari" để học sinh tự soi chiếu.
+
+Chủ đề 3: Rèn luyện bản thân
+
+Chủ đề này tập trung vào các phẩm chất ý chí và kỹ năng sống cơ bản.
+
+Hoạt động cốt lõi:
+
+Trách nhiệm: Tìm hiểu biểu hiện của người có trách nhiệm (Hoạt động 1).
+
+Tự chủ và Ý chí: Phân tích các tình huống thể hiện sự tự chủ, tự trọng và ý chí vượt khó (Hoạt động 2, 5).
+
+Tư duy phản biện: Tìm hiểu và rèn luyện tư duy phản biện thông qua tranh luận các vấn đề xã hội hoặc học đường (Hoạt động 3, 6).
+
+Tài chính cá nhân: Đây là điểm mới quan trọng. Học sinh lớp 10 bắt đầu học về kế hoạch tài chính cá nhân (Hoạt động 4, 7). Nội dung bao gồm xác định mục tiêu tài chính, lập ngân sách chi tiêu hợp lý.
+
+Chỉ dẫn thiết kế: AI cần tạo ra các "case study" (tình huống thực tế) về quản lý tiền tiêu vặt, hoặc các tình huống khó xử đạo đức để học sinh tranh biện.
+
+Chủ đề 4: Chủ động, tự tin trong học tập và giao tiếp
+
+Hoạt động cốt lõi:
+
+Giao tiếp học đường: Tìm hiểu và thực hành sự chủ động trong môi trường học tập (Hoạt động 1, 3).
+
+Tự tin và Thân thiện: Thực hành giao tiếp ứng xử với thầy cô và bạn bè (Hoạt động 2, 4, 5).
+
+Giao tiếp gia đình: Ứng xử phù hợp trong gia đình (Hoạt động 6).
+
+Chỉ dẫn thiết kế: Kịch bản đóng vai (role-play) là phương pháp tối ưu. AI cần soạn thảo các kịch bản như "Hỏi bài thầy cô", "Từ chối lời rủ rê của bạn bè", "Thuyết phục bố mẹ".
+
+Chủ đề 5: Trách nhiệm với gia đình
+
+Hoạt động cốt lõi:
+
+Lao động gia đình: Tìm hiểu và lập kế hoạch thực hiện các hoạt động lao động trong gia đình (Hoạt động 1, 3).
+
+Kinh tế gia đình: Tìm hiểu và đề xuất biện pháp phát triển kinh tế gia đình (Hoạt động 2, 4). Đây là yêu cầu khá cao, đòi hỏi học sinh quan sát nghề nghiệp của bố mẹ hoặc các nguồn thu nhập phụ.
+
+Chỉ dẫn thiết kế: AI có thể gợi ý học sinh làm "Nhật ký làm việc nhà" hoặc dự án nhỏ "Tiết kiệm điện/nước giúp bố mẹ".
+
+Chủ đề 6: Tham gia xây dựng cộng đồng
+
+Hoạt động cốt lõi:
+
+Hành động xã hội: Tham gia và thu hút người khác cùng tham gia các hoạt động xã hội (Hoạt động 1).
+
+Đánh giá tác động: Đánh giá ý nghĩa của hoạt động đối với cộng đồng và sự thay đổi của bản thân.
+
+Chỉ dẫn thiết kế: Gắn kết với các phong trào Đoàn thanh niên tại địa phương.
+
+Chủ đề 7: Bảo tồn cảnh quan thiên nhiên
+
+Hoạt động cốt lõi:
+
+Khảo sát thực trạng: Tìm hiểu hành vi bảo tồn cảnh quan của tổ chức/cá nhân (Hoạt động 1).
+
+Tuyên truyền: Xây dựng và thực hiện kế hoạch tuyên truyền bảo vệ cảnh quan (Hoạt động 2, 4).
+
+Đánh giá: Nhận xét hành vi của tổ chức, cá nhân (Hoạt động 3).
+
+Chủ đề 8: Bảo vệ môi trường tự nhiên
+
+Hoạt động cốt lõi:
+
+Phân tích thực trạng: Đánh giá môi trường tự nhiên tại địa phương (Hoạt động 1).
+
+Thuyết trình: Trình bày ý nghĩa của việc bảo vệ môi trường (Hoạt động 2).
+
+Giải pháp: Thực hiện các giải pháp bảo vệ môi trường cụ thể (Hoạt động 3, 4).
+
+Chỉ dẫn thiết kế: AI cần hướng dẫn học sinh thực hiện các dự án STEM/STEAM liên quan đến môi trường như tái chế rác thải, làm phân hữu cơ.
+
+Chủ đề 9: Tìm hiểu nghề nghiệp
+
+Hoạt động cốt lõi:
+
+Khảo sát nghề địa phương: Tìm hiểu hoạt động sản xuất, kinh doanh, dịch vụ tại địa phương (Hoạt động 1).
+
+Phương pháp tìm hiểu: Xác định cách thức thu thập thông tin nghề nghiệp (Hoạt động 2).
+
+Trải nghiệm: Lập kế hoạch và thực hiện trải nghiệm nghề (Hoạt động 3).
+
+Rèn luyện: Rèn luyện bản thân theo yêu cầu của nghề quan tâm (Hoạt động 4).
+
+Chủ đề 10: Hiểu bản thân để chọn nghề phù hợp
+
+Hoạt động cốt lõi:
+
+Yêu cầu chọn nghề: Tìm hiểu các tiêu chí chọn nghề (Hoạt động 1).
+
+Sự phù hợp: Đánh giá sự phù hợp của bản thân với nhóm nghề định chọn (Hoạt động 3).
+
+Kế hoạch rèn luyện: Xây dựng kế hoạch rèn luyện theo định hướng nghề (Hoạt động 4).
+
+Chủ đề 11: Lập kế hoạch học tập, rèn luyện theo định hướng nghề nghiệp
+
+Hoạt động cốt lõi:
+
+Hệ thống đào tạo: Tìm hiểu thông tin về các trường đào tạo nghề, ĐH, CĐ (Hoạt động 1, 4).
+
+Tham vấn: Thực hành tham vấn thầy cô, gia đình về chọn nghề (Hoạt động 2, 5).
+
+Lập kế hoạch: Xây dựng kế hoạch học tập các môn văn hóa phù hợp với định hướng nghề (Hoạt động 3, 6, 7).
+
+Chỉ dẫn thiết kế: Đây là chủ đề cuối cùng của năm học, AI cần thiết kế hoạt động như một bản tổng kết, giúp học sinh vẽ ra lộ trình cho 2 năm tiếp theo.
+
+3. Phân tích Chuyên sâu Khối 11: Phát triển Kỹ năng và Kết nối Xã hội
+
+Bước sang lớp 11, chương trình "Kết nối tri thức" nâng cấp độ khó và yêu cầu sự tương tác xã hội sâu rộng hơn. Dữ liệu cho thấy sự chuyển dịch từ "nhận biết" sang "phân tích", "đánh giá" và "xây dựng giải pháp".
+
+3.1. Phân tích Chi tiết Các Chủ đề và Hoạt động (Khối 11)
+
+Chương trình lớp 11 gồm 10 chủ đề, tập trung vào việc hoàn thiện kỹ năng và chuẩn bị tâm thế cho thị trường lao động.
+
+Chủ đề 1: Xây dựng và phát triển nhà trường
+
+Nội dung nâng cao: Không chỉ là tìm hiểu truyền thống (như lớp 10), học sinh lớp 11 cần tham gia xây dựng và phát triển quan hệ thầy trò, bạn bè và văn hóa nhà trường.
+
+Hoạt động: Tham gia diễn đàn về ảnh hưởng của mối quan hệ, xây dựng hình ảnh học sinh văn minh, thanh lịch.
+
+Chủ đề 2: Khám phá bản thân (Chiều sâu tâm lý)
+
+Hoạt động cốt lõi:
+
+Đặc điểm riêng: Khám phá và tự tin thể hiện những đặc điểm riêng biệt (cá tính, sở trường) (Hoạt động 1, 2, 7).
+
+Thích ứng: Xây dựng kế hoạch điều chỉnh bản thân để thích ứng với sự thay đổi (Hoạt động 3, 5). Đây là kỹ năng "resilience" (khả năng phục hồi) quan trọng.
+
+Phát triển sở trường: Lập kế hoạch phát triển sở trường liên quan đến nghề nghiệp (Hoạt động 6).
+
+Chủ đề 3: Rèn luyện bản thân (Kỷ luật và Cảm xúc)
+
+Hoạt động cốt lõi:
+
+Kỷ luật: Tuân thủ quy định của nhóm, lớp, cộng đồng (Hoạt động 1, 6).
+
+Quản lý cảm xúc: Tìm hiểu và thực hành cách quản lý cảm xúc, ứng xử hợp lý trong các tình huống giao tiếp (Hoạt động 4).
+
+Lan tỏa tích cực: Tìm biện pháp thu hút các bạn cùng phấn đấu hoàn thiện bản thân (Hoạt động 3, 8).
+
+Tài chính cá nhân nâng cao: Thực hiện kế hoạch tài chính cá nhân hợp lý (Hoạt động 5, 10). Ở lớp 11, yêu cầu học sinh không chỉ lập kế hoạch mà phải thực hiện và điều chỉnh nó.
+
+Chủ đề 4: Trách nhiệm với gia đình (Hóa giải xung đột)
+
+Điểm nhấn đặc biệt: Kỹ năng giải quyết mâu thuẫn thế hệ và gia đình.
+
+Hoạt động cốt lõi:
+
+Quan tâm chăm sóc: Thể hiện sự quan tâm thường xuyên đến người thân (Hoạt động 1, 3).
+
+Hóa giải mâu thuẫn: Tìm hiểu và thực hành cách hóa giải mâu thuẫn, xung đột trong gia đình (Hoạt động 2, 4). Đây là nội dung rất thực tế với tâm sinh lý lứa tuổi 17.
+
+Chăm sóc người ốm: Kỹ năng chăm sóc khi người thân bị mệt, ốm (Hoạt động 5).
+
+Tài chính gia đình: Lập kế hoạch chi tiêu và thực hành tiết kiệm cho gia đình (Hoạt động 7, 8).
+
+Chủ đề 5: Phát triển cộng đồng (Văn minh công cộng và Mạng xã hội)
+
+Hoạt động cốt lõi:
+
+Văn minh công cộng: Tìm hiểu và thể hiện hành vi văn minh nơi công cộng (Hoạt động 2, 4).
+
+Quan hệ cộng đồng: Xây dựng và phát triển mối quan hệ với mọi người trong cộng đồng (Hoạt động 3).
+
+Văn hóa mạng: Xây dựng và thực hiện kế hoạch truyền thông về văn hóa mạng xã hội (Hoạt động 6). AI cần chú trọng nội dung này vì tính thời sự cao.
+
+Quản lý dự án: Xây dựng kế hoạch tổ chức hoạt động phát triển cộng đồng và giải pháp quản lý (Hoạt động 5).
+
+Chủ đề 6: Bảo tồn cảnh quan thiên nhiên (Nghiên cứu thực địa)
+
+Hoạt động cốt lõi:
+
+Khảo sát: Khảo sát, thu thập thông tin về thực trạng cảnh quan thiên nhiên (Hoạt động 1).
+
+Báo cáo: Viết báo cáo đánh giá thực trạng.
+
+Quảng bá: Xây dựng kế hoạch quảng bá hình ảnh cảnh quan thiên nhiên, danh lam thắng cảnh.
+
+Chủ đề 7: Bảo vệ môi trường (Tác động Kinh tế - Môi trường)
+
+Hoạt động cốt lõi:
+
+Phân tích tác động: Phân tích tác động của hoạt động sản xuất, kinh doanh đến môi trường (Hoạt động 1).
+
+Kiến nghị: Đề xuất các kiến nghị bảo vệ môi trường xuất phát từ kết quả khảo sát.
+
+Tham gia: Thực hiện các hành động cụ thể bảo vệ tài nguyên môi trường.
+
+Chủ đề 8: Các nhóm nghề cơ bản và yêu cầu thị trường lao động
+
+Hoạt động cốt lõi:
+
+Phân loại nghề: Phân loại các nhóm nghề cơ bản, chỉ ra đặc trưng và yêu cầu.
+
+Xu hướng 4.0: Sưu tầm tài liệu về xu hướng phát triển nghề trong xã hội hiện đại và thị trường lao động.
+
+Yêu cầu tuyển dụng: Phân tích yêu cầu của nhà tuyển dụng về phẩm chất và năng lực.
+
+An toàn lao động: Giải thích ý nghĩa của việc đảm bảo an toàn và sức khỏe nghề nghiệp.
+
+Chủ đề 9: Rèn luyện phẩm chất, năng lực phù hợp với nhóm nghề
+
+Hoạt động cốt lõi:
+
+Đánh giá năng lực: Đánh giá điểm mạnh, yếu của bản thân đối với từng nhóm nghề (Hoạt động 1).
+
+Đo lường sự phù hợp: Xác định sự phù hợp về phẩm chất, năng lực với nhóm nghề lựa chọn (Hoạt động 2).
+
+Đối mặt khó khăn: Đánh giá thuận lợi, khó khăn trong quá trình rèn luyện (Hoạt động 3).
+
+Giải pháp: Đề xuất giải pháp học tập, rèn luyện theo nhóm nghề (Hoạt động 4).
+
+Chủ đề 10: Xây dựng và thực hiện kế hoạch học tập theo định hướng nghề
+
+Hoạt động cốt lõi:
+
+Thông tin đào tạo: Trình bày thông tin cơ bản về trường trung cấp, CĐ, ĐH liên quan đến nhóm nghề lựa chọn.
+
+Tham vấn: Tham vấn ý kiến thầy cô, gia đình, bạn bè về dự kiến ngành nghề.
+
+Kế hoạch học tập: Xây dựng và thực hiện kế hoạch học tập theo định hướng ngành nghề (Hoạt động 3, 4, 5, 6).
+
+Chỉ dẫn thiết kế: AI cần thiết kế các biểu mẫu kế hoạch học tập chi tiết, bao gồm mục tiêu điểm số, các chứng chỉ cần đạt (IELTS, MOS...), và các hoạt động ngoại khóa bổ trợ hồ sơ năng lực.
+
+4. Phân tích Chuyên sâu Khối 12: Trưởng thành và Ra Quyết định
+
+Lớp 12 là đỉnh cao của mô hình xoắn ốc trong chương trình "Kết nối tri thức". Nội dung không còn dừng lại ở rèn luyện mà chuyển sang làm chủ và quyết định.
+
+4.1. Phân tích Chi tiết Các Chủ đề và Hoạt động (Khối 12)
+
+Chương trình lớp 12 yêu cầu học sinh thể hiện bản lĩnh của một công dân trưởng thành.
+
+Chủ đề 1: Phát triển các mối quan hệ tốt đẹp
+
+Nội dung: Xây dựng mạng lưới xã hội (networking) và ứng xử trưởng thành.
+
+Hoạt động:
+
+Nuôi dưỡng, giữ gìn và mở rộng quan hệ với thầy cô, bạn bè (Hoạt động 1, 3, 8).
+
+Hợp tác với mọi người trong hoạt động chung (Hoạt động 2).
+
+Phân tích dư luận: Thể hiện lập trường, quan điểm khi phân tích dư luận xã hội về quan hệ bạn bè trên mạng xã hội (Hoạt động 4). Đây là hoạt động đòi hỏi tư duy phản biện sắc sảo.
+
+Giải quyết mâu thuẫn và nuôi dưỡng quan hệ (Hoạt động 7).
+
+Chủ đề 2: Tôi trưởng thành
+
+Nội dung: Khẳng định cái tôi bản lĩnh.
+
+Hoạt động:
+
+Xác định biểu hiện trưởng thành của cá nhân (Hoạt động 1, 5).
+
+Tư duy độc lập: Nhận diện và thể hiện khả năng tư duy độc lập (Hoạt động 3, 8).
+
+Thích ứng: Nhận diện và thể hiện khả năng thích ứng với sự thay đổi (Hoạt động 4, 9, 10). Kỹ năng này cực kỳ quan trọng cho giai đoạn chuyển tiếp lên Đại học hoặc đi làm.
+
+Rèn luyện ý chí và niềm đam mê (Hoạt động 2, 6, 7).
+
+Chủ đề 3: Hoàn thiện bản thân (Làm chủ và Tài chính)
+
+Nội dung: Tự chủ hoàn toàn.
+
+Hoạt động:
+
+Trách nhiệm và tuân thủ pháp luật (Hoạt động 1, 5, 6).
+
+Thực hiện công việc theo kế hoạch, tuân thủ thời gian và cam kết (Hoạt động 2, 7).
+
+Điều chỉnh cảm xúc trong giao tiếp (Hoạt động 3, 8).
+
+Tài chính độc lập: Tìm hiểu nguồn thu nhập, lập và thực hiện kế hoạch phát triển tài chính cá nhân (Hoạt động 4, 9). AI cần đưa vào các yếu tố như "làm thêm", "học bổng", "quản lý nợ sinh viên".
+
+Chủ đề 4: Trách nhiệm với gia đình
+
+Nội dung: Chia sẻ gánh nặng quản lý gia đình.
+
+Hoạt động:
+
+Chủ động giải quyết vấn đề nảy sinh trong gia đình (Hoạt động 1, 5).
+
+Vai trò, trách nhiệm trong việc tổ chức cuộc sống gia đình (Hoạt động 2, 6).
+
+Kinh tế hộ gia đình: Phân tích ảnh hưởng của thu nhập thực tế, quyết định chi tiêu và lối sống đến chi phí sinh hoạt (Hoạt động 3, 7). Học sinh cần hiểu bài toán "cơm áo gạo tiền" thực tế.
+
+Chủ đề 5: Xây dựng cộng đồng (Hội nhập)
+
+Nội dung: Công dân toàn cầu.
+
+Hoạt động:
+
+Chủ động thiết lập quan hệ xã hội, chia sẻ giúp đỡ cộng đồng (Hoạt động 1, 4).
+
+Đa văn hóa: Khám phá các nền văn hóa khác nhau, tôn trọng sự khác biệt (Hoạt động 5, 6). Chuẩn bị cho môi trường làm việc đa quốc gia.
+
+Giáo dục tình đoàn kết dân tộc, hòa bình hữu nghị (Hoạt động 2, 3, 7).
+
+Quản lý dự án tình nguyện (Hoạt động 8).
+
+Chủ đề 6: Chung tay gìn giữ, bảo tồn cảnh quan thiên nhiên
+
+Hoạt động: Tìm hiểu và đề xuất giải pháp sáng tạo trong bảo tồn (Hoạt động 1, 4); Tuyên truyền ý nghĩa cảnh quan (Hoạt động 2, 5); Đánh giá thực trạng (Hoạt động 3).
+
+Chủ đề 7: Bảo vệ thế giới tự nhiên
+
+Hoạt động: Bảo tồn thế giới tự nhiên và động vật hoang dã (Hoạt động 1, 3, 4); Khảo sát và lập kế hoạch bảo vệ động thực vật địa phương (Hoạt động 2, 6).
+
+Chủ đề 8: Nghề nghiệp và những yêu cầu với người lao động
+
+Nội dung: Chuyên nghiệp hóa.
+
+Hoạt động:
+
+Tìm hiểu xu hướng phát triển nghề nghiệp xã hội hiện đại (Hoạt động 1).
+
+Rèn luyện tính chuyên nghiệp trong công việc (Hoạt động 3, 5).
+
+Đảm bảo an toàn và sức khỏe nghề nghiệp (Hoạt động 4, 6).
+
+Phân tích thông tin thị trường lao động (Hoạt động 8).
+
+Chủ đề 9: Rèn luyện phẩm chất, năng lực phù hợp định hướng nghề
+
+Nội dung: Sẵn sàng chuyển đổi (Career adaptability).
+
+Hoạt động:
+
+Xác định nghề phù hợp khả năng, sở thích (Hoạt động 1).
+
+Chuyển đổi nghề: Tìm hiểu yếu tố tác động và năng lực cần có để chuyển đổi nghề khi cần thiết (Hoạt động 2, 3, 5, 6). Đây là tư duy rất hiện đại, chuẩn bị cho thị trường lao động biến động.
+
+Thể hiện sự tự tin với định hướng nghề (Hoạt động 7).
+
+Chủ đề 10: Quyết định lựa chọn nghề
+
+Nội dung: Ra quyết định cuối cùng.
+
+Hoạt động:
+
+Chuẩn bị tâm lý thích ứng môi trường làm việc/học tập tương lai (Hoạt động 1, 8).
+
+Tâm thế sẵn sàng hòa nhập lực lượng lao động (Hoạt động 2, 5).
+
+Bản lĩnh thực hiện đam mê (Hoạt động 3, 7).
+
+Phân tích thông tin cơ sở giáo dục (Hoạt động 4).
+
+Ra quyết định: Quyết định chọn nghề, chọn ngành học, chọn trường (Hoạt động 6).
+
+## 5. Phân tích Dọc (Longitudinal Analysis) theo Mô hình Xoắn ốc
+
+Để Gemini thiết kế các kế hoạch dạy học không bị trùng lặp và đảm bảo tính phát triển, cần thấu hiểu sự tiến hóa của các mạch nội dung chính qua 3 năm học.
+
+Mạch Nội dung
+
+Lớp 10 (Thích ứng & Nhận diện)
+
+Lớp 11 (Phát triển & Phân tích)
+
+Lớp 12 (Trưởng thành & Quyết định)
+
+Bản thân
+
+Khám phá tính cách, sở thích, điểm mạnh/yếu. Làm quen với quản lý tài chính cơ bản.
+
+Tự tin thể hiện bản sắc. Thích ứng với sự thay đổi. Quản lý cảm xúc trong các mối quan hệ phức tạp.
+
+Khẳng định sự trưởng thành, tư duy độc lập. Tự chủ tài chính, lập kế hoạch tài chính dài hạn.
+
+Gia đình
+
+Tham gia lao động, làm việc nhà. Hiểu sơ lược về kinh tế gia đình.
+
+Hóa giải mâu thuẫn thế hệ. Chăm sóc người ốm. Lập kế hoạch chi tiêu gia đình.
+
+Tổ chức cuộc sống gia đình. Phân tích sâu sắc tác động của tài chính và lối sống đến hạnh phúc gia đình.
+
+Cộng đồng
+
+Tham gia hoạt động xã hội tại địa phương.
+
+Xây dựng văn hóa mạng xã hội. Quản lý dự án cộng đồng. Ứng xử văn minh.
+
+Hội nhập văn hóa quốc tế. Tôn trọng sự khác biệt. Thực hiện dự án nhân đạo quy mô.
+
+Môi trường
+
+Nhận diện thực trạng, tuyên truyền bảo vệ cảnh quan.
+
+Phân tích tác động của kinh tế đến môi trường. Đề xuất kiến nghị chính sách.
+
+Đề xuất giải pháp sáng tạo bảo tồn. Bảo vệ đa dạng sinh học và động vật hoang dã.
+
+Nghề nghiệp
+
+Tìm hiểu nghề truyền thống địa phương. Trải nghiệm nghề nghiệp sơ khởi.
+
+Phân tích thị trường lao động 4.0. Yêu cầu của nhà tuyển dụng. An toàn lao động.
+
+Tính chuyên nghiệp. Khả năng chuyển đổi nghề nghiệp. Ra quyết định chọn trường/nghề cuối cùng.
+
+6. Chỉ dẫn Kỹ thuật cho Hệ thống AI (Gemini)
+
+Dựa trên toàn bộ phân tích trên, dưới đây là bộ quy tắc và tham số kỹ thuật (Design Directives) để Gemini thiết kế kế hoạch dạy học:
+
+6.1. Quy tắc Phân tích Ngữ cảnh (Context Parsing)
+
+Input: Khi người dùng yêu cầu "Soạn giáo án Chủ đề X lớp Y", Gemini phải tham chiếu ngay vào Bảng phân tích dọc để xác định mức độ yêu cầu (Bloom's taxonomy level) phù hợp.
+
+Ví dụ: Nếu là lớp 10, hoạt động là "Tìm hiểu"; nếu là lớp 11, hoạt động là "Phân tích/Đánh giá"; nếu là lớp 12, hoạt động là "Quyết định/Giải quyết".
+
+Local Content: Đối với các chủ đề về Môi trường và Nghề nghiệp, Gemini cần có biến số {Dia_Phuong}. Prompt phải yêu cầu người dùng cung cấp tên tỉnh/thành để AI điền các dữ liệu về danh lam thắng cảnh hoặc làng nghề cụ thể của địa phương đó vào giáo án.
+
+6.2. Cấu trúc Giáo án Chuẩn (Theo CV 5512)
+
+Mọi kế hoạch bài dạy (Tiết 2 - Hoạt động giáo dục) do AI sinh ra bắt buộc phải tuân thủ khung sau:
+
+Tên bài học: (Theo SGK Kết nối tri thức).
+
+Mục tiêu:
+
+Kiến thức: (Trích xuất từ phần "Hoạt động cốt lõi" ở trên).
+
+Năng lực: (Tự chủ, Giao tiếp, Giải quyết vấn đề, Định hướng nghề nghiệp).
+
+Phẩm chất: (Trách nhiệm, Trung thực, Nhân ái...).
+
+Thiết bị dạy học: (Máy chiếu, tranh ảnh, video, phiếu học tập...).
+
+Tiến trình dạy học (4 bước):
+
+Hoạt động 1: Khám phá/Khởi động: Trò chơi, video, câu hỏi gợi mở (kích thích tò mò).
+
+Hoạt động 2: Hình thành kiến thức mới (Kết nối): Thảo luận nhóm, nghiên cứu tình huống (Case study), thuyết trình. Đây là trọng tâm.
+
+Hoạt động 3: Luyện tập (Thực hành): Đóng vai (Role-play), xử lý tình huống giả định, làm bài tập thực hành.
+
+Hoạt động 4: Vận dụng (Mở rộng): Giao nhiệm vụ về nhà, dự án thực tế, cam kết hành động.
+
+6.3. Xử lý các Tiết Sinh hoạt dưới cờ và Sinh hoạt lớp
+
+Sinh hoạt dưới cờ: AI cần thiết kế kịch bản MC (người dẫn chương trình), các câu hỏi tương tác cho toàn trường, và các tiết mục văn nghệ minh họa chủ đề.
+
+Sinh hoạt lớp: AI cần thiết kế mẫu "Phiếu sơ kết tuần", các câu hỏi thảo luận nhóm nhỏ để học sinh tự đánh giá việc thực hiện cam kết trong tuần, và nội dung sinh hoạt chuyên đề ngắn gọn.
+
+Bằng việc tuân thủ chặt chẽ báo cáo này, Gemini sẽ có khả năng hoạt động như một chuyên gia sư phạm thực thụ, thiết kế nên những kế hoạch dạy học không chỉ chính xác về mặt nội dung SGK "Kết nối tri thức" mà còn sâu sắc về phương pháp, đáp ứng trọn vẹn yêu cầu đổi mới giáo dục.
+
+Nguồn trích dẫn
+
+1. Giải hoạt động trải nghiệm hướng nghiệp lớp 12 kết nối tri thức, https://loigiaihay.com/sgk-hoat-dong-trai-nghiem-huong-nghiep-12-ket-noi-tri-thuc-c1802.html 2. Khoi 10 - Ke Hoach Giao Duc Hoat Dong Trai Nghiem Huong Nghiep - 2023-2024ocx, https://www.scribd.com/document/891304412/Khoi-10-Ke-Hoach-Giao-Duc-Hoat-Dong-Trai-Nghiem-Huong-Nghiep-2023-2024ocx 3. PPCT HDTN 10 | PDF - Scribd, https://www.scribd.com/document/776811587/PPCT-HDTN-10 4. PPCT HDTN 11 - 2482023143232 | PDF - Scribd, https://www.scribd.com/document/791395975/ppct-hdtn-11-2482023143232 5. Kiến thức trọng tâm hoạt động trải nghiệm 11 kết nối tri thức - Kênh giáo viên, https://kenhgiaovien.com/tai-lieu/kien-thuc-trong-tam-hoat-dong-trai-nghiem-11-ket-noi-tri-thuc 6. PPCT HĐ TNHN 12 | PDF - Scribd, https://www.scribd.com/document/785528966/PPCT-H%C4%90-TNHN-12 7. Kịch bản sinh hoạt dưới cờ | PDF - Scribd, https://www.scribd.com/document/750019526/K%E1%BB%8Bch-b%E1%BA%A3n-sinh-ho%E1%BA%A1t-d%C6%B0%E1%BB%9Bi-c%E1%BB%9D 8. GIÁO ÁN KẾ HOẠCH BÀI DẠY HOẠT ĐỘNG TRẢI NGHIỆM 11 KẾT NỐI TRI THỨC - CẢ NĂM THEO CÔNG VĂN 5512 (2 CỘT) NĂM HỌC 2023-2024 (426 TRANG).pdf - Slideshare, https://www.slideshare.net/slideshow/gio-n-k-hoch-bi-dy-hot-ng-tri-nghim-11-kt-ni-tri-thc-c-nm-theo-cng-vn-5512-2-ct-nm-hc-20232024-426-trangpdf/267093943 9. Giải trải nghiệm hướng nghiệp lớp 10 Kết nối tri thức - Loigiaihay.com, https://loigiaihay.com/hoat-dong-trai-nghiem-huong-nghiep-lop-10-c917.html 10. Giải trải nghiệm hướng nghiệp lớp 10 chủ đề 1 Kết nối tri thức - Loigiaihay.com, https://loigiaihay.com/chu-de-1-phat-huy-truyen-thong-nha-truong-e26272.html 11. HĐTN 10 Kết nối tri thức Chủ đề 3: Rèn luyện bản thân | Giải Hoạt ..., https://vietjack.com/hoat-dong-trai-nghiem-10-kn/chu-de-3-ren-luyen-ban-than.jsp 12. Giải trải nghiệm hướng nghiệp lớp 10 chủ đề 4 Kết nối tri thức, https://loigiaihay.com/chu-de-4-chu-dong-tu-tin-trong-hoc-tap-va-giao-tiep-e26275.html 13. Giải trải nghiệm hướng nghiệp lớp 10 chủ đề 5 Kết nối tri thức, https://loigiaihay.com/chu-de-5-trach-nhiem-voi-gia-dinh-e26276.html 14. Chủ đề 6. Tham gia xây dựng cộng đồng - SBT HĐTN 10 Kết nối tri ..., https://loigiaihay.com/chu-de-6-tham-gia-xay-dung-cong-dong-sbt-hdtn-10-ket-noi-tri-thuc-a182264.html 15. HĐTN 10 Chủ đề 6: Tham gia xây dựng cộng đồng | Giải Hoạt động trải nghiệm 10 Kết nối tri thức - VietJack, https://vietjack.com/hoat-dong-trai-nghiem-10-kn/chu-de-6-tham-gia-xay-dung-cong-dong.jsp 16. Giải trải nghiệm hướng nghiệp lớp 10 chủ đề 7 Kết nối tri thức - Loigiaihay.com, https://loigiaihay.com/chu-de-7-bao-ton-canh-quan-thien-nhien-e26278.html 17. HĐTN 10 Kết nối tri thức Chủ đề 7: Bảo tồn cảnh quan thiên nhiên | Giải Hoạt động trải nghiệm 10 - VietJack, https://vietjack.com/hoat-dong-trai-nghiem-10-kn/chu-de-7-bao-ton-canh-quan-thien-nhien.jsp 18. HĐTN 10 Kết nối tri thức Chủ đề 9: Tìm hiểu nghề nghiệp | Giải Hoạt ..., https://vietjack.com/hoat-dong-trai-nghiem-10-kn/chu-de-9-tim-hieu-nghe-nghiep.jsp 19. Giải trải nghiệm hướng nghiệp lớp 10 chủ đề 9 Kết nối tri thức - Loigiaihay.com, https://loigiaihay.com/cbu-de-9-tim-hieu-nghe-nghiep-e26280.html 20. HĐTN 10 Kết nối tri thức Chủ đề 11: Lập kế hoạch học tập, rèn ..., https://vietjack.com/hoat-dong-trai-nghiem-10-kn/chu-de-11-lap-ke-hoach-hoc-tap-ren-luyen-theo-dinh-huong-nghe-nghiep.jsp 21. Giải trải nghiệm hướng nghiệp lớp 10 chủ đề 11 Kết nối tri thức - Loigiaihay.com, https://loigiaihay.com/chu-de-11-lap-ke-hoach-hoc-tap-ren-luyen-theo-dinh-huong-nghe-nghiep-e26282.html 22. Giải hoạt động trải nghiệm hướng nghiệp lớp 11 chủ đề 5 kết nối tri ..., https://loigiaihay.com/chu-de-5-phat-trien-cong-dong-trang-36-37-38-sgk-hoat-dong-trai-nghiem-11-ket-noi-tri-thuc-e33479.html 23. Giáo án HĐTN 11 Kết nối tri thức Chủ đề 1: Xây dựng và phát triển nhà trường - VietJack, https://vietjack.com/giao-an-hoat-dong-trai-nghiem-11/chu-de-1-xay-dung-va-phat-trien-nha-truong-kntt.jsp 24. HĐTN 11 Kết nối tri thức Chủ đề 1: Xây dựng và phát triển nhà trường | Giải Hoạt động trải nghiệm 11 - VietJack, https://vietjack.com/hoat-dong-trai-nghiem-11-kn/chu-de-1-xay-dung-va-phat-trien-nha-truong.jsp 25. Giải hoạt động trải nghiệm hướng nghiệp lớp 11 chủ đề 2 kết nối tri thức - Loigiaihay.com, https://loigiaihay.com/chu-de-2-kham-pha-ban-than-trang-13-14-15-sgk-hoat-dong-trai-nghiem-11-ket-noi-tri-thuc-e33475.html 26. Đáp án hoạt động trải nghiệm 11 kết nối tri thức chủ đề 2: Khám phá bản thân, https://kenhgiaovien.com/tai-lieu/dap-hoat-dong-trai-nghiem-11-ket-noi-tri-thuc-chu-de-2-kham-pha-ban 27. Giải hoạt động trải nghiệm hướng nghiệp lớp 11 chủ đề 3 kết nối tri thức - Loigiaihay.com, https://loigiaihay.com/chu-de-3-ren-luyen-ban-than-trang-19-20-21-sgk-hoat-dong-trai-nghiem-11-ket-noi-tri-thuc-e33476.html 28. Giải hoạt động trải nghiệm hướng nghiệp lớp 11 chủ đề 4 kết nối tri ..., https://loigiaihay.com/chu-de-4-trach-nhiem-voi-gia-dinh-trang-28-29-30-sgk-hoat-dong-trai-nghiem-11-ket-noi-tri-thuc-e33477.html 29. Nội dung chính HĐTN 11 kết nối Chủ đề 6: Bảo tồn cảnh quan thiên nhiên - Kênh giáo viên, https://kenhgiaovien.com/tai-lieu/noi-dung-chinh-hdtn-11-ket-noi-chu-de-6-bao-ton-canh-quan-thien-nhien 30. Giáo án HĐTN 11 kết nối Chủ đề 6: Bảo tồn cảnh quan thiên nhiên - Tuần 2, https://kenhgiaovien.com/tai-lieu/giao-hdtn-11-ket-noi-chu-de-6-bao-ton-canh-quan-thien-nhien-tuan-2 31. Giáo án HĐTN 11 kết nối Chủ đề 7: Bảo vệ môi trường - Tuần 2, https://kenhgiaovien.com/tai-lieu/giao-hdtn-11-ket-noi-chu-de-7-bao-ve-moi-truong-tuan-2 32. Đáp án hoạt động trải nghiệm 11 kết nối tri thức chủ đề 7: Bảo vệ môi trường, https://kenhgiaovien.com/tai-lieu/dap-hoat-dong-trai-nghiem-11-ket-noi-tri-thuc-chu-de-7-bao-ve-moi-truong 33. Đáp án hoạt động trải nghiệm 11 kết nối tri thức chủ đề 8: Lựa chọn nghề nghiệp tương lai, https://kenhgiaovien.com/tai-lieu/dap-hoat-dong-trai-nghiem-11-ket-noi-tri-thuc-chu-de-8-lua-chon-nghe-nghiep-tuong-lai 34. Giáo án HĐTN 11 kết nối Chủ đề 8: Các nhóm nghề cơ bản và yêu cầu của thị trường lao động - Tuần 3 | Giáo án Hoạt động trải nghiệm, hướng nghiệp 11 kết nối tri thức - Kênh giáo viên, https://kenhgiaovien.com/tai-lieu/giao-hdtn-11-ket-noi-chu-de-8-cac-nhom-nghe-co-ban-va-yeu-cau-cua-thi-truong-lao-dong-1 35. Giáo án HĐTN 11 Kết nối tri thức Chủ đề 8: Các nhóm nghề cơ bản và yêu cầu của thị trường lao động - VietJack, https://vietjack.com/giao-an-hoat-dong-trai-nghiem-11/chu-de-8-cac-nhom-nghe-co-ban-va-yeu-cau-cua-thi-truong-kntt.jsp 36. Nội dung chính HĐTN 11 kết nối Chủ đề 9: Rèn luyện phẩm chất, năng lực phù hợp với nhóm nghề lựa chọn - Kênh giáo viên, https://kenhgiaovien.com/tai-lieu/noi-dung-chinh-hdtn-11-ket-noi-chu-de-9-ren-luyen-pham-chat-nang-luc-phu-hop-voi-nhom-nghe 37. Giáo án HĐTN 11 Kết nối tri thức Chủ đề 10: Xây dựng và thực hiện kế hoạch học tập theo định hướng ngành, nghề lựa chọn - VietJack.com, https://vietjack.com/giao-an-hoat-dong-trai-nghiem-11/chu-de-10-xay-dung-va-thuc-hien-ke-hoach-hoc-tap-theo-kntt.jsp 38. Giáo án và PPT Hoạt động trải nghiệm 11 kết nối Chủ đề 10: Xây dựng và thực hiện kế hoạch học tập theo định hướng ngành, nghề lựa chọn, https://kenhgiaovien.com/tai-lieu/giao-va-ppt-hoat-dong-trai-nghiem-11-ket-noi-chu-de-10-xay-dung-va-thuc-hien-ke-hoach-hoc 39. Giáo án HĐTN 12 Kết nối tri thức Chủ đề 1: Phát triển các mối quan ..., https://www.vietjack.com/giao-an-hoat-dong-trai-nghiem-12/chu-de-1-phat-trien-cac-moi-quan-he-tot-dep-voi-thay-co-kntt.jsp
+
+
+--- END FILE ---
+

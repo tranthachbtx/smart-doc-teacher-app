@@ -3,6 +3,7 @@ import {
   generateMeetingMinutes,
   generateLessonPlan,
   generateEventScript,
+  auditLessonPlan,
 } from "@/lib/actions/gemini";
 import type {
   MeetingResult,
@@ -86,52 +87,37 @@ export function useTemplateGeneration() {
       fullInstructions += `\n\n=== CÁC NHIỆM VỤ CẦN THIẾT KẾ ===\n${tasksPrompt}\n\nYÊU CẦU: Hãy thiết kế tiến trình dạy học RIÊNG CHO TỪNG NHIỆM VỤ. Mỗi nhiệm vụ cần có đầy đủ 4 bước (Chuyển giao - Thực hiện - Báo cáo - Kết luận). Trình bày theo cấu trúc:\n\nNHIỆM VỤ 1: [Tên]\n- Nội dung nhiệm vụ: [Chi tiết]\n- Tiến trình thực hiện:\n  + Bước 1: Chuyển giao nhiệm vụ...\n  + Bước 2: Thực hiện nhiệm vụ...\n  + Bước 3: Báo cáo, thảo luận...\n  + Bước 4: Kết luận, nhận định...\n\n(Tương tự cho các nhiệm vụ tiếp theo)`;
     }
 
+    // Attempt to find month from PPCT data
+    let foundMonth: number | undefined = undefined;
+    if (ppctData && ppctData.length > 0) {
+      const match = ppctData.find(
+        (item) =>
+          item.theme.toLowerCase().includes(topic.toLowerCase()) ||
+          topic.toLowerCase().includes(item.theme.toLowerCase())
+      );
+      if (match && match.month) {
+        foundMonth = Number.parseInt(match.month);
+      }
+    }
+
     try {
-      // Prepare simplified tasks for API if needed, but gemini.ts signature:
-      // generateLessonPlan(grade, topic, fullPlan, duration?, customInstructions?, tasks?)
-      // The usage in TemplateEngine passed many more args:
-      // ppctData, taskTimeDistribution, suggestions...
-      // My previous view of gemini.ts did NOT show those extra args in function signature.
-      // It showed: (grade, lessonTopic, fullPlan, duration?, customInstructions?, tasks?)
-      // So TemplateEngine.tsx might have been calling a newer version of generateLessonPlan than what I saw in gemini.ts?
-      // Or I missed lines in gemini.ts?
-      // Let's re-verify gemini.ts signature.
-      // Line 292: export async function generateLessonPlan(...)
-      // Args: grade, lessonTopic, fullPlan, duration, customInstructions, tasks
-      // tasks type is Array<{name: string, description: string}>.
-
-      // Wait, TemplateEngine passed `ppctData` and `taskTimeDistribution` etc.
-      // Line 494: ppctData,
-      // Line 496: lessonFullPlanMode ? taskTimeDistribution : undefined,
-      // ...
-      // This implies the generateLessonPlan definition I saw (lines 292-299) might be mismatching what TemplateEngine thinks it is calling
-      // OR Javascript allows extra args ignoring.
-      // But if I want to refactor, I should stick to what `gemini.ts` actually accepts.
-      // If the component was passing extra args that were ignored, I should probably clean that up.
-      // Unless I missed overloading.
-
-      // I will pass what gemini.ts accepts.
       const simplifiedTasks = selectedTasks.map((t) => ({
         name: t.name,
-        description: t.content,
+        description: `${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`,
       }));
 
       const result = await generateLessonPlan(
         grade,
         topic,
         fullPlanMode,
-        fullPlanMode ? `${duration} tiết` : undefined,
+        fullPlanMode ? `${duration}` : undefined, // Keep exact duration format
         fullInstructions,
-        simplifiedTasks
+        simplifiedTasks,
+        foundMonth,
+        suggestions
       );
 
       if (result.success && result.data) {
-        // Merge suggestions back if they were part of the logic (but gemini didn't return them?)
-        // TemplateEngine line 503 setLessonResult(result.data).
-        // But result.data structure in gemini.ts doesn't have shdc_gợi_ý etc.
-        // Wait, generated JSON keys might reduce into result.data.
-        // gemini.ts parsing logic extracts any keys found.
-
         return { success: true, data: result.data as LessonResult };
       } else {
         setError(result.error || "Lỗi khi tạo nội dung");
@@ -181,6 +167,20 @@ export function useTemplateGeneration() {
     }
   };
 
+  const auditLesson = async (lessonData: any, grade: string, topic: string) => {
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const result = await auditLessonPlan(lessonData, grade, topic);
+      return result;
+    } catch (err: any) {
+      setError(err.message || "Lỗi kiểm định");
+      return { success: false, error: err.message };
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return {
     isGenerating,
     error,
@@ -188,5 +188,6 @@ export function useTemplateGeneration() {
     generateMeeting,
     generateLesson,
     generateEvent,
+    auditLesson,
   };
 }

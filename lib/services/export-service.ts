@@ -23,8 +23,7 @@ function formatForWord(text: unknown): string {
             return Object.entries(item)
               .map(
                 ([key, value]) =>
-                  `${key}: ${
-                    typeof value === "string" ? value : JSON.stringify(value)
+                  `${key}: ${typeof value === "string" ? value : JSON.stringify(value)
                   }`
               )
               .join("\n");
@@ -68,8 +67,7 @@ function formatForWord(text: unknown): string {
       Object.entries(obj)
         .map(
           ([key, value]) =>
-            `${key}: ${
-              typeof value === "string" ? value : JSON.stringify(value)
+            `${key}: ${typeof value === "string" ? value : JSON.stringify(value)
             }`
         )
         .join("\n")
@@ -85,20 +83,23 @@ function formatForWord(text: unknown): string {
   let formatted = text
     // Remove TAB characters
     .replace(/\t/g, "")
-    // Remove ** markdown bold
+    // Remove ** markdown bold (not supported in simple text tags)
     .replace(/\*\*/g, "")
-    // Clean up lines - keep original structure
+    // Clean up lines
     .split("\n")
     .map((line) => line.trim())
-    .filter((line) => line.length > 0)
+    // Collapse multiple empty lines into a single newline to follow administrative standards
+    // (spacing should be handled by paragraph properties, not empty rows)
+    .filter((line, index, arr) => line !== "" || (index > 0 && arr[index - 1] !== ""))
     .join("\n")
-    .trim();
+    .trim()
+    // Convert multiple newlines to single newlines for paragraph separation
+    .replace(/\n\s*\n/g, "\n");
 
-  // Replace single newlines with LINE marker (soft break - same paragraph)
-  // This creates line breaks WITHOUT blank lines between them
-  formatted = formatted.replace(/\n/g, "{{LINE}}");
+  if (!formatted) return "";
 
-  return formatted;
+  // Use a unique marker for paragraph breaks
+  return formatted.replace(/\n/g, "{{BR}}");
 }
 
 function getChuDeNumber(month: string): string {
@@ -129,7 +130,7 @@ async function processTemplate(
     const content = Object.entries(data)
       .map(
         ([key, value]) =>
-          `${key}:\n${(String(value) || "").replace(/\{\{LINE\}\}/g, "\n")}`
+          `${key}:\n${(String(value) || "").replace(/\{\{BR\}\}/g, "\n")}`
       )
       .join("\n\n---\n\n");
 
@@ -137,17 +138,21 @@ async function processTemplate(
     return { success: true, method: "clipboard" as const };
   }
 
-  // Dynamic imports for docx processing
-  const PizZip = (await import("pizzip")).default;
-  const Docxtemplater = (await import("docxtemplater")).default;
+  // Dynamic imports for docx processing with fallback for different module formats
+  const PizZipModule = await import("pizzip");
+  const PizZip = PizZipModule.default || PizZipModule;
+
+  const DocxtemplaterModule = await import("docxtemplater");
+  const Docxtemplater = DocxtemplaterModule.default || DocxtemplaterModule;
+
   let saveAs: (blob: Blob, filename: string) => void;
 
   try {
     const fileSaver = await import("file-saver");
-    saveAs = fileSaver.saveAs || fileSaver.default?.saveAs;
+    saveAs = (fileSaver as any).saveAs || (fileSaver as any).default?.saveAs || (fileSaver as any).default;
     if (typeof saveAs !== "function") throw new Error("FileSaver not found");
-  } catch {
-    // Fallback
+  } catch (err) {
+    console.warn("FileSaver not available, using DOM fallback:", err);
     saveAs = (blob: Blob, filename: string) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -163,7 +168,7 @@ async function processTemplate(
   const zip = new PizZip(templateData);
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,
-    linebreaks: false,
+    linebreaks: false, // We handle them manually for better control
     nullGetter: () => "",
   });
 
@@ -173,8 +178,21 @@ async function processTemplate(
   const documentXml = processedZip.file("word/document.xml");
   if (documentXml) {
     let xmlContent = documentXml.asText();
-    // Use soft line break (<w:br/>) instead of new paragraph
-    xmlContent = xmlContent.replace(/\{\{LINE\}\}/g, "</w:t><w:br/><w:t>");
+
+    // Replace {{BR}} with actual Word paragraph break sequence
+    // We include standard Vietnamese administrative styles (Decree 30/2020/NĐ-CP):
+    // - w:jc val="both": Justified alignment
+    // - w:ind w:firstLine="720": First line indentation (1.27cm)
+    // - w:rFonts: Times New Roman
+    // - w:sz val="26": 13pt content size
+    // - w:spacing: 1.3 line spacing (312) and 6pt after (120)
+    const vStyle = `</w:t></w:r></w:p><w:p><w:pPr><w:ind w:firstLine="720"/><w:jc w:val="both"/><w:spacing w:line="312" w:lineRule="auto" w:after="120"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr><w:t>`;
+    xmlContent = xmlContent.replace(/\{\{BR\}\}/g, vStyle);
+
+    // Enforce Vietnamese Administrative Margins (Decree 30)
+    // Left: 30mm (1701 twips), Right: 15mm (850 twips), Top/Bottom: 20mm (1134 twips)
+    xmlContent = xmlContent.replace(/<w:pgMar[^>]*\/>/g, '<w:pgMar w:top="1134" w:right="850" w:bottom="1134" w:left="1701" w:header="720" w:footer="720" w:gutter="0"/>');
+
     processedZip.file("word/document.xml", xmlContent);
   }
 
@@ -262,6 +280,8 @@ export const ExportService = {
         thiet_bi_day_hoc: formatForWord(result.thiet_bi_day_hoc || ""),
 
         hoat_dong_duoi_co: formatForWord(result.hoat_dong_duoi_co || ""),
+        shdc: formatForWord(result.shdc || ""),
+        shl: formatForWord(result.shl || ""),
         hoat_dong_khoi_dong: formatForWord(result.hoat_dong_khoi_dong || ""),
         hoat_dong_kham_pha: formatForWord(result.hoat_dong_kham_pha || ""),
         hoat_dong_luyen_tap: formatForWord(result.hoat_dong_luyen_tap || ""),
@@ -319,6 +339,15 @@ export const ExportService = {
           ppctItem.periods.toString();
         if (ppctItem.notes)
           data[`ppct_thang_${ppctItem.month}_ghi_chu`] = ppctItem.notes;
+
+        // Add activities
+        if (ppctItem.activities && ppctItem.activities.length > 0) {
+          data[`ppct_thang_${ppctItem.month}_hoat_dong`] = formatForWord(ppctItem.activities.join("\n"));
+          ppctItem.activities.forEach((act, actIdx) => {
+            data[`ppct_thang_${ppctItem.month}_hoat_dong_${actIdx + 1}`] = act;
+          });
+        }
+
         if (ppctItem.tasks && ppctItem.tasks.length > 0) {
           ppctItem.tasks.forEach((task, taskIndex) => {
             data[`ppct_thang_${ppctItem.month}_nhiem_vu_${taskIndex + 1}_ten`] =
@@ -330,9 +359,8 @@ export const ExportService = {
         }
       });
 
-      fileName = `KHBD_Lop${grade}_ChuDe${chuDeNumber}_${
-        topic || autoFilledTheme
-      }.docx`.replace(/\s+/g, "_");
+      fileName = `KHBD_Lop${grade}_ChuDe${chuDeNumber}_${topic || autoFilledTheme
+        }.docx`.replace(/\s+/g, "_");
     } else {
       data = {
         ten_bai: topic || autoFilledTheme,
@@ -380,7 +408,7 @@ export const ExportService = {
       ),
       danh_gia_sau_hoat_dong: formatForWord(
         result.danh_gia_sau_hoat_dong ||
-          `1. Mức độ hoàn thành mục tiêu: __/10\n2. Sự tham gia của học sinh: __/10\n3. Công tác tổ chức: __/10\n4. Bài học kinh nghiệm:\n5. Đề xuất cải tiến:`
+        `1. Mức độ hoàn thành mục tiêu: __/10\n2. Sự tham gia của học sinh: __/10\n3. Công tác tổ chức: __/10\n4. Bài học kinh nghiệm:\n5. Đề xuất cải tiến:`
       ),
     };
     const fileName = `KH_Ngoaikhoa_K${grade}_T${month}.docx`;

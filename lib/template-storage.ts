@@ -1,8 +1,9 @@
 // IndexedDB storage for .docx templates
 const DB_NAME = "SmartDocTeacherDB"
-const DB_VERSION = 6 // Increment version to add PPCT storage
+const DB_VERSION = 7 // Increment version to add projects storage
 const STORE_NAME = "templates"
-const PPCT_STORE_NAME = "ppct" // New store for PPCT
+const PPCT_STORE_NAME = "ppct"
+const PROJECT_STORE_NAME = "projects" // New store for History/Projects
 
 export type TemplateType = "meeting" | "event" | "lesson" | "default_meeting" | "default_event" | "default_lesson"
 
@@ -23,6 +24,7 @@ export interface PPCTItem {
   theme: string
   periods: number
   notes?: string
+  activities?: string[]
   tasks?: {
     name: string
     description: string
@@ -33,6 +35,16 @@ export interface StoredPPCT {
   grade: string
   items: PPCTItem[]
   uploadedAt: Date
+}
+
+export interface ProjectHistory {
+  id: string
+  type: "meeting" | "lesson" | "event"
+  title: string
+  data: any
+  grade?: string
+  month?: string
+  createdAt: Date
 }
 
 import { loadDefaultTemplate } from "./default-templates"
@@ -46,16 +58,18 @@ function openDB(): Promise<IDBDatabase> {
 
     request.onupgradeneeded = (event) => {
       const db = (event.target as IDBOpenDBRequest).result
-      // Templates store
-      if (db.objectStoreNames.contains(STORE_NAME)) {
-        db.deleteObjectStore(STORE_NAME)
-      }
-      db.createObjectStore(STORE_NAME, { keyPath: "type" })
 
-      if (db.objectStoreNames.contains(PPCT_STORE_NAME)) {
-        db.deleteObjectStore(PPCT_STORE_NAME)
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: "type" })
       }
-      db.createObjectStore(PPCT_STORE_NAME, { keyPath: "grade" })
+
+      if (!db.objectStoreNames.contains(PPCT_STORE_NAME)) {
+        db.createObjectStore(PPCT_STORE_NAME, { keyPath: "grade" })
+      }
+
+      if (!db.objectStoreNames.contains(PROJECT_STORE_NAME)) {
+        db.createObjectStore(PROJECT_STORE_NAME, { keyPath: "id" })
+      }
     }
   })
 }
@@ -186,5 +200,53 @@ export async function getAllPPCT(): Promise<StoredPPCT[]> {
     const request = store.getAll()
     request.onerror = () => reject(request.error)
     request.onsuccess = () => resolve(request.result || [])
+  })
+}
+
+// Project History Management
+export async function saveProject(project: Omit<ProjectHistory, "createdAt">): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(PROJECT_STORE_NAME, "readwrite")
+    const store = transaction.objectStore(PROJECT_STORE_NAME)
+
+    const entry: ProjectHistory = {
+      ...project,
+      createdAt: new Date(),
+    }
+
+    const request = store.put(entry)
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => resolve()
+  })
+}
+
+export async function getAllProjects(): Promise<ProjectHistory[]> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(PROJECT_STORE_NAME, "readonly")
+    const store = transaction.objectStore(PROJECT_STORE_NAME)
+
+    const request = store.getAll()
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => {
+      const results = request.result || []
+      // Sort by date descending
+      resolve(results.sort((a: ProjectHistory, b: ProjectHistory) =>
+        b.createdAt.getTime() - a.createdAt.getTime()
+      ))
+    }
+  })
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  const db = await openDB()
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(PROJECT_STORE_NAME, "readwrite")
+    const store = transaction.objectStore(PROJECT_STORE_NAME)
+
+    const request = store.delete(id)
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => resolve()
   })
 }

@@ -39,15 +39,26 @@ import {
   X,
   Clock,
   Settings,
-} from "lucide-react"; // Added List import
+  Archive,
+  Search,
+  Trash2,
+  ExternalLink,
+  ListOrdered,
+  Upload,
+} from "lucide-react";
 import { checkApiKeyStatus } from "@/lib/actions/gemini";
 import {
-  type TemplateType,
   saveTemplate,
   getTemplate,
+  getEffectiveTemplate,
   savePPCT,
   getPPCT,
   type PPCTItem,
+  saveProject,
+  getAllProjects,
+  deleteProject,
+  type ProjectHistory,
+  type TemplateType,
 } from "@/lib/template-storage";
 import { useTemplateGeneration } from "@/hooks/use-template-generation";
 import { ExportService } from "@/lib/services/export-service";
@@ -84,7 +95,7 @@ import {
 
 const TemplateEngine = () => {
   // Mode state
-  const [activeMode, setActiveMode] = useState<TemplateType>("meeting");
+  const [activeMode, setActiveMode] = useState<TemplateType | "history">("meeting");
 
   // Meeting state
   const [selectedMonth, setSelectedMonth] = useState<string>("");
@@ -134,11 +145,16 @@ const TemplateEngine = () => {
   const [eventChecklist, setEventChecklist] = useState("");
   const [eventEvaluation, setEventEvaluation] = useState("");
 
+  // Library/History state
+  const [projects, setProjects] = useState<ProjectHistory[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAuditing, setIsAuditing] = useState(false);
+  const [auditResult, setAuditResult] = useState<string | null>(null);
+
   // Common state
-  const { isGenerating, generateMeeting, generateLesson, generateEvent } =
+  const { isGenerating, error, setError, generateMeeting, generateLesson, generateEvent, auditLesson } =
     useTemplateGeneration();
   const [isExporting, setIsExporting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(
     null
@@ -157,6 +173,7 @@ const TemplateEngine = () => {
     month: "",
     theme: "",
     periods: 2,
+    activities: [],
   });
   const [selectedChuDe, setSelectedChuDe] = useState<PPCTChuDe | null>(null);
 
@@ -200,10 +217,16 @@ const TemplateEngine = () => {
 
       setHasDefaultMeetingTemplate(!!defaultMeeting);
       setHasDefaultEventTemplate(!!defaultEvent);
-      setHasDefaultLessonTemplate(!!defaultLesson);
+      if (defaultLesson) setHasDefaultLessonTemplate(true);
     };
     loadTemplates();
+    loadProjects();
   }, []);
+
+  const loadProjects = async () => {
+    const allProjects = await getAllProjects();
+    setProjects(allProjects);
+  };
 
   // Auto-fill theme when grade and month are selected (Lesson)
   useEffect(() => {
@@ -427,7 +450,17 @@ const TemplateEngine = () => {
 
     if (result.success && result.data) {
       setMeetingResult(result.data);
-      setSuccess("Tạo biên bản thành công!");
+      setSuccess("Đã tạo biên bản họp thành công!");
+
+      // Auto-save to history
+      await saveProject({
+        id: `meeting_${Date.now()}`,
+        type: "meeting",
+        title: `Biên bản họp T${selectedMonth} - Lần ${selectedSession}`,
+        data: result.data,
+        month: selectedMonth
+      });
+      loadProjects();
       setTimeout(() => setSuccess(null), 3000);
     } else {
       setError(result.error || "Lỗi khi tạo biên bản");
@@ -447,10 +480,18 @@ const TemplateEngine = () => {
       totalMinutes = Number.parseInt(periodsMatch[1]) * 45;
     }
 
-    const allTasks = [
-      ...curriculumTasks.filter((t) => t.selected),
-      ...lessonTasks.filter((t) => t.source === "user" && t.selected),
-    ];
+    // Optimized logic for HĐGD tasks distribution
+    let availableTimeForTasks = totalMinutes;
+    if (selectedChuDe) {
+      // Calculate time strictly for HĐGD
+      const hdgdPeriods = selectedChuDe.hdgd || 0;
+      if (hdgdPeriods > 0) {
+        availableTimeForTasks = hdgdPeriods * 45;
+      }
+    }
+
+    // Use lessonTasks as the primary source of truth as it contains merged tasks
+    const allTasks = lessonTasks.filter((t) => t.selected);
 
     if (allTasks.length === 0) {
       setTaskTimeDistribution({});
@@ -475,11 +516,6 @@ const TemplateEngine = () => {
         }
       }
 
-      // If user manually set time previously (and it's > 0), prioritize it?
-      // Actually, if this function is called via "Redistribute" button, we might want to reset to suggested.
-      // But if it's auto-effect, we should respect state.
-      // For now, let's say this function *resets* to smart defaults.
-
       if (allocatedTime > 0) {
         distribution[task.id] = allocatedTime;
         usedTime += allocatedTime;
@@ -489,14 +525,15 @@ const TemplateEngine = () => {
       }
     });
 
-    // 2. Adjust if total used time exceeds limit or we have remaining time
-    let remainingTime = totalMinutes - usedTime;
+    // 2. Adjust if time is tight
+    // Use the specific available time for tasks (HĐGD time) instead of total lesson time
+    let remainingTime = availableTimeForTasks - usedTime;
 
-    // Reserve some time for Start/End if not explicit tasks?
-    // Usually Start=5, End=5.
-    // If allTasks are just the "Body" of the lesson, we should reserve ~10-15 mins.
-    const reservedTime = 10;
-    remainingTime -= reservedTime; // Safe buffer
+    // Only reserve buffer if we are working with raw total minutes (legacy mode),
+    // otherwise trust the PPCT HĐGD time is dedicated.
+    if (!selectedChuDe) {
+      remainingTime -= 10; // Reserve 10 mins purely for buffer/setup if no PPCT structure
+    }
 
     // If we have tasks without suggestion, distribute remaining time to them
     if (tasksWithoutSuggestion.length > 0) {
@@ -509,7 +546,7 @@ const TemplateEngine = () => {
           usedTime += distribution[id];
         });
       } else {
-        // No time left, assign minimum 5 mins and we will overflow (user can adjust)
+        // No time left, assign minimum 5 mins
         tasksWithoutSuggestion.forEach((id) => {
           distribution[id] = 5;
           usedTime += 5;
@@ -517,26 +554,27 @@ const TemplateEngine = () => {
       }
     }
 
-    // 3. Final refinement: Scale if significantly over/under
-    // If we are over budget (excluding reserved), we might need to shrink proportionally
-    // But respecting "thoiLuongDeXuat" is important.
-    // Let's just update the state.
-
-    // Update the lessonTasks state with these new times so inputs reflect it
+    // Update the lessonTasks state with these new times ONLY if they changed
     if (Object.keys(distribution).length > 0) {
-      setTaskTimeDistribution(distribution); // Keep for legacy compatibility if used elsewhere
+      setTaskTimeDistribution(distribution);
 
-      // Also update the actual task objects so the UI input fields update
-      setLessonTasks((prev) =>
-        prev.map((t) => {
-          if (distribution[t.id] !== undefined) {
+      setLessonTasks((prev) => {
+        let hasChanged = false;
+        const newTasks = prev.map((t) => {
+          if (distribution[t.id] !== undefined && distribution[t.id] !== t.time) {
+            hasChanged = true;
             return { ...t, time: distribution[t.id] };
           }
           return t;
-        })
-      );
+        });
+        return hasChanged ? newTasks : prev;
+      });
     }
-  }, [lessonDuration, curriculumTasks, lessonTasks]);
+  }, [lessonDuration, selectedChuDe]);
+
+  useEffect(() => {
+    distributeTimeForTasks();
+  }, [lessonDuration, selectedChuDe, lessonTasks, distributeTimeForTasks]);
 
   // Handle lesson plan generation
   const handleGenerateLesson = async () => {
@@ -568,11 +606,18 @@ const TemplateEngine = () => {
 
     if (result.success && result.data) {
       setLessonResult(result.data);
-      setSuccess(
-        lessonFullPlanMode
-          ? "Tạo Kế hoạch bài dạy đầy đủ thành công!"
-          : "Tạo nội dung tích hợp thành công!"
-      );
+      setSuccess("Đã tạo kế hoạch dạy học thành công!");
+
+      // Auto-save to history
+      await saveProject({
+        id: `lesson_${Date.now()}`,
+        type: "lesson",
+        title: `KHBD: ${lessonTopic || lessonAutoFilledTheme}`,
+        data: result.data,
+        grade: lessonGrade,
+        month: lessonMonth
+      });
+      loadProjects();
       setTimeout(() => setSuccess(null), 3000);
     } else {
       setError(result.error || "Lỗi khi tạo nội dung");
@@ -586,16 +631,11 @@ const TemplateEngine = () => {
       return;
     }
 
-    if (!autoFilledTheme) {
-      setError("Không tìm thấy chủ đề cho tháng này");
-      return;
-    }
-
     const result = await generateEvent(
       selectedGradeEvent,
       selectedEventMonth,
       autoFilledTheme,
-      eventCustomInstructions || "",
+      eventCustomInstructions,
       eventBudget,
       eventChecklist,
       eventEvaluation
@@ -603,11 +643,59 @@ const TemplateEngine = () => {
 
     if (result.success && result.data) {
       setEventResult(result.data);
-      setSuccess("Tạo kịch bản ngoại khóa thành công!");
+      setSuccess("Đã tạo kịch bản sự kiện thành công!");
+
+      // Auto-save to history
+      await saveProject({
+        id: `event_${Date.now()}`,
+        type: "event",
+        title: `Ngoại khóa: ${result.data.ten_chu_de}`,
+        data: result.data,
+        grade: selectedGradeEvent,
+        month: selectedEventMonth
+      });
+      loadProjects();
       setTimeout(() => setSuccess(null), 3000);
     } else {
       setError(result.error || "Lỗi khi tạo kịch bản");
     }
+  };
+
+  const handleAudit = async () => {
+    if (!lessonResult) return;
+    setIsAuditing(true);
+    setAuditResult(null);
+    try {
+      const result = await auditLesson(lessonResult, lessonGrade, lessonTopic || lessonAutoFilledTheme);
+      if (result.success && "audit" in result && result.audit) {
+        setAuditResult(result.audit);
+      } else if (result.error) {
+        setError(String(result.error));
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsAuditing(false);
+    }
+  };
+
+  const loadProjectToWorkbench = (project: ProjectHistory) => {
+    setActiveMode(project.type);
+    if (project.type === "meeting") {
+      setMeetingResult(project.data as MeetingResult);
+      if (project.month) setSelectedMonth(project.month);
+    } else if (project.type === "lesson") {
+      setLessonResult(project.data as LessonResult);
+      if (project.grade) setLessonGrade(project.grade);
+      if (project.month) setLessonMonth(project.month);
+      setLessonTopic(project.title.replace("KHBD: ", ""));
+    } else if (project.type === "event") {
+      setEventResult(project.data as EventResult);
+      if (project.grade) setSelectedGradeEvent(project.grade);
+      if (project.month) setSelectedEventMonth(project.month);
+    }
+    setSuccess(`Đã tải dự án: ${project.title}`);
+    setTimeout(() => setSuccess(null), 3000);
   };
 
   const getCurrentDate = () => {
@@ -682,13 +770,9 @@ const TemplateEngine = () => {
           setIsExporting(false);
           return;
         }
-        // Try to get template (current or default)
-        let templateToUse = meetingTemplate;
-        if (!templateToUse) {
-          const defaultTmpl = await getTemplate("default_meeting");
-          if (defaultTmpl)
-            templateToUse = { name: defaultTmpl.name, data: defaultTmpl.data };
-        }
+
+        // Use effective template searching (session -> default -> built-in)
+        const templateToUse = await getEffectiveTemplate("meeting");
 
         result = await ExportService.exportMeeting(
           meetingResult,
@@ -703,12 +787,7 @@ const TemplateEngine = () => {
           return;
         }
 
-        let templateToUse = lessonTemplate;
-        if (!templateToUse) {
-          const defaultTmpl = await getTemplate("default_lesson");
-          if (defaultTmpl)
-            templateToUse = { name: defaultTmpl.name, data: defaultTmpl.data };
-        }
+        const templateToUse = await getEffectiveTemplate("lesson");
 
         result = await ExportService.exportLesson(lessonResult, templateToUse, {
           grade: lessonGrade,
@@ -735,12 +814,7 @@ const TemplateEngine = () => {
           return;
         }
 
-        let templateToUse = eventTemplate;
-        if (!templateToUse) {
-          const defaultTmpl = await getTemplate("default_event");
-          if (defaultTmpl)
-            templateToUse = { name: defaultTmpl.name, data: defaultTmpl.data };
-        }
+        const templateToUse = await getEffectiveTemplate("event");
 
         result = await ExportService.exportEvent(eventResult, templateToUse, {
           grade: selectedGradeEvent,
@@ -799,9 +873,8 @@ const TemplateEngine = () => {
   const addLessonTask = () => {
     const newTask: LessonTask = {
       id: `user-${Date.now()}-${Math.random()}`,
-      name: `Nhiệm vụ ${
-        lessonTasks.filter((t) => t.source === "user").length + 1
-      }`,
+      name: `Nhiệm vụ ${lessonTasks.filter((t) => t.source === "user").length + 1
+        }`,
       content: "",
       source: "user", // Mark as user-added
       selected: true, // Default to selected
@@ -852,7 +925,7 @@ const TemplateEngine = () => {
         // Add new item
         setPpctData([...ppctData, newPPCTItem]);
       }
-      setNewPPCTItem({ month: "", theme: "", periods: 2 }); // Reset form
+      setNewPPCTItem({ month: "", theme: "", periods: 2, activities: [] }); // Reset form
       setShowPPCTDialog(false); // Close dialog after adding
     } else {
       setError("Vui lòng nhập đủ Tháng và Chủ đề");
@@ -867,139 +940,96 @@ const TemplateEngine = () => {
     try {
       const XLSX = await import("xlsx");
 
-      // Create workbook with template structure
+      // Create workbook
       const wb = XLSX.utils.book_new();
 
-      // Template data with example
-      const templateData = [
-        ["PHÂN PHỐI CHƯƠNG TRÌNH - HOẠT ĐỘNG TRẢI NGHIỆM, HƯỚNG NGHIỆP"],
-        [""],
-        ["KHỐI:", lessonGrade || "10", "", "", "", "", ""],
-        [""],
-        [
-          "Tháng",
-          "Tên chủ đề",
-          "Số tiết",
-          "Nhiệm vụ 1",
-          "Nhiệm vụ 2",
-          "Nhiệm vụ 3",
-          "Nhiệm vụ 4",
-          "Ghi chú",
-        ],
-        [
-          "9",
-          "Thể hiện phẩm chất tốt đẹp của người học sinh",
-          "4",
-          "Tìm hiểu các phẩm chất tốt đẹp",
-          "Rèn luyện phẩm chất trung thực",
-          "Thực hành trong thực tế",
-          "Đánh giá và chia sẻ",
-          "",
-        ],
-        [
-          "10",
-          "Xây dựng quan điểm sống",
-          "3",
-          "Khám phá quan điểm sống",
-          "Xây dựng quan điểm cá nhân",
-          "Chia sẻ và thảo luận",
-          "",
-          "",
-        ],
-        [
-          "11",
-          "Giữ gìn truyền thống nhà trường",
-          "4",
-          "Tìm hiểu truyền thống",
-          "Thực hiện hoạt động truyền thống",
-          "Phát huy truyền thống",
-          "Tổng kết đánh giá",
-          "Kết hợp 20/11",
-        ],
-        [
-          "12",
-          "Thực hiện trách nhiệm với gia đình",
-          "3",
-          "Nhận diện trách nhiệm",
-          "Thực hành trách nhiệm",
-          "Đánh giá và cam kết",
-          "",
-          "",
-        ],
-        [
-          "1",
-          "Xây dựng kế hoạch tài chính cá nhân",
-          "4",
-          "Tìm hiểu tài chính cá nhân",
-          "Lập kế hoạch chi tiêu",
-          "Thực hành tiết kiệm",
-          "Đánh giá kết quả",
-          "",
-        ],
-        [
-          "2",
-          "Vận động cộng đồng tham gia hoạt động xã hội",
-          "3",
-          "Xác định hoạt động xã hội",
-          "Lập kế hoạch vận động",
-          "Thực hiện và báo cáo",
-          "",
-          "",
-        ],
-        [
-          "3",
-          "Tìm hiểu hoạt động sản xuất kinh doanh địa phương",
-          "4",
-          "Khảo sát thực tế",
-          "Phân tích hoạt động",
-          "Đề xuất ý tưởng",
-          "Báo cáo kết quả",
-          "",
-        ],
-        [
-          "4",
-          "Định hướng học tập và rèn luyện theo nghề",
-          "3",
-          "Tìm hiểu ngành nghề",
-          "Xác định năng lực bản thân",
-          "Lập kế hoạch phát triển",
-          "",
-          "",
-        ],
-        [
-          "5",
-          "Bảo vệ cảnh quan thiên nhiên và môi trường",
-          "4",
-          "Nhận diện vấn đề môi trường",
-          "Đề xuất giải pháp",
-          "Thực hiện hành động",
-          "Đánh giá và lan tỏa",
-          "",
-        ],
-        [""],
-        ["HƯỚNG DẪN:"],
-        ["- Điền thông tin vào các cột tương ứng"],
-        ["- Mỗi chủ đề có thể có từ 1-4 nhiệm vụ (để trống nếu không có)"],
-        ["- Số tiết: Số tiết dạy cho chủ đề đó"],
-        ["- Ghi chú: Các lưu ý đặc biệt (kết hợp sự kiện, ngày lễ...)"],
-        ["- Lưu file và upload lên hệ thống SmartDoc Teacher"],
+      const gradeNum = lessonGrade ? Number.parseInt(lessonGrade) : 10;
+      const ppctGradeData = getPPCTTheoKhoi(gradeNum);
+
+      if (!ppctGradeData) {
+        setError("Không tìm thấy dữ liệu PPCT cho khối đã chọn");
+        return;
+      }
+
+      const header = [
+        "Tháng",
+        "Tên chủ đề",
+        "Số tiết",
+        "Danh sách Hoạt động",
+        "Nhiệm vụ 1",
+        "Nhiệm vụ 2",
+        "Nhiệm vụ 3",
+        "Nhiệm vụ 4",
+        "Nhiệm vụ 5",
+        "Nhiệm vụ 6",
+        "Ghi chú",
       ];
 
-      const ws = XLSX.utils.aoa_to_sheet(templateData);
+      const dataRows = ppctGradeData.chu_de.map((cd) => {
+        // Map chu_de_so to month
+        const monthMap: Record<number, string> = {
+          1: "9", 2: "10", 3: "11", 4: "12", 5: "1", 6: "2", 7: "3", 8: "4", 9: "5", 10: "5", 11: "5"
+        };
+        const month = monthMap[cd.chu_de_so] || cd.chu_de_so.toString();
+
+        // Get detailed curriculum data for tasks
+        const detailedTheme = timChuDeTheoTen(gradeNum, cd.ten);
+        const taskNames: string[] = ["", "", "", "", "", ""];
+        let activitiesList = cd.hoat_dong || [];
+
+        if (detailedTheme && detailedTheme.hoat_dong) {
+          // Prefer activities from detailed database if available
+          activitiesList = detailedTheme.hoat_dong.map(hd => hd.ten);
+
+          let taskIdx = 0;
+          detailedTheme.hoat_dong.forEach(hd => {
+            if (hd.nhiem_vu) {
+              hd.nhiem_vu.forEach(nv => {
+                if (taskIdx < 6) {
+                  taskNames[taskIdx] = nv.ten;
+                  taskIdx++;
+                }
+              });
+            }
+          });
+        }
+
+        return [
+          month,
+          cd.ten,
+          cd.tong_tiet,
+          activitiesList.join("\n"),
+          ...taskNames,
+          cd.ghi_chu || "",
+        ];
+      });
+
+      const wsData = [
+        ["PHÂN PHỐI CHƯƠNG TRÌNH - HOẠT ĐỘNG TRẢI NGHIỆM, HƯỚNG NGHIỆP"],
+        [`KHỐI: ${gradeNum}`],
+        [""],
+        header,
+        ...dataRows
+      ];
+
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
 
       // Set column widths
       ws["!cols"] = [
-        { wch: 8 }, // Tháng
-        { wch: 45 }, // Tên chủ đề
-        { wch: 8 }, // Số tiết
-        { wch: 30 }, // Nhiệm vụ 1
-        { wch: 30 }, // Nhiệm vụ 2
-        { wch: 30 }, // Nhiệm vụ 3
-        { wch: 30 }, // Nhiệm vụ 4
+        { wch: 10 }, // Tháng
+        { wch: 40 }, // Tên chủ đề
+        { wch: 10 }, // Số tiết
+        { wch: 60 }, // Hoạt động
+        { wch: 30 }, // NV1
+        { wch: 30 }, // NV2
+        { wch: 30 }, // NV3
+        { wch: 30 }, // NV4
+        { wch: 30 }, // NV5
+        { wch: 30 }, // NV6
         { wch: 20 }, // Ghi chú
       ];
 
-      XLSX.utils.book_append_sheet(wb, ws, `PPCT_Khoi_${lessonGrade || "10"}`);
+      XLSX.utils.book_append_sheet(wb, ws, `PPCT_Khoi_${gradeNum}`);
 
       // Generate and download
       const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
@@ -1010,17 +1040,17 @@ const TemplateEngine = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Mau_PPCT_Khoi_${lessonGrade || "10"}.xlsx`;
+      a.download = `PPCT_Khoi_${gradeNum}_Update.xlsx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setSuccess("Đã tải mẫu PPCT Excel thành công!");
+      setSuccess("Đã tạo và tải file PPCT chi tiết thành công!");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error creating PPCT template:", err);
-      setError("Lỗi tạo mẫu PPCT. Vui lòng thử lại.");
+      setError("Lỗi tạo PPCT. Vui lòng thử lại.");
     }
   };
 
@@ -1053,18 +1083,21 @@ const TemplateEngine = () => {
         const theme = cols[1] || "";
         const periods = Number(cols[2]) || 2;
 
-        // Extract tasks from columns 3-6
+        // Extract activities from column 3
+        const activities = cols[3] ? cols[3].split("\n").map(a => a.trim()).filter(a => a.length > 0) : undefined;
+
+        // Extract tasks from columns 4-9 (NV 1-6)
         const tasks: { name: string; description: string }[] = [];
-        for (let i = 3; i <= 6; i++) {
+        for (let i = 4; i <= 9; i++) {
           if (cols[i] && cols[i].trim()) {
             tasks.push({
-              name: `Nhiệm vụ ${i - 2}`,
+              name: `Nhiệm vụ ${i - 3}`,
               description: cols[i].trim(),
             });
           }
         }
 
-        const notes = cols[7] || "";
+        const notes = cols[10] || "";
 
         // Only accept months 1-12
         if (Number(month) >= 1 && Number(month) <= 12 && theme) {
@@ -1073,6 +1106,7 @@ const TemplateEngine = () => {
             theme,
             periods,
             notes,
+            activities,
             tasks: tasks.length > 0 ? tasks : undefined,
           });
         }
@@ -1185,7 +1219,7 @@ const TemplateEngine = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
               <FileText className="w-4 h-4 text-white" />
             </div>
-            <h1 className="text-base font-semibold text-slate-700">SmartDoc</h1>
+            <h1 className="text-base font-semibold text-slate-700">Trợ lí cho Trần Thạch - THTP Bùi Thị Xuân - Mũi Né</h1>
           </div>
         </div>
       </header>
@@ -1225,13 +1259,13 @@ const TemplateEngine = () => {
           className="space-y-6"
         >
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-4xl mx-auto">
-            <TabsList className="grid grid-cols-3 w-full max-w-2xl bg-white shadow-md rounded-xl p-1">
+            <TabsList className="grid grid-cols-4 w-full max-w-2xl bg-white shadow-md rounded-xl p-1">
               <TabsTrigger
                 value="meeting"
                 className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">Biên bản Họp</span>
+                <span className="hidden sm:inline">Biên bản</span>
                 <span className="sm:hidden">Họp</span>
               </TabsTrigger>
               <TabsTrigger
@@ -1239,7 +1273,7 @@ const TemplateEngine = () => {
                 className="gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <BookOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">Kế hoạch Bài dạy</span>
+                <span className="hidden sm:inline">Bài dạy</span>
                 <span className="sm:hidden">KHBD</span>
               </TabsTrigger>
               <TabsTrigger
@@ -1247,8 +1281,16 @@ const TemplateEngine = () => {
                 className="gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <Calendar className="w-4 h-4" />
-                <span className="hidden sm:inline">Kế hoạch Ngoại khóa</span>
-                <span className="sm:hidden">Ngoại khóa</span>
+                <span className="hidden sm:inline">Ngoại khóa</span>
+                <span className="sm:hidden">NK</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="history"
+                className="gap-2 data-[state=active]:bg-amber-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
+              >
+                <Archive className="w-4 h-4" />
+                <span className="hidden sm:inline">Thư viện</span>
+                <span className="sm:hidden">Kho</span>
               </TabsTrigger>
             </TabsList>
 
@@ -1266,15 +1308,6 @@ const TemplateEngine = () => {
           {/* Meeting Tab */}
           <TabsContent value="meeting">
             <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-xl">
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Biên bản Họp Tổ Chuyên môn
-                </CardTitle>
-                <CardDescription className="text-blue-100">
-                  Tự động tạo nội dung biên bản họp theo tháng và chủ đề HĐTN
-                </CardDescription>
-              </CardHeader>
               <CardContent className="p-6 space-y-6">
                 {/* Removed template upload section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1591,15 +1624,6 @@ const TemplateEngine = () => {
           {/* Lesson Tab */}
           <TabsContent value="lesson" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Kế hoạch Bài dạy
-                </CardTitle>
-                <CardDescription>
-                  Tạo nội dung tích hợp NLS và đạo đức cho kế hoạch bài dạy
-                </CardDescription>
-              </CardHeader>
               <CardContent className="space-y-4">
                 {/* Grade and Topic selection */}
                 <div className="grid grid-cols-2 gap-4">
@@ -1665,6 +1689,80 @@ const TemplateEngine = () => {
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
+
+                {/* PPCT Management Section */}
+                <div className="flex flex-wrap gap-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="w-full text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-2">
+                    <ListOrdered className="w-3 h-3" /> Quản lý Phân phối Chương trình (PPCT)
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-white hover:bg-blue-50 text-blue-600 border-blue-200 h-8 text-xs"
+                    onClick={handleDownloadPPCTTemplate}
+                    disabled={!lessonGrade}
+                  >
+                    <Download className="w-3 h-3 mr-1" /> Xuất PPCT chi tiết (Excel)
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-white hover:bg-green-50 text-green-600 border-green-200 h-8 text-xs"
+                    onClick={() => ppctFileRef.current?.click()}
+                    disabled={!lessonGrade}
+                  >
+                    <Upload className="w-3 h-3 mr-1" /> Nhập PPCT từ file
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="bg-white hover:bg-indigo-50 text-indigo-600 border-indigo-200 h-8 text-xs"
+                    onClick={() => setShowPPCTDialog(true)}
+                    disabled={!lessonGrade}
+                  >
+                    <Plus className="w-3 h-3 mr-1" /> Thêm mục
+                  </Button>
+                  <input
+                    type="file"
+                    ref={ppctFileRef}
+                    onChange={handleUploadPPCTFile}
+                    className="hidden"
+                    accept=".xlsx,.xls,.docx,.txt,.csv"
+                  />
+                  {ppctData.length > 0 && (
+                    <div className="w-full mt-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                      <div className="text-[10px] text-slate-500 mb-2">
+                        Đang sử dụng {ppctData.length} mục PPCT cho khối {lessonGrade}.
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 ml-2 text-[10px] text-red-500"
+                          onClick={() => { if (confirm('Xóa toàn bộ PPCT hiện tại?')) setPpctData([]) }}
+                        >
+                          Xóa hết
+                        </Button>
+                      </div>
+                      <div className="max-h-40 overflow-y-auto space-y-1">
+                        {ppctData.map((item, idx) => (
+                          <div key={idx} className="flex items-center justify-between text-xs p-2 bg-white dark:bg-slate-800 rounded border border-slate-100 group">
+                            <div className="truncate flex-1">
+                              <span className="font-bold text-blue-600 mr-2">T{item.month}</span>
+                              {item.theme}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600"
+                              onClick={() => handleRemovePPCTItem(idx)}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Auto-filled theme display with PPCT info */}
@@ -1761,30 +1859,54 @@ const TemplateEngine = () => {
                     {lessonGrade && selectedChuDeSo && (
                       <div className="text-xs text-muted-foreground mt-1 space-y-1">
                         <div>
-                          Tổng thời gian: {totalAvailableTime} phút (
+                          <strong>Tổng thời gian:</strong> {totalAvailableTime} phút (
                           {lessonDuration} tiết x 45 phút)
                         </div>
                         {selectedChuDe && (
-                          <div className="text-indigo-600">
-                            PPCT gợi ý: {selectedChuDe.tong_tiet} tiết (SHDC:{" "}
-                            {selectedChuDe.shdc}, HĐGD: {selectedChuDe.hdgd},
-                            SHL: {selectedChuDe.shl})
+                          <div className="text-indigo-600 bg-indigo-50 p-2 rounded-md border border-indigo-100">
+                            <div className="font-semibold mb-1">
+                              Phân bổ chuẩn PPCT:
+                            </div>
+                            <div className="grid grid-cols-3 gap-1 text-[10px]">
+                              <div>
+                                <span className="block font-medium">HĐGD</span>
+                                {selectedChuDe.hdgd} tiết (
+                                {selectedChuDe.hdgd * 45}p)
+                              </div>
+                              <div>
+                                <span className="block font-medium">SHDC</span>
+                                {selectedChuDe.shdc} tiết (
+                                {selectedChuDe.shdc * 45}p)
+                              </div>
+                              <div>
+                                <span className="block font-medium">SHL</span>
+                                {selectedChuDe.shl} tiết (
+                                {selectedChuDe.shl * 45}p)
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>
                     )}
                     {curriculumTasks.length > 0 && (
-                      <div
-                        className={`text-xs mt-1 ${
-                          totalDistributedTime > totalAvailableTime
-                            ? "text-red-500"
-                            : "text-green-600"
-                        }`}
-                      >
-                        Đã phân bổ: {totalDistributedTime}/{totalAvailableTime}{" "}
-                        phút
-                        {totalDistributedTime > totalAvailableTime &&
-                          " (Vượt quá!)"}
+                      <div className="mt-2">
+                        {(() => {
+                          const maxTaskTime = selectedChuDe
+                            ? selectedChuDe.hdgd * 45
+                            : totalAvailableTime;
+                          const isOver = totalDistributedTime > maxTaskTime;
+
+                          return (
+                            <div
+                              className={`text-xs font-medium ${isOver ? "text-red-500" : "text-green-600"
+                                }`}
+                            >
+                              Đã phân bổ cho nhiệm vụ (HĐGD): {totalDistributedTime}/{maxTaskTime}{" "}
+                              phút
+                              {isOver && " (Vượt quá!)"}
+                            </div>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
@@ -1882,7 +2004,7 @@ const TemplateEngine = () => {
 
                     {showCurriculumTasks && (
                       <div className="space-y-3">
-                        {curriculumTasks.map((task) => (
+                        {lessonTasks.filter(t => t.source !== 'user').map((task) => (
                           <div
                             key={task.id}
                             className="p-3 bg-white dark:bg-green-900 rounded-md border border-green-300 dark:border-green-700"
@@ -2000,31 +2122,49 @@ const TemplateEngine = () => {
                             className="flex items-start gap-2 p-2 bg-white dark:bg-yellow-900 rounded border"
                           >
                             <div className="flex-1 space-y-2">
-                              <Input
-                                value={task.name}
-                                onChange={(e) =>
-                                  updateLessonTask(
-                                    task.id,
-                                    "name",
-                                    e.target.value
-                                  )
-                                }
-                                placeholder="Tên nhiệm vụ"
-                                className="text-sm"
-                              />
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={task.selected || false}
+                                  onCheckedChange={(checked) =>
+                                    updateLessonTask(task.id, "selected", checked)
+                                  }
+                                  className="data-[state=checked]:bg-yellow-500"
+                                />
+                                <Input
+                                  value={task.name}
+                                  onChange={(e) =>
+                                    updateLessonTask(task.id, "name", e.target.value)
+                                  }
+                                  placeholder="Tên nhiệm vụ"
+                                  className="text-sm font-medium"
+                                />
+                              </div>
                               <Textarea
                                 value={task.content}
                                 onChange={(e) =>
-                                  updateLessonTask(
-                                    task.id,
-                                    "content",
-                                    e.target.value
-                                  )
+                                  updateLessonTask(task.id, "content", e.target.value)
                                 }
                                 placeholder="Mô tả nhiệm vụ"
                                 rows={2}
-                                className="text-sm"
+                                className="text-sm bg-transparent"
                               />
+                              <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded w-fit">
+                                <Clock className="h-3 w-3" />
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={task.time || 0}
+                                  onChange={(e) =>
+                                    updateLessonTask(
+                                      task.id,
+                                      "time",
+                                      Number.parseInt(e.target.value) || 0
+                                    )
+                                  }
+                                  className="w-10 bg-transparent border-none text-center text-xs font-medium focus:outline-none"
+                                />
+                                <span className="text-[10px]">phút</span>
+                              </div>
                             </div>
                             <Button
                               variant="ghost"
@@ -2262,7 +2402,7 @@ const TemplateEngine = () => {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <Label className="text-slate-700 font-medium">
-                            Thiết bị dạy học:
+                            Thiết bị dạy học & Học liệu:
                           </Label>
                           <Button
                             variant="ghost"
@@ -2285,6 +2425,64 @@ const TemplateEngine = () => {
                             })
                           }
                           className="min-h-[80px] bg-slate-50"
+                        />
+                      </div>
+                    )}
+
+                    {lessonFullPlanMode && lessonResult.shdc && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-indigo-700 font-medium">
+                            Sinh hoạt dưới cờ (SHDC):
+                          </Label>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              copyToClipboard(lessonResult.shdc || "")
+                            }
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <Textarea
+                          value={lessonResult.shdc || ""}
+                          onChange={(e) =>
+                            setLessonResult({
+                              ...lessonResult,
+                              shdc: e.target.value,
+                            })
+                          }
+                          className="min-h-[150px] bg-indigo-50 border-indigo-100"
+                        />
+                      </div>
+                    )}
+
+                    {lessonFullPlanMode && lessonResult.shl && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-indigo-700 font-medium">
+                            Sinh hoạt lớp (SHL):
+                          </Label>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              copyToClipboard(lessonResult.shl || "")
+                            }
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <Textarea
+                          value={lessonResult.shl || ""}
+                          onChange={(e) =>
+                            setLessonResult({
+                              ...lessonResult,
+                              shl: e.target.value,
+                            })
+                          }
+                          className="min-h-[150px] bg-indigo-50 border-indigo-100"
                         />
                       </div>
                     )}
@@ -2442,63 +2640,57 @@ const TemplateEngine = () => {
                       </div>
                     )}
 
-                    {/* Copy and Export buttons */}
-                    <div className="flex gap-2">
+                    {lessonFullPlanMode && lessonResult.huong_dan_ve_nha && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-blue-700 font-medium font-bold">
+                            Hướng dẫn về nhà & Chuẩn bị bài sau:
+                          </Label>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() =>
+                              copyToClipboard(lessonResult.huong_dan_ve_nha || "")
+                            }
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <Textarea
+                          value={lessonResult.huong_dan_ve_nha || ""}
+                          onChange={(e) =>
+                            setLessonResult({
+                              ...lessonResult,
+                              huong_dan_ve_nha: e.target.value,
+                            })
+                          }
+                          className="min-h-[100px] bg-blue-50 border-blue-200"
+                        />
+                      </div>
+                    )}
+
+                    {/* Copy, Audit and Export buttons */}
+                    <div className="flex flex-wrap gap-2 pt-4 border-t">
                       <Button
                         variant="outline"
+                        className="bg-white border-slate-200 h-11 px-6 rounded-xl shadow-sm text-slate-600 hover:text-blue-600"
                         onClick={() => {
                           const content = lessonFullPlanMode
-                            ? `TÊN BÀI: ${
-                                lessonResult.ten_bai || lessonTopic
-                              }\n\nMỤC TIÊU KIẾN THỨC:\n${
-                                lessonResult.muc_tieu_kien_thuc
-                              }\n\nMỤC TIÊU NĂNG LỰC:\n${
-                                lessonResult.muc_tieu_nang_luc
-                              }\n\nMỤC TIÊU PHẨM CHẤT:\n${
-                                lessonResult.muc_tieu_pham_chat
-                              }\n\nTHIẾT BỊ DẠY HỌC:\n${
-                                lessonResult.thiet_bi_day_hoc
-                              }\n\nHOẠT ĐỘNG KHỞI ĐỘNG:\n${
-                                lessonResult.hoat_dong_khoi_dong
-                              }\n\nHOẠT ĐỘNG KHÁM PHÁ:\n${
-                                lessonResult.hoat_dong_kham_pha
-                              }\n\nHOẠT ĐỘNG LUYỆN TẬP:\n${
-                                lessonResult.hoat_dong_luyen_tap
-                              }\n\nHOẠT ĐỘNG VẬN DỤNG:\n${
-                                lessonResult.hoat_dong_van_dung
-                              }\n\nTÍCH HỢP NLS:\n${
-                                lessonResult.tich_hop_nls
-                              }\n\nTÍCH HỢP ĐẠO ĐỨC:\n${
-                                lessonResult.tich_hop_dao_duc
-                              }\n\nPHÂN PHỐI CHƯƠNG TRÌNH:\n${ppctData
-                                .map(
-                                  (item) =>
-                                    `- Tháng ${item.month}: ${item.theme} (${
-                                      item.periods
-                                    } tiết) ${
-                                      item.notes ? `[${item.notes}]` : ""
-                                    }${
-                                      item.tasks && item.tasks.length > 0
-                                        ? `\n  Nhiệm vụ: ${item.tasks
-                                            .map((t) => t.description)
-                                            .join(", ")}`
-                                        : ""
-                                    }`
-                                )
-                                .join(
-                                  "\n"
-                                )}\n\nCÁC NHIỆM VỤ CỦA BÀI HỌC:\n${lessonTasks
-                                .map(
-                                  (task, index) =>
-                                    `${index + 1}. ${task.name}:\n   ${
-                                      task.content
-                                    }${
-                                      task.source === "curriculum"
-                                        ? `\n   (Kỹ năng: ${task.kyNangCanDat}, Sản phẩm: ${task.sanPhamDuKien}, Thời lượng: ${task.thoiLuongDeXuat})`
-                                        : ""
-                                    }`
-                                )
-                                .join("\n\n")}`
+                            ? `TÊN BÀI: ${lessonResult.ten_bai || lessonTopic
+                            }\n\nMỤC TIÊU KIẾN THỨC:\n${lessonResult.muc_tieu_kien_thuc
+                            }\n\nMỤC TIÊU NĂNG LỰC:\n${lessonResult.muc_tieu_nang_luc
+                            }\n\nMỤC TIÊU PHẨM CHẤT:\n${lessonResult.muc_tieu_pham_chat
+                            }\n\nTHIẾT BỊ DẠY HỌC & HỌC LIỆU:\n${lessonResult.thiet_bi_day_hoc
+                            }\n\nSINH HOẠT DƯỚI CỜ:\n${lessonResult.shdc
+                            }\n\nSINH HOẠT LỚP:\n${lessonResult.shl
+                            }\n\nHOẠT ĐỘNG KHỞI ĐỘNG:\n${lessonResult.hoat_dong_khoi_dong
+                            }\n\nHOẠT ĐỘNG KHÁM PHÁ:\n${lessonResult.hoat_dong_kham_pha
+                            }\n\nHOẠT ĐỘNG LUYỆN TẬP:\n${lessonResult.hoat_dong_luyen_tap
+                            }\n\nHOẠT ĐỘNG VẬN DỤNG:\n${lessonResult.hoat_dong_van_dung
+                            }\n\nHƯỚNG DẪN VỀ NHÀ:\n${lessonResult.huong_dan_ve_nha
+                            }\n\nTÍCH HỢP NLS:\n${lessonResult.tich_hop_nls
+                            }\n\nTÍCH HỢP ĐẠO ĐỨC:\n${lessonResult.tich_hop_dao_duc
+                            }`
                             : `TÍCH HỢP NLS:\n${lessonResult.tich_hop_nls}\n\nTÍCH HỢP ĐẠO ĐỨC:\n${lessonResult.tich_hop_dao_duc}`;
                           navigator.clipboard.writeText(content);
                           setSuccess("Đã copy vào clipboard!");
@@ -2509,13 +2701,64 @@ const TemplateEngine = () => {
                       </Button>
 
                       <Button
-                        variant="outline"
+                        variant="ghost"
+                        className="bg-indigo-50 border-indigo-100 h-11 px-6 rounded-xl shadow-sm text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30"
+                        onClick={handleAudit}
+                        disabled={isAuditing}
+                      >
+                        {isAuditing ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="mr-2 h-4 w-4" />
+                        )}
+                        Kiểm định bài dạy (AI Check)
+                      </Button>
+
+                      <Button
+                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-11 px-6 rounded-xl shadow-md gap-2 ml-auto"
                         onClick={() => handleExport("lesson")}
                       >
-                        <Download className="mr-2 h-4 w-4" />
+                        <Download className="h-4 w-4" />
                         Xuất file Word
                       </Button>
                     </div>
+
+                    {/* Audit Result Display */}
+                    {auditResult && (
+                      <div className="mt-6 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950 dark:to-blue-950 rounded-2xl border border-indigo-100 dark:border-indigo-800 animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
+                            <Sparkles className="w-5 h-5" />
+                            <h4 className="font-bold">Kết quả Kiểm định Sư phạm</h4>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 text-indigo-400 hover:text-indigo-600"
+                            onClick={() => setAuditResult(null)}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="prose prose-sm dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed">
+                          {auditResult}
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-indigo-100 dark:border-indigo-800 flex justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-indigo-600 border-indigo-200"
+                            onClick={() => {
+                              copyToClipboard(auditResult);
+                              setSuccess("Đã copy bản kiểm định!");
+                            }}
+                          >
+                            <Copy className="w-3 h-3 mr-2" />
+                            Copy bản kiểm định
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -2525,16 +2768,6 @@ const TemplateEngine = () => {
           {/* Event Tab */}
           <TabsContent value="event">
             <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
-              <CardHeader className="bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-t-xl">
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
-                  Kế hoạch Ngoại khóa HĐTN
-                </CardTitle>
-                <CardDescription className="text-purple-100">
-                  Tự động tạo kịch bản hoạt động ngoại khóa sáng tạo theo chủ đề
-                  SGK
-                </CardDescription>
-              </CardHeader>
               <CardContent className="p-6 space-y-6">
                 {/* Input Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2925,6 +3158,111 @@ const TemplateEngine = () => {
               </CardContent>
             </Card>
           </TabsContent>
+          {/* History / Library Tab */}
+          <TabsContent value="history">
+            <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
+              <CardContent className="p-6 space-y-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                  <Input
+                    placeholder="Tìm kiếm dự án (tên bài, tháng, loại)..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 h-11 bg-slate-50 border-slate-200 rounded-xl focus:ring-amber-500 focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {projects
+                    .filter(p =>
+                      !searchQuery ||
+                      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      p.type.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map((project) => (
+                      <div
+                        key={project.id}
+                        className="group relative p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-200"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div className={`p-2 rounded-lg ${project.type === 'meeting' ? 'bg-blue-50 text-blue-600' :
+                            project.type === 'lesson' ? 'bg-green-50 text-green-600' :
+                              'bg-purple-50 text-purple-600'
+                            }`}>
+                            {project.type === 'meeting' ? <FileText className="w-4 h-4" /> :
+                              project.type === 'lesson' ? <BookOpen className="w-4 h-4" /> :
+                                <Calendar className="w-4 h-4" />}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-slate-300 hover:text-red-500 h-8 w-8"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (confirm('Bạn có chắc muốn xóa dự án này?')) {
+                                await deleteProject(project.id);
+                                loadProjects();
+                              }
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+
+                        <h3 className="font-semibold text-slate-800 line-clamp-2 mb-2 group-hover:text-amber-700">
+                          {project.title}
+                        </h3>
+
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-slate-100 text-slate-500 rounded">
+                            {project.type === 'meeting' ? 'Họp Tổ' :
+                              project.type === 'lesson' ? 'Bài dạy' : 'Sự kiện'}
+                          </span>
+                          {project.grade && (
+                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-blue-100 text-blue-600 rounded">
+                              Lớp {project.grade}
+                            </span>
+                          )}
+                          {project.month && (
+                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-100 text-amber-600 rounded">
+                              Tháng {project.month}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-slate-400">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(project.createdAt).toLocaleDateString('vi-VN')}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 gap-1 h-7"
+                            onClick={() => loadProjectToWorkbench(project)}
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Mở lại
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                  {projects.length === 0 && (
+                    <div className="col-span-full py-20 text-center space-y-3">
+                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+                        <Archive className="w-8 h-8 text-slate-300" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-slate-500">Thư viện trống</p>
+                        <p className="text-sm text-slate-400">Các nội dung bạn tạo sẽ tự động được lưu tại đây.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </main>
 
@@ -3002,6 +3340,20 @@ const TemplateEngine = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Danh sách Hoạt động (mỗi dòng một hoạt động)</Label>
+              <Textarea
+                placeholder="VD: Tìm hiểu nội quy trường lớp&#10;Tìm hiểu truyền thống nhà trường"
+                value={newPPCTItem.activities?.join("\n") || ""}
+                onChange={(e) =>
+                  setNewPPCTItem({
+                    ...newPPCTItem,
+                    activities: e.target.value.split("\n").filter(a => a.trim() !== ""),
+                  })
+                }
+                className="min-h-[100px]"
+              />
             </div>
             <div className="space-y-2">
               <Label>Ghi chú (tùy chọn)</Label>

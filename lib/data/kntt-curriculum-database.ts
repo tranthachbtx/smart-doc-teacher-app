@@ -17,6 +17,7 @@ export interface NhiemVu {
   ky_nang_can_dat?: string[];
   san_pham_du_kien?: string;
   thoi_luong_de_xuat?: string;
+  link_tai_lieu_tham_khao?: string[]; // Thêm trường link tài liệu thực tế
 }
 
 export interface HoatDong {
@@ -41,6 +42,8 @@ export interface GoiYTichHop {
   bien_ban_hop: string[];
   ke_hoach_day_hoc: string[];
   ngoai_khoa: string[];
+  sinh_hoat_lop?: string[];
+  sinh_hoat_duoi_co?: string[];
 }
 
 export interface ChuDe {
@@ -187,7 +190,6 @@ export const CHUONG_TRINH_LOP_10: ChuongTrinhKhoi = {
   mo_ta_tong_quan:
     "Lớp 10 là giai đoạn chuyển tiếp quan trọng từ THCS lên THPT. Trọng tâm là giúp học sinh thích nghi với môi trường học tập mới và bắt đầu hành trình khám phá bản thân ở chiều sâu tâm lý học.",
 
-  // Thêm đặc điểm tâm lý lứa tuổi
   dac_diem_tam_ly_lua_tuoi: [
     "Giai đoạn chuyển tiếp từ THCS lên THPT, nhiều bỡ ngỡ với môi trường mới",
     "Bắt đầu hình thành tư duy trừu tượng và phản biện",
@@ -208,1072 +210,928 @@ export const CHUONG_TRINH_LOP_10: ChuongTrinhKhoi = {
       ma: "10.1",
       ten: "Phát huy truyền thống nhà trường",
       mach_noi_dung: "xa_hoi",
-      muc_tieu: [
-        "Giúp học sinh chuyển từ trạng thái 'người lạ' thành thành viên tích cực của nhà trường",
-        "Hiểu và tự hào về nơi mình đang học",
-        "Xây dựng văn hóa ứng xử học đường văn minh",
-      ],
+      muc_tieu: ["Giúp học sinh hiểu và thực hành văn hóa nhà trường, tự hào về lịch sử và truyền thống dạy tốt học tốt."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Nghiên cứu lịch sử nhà trường",
-          mo_ta:
-            "Tìm hiểu lịch sử hình thành, các thành tựu nổi bật của nhà trường",
-          muc_tieu_cu_the:
-            "Học sinh biết được các mốc lịch sử quan trọng và thành tựu của trường",
+          ten: "Tìm hiểu nội quy trường lớp và quy định cộng đồng",
+          mo_ta: "Nghiên cứu nội quy và các quy tắc ứng xử công cộng.",
           nhiem_vu: [
             {
-              ten: "Tham quan phòng truyền thống",
-              mo_ta:
-                "Ghi chép các mốc lịch sử quan trọng: năm thành lập, các thế hệ lãnh đạo, thành tích nổi bật",
-              san_pham_du_kien: "Sổ tay ghi chép thông tin về trường",
-              thoi_luong_de_xuat: "1 tiết",
+              ten: "Chia sẻ hiểu biết về nội quy",
+              mo_ta: "Thảo luận về: trang phục, thái độ, bảo vệ tài sản công.",
+              thoi_luong_de_xuat: "15 phút"
             },
             {
-              ten: "Phỏng vấn thầy cô",
-              mo_ta:
-                "Thu thập câu chuyện về truyền thống nhà trường từ các thầy cô lâu năm",
-              san_pham_du_kien: "Bài phỏng vấn dạng văn bản hoặc video",
-              thoi_luong_de_xuat: "1 tiết",
-            },
-          ],
-          san_pham: [
-            "Sổ tay ghi chép",
-            "Bài phỏng vấn",
-            "Infographic về lịch sử trường",
-          ],
-          luu_y_su_pham:
-            "Cần liên hệ trước với phòng truyền thống, chuẩn bị câu hỏi phỏng vấn sẵn",
+              ten: "Thảo luận biện pháp thực hiện",
+              mo_ta: "Đề xuất cách thực hiện hiệu quả nội quy cho cá nhân và tập thể.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Quảng bá hình ảnh nhà trường",
-          mo_ta:
-            "Thiết kế các sản phẩm truyền thông để giới thiệu về truyền thống nhà trường",
-          muc_tieu_cu_the:
-            "Học sinh tạo được sản phẩm truyền thông sáng tạo về trường",
+          ten: "Tìm hiểu truyền thống nhà trường",
+          mo_ta: "Khám phá lịch sử và các giá trị cốt lõi của trường.",
           nhiem_vu: [
             {
-              ten: "Thiết kế poster/video",
-              mo_ta: "Tạo sản phẩm truyền thông sáng tạo giới thiệu về trường",
-              san_pham_du_kien: "Poster hoặc video 2-3 phút",
-              thoi_luong_de_xuat: "1 tiết",
-              ky_nang_can_dat: [
-                "NLS 1.2 - Sử dụng công cụ số",
-                "NLS 2.3 - Sáng tạo nội dung số",
-              ],
+              ten: "Chia sẻ truyền thống tiêu biểu",
+              mo_ta: "Nói về truyền thống: Dạy tốt - học tốt, Tôn sư trọng đạo.",
+              thoi_luong_de_xuat: "20 phút"
             },
             {
-              ten: "Viết bài giới thiệu",
-              mo_ta: "Viết bài cho website/fanpage trường",
-              san_pham_du_kien: "Bài viết 300-500 từ kèm hình ảnh",
-              thoi_luong_de_xuat: "0.5 tiết",
-            },
-          ],
-          san_pham: ["Poster", "Video ngắn", "Bài viết fanpage"],
-          luu_y_su_pham:
-            "Hướng dẫn HS sử dụng Canva, CapCut hoặc các công cụ thiết kế đơn giản",
+              ten: "Việc làm phát huy truyền thống",
+              mo_ta: "Đề xuất hành động cụ thể để giữ gìn truyền thống.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Thực hành nội quy",
-          mo_ta: "Tìm hiểu và cam kết thực hiện nội quy trường, lớp",
-          muc_tieu_cu_the: "Học sinh hiểu và cam kết thực hiện nội quy",
+          ten: "Thực hiện nội quy và quy định cộng đồng",
+          mo_ta: "Đánh giá việc thực hiện và đề xuất biện pháp cải thiện.",
           nhiem_vu: [
             {
-              ten: "Học nội quy",
-              mo_ta:
-                "Nghiên cứu và thảo luận về nội quy trường học: đồng phục, giờ giấc, ứng xử",
-              san_pham_du_kien: "Bảng tóm tắt nội quy theo sơ đồ tư duy",
-              thoi_luong_de_xuat: "0.5 tiết",
-            },
-            {
-              ten: "Cam kết thực hiện",
-              mo_ta: "Ký cam kết và thực hành văn hóa ứng xử trong tuần đầu",
-              san_pham_du_kien: "Bản cam kết cá nhân",
-              thoi_luong_de_xuat: "0.5 tiết",
-            },
-          ],
-          san_pham: ["Sơ đồ tư duy nội quy", "Bản cam kết"],
-          luu_y_su_pham:
-            "Tránh biến hoạt động thành buổi đọc nội quy khô khan, cần tạo tình huống thảo luận",
+              ten: "Xác định nguyên nhân việc làm chưa tốt",
+              mo_ta: "Phân tích vì sao chưa thực hiện tốt nội quy và tìm cách khắc phục.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Giáo dục truyền thống nhà trường",
+          mo_ta: "Tổ chức hoạt động tuyên truyền về truyền thống.",
+          nhiem_vu: [
+            {
+              ten: "Lập kế hoạch tổ chức giáo dục truyền thống",
+              mo_ta: "Thiết kế kế hoạch: Mục tiêu, nội dung, hình thức, phân công.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Biện pháp thu hút các bạn vào hoạt động chung",
+          mo_ta: "Xây dựng kế hoạch truyền thông nội bộ.",
+          nhiem_vu: [
+            {
+              ten: "Kế hoạch truyền thông 'Trường học hạnh phúc'",
+              mo_ta: "Xác định thông điệp cốt lõi, kênh truyền thông (Fanpage, Poster, Loa trường) và đối tượng mục tiêu để thu hút bạn bè.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Xây dựng và thực hiện kế hoạch tự rèn luyện",
+          mo_ta: "Lập lộ trình cá nhân để thực hiện tốt quy định chung.",
+          nhiem_vu: [
+            {
+              ten: "Kế hoạch tự rèn luyện bản thân",
+              mo_ta: "Xác định rào cản và lập lộ trình rèn luyện cá nhân.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Hiểu biết về lịch sử và truyền thống nhà trường",
-        "Có ý thức giữ gìn và phát huy truyền thống",
-        "Thực hiện tốt nội quy trường học",
-      ],
-      phuong_phap_goi_y: [
-        "Tham quan",
-        "Phỏng vấn",
-        "Thiết kế sản phẩm",
-        "Thảo luận nhóm",
-      ],
-      so_tiet_de_xuat: 4,
-      thang_thuc_hien: [9],
-      tu_khoa_tim_kiem: [
-        "truyền thống",
-        "nhà trường",
-        "nội quy",
-        "văn hóa học đường",
-      ],
-
-      // Thêm lưu ý sư phạm chi tiết
-      luu_y_su_pham: {
-        trong_tam: [
-          "Tạo cảm giác thuộc về (sense of belonging) cho HS lớp 10 mới",
-          "Kết nối quá khứ - hiện tại - tương lai của nhà trường",
-          "Biến kiến thức về trường thành niềm tự hào",
-        ],
-        phuong_phap_hieu_qua: [
-          "Sử dụng storytelling kể chuyện về các thế hệ cựu học sinh thành công",
-          "Cho HS tự khám phá thay vì thuyết trình một chiều",
-          "Tạo sản phẩm để HS ghi nhớ lâu hơn",
-        ],
-        loi_thuong_gap: [
-          "Biến thành buổi đọc lịch sử trường khô khan",
-          "Chỉ nói về thành tích mà không kết nối với HS",
-          "Không cho HS cơ hội thể hiện",
-        ],
-        cach_khac_phuc: [
-          "Tổ chức dạng trò chơi tìm hiểu, đố vui",
-          "Mời cựu học sinh về chia sẻ",
-          "Cho HS tự thiết kế sản phẩm truyền thông",
-        ],
-      },
-
-      // Thêm gợi ý tích hợp
-      goi_y_tich_hop: {
-        bien_ban_hop: [
-          "Thảo luận về kế hoạch tổ chức hoạt động đầu năm cho HS lớp 10",
-          "Phân công GV hướng dẫn tham quan phòng truyền thống",
-          "Đánh giá hiệu quả hoạt động hội nhập của HS mới",
-        ],
-        ke_hoach_day_hoc: [
-          "Tích hợp NLS 1.2, 2.3 khi cho HS thiết kế poster/video",
-          "Tích hợp giáo dục đạo đức về lòng biết ơn, tự hào truyền thống",
-          "Rèn kỹ năng phỏng vấn, thu thập thông tin",
-        ],
-        ngoai_khoa: [
-          "Tổ chức cuộc thi thiết kế logo/slogan về trường",
-          "Chương trình giao lưu với cựu học sinh thành công",
-          "Triển lãm ảnh về lịch sử nhà trường",
-        ],
-      },
-      noi_dung_sgk_tham_khao:
-        "SGK HĐTN 10 - Kết nối Tri thức, Chủ đề 1: Phát huy truyền thống nhà trường (Trang 6-15)",
+      ket_qua_can_dat: ["Hiểu nội quy", "Tự hào truyền thống", "Biết lôi cuốn bạn bè"],
+      phuong_phap_goi_y: ["Thảo luận", "Xử lý tình huống", "Kế hoạch rèn luyện"],
+      tu_khoa_tim_kiem: ["nội quy", "truyền thống", "tự rèn luyện"],
+      so_tiet_de_xuat: 3,
+      thang_thuc_hien: [9]
     },
     {
       ma: "10.2",
       ten: "Khám phá bản thân",
       mach_noi_dung: "ban_than",
-      muc_tieu: [
-        "Chuyển biến từ việc mô tả bản thân bên ngoài sang phân tích tâm lý bên trong",
-        "Nhận diện tính cách, điểm mạnh, điểm hạn chế",
-        "Xác định giá trị sống cá nhân",
-      ],
+      muc_tieu: ["Nhận diện tính cách, điều chỉnh tư duy tích cực và định hình quan điểm sống."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Nhận diện tính cách",
-          mo_ta:
-            "Thực hiện các bài trắc nghiệm hoặc hoạt động trải nghiệm để xác định nhóm tính cách",
-          muc_tieu_cu_the: "HS xác định được mình thuộc nhóm tính cách nào",
+          ten: "Xác định tính cách bản thân",
+          mo_ta: "Nhận diện nét đặc trưng qua tự đánh giá và phản hồi.",
           nhiem_vu: [
             {
-              ten: "Làm trắc nghiệm MBTI/DISC",
-              mo_ta:
-                "Thực hiện bài trắc nghiệm để xác định nhóm tính cách: hướng nội/hướng ngoại, tư duy/cảm xúc",
-              san_pham_du_kien: "Kết quả trắc nghiệm và phân tích cá nhân",
-              thoi_luong_de_xuat: "1 tiết",
-              ky_nang_can_dat: ["NLS 1.1 - Sử dụng công cụ trực tuyến"],
+              ten: "Nhận diện nét tính cách",
+              mo_ta: "Phân tích tính cách (sôi nổi, trầm tính...) qua phản hồi từ người khác.",
+              thoi_luong_de_xuat: "15 phút"
             },
             {
-              ten: "Phân tích kết quả",
-              mo_ta:
-                "Thảo luận nhóm về ý nghĩa của từng nhóm tính cách, so sánh với bản thân",
-              san_pham_du_kien: "Bài chia sẻ về tính cách của mình",
-              thoi_luong_de_xuat: "1 tiết",
-            },
-          ],
-          san_pham: ["Kết quả trắc nghiệm", "Bài phân tích tính cách cá nhân"],
-          luu_y_su_pham:
-            "Nhấn mạnh không có tính cách tốt/xấu, chỉ có phù hợp hay không phù hợp với từng ngữ cảnh",
+              ten: "Chia sẻ điểm mạnh, điểm yếu",
+              mo_ta: "Tự tin nói về thế mạnh và thừa nhận hạn chế để rèn luyện.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Phân tích SWOT cá nhân",
-          mo_ta:
-            "Xác định Điểm mạnh (Strengths), Điểm yếu (Weaknesses), Cơ hội (Opportunities), Thách thức (Threats)",
-          muc_tieu_cu_the: "HS lập được bảng SWOT cá nhân",
+          ten: "Tìm hiểu về điều chỉnh tư duy theo hướng tích cực",
+          mo_ta: "Học cách nhìn nhận vấn đề lạc quan.",
           nhiem_vu: [
             {
-              ten: "Liệt kê điểm mạnh/yếu",
-              mo_ta:
-                "Tự đánh giá và nhờ bạn bè, gia đình nhận xét về điểm mạnh, điểm cần cải thiện",
-              san_pham_du_kien: "Bảng SWOT cá nhân",
-              thoi_luong_de_xuat: "1 tiết",
-            },
-            {
-              ten: "Phân tích ảnh hưởng",
-              mo_ta:
-                "Đánh giá ảnh hưởng của điểm mạnh/yếu đến học tập, quan hệ và tương lai",
-              san_pham_du_kien: "Bài viết phân tích 200-300 từ",
-              thoi_luong_de_xuat: "0.5 tiết",
-            },
-          ],
-          san_pham: ["Bảng SWOT", "Bài phân tích ảnh hưởng"],
-          luu_y_su_pham:
-            "Tạo môi trường an toàn để HS chia sẻ điểm yếu mà không bị đánh giá",
+              ten: "Tìm hiểu điều chỉnh tư duy",
+              mo_ta: "Phân tích tình huống so sánh tư duy tích cực và tiêu cực.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Định vị giá trị sống",
-          mo_ta: "Xác định các giá trị sống mà bản thân theo đuổi",
-          muc_tieu_cu_the:
-            "HS xác định được 3-5 giá trị sống quan trọng nhất với mình",
+          ten: "Tìm hiểu về quan điểm sống",
+          mo_ta: "Hình thành nhân sinh quan qua tranh biện.",
           nhiem_vu: [
             {
-              ten: "Khám phá giá trị",
-              mo_ta:
-                "Từ danh sách giá trị (trung thực, trách nhiệm, sáng tạo, yêu thương...), chọn 5 giá trị quan trọng nhất",
-              san_pham_du_kien: "Danh sách 5 giá trị cốt lõi cá nhân",
-              thoi_luong_de_xuat: "0.5 tiết",
-            },
-            {
-              ten: "Xếp hạng ưu tiên",
-              mo_ta:
-                "Sắp xếp các giá trị theo thứ tự quan trọng và giải thích lý do",
-              san_pham_du_kien: "Bảng xếp hạng giá trị kèm giải thích",
-              thoi_luong_de_xuat: "0.5 tiết",
-            },
-          ],
-          san_pham: [
-            "Kim tự tháp giá trị cá nhân",
-            "Bài chia sẻ về giá trị sống",
-          ],
-          luu_y_su_pham:
-            "Giúp HS hiểu giá trị là la bàn định hướng hành vi, không phải khẩu hiệu suông",
+              ten: "Tìm hiểu về quan điểm sống",
+              mo_ta: "Tranh biện về các câu tục ngữ/danh ngôn (VD: Thất bại là mẹ thành công).",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Lập và thực hiện kế hoạch rèn luyện phát huy điểm mạnh, hạn chế điểm yếu",
+          mo_ta: "Thiết kế lộ trình phát triển bản thân.",
+          nhiem_vu: [
+            {
+              ten: "Lập kế hoạch phát huy điểm mạnh",
+              mo_ta: "Xây dựng bảng kế hoạch chi tiết (Việc làm, thời gian).",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Điều chỉnh tư duy của bản thân theo hướng tích cực",
+          mo_ta: "Thực hành thay đổi cách nhìn trong tình huống khó khăn.",
+          nhiem_vu: [
+            {
+              ten: "Thực hành điều chỉnh tư duy",
+              mo_ta: "Xử lý tình huống thực tế (Bố mẹ không cho đi chơi, thi trượt...).",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Rèn luyện tính cách và tư duy tích cực",
+          mo_ta: "Ổn định tâm lý và thói quen lạc quan.",
+          nhiem_vu: [
+            {
+              ten: "Xây dựng thói quen tích cực",
+              mo_ta: "Viết sổ ký ức tích cực mỗi ngày.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 7,
+          ten: "Thể hiện quan điểm sống của bản thân",
+          mo_ta: "Khẳng định giá trị cá nhân trước tập thể.",
+          nhiem_vu: [
+            {
+              ten: "Trình bày lý tưởng sống",
+              mo_ta: "Thuyết trình về phương châm sống 'Sống là cống hiến'.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Nhận biết được đặc điểm tính cách của bản thân",
-        "Xác định được điểm mạnh và điểm cần cải thiện",
-        "Định hình được hệ giá trị cá nhân",
-      ],
-      phuong_phap_goi_y: [
-        "Trắc nghiệm tâm lý",
-        "Phân tích SWOT",
-        "Thảo luận nhóm",
-        "Viết nhật ký phản tư",
-      ],
+      ket_qua_can_dat: ["Hiểu rõ tính cách", "Có quan điểm sống tích cực", "Biết điều chỉnh tư duy"],
+      phuong_phap_goi_y: ["Trắc nghiệm", "Tranh biện", "Đóng vai"],
+      tu_khoa_tim_kiem: ["tính cách", "tư duy tích cực", "quan điểm sống"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [9, 10],
-      tu_khoa_tim_kiem: [
-        "khám phá bản thân",
-        "tính cách",
-        "MBTI",
-        "SWOT",
-        "giá trị sống",
-      ],
-
-      luu_y_su_pham: {
-        trong_tam: [
-          "Đây là chủ đề nền tảng cho cả 3 năm THPT",
-          "Giúp HS nhìn nhận bản thân khách quan, không tự ti hay tự cao",
-          "Tạo thói quen tự phản tư (self-reflection)",
-        ],
-        phuong_phap_hieu_qua: [
-          "Sử dụng các công cụ trắc nghiệm trực tuyến miễn phí",
-          "Cho HS viết nhật ký và chia sẻ theo cặp/nhóm nhỏ",
-          "Mời chuyên gia tâm lý nói chuyện (nếu có điều kiện)",
-        ],
-        loi_thuong_gap: [
-          "HS ngại chia sẻ điểm yếu trước lớp",
-          "Kết quả trắc nghiệm bị hiểu sai là 'nhãn dán' cố định",
-          "Hoạt động quá hàn lâm, thiếu tính trải nghiệm",
-        ],
-        cach_khac_phuc: [
-          "Cho chia sẻ theo cặp hoặc nhóm nhỏ thay vì cả lớp",
-          "Nhấn mạnh tính cách có thể phát triển theo thời gian",
-          "Sử dụng game, hoạt động tương tác thay vì thuyết giảng",
-        ],
-      },
-
-      goi_y_tich_hop: {
-        bien_ban_hop: [
-          "Thảo luận về cách hỗ trợ HS nhận diện điểm mạnh/yếu",
-          "Chia sẻ kinh nghiệm sử dụng công cụ trắc nghiệm tâm lý",
-          "Đánh giá mức độ tự nhận thức của HS qua các bài viết phản tư",
-        ],
-        ke_hoach_day_hoc: [
-          "Tích hợp NLS 1.1 khi cho HS làm trắc nghiệm trực tuyến",
-          "Tích hợp giáo dục đạo đức về sự trung thực với chính mình",
-          "Rèn kỹ năng tự đánh giá, phản tư (metacognition)",
-        ],
-        ngoai_khoa: [
-          "Tổ chức workshop 'Khám phá bản thân qua MBTI'",
-          "Cuộc thi viết 'Tôi là ai?' với giải thưởng",
-          "Chương trình giao lưu với chuyên gia tâm lý",
-        ],
-      },
-      noi_dung_sgk_tham_khao:
-        "SGK HĐTN 10 - Kết nối Tri thức, Chủ đề 2: Khám phá bản thân (Trang 16-27)",
+      thang_thuc_hien: [10]
     },
-
-    // Tiếp tục thêm các chủ đề còn lại với cấu trúc tương tự...
     {
       ma: "10.3",
       ten: "Rèn luyện bản thân",
       mach_noi_dung: "ban_than",
-      muc_tieu: [
-        "Quản lý cảm xúc trong các tình huống căng thẳng",
-        "Xây dựng và duy trì thói quen tốt",
-        "Phát triển tư duy phản biện",
-      ],
+      muc_tieu: ["Phát triển trách nhiệm, tự chủ và quản lý tài chính."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Quản lý cảm xúc",
-          mo_ta:
-            "Nhận diện các cảm xúc tiêu cực và thực hành kỹ thuật điều chỉnh",
-          muc_tieu_cu_the:
-            "HS biết cách nhận diện và điều chỉnh cảm xúc tiêu cực",
+          ten: "Tìm hiểu biểu hiện của người có trách nhiệm",
+          mo_ta: "Nhận diện thái độ và hành vi trách nhiệm trong cuộc sống.",
           nhiem_vu: [
             {
-              ten: "Nhận diện cảm xúc",
-              mo_ta:
-                "Ghi nhật ký cảm xúc hàng ngày trong 1 tuần, xác định triggers (nguyên nhân kích hoạt)",
-              san_pham_du_kien: "Nhật ký cảm xúc 7 ngày",
-              thoi_luong_de_xuat: "0.5 tiết hướng dẫn + 1 tuần thực hành",
-            },
-            {
-              ten: "Thực hành kỹ thuật điều chỉnh",
-              mo_ta:
-                "Áp dụng các kỹ thuật: hít thở sâu 4-7-8, thiền 5 phút, viết nhật ký giải tỏa",
-              san_pham_du_kien: "Báo cáo trải nghiệm các kỹ thuật",
-              thoi_luong_de_xuat: "1 tiết",
-            },
-          ],
-          san_pham: [
-            "Nhật ký cảm xúc",
-            "Báo cáo thực hành kỹ thuật quản lý cảm xúc",
-          ],
-          luu_y_su_pham:
-            "Cần tạo không gian an toàn, tôn trọng sự riêng tư của HS",
+              ten: "Xác định biểu hiện trách nhiệm",
+              mo_ta: "Thảo luận về: Hoàn thành nhiệm vụ, coi trọng thời gian, hỗ trợ người thân.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Xây dựng thói quen",
-          mo_ta:
-            "Lập kế hoạch rèn luyện thói quen tốt và loại bỏ thói quen xấu",
-          muc_tieu_cu_the: "HS xây dựng được ít nhất 1 thói quen tốt mới",
+          ten: "Tìm hiểu sự tự chủ, lòng tự trọng và ý chí vượt khó",
+          mo_ta: "Phân tích các tình huống rèn luyện nghị lực.",
           nhiem_vu: [
             {
-              ten: "Lập danh sách thói quen",
-              mo_ta:
-                "Liệt kê thói quen cần xây dựng (dậy sớm, đọc sách, tập thể dục) và cần loại bỏ (ngủ muộn, lướt điện thoại)",
-              san_pham_du_kien: "Danh sách thói quen với mục tiêu cụ thể",
-              thoi_luong_de_xuat: "0.5 tiết",
-            },
-            {
-              ten: "Theo dõi tiến độ 21 ngày",
-              mo_ta:
-                "Sử dụng bảng theo dõi thói quen (habit tracker) trong 21 ngày",
-              san_pham_du_kien: "Bảng theo dõi thói quen và báo cáo kết quả",
-              thoi_luong_de_xuat: "0.5 tiết hướng dẫn + 3 tuần thực hành",
-              ky_nang_can_dat: ["NLS 1.3 - Sử dụng ứng dụng quản lý"],
-            },
-          ],
-          san_pham: ["Habit tracker", "Báo cáo hành trình 21 ngày"],
-          luu_y_su_pham:
-            "Giải thích nguyên lý 21 ngày hình thành thói quen, động viên khi HS gặp khó khăn",
+              ten: "Nhận diện tự chủ và vượt khó",
+              mo_ta: "Phân tích tình huống nhân vật Vinh tự lập hoặc các tấm gương vượt khó.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Tư duy phản biện",
-          mo_ta: "Rèn luyện cách nhìn nhận vấn đề từ nhiều góc độ",
-          muc_tieu_cu_the:
-            "HS có khả năng đặt câu hỏi và phân tích vấn đề đa chiều",
+          ten: "Tìm hiểu biểu hiện của người có tư duy phản biện",
+          mo_ta: "Học cách đặt câu hỏi và suy nghĩ đa chiều.",
           nhiem_vu: [
             {
-              ten: "Phân tích tình huống",
-              mo_ta:
-                "Đọc một bài báo/video về vấn đề xã hội, đặt câu hỏi 5W1H và tìm nhiều góc nhìn khác nhau",
-              san_pham_du_kien: "Bảng phân tích đa chiều",
-              thoi_luong_de_xuat: "1 tiết",
-            },
-            {
-              ten: "Tranh biện",
-              mo_ta:
-                "Tham gia tranh biện về các chủ đề: 'Mạng xã hội có hại hơn có lợi?', 'Nên học trường công hay trường tư?'",
-              san_pham_du_kien: "Bài tranh biện với luận điểm rõ ràng",
-              thoi_luong_de_xuat: "1 tiết",
-            },
-          ],
-          san_pham: ["Bảng phân tích vấn đề", "Video/văn bản tranh biện"],
-          luu_y_su_pham:
-            "Dạy HS phân biệt giữa tranh biện và cãi nhau, tôn trọng quan điểm khác biệt",
+              ten: "Đặc điểm người phản biện",
+              mo_ta: "Nhận diện: Đặt câu hỏi chất vấn, tìm lỗi lập luận, suy nghĩ khách quan.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Tìm hiểu về kế hoạch tài chính cá nhân",
+          mo_ta: "Kiến thức cơ bản về quản lý tiền bạc.",
+          nhiem_vu: [
+            {
+              ten: "Khái niệm kế hoạch tài chính",
+              mo_ta: "Tìm hiểu quy trình: Xác định mục tiêu -> Ngân sách -> Theo dõi.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Thực hành trách nhiệm, tự chủ, tự trọng, ý chí vượt khó",
+          mo_ta: "Áp dụng các đức tính vào nhiệm vụ học tập.",
+          nhiem_vu: [
+            {
+              ten: "Cam kết trách nhiệm",
+              mo_ta: "Thực hiện nhiệm vụ trực nhật/học tập dù có trở ngại.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Rèn luyện tư duy phản biện",
+          mo_ta: "Quy trình phản biện 4 bước có cấu trúc.",
+          nhiem_vu: [
+            {
+              ten: "Thực hành phản biện chuyên sâu",
+              mo_ta: "Áp dụng quy trình: Lắng nghe chủ động -> Ghi chép ý kiến đối lập -> Phân tích logic -> Đưa ra phản hồi (Argument mapping).",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 7,
+          ten: "Xây dựng và thực hiện kế hoạch tài chính cá nhân",
+          mo_ta: "Tạo bảng kế hoạch thu chi thực tế.",
+          nhiem_vu: [
+            {
+              ten: "Lập bảng kế hoạch tài chính",
+              mo_ta: "Xây dựng bảng chi tiêu cho 1 tháng hoặc cho mục tiêu lớn.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 8,
+          ten: "Rèn luyện tính trách nhiệm trong thực hiện mục tiêu",
+          mo_ta: "Củng cố thói quen kiên trì.",
+          nhiem_vu: [
+            {
+              ten: "Đánh giá quá trình rèn luyện",
+              mo_ta: "Tự nhận xét sự tiến bộ sau 1 tuần thực hiện mục tiêu.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Biết cách kiểm soát cảm xúc tiêu cực",
-        "Hình thành được ít nhất 2-3 thói quen tốt mới",
-        "Có khả năng phân tích vấn đề đa chiều",
-      ],
-      phuong_phap_goi_y: [
-        "Thực hành cá nhân",
-        "Nhật ký",
-        "Tranh biện",
-        "Đóng vai",
-        "Coaching",
-      ],
+      ket_qua_can_dat: ["Sống trách nhiệm", "Biết quản lý tiền bạc", "Có tư duy phản biện"],
+      phuong_phap_goi_y: ["Phân tích trường hợp", "Lập kế hoạch tài chính", "Tranh biện"],
+      tu_khoa_tim_kiem: ["trách nhiệm", "tự chủ", "quản lý tài chính"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [10, 11],
-      tu_khoa_tim_kiem: [
-        "quản lý cảm xúc",
-        "thói quen",
-        "tư duy phản biện",
-        "21 ngày",
-      ],
-
-      luu_y_su_pham: {
-        trong_tam: [
-          "Chuyển từ 'biết' sang 'làm được' - cần thời gian thực hành",
-          "Mỗi HS có xuất phát điểm khác nhau, không so sánh",
-          "Động viên sự tiến bộ nhỏ, không kỳ vọng thay đổi ngay",
-        ],
-        phuong_phap_hieu_qua: [
-          "Sử dụng ứng dụng theo dõi thói quen (Habitica, Streaks)",
-          "Tạo nhóm buddy để HS hỗ trợ nhau",
-          "Chia sẻ câu chuyện thành công của người nổi tiếng",
-        ],
-        loi_thuong_gap: [
-          "Đặt mục tiêu quá cao, dễ nản",
-          "Thiếu theo dõi, đánh giá tiến độ",
-          "Chỉ nói lý thuyết, ít thực hành",
-        ],
-        cach_khac_phuc: [
-          "Bắt đầu với mục tiêu nhỏ, tăng dần",
-          "Check-in hàng tuần trong giờ SHCN",
-          "Dành thời gian thực hành ngay tại lớp",
-        ],
-      },
-
-      goi_y_tich_hop: {
-        bien_ban_hop: [
-          "Thảo luận về phương pháp hỗ trợ HS quản lý stress mùa thi",
-          "Chia sẻ kinh nghiệm tổ chức hoạt động tranh biện trong lớp",
-          "Đánh giá sự thay đổi thói quen của HS qua theo dõi",
-        ],
-        ke_hoach_day_hoc: [
-          "Tích hợp NLS 1.3 khi cho HS sử dụng app theo dõi thói quen",
-          "Tích hợp giáo dục đạo đức về tính kiên trì, tự giác",
-          "Rèn kỹ năng tự kỷ luật, quản lý bản thân",
-        ],
-        ngoai_khoa: [
-          "Thử thách 21 ngày toàn trường với hashtag riêng",
-          "Cuộc thi tranh biện cấp trường",
-          "Workshop 'Quản lý stress cho học sinh'",
-        ],
-      },
-      noi_dung_sgk_tham_khao:
-        "SGK HĐTN 10 - Kết nối Tri thức, Chủ đề 3: Rèn luyện bản thân (Trang 28-39)",
+      thang_thuc_hien: [11]
     },
-
-    // ... Tiếp tục các chủ đề 10.4 đến 10.11 với cấu trúc tương tự
     {
       ma: "10.4",
       ten: "Chủ động, tự tin trong học tập và giao tiếp",
       mach_noi_dung: "ban_than",
-      muc_tieu: [
-        "Áp dụng các phương pháp học tập mới ở bậc THPT",
-        "Rèn luyện kỹ năng giao tiếp tự tin",
-        "Phát triển kỹ năng thuyết trình",
-      ],
+      muc_tieu: ["Cải thiện kỹ năng giao tiếp và sự chủ động trong cuộc sống."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Phương pháp học tập THPT",
-          mo_ta: "Chia sẻ và áp dụng các phương pháp học tập mới",
+          ten: "Tìm hiểu biểu hiện của sự chủ động trong các môi trường",
+          mo_ta: "Nhận diện hành vi tự giác trong học tập và sinh hoạt.",
           nhiem_vu: [
             {
-              ten: "Tìm hiểu phương pháp",
-              mo_ta:
-                "Nghiên cứu: tự học, làm việc nhóm, sơ đồ tư duy, Cornell notes",
-            },
-            {
-              ten: "Áp dụng thực hành",
-              mo_ta: "Thử nghiệm với 1-2 môn học và đánh giá hiệu quả",
-            },
-          ],
+              ten: "Nhận diện sự chủ động",
+              mo_ta: "Thảo luận về: Tự giác học bài, chủ động hỏi thầy cô, tự tìm tài liệu.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Giao tiếp tự tin",
-          mo_ta: "Thực hành đóng vai các tình huống giao tiếp xã hội",
+          ten: "Tìm hiểu sự tự tin và thân thiện trong giao tiếp",
+          mo_ta: "Kỹ năng phi ngôn ngữ và thái độ tích cực.",
           nhiem_vu: [
             {
-              ten: "Đóng vai (role-play)",
-              mo_ta:
-                "Thực hành: giới thiệu bản thân, hỏi thầy cô, làm quen bạn mới",
-            },
-            {
-              ten: "Thuyết trình mini",
-              mo_ta: "Trình bày 3-5 phút trước lớp về một chủ đề yêu thích",
-            },
-          ],
+              ten: "Biểu hiện của tự tin",
+              mo_ta: "Thực hành: Ánh mắt, nụ cười, giọng nói rõ ràng, tư thế đĩnh đạc.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Thể hiện sự chủ động trong học tập và giao tiếp",
+          mo_ta: "Áp dụng tính chủ động vào môi trường lớp học.",
+          nhiem_vu: [
+            {
+              ten: "Xây dựng kế hoạch học tập chủ động",
+              mo_ta: "Lập các bước để hoàn thành mục tiêu học tập mà không cần nhắc nhở.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Thực hành giao tiếp tự tin, thân thiện với bạn bè",
+          mo_ta: "Xây dựng mối quan hệ đồng trang lứa tốt đẹp.",
+          nhiem_vu: [
+            {
+              ten: "Đóng vai làm quen",
+              mo_ta: "Cách bắt chuyện với bạn mới, cách giải quyết bất đồng nhẹ nhàng.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Thực hành giao tiếp, ứng xử với thầy, cô giáo",
+          mo_ta: "Văn hóa học đường và sự tôn sư trọng đạo.",
+          nhiem_vu: [
+            {
+              ten: "Giao tiếp sư phạm",
+              mo_ta: "Đóng vai: Hỏi bài sau giờ học, trình bày ý kiến đóng góp cho lớp.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Thực hành ứng xử phù hợp trong giao tiếp ở gia đình",
+          mo_ta: "Sự thấu hiểu và hiếu thảo với cha mẹ.",
+          nhiem_vu: [
+            {
+              ten: "Giao tiếp thế hệ",
+              mo_ta: "Lắng nghe cha mẹ chia sẻ, trình bày mong muốn cá nhân một cách lễ phép.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 7,
+          ten: "Rèn luyện tính chủ động, tự tin trong cuộc sống",
+          mo_ta: "Tổng kết và cam kết thay đổi.",
+          nhiem_vu: [
+            {
+              ten: "Nhật ký rèn luyện tự tin",
+              mo_ta: "Ghi lại 3 việc chủ động làm trong ngày.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có phương pháp học tập phù hợp với bản thân",
-        "Tự tin hơn trong giao tiếp với thầy cô, bạn bè",
-        "Có thể thuyết trình trước đám đông",
-      ],
-      phuong_phap_goi_y: [
-        "Học tập nhóm",
-        "Đóng vai",
-        "Thuyết trình",
-        "Sơ đồ tư duy",
-      ],
-      so_tiet_de_xuat: 3,
-      thang_thuc_hien: [11],
-      tu_khoa_tim_kiem: [
-        "phương pháp học tập",
-        "giao tiếp",
-        "thuyết trình",
-        "tự tin",
-      ],
-
-      goi_y_tich_hop: {
-        bien_ban_hop: [
-          "Chia sẻ phương pháp dạy học hiệu quả cho HS lớp 10",
-          "Thảo luận cách tạo cơ hội cho HS thuyết trình trong giờ học",
-        ],
-        ke_hoach_day_hoc: [
-          "Tích hợp NLS 2.1 khi cho HS tạo sơ đồ tư duy bằng công cụ số",
-          "Rèn kỹ năng trình bày, lập luận logic",
-        ],
-        ngoai_khoa: [
-          "Cuộc thi thuyết trình 'TED Talk học đường'",
-          "Workshop kỹ năng giao tiếp với chuyên gia",
-        ],
-      },
+      ket_qua_can_dat: ["Tự tin trước đám đông", "Giao tiếp lịch thiệp", "Chủ động học tập"],
+      phuong_phap_goi_y: ["Đóng vai", "Thực hành giao tiếp", "Trải nghiệm thực tế"],
+      tu_khoa_tim_kiem: ["tự tin", "chủ động", "giao tiếp"],
+      so_tiet_de_xuat: 4,
+      thang_thuc_hien: [12]
     },
-
     {
       ma: "10.5",
       ten: "Trách nhiệm với gia đình",
       mach_noi_dung: "xa_hoi",
-      muc_tieu: [
-        "Nhận thức sự thay đổi vai trò của học sinh lớp 10 trong gia đình",
-        "Biết cách giải quyết xung đột thế hệ",
-        "Thể hiện tình yêu thương với người thân",
-      ],
+      muc_tieu: ["Gắn kết gia đình và hỗ trợ kinh tế gia đình."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Nhận diện vai trò trong gia đình",
-          mo_ta: "Thảo luận về sự thay đổi vai trò khi lên lớp 10",
+          ten: "Tìm hiểu về trách nhiệm với gia đình",
+          mo_ta: "Nhận thức vai trò cá nhân trong tổ ấm.",
           nhiem_vu: [
             {
-              ten: "Thảo luận vai trò",
-              mo_ta:
-                "Chia sẻ về trách nhiệm mới: tự lập hơn, chia sẻ công việc nhà",
-            },
-            {
-              ten: "Lập kế hoạch đóng góp",
-              mo_ta: "Xác định việc cụ thể có thể giúp đỡ gia đình hàng ngày",
-            },
-          ],
+              ten: "Chia sẻ trách nhiệm",
+              mo_ta: "Thảo luận: Chăm sóc người thân, nuôi dưỡng tình cảm, chia sẻ việc nhà.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Giải quyết xung đột thế hệ",
-          mo_ta: "Đóng vai xử lý các tình huống mâu thuẫn với cha mẹ",
+          ten: "Thể hiện trách nhiệm với gia đình",
+          mo_ta: "Thực hiện hành động quan tâm thường xuyên.",
           nhiem_vu: [
             {
-              ten: "Phân tích tình huống",
-              mo_ta:
-                "Case study: mâu thuẫn về giờ giấc, sử dụng điện thoại, học thêm",
-            },
-            {
-              ten: "Đóng vai giải quyết",
-              mo_ta: "Thực hành kỹ năng đàm phán, lắng nghe, thỏa hiệp",
-            },
-          ],
+              ten: "Hành động yêu thương",
+              mo_ta: "Làm các việc cụ thể: Nấu cơm, dọn dẹp, hỏi han cha mẹ/ông bà.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Thể hiện yêu thương",
-          mo_ta: "Lập kế hoạch và thực hiện hành động chăm sóc người thân",
+          ten: "Xây dựng kế hoạch thực hiện hoạt động lao động trong gia đình",
+          mo_ta: "Phân công và quản lý công việc nhà.",
           nhiem_vu: [
             {
-              ten: "Lập kế hoạch",
-              mo_ta:
-                "Lên kế hoạch: nấu bữa cơm, viết thư, làm việc nhà, tặng quà handmade",
-            },
-            {
-              ten: "Thực hiện và chia sẻ",
-              mo_ta: "Thực hiện và báo cáo kết quả trước lớp",
-            },
-          ],
+              ten: "Bảng phân công việc nhà",
+              mo_ta: "Lập bảng kế hoạch tuần: Việc làm - Thời gian - Hoàn thành.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Đề xuất biện pháp phát triển kinh tế gia đình",
+          mo_ta: "Kinh tế hộ gia đình bền vững.",
+          nhiem_vu: [
+            {
+              ten: "Giải pháp gia tăng thu nhập và tiết kiệm",
+              mo_ta: "Đề xuất ý tưởng kinh doanh nhỏ VÀ danh mục việc làm phi kinh doanh (Sửa chữa đồ dùng, tiết kiệm năng lượng, trồng rau sạch).",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Thực hiện trách nhiệm với gia đình và đánh giá",
+          mo_ta: "Tổng kết kết quả thực hiện kế hoạch.",
+          nhiem_vu: [
+            {
+              ten: "Đánh giá sự gắn kết",
+              mo_ta: "Tự nhận xét thay đổi trong quan hệ với người thân.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Nhận thức được trách nhiệm của bản thân trong gia đình",
-        "Có kỹ năng giải quyết mâu thuẫn gia đình",
-        "Thể hiện được tình yêu thương qua hành động cụ thể",
-      ],
-      phuong_phap_goi_y: [
-        "Thảo luận",
-        "Đóng vai",
-        "Dự án cá nhân",
-        "Chia sẻ kinh nghiệm",
-      ],
+      ket_qua_can_dat: ["Gia đình hạnh phúc", "Biết quý trọng giá trị lao động", "Biết lập kế hoạch kinh tế"],
+      phuong_phap_goi_y: ["Lập kế hoạch", "Brainstorming", "Trải nghiệm"],
+      tu_khoa_tim_kiem: ["gia đình", "gắn kết", "kinh tế gia đình"],
       so_tiet_de_xuat: 3,
-      thang_thuc_hien: [11, 12],
-      tu_khoa_tim_kiem: [
-        "gia đình",
-        "trách nhiệm",
-        "xung đột thế hệ",
-        "yêu thương",
-      ],
-
-      goi_y_tich_hop: {
-        bien_ban_hop: [
-          "Thảo luận cách phối hợp với phụ huynh trong giáo dục HS",
-          "Chia sẻ kinh nghiệm xử lý khi HS có vấn đề gia đình",
-        ],
-        ke_hoach_day_hoc: [
-          "Tích hợp giáo dục đạo đức về lòng hiếu thảo, biết ơn",
-          "Rèn kỹ năng giao tiếp trong gia đình",
-        ],
-        ngoai_khoa: [
-          "Chương trình tri ân cha mẹ nhân ngày lễ",
-          "Cuộc thi viết 'Gia đình tôi'",
-        ],
-      },
+      thang_thuc_hien: [1]
     },
 
     {
       ma: "10.6",
       ten: "Tham gia xây dựng cộng đồng",
       mach_noi_dung: "xa_hoi",
-      muc_tieu: [
-        "Nhận biết các vấn đề xã hội tại địa phương",
-        "Lập và thực hiện dự án thiện nguyện",
-        "Rèn luyện ý thức công dân",
-      ],
+      muc_tieu: ["Nâng cao ý thức trách nhiệm với cộng đồng và thực hiện dự án xã hội nhỏ."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Khảo sát thực trạng cộng đồng",
-          mo_ta: "Tìm hiểu các vấn đề xã hội tại địa phương",
+          ten: "Tìm hiểu biện pháp mở rộng quan hệ và thu hút cộng đồng",
+          mo_ta: "Kỹ năng vận động xã hội.",
           nhiem_vu: [
             {
-              ten: "Khảo sát thực địa",
-              mo_ta:
-                "Điều tra về: an toàn giao thông, vệ sinh môi trường, người có hoàn cảnh khó khăn",
-            },
-            {
-              ten: "Phân tích dữ liệu",
-              mo_ta: "Tổng hợp kết quả khảo sát, xác định vấn đề ưu tiên",
-            },
-          ],
+              ten: "Biện pháp kết nối cộng đồng",
+              mo_ta: "Thảo luận cách làm quen, gây quỹ, mời gọi bạn bè tham gia CLB thiện nguyện.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Lập và thực hiện dự án cộng đồng",
-          mo_ta:
-            "Xây dựng kế hoạch và thực hiện hoạt động thiện nguyện/tuyên truyền",
+          ten: "Xác định nội dung tuyên truyền về văn hóa ứng xử nơi công cộng",
+          mo_ta: "Xây dựng nếp sống văn minh.",
           nhiem_vu: [
             {
-              ten: "Lập kế hoạch dự án",
-              mo_ta:
-                "Thiết kế dự án mini: mục tiêu, hoạt động, nguồn lực, timeline",
-            },
-            {
-              ten: "Triển khai",
-              mo_ta:
-                "Thực hiện hoạt động: tuyên truyền, thiện nguyện, dọn dẹp...",
-            },
-            { ten: "Đánh giá", mo_ta: "Tổng kết kết quả và rút kinh nghiệm" },
-          ],
+              ten: "Nội dung tuyên truyền văn minh",
+              mo_ta: "Xác định các thông điệp: Không xả rác, xếp hàng, nói lời hay ý đẹp.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Thực hiện biện pháp mở rộng quan hệ và thu hút cộng đồng",
+          mo_ta: "Thực hành vận động mọi người tham gia hoạt động chung.",
+          nhiem_vu: [
+            {
+              ten: "Vận động tham gia dự án",
+              mo_ta: "Thực hành mời bạn tham gia một buổi dọn vệ sinh hoặc quyên góp sách.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Lập kế hoạch tuyên truyền văn hóa ứng xử nơi công cộng",
+          mo_ta: "Thiết kế dự án truyền thông nhỏ.",
+          nhiem_vu: [
+            {
+              ten: "Kế hoạch truyền thông văn minh",
+              mo_ta: "Xác định: Hình thức (poster, video), Kênh truyền tải, Phân công.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Thực hiện kế hoạch tuyên truyền văn hóa ứng xử",
+          mo_ta: "Triển khai các sản phẩm truyền thông thực tế.",
+          nhiem_vu: [
+            {
+              ten: "Tổ chức sự kiện tuyên truyền",
+              mo_ta: "Trình bày poster, phát clip hoặc tổ chức minigame về ứng xử văn minh.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Tham gia kết nối cộng đồng và đánh giá",
+          mo_ta: "Vận dụng biện pháp mở rộng quan hệ xã hội.",
+          nhiem_vu: [
+            {
+              ten: "Đánh giá kết quả hoạt động xã hội",
+              mo_ta: "Tự nhận xét sự đóng góp của bản thân cho cộng đồng địa phương.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Hiểu biết về các vấn đề xã hội địa phương",
-        "Có kinh nghiệm thực hiện dự án cộng đồng",
-        "Hình thành ý thức trách nhiệm công dân",
-      ],
-      phuong_phap_goi_y: ["Khảo sát", "Dự án", "Thiện nguyện", "Tuyên truyền"],
+      ket_qua_can_dat: ["Sống có trách nhiệm", "Biết lập dự án xã hội", "Biết vận động cộng đồng"],
+      phuong_phap_goi_y: ["Dự án", "Thảo luận nhóm", "Truyền thông"],
+      tu_khoa_tim_kiem: ["cộng đồng", "thiện nguyện", "văn hóa ứng xử"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [12, 1],
-      tu_khoa_tim_kiem: [
-        "cộng đồng",
-        "thiện nguyện",
-        "dự án xã hội",
-        "trách nhiệm công dân",
-      ],
-
-      goi_y_tich_hop: {
-        bien_ban_hop: [
-          "Thảo luận kế hoạch tổ chức hoạt động thiện nguyện cấp tổ/trường",
-          "Phân công hướng dẫn các nhóm dự án của HS",
-        ],
-        ke_hoach_day_hoc: [
-          "Tích hợp NLS 2.4 khi cho HS làm khảo sát online",
-          "Tích hợp giáo dục đạo đức về tinh thần tương thân tương ái",
-        ],
-        ngoai_khoa: [
-          "Chương trình tình nguyện mùa hè xanh",
-          "Ngày hội thiện nguyện toàn trường",
-          "Gây quỹ ủng hộ đồng bào khó khăn",
-        ],
-      },
+      thang_thuc_hien: [2]
     },
-
     {
       ma: "10.7",
       ten: "Bảo tồn cảnh quan thiên nhiên",
       mach_noi_dung: "tu_nhien",
-      muc_tieu: [
-        "Tìm hiểu về các cảnh quan thiên nhiên, di tích lịch sử địa phương",
-        "Xây dựng ý thức bảo tồn",
-        "Tuyên truyền bảo vệ cảnh quan",
-      ],
+      muc_tieu: ["Hiểu giá trị và tham gia bảo vệ danh lam thắng cảnh địa phương."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Tìm hiểu danh thắng địa phương",
-          mo_ta:
-            "Nghiên cứu về các cảnh quan thiên nhiên, di tích lịch sử tại địa phương",
+          ten: "Tìm hiểu hành vi, việc làm bảo tồn cảnh quan thiên nhiên",
+          mo_ta: "Đánh giá các hành động của tổ chức và cá nhân.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu tài liệu",
-              mo_ta: "Tìm hiểu lịch sử, giá trị, thực trạng của các danh thắng",
-            },
-            {
-              ten: "Tham quan thực tế",
-              mo_ta: "Đi thực địa quan sát, ghi chép, chụp ảnh",
-            },
-          ],
+              ten: "Khảo sát hành vi bảo tồn",
+              mo_ta: "Nghiên cứu cách các tổ chức bảo vệ rừng, biển, di tích tại địa phương.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Tuyên truyền bảo tồn",
-          mo_ta: "Xây dựng các ấn phẩm tuyên truyền ý thức bảo vệ cảnh quan",
+          ten: "Tìm hiểu về hoạt động tuyên truyền bảo vệ cảnh quan thiên nhiên",
+          mo_ta: "Kỹ năng truyền thông bảo vệ môi trường.",
           nhiem_vu: [
             {
-              ten: "Thiết kế ấn phẩm",
-              mo_ta: "Làm poster, tờ rơi, video tuyên truyền",
-              ky_nang_can_dat: ["NLS 2.3"],
-            },
-            {
-              ten: "Phân phát/đăng tải",
-              mo_ta: "Tuyên truyền cho du khách, người dân, trên mạng xã hội",
-            },
-          ],
+              ten: "Các hình thức tuyên truyền",
+              mo_ta: "Tìm hiểu: Triển lãm ảnh, tọa đàm, cuộc thi vẽ về thiên nhiên.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Nhận xét, đánh giá việc bảo tồn cảnh quan ở địa phương",
+          mo_ta: "Công cụ khảo sát thực địa.",
+          nhiem_vu: [
+            {
+              ten: "Thiết kế Phiếu khảo sát (Checklist)",
+              mo_ta: "Xây dựng biểu mẫu gồm các tiêu chí: Tên cảnh quan, Mức độ ô nhiễm, Tình trạng xâm lấn, Hệ thống biển báo, Ý thức người dân.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Xây dựng và thực hiện kế hoạch tuyên truyền bảo vệ cảnh quan",
+          mo_ta: "Hành động cụ thể của nhóm học sinh.",
+          nhiem_vu: [
+            {
+              ten: "Kế hoạch sự kiện bảo tồn",
+              mo_ta: "Lên ý tưởng cho buổi dọn vệ sinh hoặc buổi nói chuyện truyền cảm hứng.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Tuyên truyền bảo vệ cảnh quan thiên nhiên và đánh giá",
+          mo_ta: "Lan tỏa thông điệp tới cộng đồng.",
+          nhiem_vu: [
+            {
+              ten: "Lan tỏa thông điệp xanh",
+              mo_ta: "Chia sẻ hình ảnh đẹp và kêu gọi bảo vệ danh thắng lên mạng xã hội/trường học.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Hiểu biết về cảnh quan thiên nhiên địa phương",
-        "Có ý thức bảo tồn di sản",
-        "Tạo được sản phẩm tuyên truyền",
-      ],
-      phuong_phap_goi_y: [
-        "Tham quan",
-        "Nghiên cứu",
-        "Thiết kế sản phẩm",
-        "Tuyên truyền",
-      ],
+      ket_qua_can_dat: ["Biết quý trọng thiên nhiên", "Có kỹ năng tuyên truyền", "Có ý thức bảo tồn"],
+      phuong_phap_goi_y: ["Trực quan", "Thuyết trình", "Dự án"],
+      tu_khoa_tim_kiem: ["cảnh quan", "bảo tồn", "thiên nhiên"],
       so_tiet_de_xuat: 3,
-      thang_thuc_hien: [1, 2],
-      tu_khoa_tim_kiem: ["bảo tồn", "cảnh quan", "di tích", "thiên nhiên"],
+      thang_thuc_hien: [3]
     },
-
     {
       ma: "10.8",
       ten: "Bảo vệ môi trường tự nhiên",
       mach_noi_dung: "tu_nhien",
-      muc_tieu: [
-        "Phân tích, đánh giá thực trạng môi trường địa phương",
-        "Thuyết trình về ý nghĩa bảo vệ môi trường",
-        "Thực hiện các giải pháp bảo vệ môi trường",
-      ],
+      muc_tieu: ["Hình thành lối sống xanh và giải quyết các vấn đề ô nhiễm."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Phân tích thực trạng môi trường",
-          mo_ta: "Đi thực tế, quan sát và ghi chép các vấn đề ô nhiễm",
+          ten: "Phân tích, đánh giá thực trạng môi trường tự nhiên ở địa phương",
+          mo_ta: "Đánh giá mức độ ô nhiễm và các nguồn gây hại.",
           nhiem_vu: [
             {
-              ten: "Khảo sát thực địa",
-              mo_ta:
-                "Quan sát ô nhiễm nước, không khí, rác thải tại địa phương",
-            },
-            {
-              ten: "Lập báo cáo",
-              mo_ta: "Viết báo cáo phân tích thực trạng với số liệu, hình ảnh",
-            },
-          ],
+              ten: "Khảo sát ô nhiễm",
+              mo_ta: "Đi thực địa ghi nhận tình hình rác thải, nguồn nước tại khu dân cư.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Thuyết trình về BVMT",
-          mo_ta: "Rèn luyện kỹ năng nói và tư duy lập luận",
+          ten: "Thuyết trình về ý nghĩa của việc bảo vệ môi trường tự nhiên",
+          mo_ta: "Nâng cao nhận thức qua lý luận và hình ảnh.",
           nhiem_vu: [
             {
-              ten: "Chuẩn bị bài thuyết trình",
-              mo_ta: "Nghiên cứu và soạn slide/poster",
-            },
-            {
-              ten: "Trình bày",
-              mo_ta: "Thuyết trình 5-7 phút trước lớp về vấn đề môi trường",
-            },
-          ],
+              ten: "Hùng biện về môi trường",
+              mo_ta: "Thuyết trình về tác động của biến đổi khí hậu và vai trò của học sinh.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Đề xuất và thực hiện giải pháp",
-          mo_ta: "Đề xuất giải pháp khả thi và ra quân thực hiện",
+          ten: "Thực hiện các giải pháp bảo vệ môi trường tự nhiên",
+          mo_ta: "Hành động theo danh mục gợi ý.",
           nhiem_vu: [
             {
-              ten: "Brainstorm giải pháp",
-              mo_ta: "Đề xuất: phân loại rác, hạn chế nhựa, trồng cây...",
-            },
-            {
-              ten: "Ra quân thực hiện",
-              mo_ta: "Dọn dẹp vệ sinh, trồng cây xanh tại trường/địa phương",
-            },
-          ],
+              ten: "Chiến dịch Xanh địa phương",
+              mo_ta: "Thực hiện giải pháp theo 3 nhóm: Giải pháp công nghệ (tái chế), Giải pháp sinh học (trồng cây), Giải pháp tuyên truyền.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Thực hiện bảo vệ môi trường tự nhiên ở địa phương và đánh giá",
+          mo_ta: "Tham gia các chiến dịch môi trường tập thể.",
+          nhiem_vu: [
+            {
+              ten: "Ngày hội sống xanh",
+              mo_ta: "Tổ chức dọn vệ sinh trường lớp hoặc trồng cây xanh.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có kỹ năng nghiên cứu khoa học cơ bản",
-        "Thuyết trình được về vấn đề môi trường",
-        "Thực hiện được hoạt động bảo vệ môi trường cụ thể",
-      ],
-      phuong_phap_goi_y: [
-        "Nghiên cứu thực địa",
-        "Thuyết trình",
-        "Dự án",
-        "Hoạt động tập thể",
-      ],
+      ket_qua_can_dat: ["Yêu môi trường", "Biết tái chế", "Có hành động bảo vệ thực tế"],
+      phuong_phap_goi_y: ["Trải nghiệm", "Làm việc nhóm", "Thuyết trình"],
+      tu_khoa_tim_kiem: ["môi trường", "tái chế", "biến đổi khí hậu"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [2, 3],
-      tu_khoa_tim_kiem: ["bảo vệ môi trường", "ô nhiễm", "rác thải", "xanh"],
+      thang_thuc_hien: [4]
     },
-
     {
       ma: "10.9",
       ten: "Tìm hiểu nghề nghiệp",
       mach_noi_dung: "huong_nghiep",
-      muc_tieu: [
-        "Hiểu cách phân loại các nhóm nghề trong xã hội",
-        "Nắm được đặc điểm, yêu cầu của một số nghề phổ biến",
-        "Bắt đầu hình thành nhận thức về thế giới nghề nghiệp",
-      ],
+      muc_tieu: ["Khám phá thế giới nghề nghiệp và yêu cầu của thị trường lao động."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Phân loại nghề nghiệp",
-          mo_ta: "Tìm hiểu cách phân loại các nhóm nghề trong xã hội",
+          ten: "Tìm hiểu hoạt động sản xuất, kinh doanh, dịch vụ ở địa phương",
+          mo_ta: "Bức tranh kinh tế khu vực.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu phân loại",
-              mo_ta:
-                "Tìm hiểu các nhóm nghề: kỹ thuật, xã hội, nghệ thuật, kinh doanh...",
-            },
-            {
-              ten: "Lập sơ đồ",
-              mo_ta: "Vẽ sơ đồ tư duy về các nhóm nghề và ví dụ cụ thể",
-            },
-          ],
+              ten: "Bản đồ nghề nghiệp địa phương",
+              mo_ta: "Tìm hiểu: Các làng nghề, khu công nghiệp hoặc trung tâm dịch vụ tại nơi sinh sống.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Tìm hiểu đặc điểm nghề nghiệp",
-          mo_ta: "Nghiên cứu yêu cầu về phẩm chất, năng lực của một số nghề",
+          ten: "Xác định, tìm hiểu các thông tin về nghề em quan tâm ở địa phương",
+          mo_ta: "Phân tích sâu một công việc cụ thể.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu 3-5 nghề",
-              mo_ta:
-                "Tìm hiểu chi tiết: công việc, yêu cầu, thu nhập, triển vọng",
-            },
-            {
-              ten: "Phỏng vấn người làm nghề",
-              mo_ta: "Hỏi về công việc thực tế, áp lực, niềm vui trong nghề",
-            },
-          ],
+              ten: "Hồ sơ nghề nghiệp",
+              mo_ta: "Tìm hiểu: Công cụ làm việc, điều kiện lao động, mức thu nhập, yêu cầu năng lực.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Lập kế hoạch và thực hiện trải nghiệm nghề",
+          mo_ta: "Tiếp xúc thực tế với môi trường làm việc.",
+          nhiem_vu: [
+            {
+              ten: "Một ngày làm...",
+              mo_ta: "Phỏng vấn người trong nghề hoặc quan sát trực tiếp quy trình làm việc.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Rèn luyện bản thân theo yêu cầu của nghề em quan tâm",
+          mo_ta: "Bồi dưỡng phẩm chất cần thiết.",
+          nhiem_vu: [
+            {
+              ten: "Cải thiện kỹ năng nghề",
+              mo_ta: "Xác định 2 kỹ năng thiếu hụt và lập cách khắc phục ngay tại trường học.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Biết cách phân loại nghề nghiệp",
-        "Hiểu đặc điểm của một số nghề phổ biến",
-        "Có hứng thú tìm hiểu về nghề nghiệp",
-      ],
-      phuong_phap_goi_y: [
-        "Nghiên cứu",
-        "Sơ đồ tư duy",
-        "Phỏng vấn",
-        "Tham quan",
-      ],
+      ket_qua_can_dat: ["Hiểu thị trường lao động", "Tôn trọng các nghề", "Có ý thức rèn luyện nghề nghiệp"],
+      phuong_phap_goi_y: ["Phỏng vấn", "Nghiên cứu tài liệu", "Tham quan"],
+      tu_khoa_tim_kiem: ["nghề nghiệp", "lao động", "thị trường"],
       so_tiet_de_xuat: 3,
-      thang_thuc_hien: [3, 4],
-      tu_khoa_tim_kiem: [
-        "nghề nghiệp",
-        "hướng nghiệp",
-        "việc làm",
-        "nhóm nghề",
-      ],
-
-      goi_y_tich_hop: {
-        bien_ban_hop: [
-          "Thảo luận kế hoạch tổ chức ngày hội hướng nghiệp",
-          "Mời doanh nghiệp/cựu HS về chia sẻ kinh nghiệm",
-        ],
-        ke_hoach_day_hoc: [
-          "Tích hợp NLS 1.1, 1.2 khi cho HS tìm kiếm thông tin nghề online",
-          "Rèn kỹ năng phỏng vấn, thu thập thông tin",
-        ],
-        ngoai_khoa: [
-          "Ngày hội hướng nghiệp với các gian hàng nghề nghiệp",
-          "Tham quan doanh nghiệp, nhà máy, công ty",
-          "Chương trình 'Một ngày làm...' (bác sĩ, kỹ sư, nhà báo...)",
-        ],
-      },
+      thang_thuc_hien: [4]
     },
-
     {
       ma: "10.10",
       ten: "Hiểu bản thân để chọn nghề phù hợp",
       mach_noi_dung: "huong_nghiep",
-      muc_tieu: [
-        "Đối chiếu đặc điểm bản thân với yêu cầu nghề nghiệp",
-        "Sử dụng công cụ trắc nghiệm Holland",
-        "Xác định nhóm nghề phù hợp sơ bộ",
-      ],
+      muc_tieu: ["Định hướng nghề nghiệp dựa trên năng lực và sở thích cá nhân."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Đối chiếu bản thân - nghề nghiệp",
-          mo_ta: "So sánh đặc điểm tính cách, sở thích với yêu cầu nghề",
+          ten: "Tìm hiểu yêu cầu của việc chọn nghề phù hợp",
+          mo_ta: "Lý thuyết chọn nghề khoa học (Sở thích - Năng lực - Nhu cầu xã hội).",
           nhiem_vu: [
             {
-              ten: "Lập bảng đối chiếu",
-              mo_ta:
-                "So sánh điểm mạnh/yếu của mình với yêu cầu của 3-5 nghề quan tâm",
-            },
-            {
-              ten: "Phân tích độ phù hợp",
-              mo_ta:
-                "Đánh giá mức độ phù hợp, xác định khoảng cách cần bổ sung",
-            },
-          ],
+              ten: "Nguyên tắc chọn nghề",
+              mo_ta: "Tìm hiểu các sai lầm phổ biến khi chọn nghề (Theo bạn bè, theo số đông).",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Trắc nghiệm Holland",
-          mo_ta: "Sử dụng công cụ trắc nghiệm Holland RIASEC",
+          ten: "Lựa chọn nghề nghiệp phù hợp với bản thân",
+          mo_ta: "Sử dụng các bài test sở thích nghề nghiệp.",
           nhiem_vu: [
             {
-              ten: "Làm trắc nghiệm",
-              mo_ta: "Thực hiện bài trắc nghiệm Holland online",
-              ky_nang_can_dat: ["NLS 1.1"],
-            },
-            {
-              ten: "Phân tích kết quả",
-              mo_ta:
-                "Xác định nhóm nghề phù hợp: R-I-A-S-E-C và nghề tương ứng",
-            },
-          ],
+              ten: "Thực hiện trắc nghiệm Holland",
+              mo_ta: "Xác định 3 nhóm tính cách nghề nghiệp nổi trội: Kỹ thuật, Nghiên cứu, Nghệ thuật, Xã hội, Quản lý, Nghiệp vụ.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Đánh giá sự phù hợp của bản thân với nghề định lựa chọn",
+          mo_ta: "Đối soát thực tế.",
+          nhiem_vu: [
+            {
+              ten: "Phân tích SWOT nghề nghiệp",
+              mo_ta: "Đối chiếu điểm mạnh/yếu cá nhân với yêu cầu công việc cụ thể.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Xây dựng kế hoạch rèn luyện bản thân theo định hướng nghề nghiệp",
+          mo_ta: "Lập lộ trình phát triển phẩm chất nghề.",
+          nhiem_vu: [
+            {
+              ten: "Kế hoạch phát triển năng lực",
+              mo_ta: "Xác định các khóa học, kỹ năng cần bổ sung trong 3 năm THPT.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Rèn luyện năng lực, phẩm chất theo kế hoạch",
+          mo_ta: "Củng cố quyết tâm chọn nghề.",
+          nhiem_vu: [
+            {
+              ten: "Cam kết hành động",
+              mo_ta: "Bắt đầu thực hiện 1 việc nhỏ mỗi ngày để tiến gần đến nghề mơ ước.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Nhận biết được sự phù hợp giữa bản thân và nghề nghiệp",
-        "Xác định được nhóm nghề phù hợp với bản thân",
-        "Có định hướng sơ bộ về nghề nghiệp tương lai",
-      ],
-      phuong_phap_goi_y: [
-        "Trắc nghiệm",
-        "Phân tích",
-        "Tư vấn",
-        "Thảo luận nhóm",
-      ],
+      ket_qua_can_dat: ["Định vị bản thân", "Chọn nghề khoa học", "Có kế hoạch rèn luyện rõ ràng"],
+      phuong_phap_goi_y: ["Trắc nghiệm tâm lý", "Tư vấn hướng nghiệp", "Tự đánh giá"],
+      tu_khoa_tim_kiem: ["Holland", "chọn nghề", "định vị"],
       so_tiet_de_xuat: 3,
-      thang_thuc_hien: [4],
-      tu_khoa_tim_kiem: [
-        "Holland",
-        "RIASEC",
-        "trắc nghiệm nghề",
-        "phù hợp nghề",
-      ],
+      thang_thuc_hien: [5]
     },
-
     {
       ma: "10.11",
       ten: "Lập kế hoạch học tập, rèn luyện theo định hướng nghề nghiệp",
       mach_noi_dung: "huong_nghiep",
-      muc_tieu: [
-        "Xây dựng kế hoạch học tập các môn liên quan đến khối thi",
-        "Lên kế hoạch bổ sung kỹ năng mềm cần thiết",
-        "Hình thành thói quen theo đuổi mục tiêu nghề nghiệp",
-      ],
+      muc_tieu: ["Xây dựng lộ trình cụ thể để đạt được mục tiêu nghề nghiệp."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Lập lộ trình học tập",
-          mo_ta: "Xây dựng kế hoạch học tập theo định hướng nghề nghiệp",
+          ten: "Tìm hiểu hệ thống trường đào tạo liên quan đến nghề định chọn",
+          mo_ta: "Cơ sở vật chất và thông tin tuyển sinh.",
           nhiem_vu: [
             {
-              ten: "Xác định khối thi/tổ hợp",
-              mo_ta: "Chọn tổ hợp môn phù hợp với ngành nghề mong muốn",
-            },
-            {
-              ten: "Lập kế hoạch",
-              mo_ta: "Xây dựng lịch học, mục tiêu điểm số cho từng môn",
-            },
-          ],
+              ten: "Danh sách trường đào tạo",
+              mo_ta: "Tìm hiểu: Trường đại học, cao đẳng, trung cấp nghề tại khu vực và toàn quốc.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Rèn luyện kỹ năng bổ sung",
-          mo_ta: "Lên kế hoạch phát triển kỹ năng cần thiết cho nghề",
+          ten: "Tìm hiểu về tham vấn chọn nghề và định hướng học tập",
+          mo_ta: "Nhận sự trợ giúp từ chuyên gia.",
           nhiem_vu: [
             {
-              ten: "Xác định kỹ năng cần",
-              mo_ta:
-                "Liệt kê kỹ năng cần cho nghề: ngoại ngữ, tin học, giao tiếp...",
-            },
-            {
-              ten: "Lập kế hoạch rèn luyện",
-              mo_ta: "Xây dựng lộ trình học kỹ năng trong 1-2 năm",
-            },
-          ],
+              ten: "Kỹ năng tham vấn",
+              mo_ta: "Biết cách đặt câu hỏi cho tư vấn viên, giáo viên hoặc cha mẹ về nghề nghiệp.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Tìm hiểu cách lập kế hoạch học tập, rèn luyện theo nghề lựa chọn",
+          mo_ta: "Lư thuyết lập kế hoạch.",
+          nhiem_vu: [
+            {
+              ten: "Mẫu kế hoạch học tập",
+              mo_ta: "Thiết kế kế hoạch học tập 3 năm THPT tập trung vào các môn chuyên sâu.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Trình bày thông tin về hệ thống đào tạo nghề",
+          mo_ta: "Chia sẻ kết quả tìm kiếm.",
+          nhiem_vu: [
+            {
+              ten: "Thuyết trình về trường đại học mơ ước",
+              mo_ta: "Nói về: Điểm chuẩn, tổ hợp môn, cơ hội việc làm sau khi ra trường.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Thực hành tham vấn chọn nghề và định hướng học tập",
+          mo_ta: "Đóng vai buổi tư vấn.",
+          nhiem_vu: [
+            {
+              ten: "Tình huống tham vấn",
+              mo_ta: "Đóng vai: Học sinh hỏi - Giáo viên tư vấn về việc chọn khối thi.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Xây dựng kế hoạch học tập, rèn luyện bản thân theo nghề",
+          mo_ta: "Bản kế hoạch chính thức.",
+          nhiem_vu: [
+            {
+              ten: "Thiết kế bản đồ mục tiêu",
+              mo_ta: "Vẽ lộ trình 3 năm với các cột mốc quan trọng (Điểm số, chứng chỉ).",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 7,
+          ten: "Học tập, rèn luyện theo định hướng nghề nghiệp và đánh giá",
+          mo_ta: "Tổng kết năm học lớp 10.",
+          nhiem_vu: [
+            {
+              ten: "Đánh giá sự sẵn sàng",
+              mo_ta: "Tự nhận xét mức độ chuẩn bị tâm lý và kiến thức sau chủ đề.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có kế hoạch học tập rõ ràng theo định hướng nghề nghiệp",
-        "Biết được các kỹ năng cần bổ sung",
-        "Bắt đầu thực hiện kế hoạch phát triển bản thân",
-      ],
-      phuong_phap_goi_y: [
-        "Lập kế hoạch",
-        "Tư vấn",
-        "Theo dõi tiến độ",
-        "Đánh giá định kỳ",
-      ],
+      ket_qua_can_dat: ["Có mục tiêu rõ ràng", "Quyết tâm rèn luyện", "Hiểu lộ trình đào tạo"],
+      phuong_phap_goi_y: ["Lập kế hoạch", "Viết nhật ký mục tiêu", "Tham vấn"],
+      tu_khoa_tim_kiem: ["kế hoạch", "khối thi", "đào tạo"],
       so_tiet_de_xuat: 3,
-      thang_thuc_hien: [5],
-      tu_khoa_tim_kiem: [
-        "kế hoạch học tập",
-        "khối thi",
-        "tổ hợp",
-        "định hướng nghề",
-      ],
+      thang_thuc_hien: [5]
     },
   ],
 };
@@ -1308,710 +1166,630 @@ export const CHUONG_TRINH_LOP_11: ChuongTrinhKhoi = {
       ma: "11.1",
       ten: "Xây dựng và phát triển nhà trường",
       mach_noi_dung: "xa_hoi",
-      muc_tieu: [
-        "Chủ động tham gia xây dựng và phát triển nhà trường",
-        "Xây dựng mối quan hệ tốt đẹp với thầy cô, bạn bè",
-        "Kiểm soát quan hệ trên mạng xã hội",
-        "Hợp tác phát triển nhà trường",
-      ],
+      muc_tieu: ["Chủ động tham gia xây dựng và phát triển nhà trường", "Kiểm soát quan hệ trên không gian số"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Tham gia chiến lược phát triển trường",
-          mo_ta:
-            "Nghiên cứu và đóng góp vào chiến lược phát triển của nhà trường",
+          ten: "Tìm hiểu cách phát triển mối quan hệ tốt đẹp với thầy cô, bạn bè",
+          mo_ta: "Xây dựng nền tảng giao tiếp học đường tích cực.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu chiến lược",
-              mo_ta: "Tìm hiểu kế hoạch phát triển 5 năm của trường",
-            },
-            {
-              ten: "Đề xuất sáng kiến",
-              mo_ta:
-                "Đưa ra ý tưởng cải thiện: cơ sở vật chất, hoạt động, văn hóa",
-            },
-          ],
+              ten: "Khảo sát thực trạng quan hệ",
+              mo_ta: "Đánh giá mức độ thân thiện và hỗ trợ giữa giáo viên - học sinh và học sinh - học sinh.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Tổ chức sự kiện trường",
-          mo_ta: "Trực tiếp tham gia tổ chức các sự kiện lớn",
+          ten: "Tìm hiểu cách làm chủ và kiểm soát các mối quan hệ với bạn bè ở trường, qua mạng xã hội",
+          mo_ta: "Kỹ năng an toàn và văn minh số.",
           nhiem_vu: [
             {
-              ten: "Lập kế hoạch sự kiện",
-              mo_ta: "Thiết kế chương trình chi tiết, phân công nhiệm vụ",
-            },
-            {
-              ten: "Điều phối thực hiện",
-              mo_ta: "Dẫn chương trình, quản lý hậu cần, xử lý sự cố",
-            },
-          ],
+              ten: "Phân tích rủi ro mạng",
+              mo_ta: "Thảo luận về các tình huống mâu thuẫn trên mạng xã hội và cách xử lý trung lập.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Xây dựng quan hệ tin cậy",
-          mo_ta: "Phát triển từ làm quen sang xây dựng lòng tin và hỗ trợ",
+          ten: "Xây dựng mối quan hệ tốt đẹp với thầy cô, bạn bè",
+          mo_ta: "Thực hành gắn kết đời thực.",
           nhiem_vu: [
             {
-              ten: "Hỗ trợ bạn học",
-              mo_ta: "Tham gia nhóm học tập, tutoring cho bạn yếu hơn",
-            },
-            {
-              ten: "Kết nối với thầy cô",
-              mo_ta: "Chủ động trao đổi, xin tư vấn về học tập và hướng nghiệp",
-            },
-          ],
+              ten: "Sáng kiến gắn kết",
+              mo_ta: "Đề xuất các hoạt động chung để tăng cường sự thấu hiểu giữa thầy và trò.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 4,
-          ten: "An toàn trên mạng xã hội",
-          mo_ta: "Giải quyết vấn đề cyberbullying, ứng xử trên không gian ảo",
+          ten: "Rèn luyện kỹ năng làm chủ và kiểm soát các mối quan hệ với bạn bè ở trường, qua mạng xã hội",
+          mo_ta: "Áp dụng quy tắc ứng xử văn minh.",
           nhiem_vu: [
             {
-              ten: "Nhận diện rủi ro",
-              mo_ta: "Tìm hiểu các hình thức bắt nạt qua mạng, lừa đảo online",
-            },
-            {
-              ten: "Xây dựng hình ảnh số",
-              mo_ta: "Quản lý digital footprint, bảo vệ thông tin cá nhân",
-              ky_nang_can_dat: ["NLS 3.1", "NLS 3.2"],
-            },
-          ],
+              ten: "Kịch bản ứng xử",
+              mo_ta: "Đóng vai giải quyết mâu thuẫn nhóm hoặc phản ứng với tin tiêu cực trên MXH.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 5,
+          ten: "Lập kế hoạch đánh giá hiệu quả hoạt động xây dựng truyền thống nhà trường",
+          mo_ta: "Tính chuyên nghiệp trong tổ chức.",
+          nhiem_vu: [
+            {
+              ten: "Bộ tiêu chí đánh giá",
+              mo_ta: "Xây dựng checklist để đo lường thành công của các hoạt động tập thể trường.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Chủ động, tự tin làm quen và thiết lập mối quan hệ",
+          mo_ta: "Phát triển kỹ năng mềm quan trọng.",
+          nhiem_vu: [
+            {
+              ten: "Phá băng (Ice-breaking)",
+              mo_ta: "Thực hành các kỹ thuật bắt chuyện và giới thiệu bản thân trước người lạ.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có vai trò tích cực trong phát triển nhà trường",
-        "Xây dựng được mối quan hệ tin cậy",
-        "Biết cách ứng xử an toàn trên mạng xã hội",
-      ],
-      phuong_phap_goi_y: ["Dự án", "Tổ chức sự kiện", "Case study", "Workshop"],
-      so_tiet_de_xuat: 5,
-      thang_thuc_hien: [9],
-      tu_khoa_tim_kiem: [
-        "phát triển trường",
-        "mạng xã hội",
-        "an toàn số",
-        "cyberbullying",
-      ],
-
-      goi_y_tich_hop: {
-        bien_ban_hop: [
-          "Thảo luận vai trò của HS lớp 11 trong các hoạt động trường",
-          "Kế hoạch tổ chức tập huấn an toàn mạng cho HS",
-        ],
-        ke_hoach_day_hoc: [
-          "Tích hợp NLS 3.1, 3.2 về an toàn thông tin",
-          "Tích hợp giáo dục đạo đức về trách nhiệm trên không gian số",
-        ],
-        ngoai_khoa: [
-          "Workshop 'Digital Citizen - Công dân số có trách nhiệm'",
-          "Cuộc thi ý tưởng phát triển trường",
-        ],
-      },
+      ket_qua_can_dat: ["Thấu cảm trong giao tiếp", "Sử dụng MXH an toàn"],
+      phuong_phap_goi_y: ["Đóng vai", "Dự án truyền thông"],
+      tu_khoa_tim_kiem: ["nhà trường", "quan hệ", "mạng xã hội"],
+      so_tiet_de_xuat: 4,
+      thang_thuc_hien: [9]
     },
-
     {
       ma: "11.2",
       ten: "Khám phá bản thân",
       mach_noi_dung: "ban_than",
-      muc_tieu: [
-        "Khám phá đặc điểm riêng (unique selling points) của cá nhân",
-        "Rèn luyện bản lĩnh, sự tự tin",
-        "Phát triển khả năng thích ứng với thay đổi (Adaptability)",
-      ],
+      muc_tieu: ["Nhận diện bản sắc riêng và khả năng thích ứng sự thay đổi."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Khám phá Unique Selling Points",
-          mo_ta: "Nhận diện những nét độc đáo của cá nhân",
+          ten: "Khám phá đặc điểm riêng của bản thân",
+          mo_ta: "Định vị bản thể độc nhất.",
           nhiem_vu: [
             {
-              ten: "Tự phân tích",
-              mo_ta: "Xác định điểm khác biệt của mình so với người khác",
-            },
-            {
-              ten: "Thu thập phản hồi 360 độ",
-              mo_ta: "Hỏi ý kiến từ gia đình, bạn bè, thầy cô về điểm nổi bật",
-            },
-          ],
+              ten: "Bân đồ đặc điểm",
+              mo_ta: "Liệt kê các nét tính cách, sở thích và giá trị sống mà mình trân trọng.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Thể hiện sự tự tin",
-          mo_ta: "Rèn luyện bản lĩnh để không bị hòa tan vào đám đông",
+          ten: "Tìm hiểu về cách thể hiện sự tự tin đối với những đặc điểm riêng của bản thân",
+          mo_ta: "Xây dựng lòng tự trọng.",
           nhiem_vu: [
             {
-              ten: "Xác định giá trị cốt lõi",
-              mo_ta: "Khẳng định những giá trị không thỏa hiệp dù bị áp lực",
-            },
-            {
-              ten: "Thực hành assertiveness",
-              mo_ta: "Bày tỏ quan điểm một cách tôn trọng nhưng kiên định",
-            },
-          ],
+              ten: "Tự tin tỏa sáng",
+              mo_ta: "Thảo luận: Tại sao cần trân trọng sự khác biệt của bản thân so với người khác?",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Phát triển Adaptability",
-          mo_ta: "Rèn luyện chỉ số vượt khó (AQ) và khả năng thích nghi",
+          ten: "Tìm hiểu cách điều chỉnh bản thân để thích ứng với sự thay đổi",
+          mo_ta: "Năng lực thích ứng linh hoạt.",
           nhiem_vu: [
             {
-              ten: "Phân tích tình huống khó",
-              mo_ta: "Chia sẻ cách vượt qua khó khăn đã gặp",
-            },
-            {
-              ten: "Lập chiến lược thích ứng",
-              mo_ta: "Xây dựng kế hoạch đối phó với các thay đổi bất ngờ",
-            },
-          ],
+              ten: "Kịch bản thay đổi",
+              mo_ta: "Phân tích các tình huống thay đổi môi trường học tập hoặc gia đình.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Thiết kế và trình bày sản phẩm giới thiệu đặc điểm riêng của bản thân",
+          mo_ta: "Sáng tạo để giới thiệu mình.",
+          nhiem_vu: [
+            {
+              ten: "Triển lãm 'Tôi là ai?'",
+              mo_ta: "Làm video ngắn, poster hoặc vẽ tranh giới thiệu bản ngã.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Xây dựng kế hoạch phát triển sở trường liên quan đến định hướng nghề nghiệp",
+          mo_ta: "Gắn sở thích với tương lai.",
+          nhiem_vu: [
+            {
+              ten: "Lộ trình tài năng",
+              mo_ta: "Xác định 1 năng khiếu và lập kế hoạch rèn luyện để trở thành chuyên gia.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Thể hiện sự tự tin về đặc điểm riêng trong các tình huống thực tiễn",
+          mo_ta: "Hành động thực tế.",
+          nhiem_vu: [
+            {
+              ten: "Thử thách tự tin",
+              mo_ta: "Thực hành trình bày quan điểm mang tính cá nhân trước đám đông.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Nhận biết được điểm độc đáo của bản thân",
-        "Tự tin thể hiện quan điểm",
-        "Có khả năng thích ứng với thay đổi",
-      ],
-      phuong_phap_goi_y: [
-        "Tự phân tích",
-        "Phản hồi 360 độ",
-        "Case study",
-        "Coaching",
-      ],
+      ket_qua_can_dat: ["Tự tin thể hiện mình", "Thích ứng nhanh"],
+      phuong_phap_goi_y: ["Trắc nghiệm", "Chia sẻ nhóm"],
+      tu_khoa_tim_kiem: ["điểm mạnh", "bản sắc", "thích ứng"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [9, 10],
-      tu_khoa_tim_kiem: ["bản sắc", "tự tin", "adaptability", "unique"],
+      thang_thuc_hien: [10]
     },
-
     {
       ma: "11.3",
       ten: "Rèn luyện bản thân",
       mach_noi_dung: "ban_than",
-      muc_tieu: [
-        "Quản lý thời gian nâng cao",
-        "Cân bằng học tập và cuộc sống",
-        "Rèn luyện tư duy tích cực",
-      ],
+      muc_tieu: ["Xây dựng tính kỷ luật, rèn luyện kỹ năng và hỗ trợ bạn bè."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Quản lý thời gian nâng cao",
-          mo_ta: "Áp dụng các phương pháp quản lý thời gian hiệu quả",
+          ten: "Tìm hiểu cách tuân thủ kỉ luật, quy định của nhóm, lớp, tập thể",
+          mo_ta: "Văn hóa tổ chức.",
           nhiem_vu: [
             {
-              ten: "Học phương pháp",
-              mo_ta: "Tìm hiểu Pomodoro, Eisenhower Matrix, Time Blocking, GTD",
-            },
-            {
-              ten: "Áp dụng và đánh giá",
-              mo_ta: "Thực hành trong 2 tuần và đánh giá hiệu quả",
-            },
-          ],
+              ten: "Giá trị của kỷ luật",
+              mo_ta: "Thảo luận về vai trò của việc chấp hành nội quy đối với sự phát triển chung.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Work-Life Balance",
-          mo_ta: "Cân bằng giữa học tập căng thẳng và cuộc sống cá nhân",
+          ten: "Tuân thủ những quy định chung của tổ, lớp, chi đoàn, trường, cộng đồng",
+          mo_ta: "Thực hành kỷ luật tự giác.",
           nhiem_vu: [
             {
-              ten: "Phân tích thời gian",
-              mo_ta: "Ghi chép cách sử dụng thời gian trong 1 tuần",
-            },
-            {
-              ten: "Điều chỉnh",
-              mo_ta: "Lập lịch cân bằng: học, nghỉ ngơi, giải trí, gia đình",
-            },
-          ],
+              ten: "Cam kết 5S tại lớp",
+              mo_ta: "Thực hiện đúng giờ, đúng trang phục và giữ vệ sinh chung.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Growth Mindset",
-          mo_ta: "Rèn luyện tư duy phát triển",
+          ten: "Rèn luyện và phát triển các kĩ năng còn thiếu sót của bản thân",
+          mo_ta: "Tư duy phát triển (Growth Mindset).",
           nhiem_vu: [
             {
-              ten: "Nhận diện fixed mindset",
-              mo_ta: "Ghi nhận những lúc có suy nghĩ tiêu cực, giới hạn",
-            },
-            {
-              ten: "Reframing",
-              mo_ta:
-                "Thực hành chuyển từ 'Tôi không thể' sang 'Tôi chưa biết cách'",
-            },
-          ],
+              ten: "Bù đắp lỗ hổng kỹ năng",
+              mo_ta: "Xác định 1 kỹ năng yếu (v.d: Thuyết trình) và tập luyện hàng ngày.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Khích lệ, động viên bạn bè phát huy khả năng, cố gắng",
+          mo_ta: "Trí tuệ cảm xúc (EQ) xã hội.",
+          nhiem_vu: [
+            {
+              ten: "Người truyền cảm hứng",
+              mo_ta: "Thực hành ghi nhận và khen ngợi sự tiến bộ của bạn bè.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Giúp bạn bè xác định mục tiêu, xây dựng kế hoạch tự hoàn thiện",
+          mo_ta: "Kỹ năng tư vấn và đồng hành.",
+          nhiem_vu: [
+            {
+              ten: "Đôi bạn cùng tiến",
+              mo_ta: "Hướng dẫn bạn lập kế hoạch SMART cho mục tiêu học tập/rèn luyện.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Quản lý thời gian hiệu quả hơn",
-        "Có cuộc sống cân bằng",
-        "Phát triển growth mindset",
-      ],
-      phuong_phap_goi_y: ["Thực hành", "Nhật ký", "Coaching", "Peer sharing"],
-      so_tiet_de_xuat: 3,
-      thang_thuc_hien: [10, 11],
-      tu_khoa_tim_kiem: [
-        "quản lý thời gian",
-        "cân bằng",
-        "growth mindset",
-        "tư duy tích cực",
-      ],
+      ket_qua_can_dat: ["Sống kỉ luật", "Biết giúp đỡ bạn bè"],
+      phuong_phap_goi_y: ["Lập kế hoạch", "Thảo luận"],
+      tu_khoa_tim_kiem: ["kỉ luật", "kỹ năng", "hỗ trợ"],
+      so_tiet_de_xuat: 4,
+      thang_thuc_hien: [11]
     },
-
     {
       ma: "11.4",
       ten: "Trách nhiệm với gia đình",
       mach_noi_dung: "xa_hoi",
-      muc_tieu: [
-        "Hiểu và thực hành quản lý tài chính gia đình",
-        "Thực hiện mục tiêu tiết kiệm",
-        "Xây dựng văn hóa ứng xử trong gia đình",
-      ],
+      muc_tieu: ["Thể hiện sự quan tâm, chăm sóc và quản lý tài chính gia đình."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Quản lý tài chính cá nhân",
-          mo_ta: "Thảo luận về kế hoạch chi tiêu phù hợp với thu nhập",
+          ten: "Tìm hiểu những việc cần làm thể hiện sự quan tâm, chăm sóc thường xuyên đến người thân",
+          mo_ta: "Ngôn ngữ yêu thương trong gia đình.",
           nhiem_vu: [
             {
-              ten: "Tìm hiểu thu-chi",
-              mo_ta: "Nghiên cứu cơ cấu thu nhập và chi tiêu của gia đình",
-            },
-            {
-              ten: "Lập ngân sách cá nhân",
-              mo_ta: "Thực hành lập ngân sách chi tiêu hàng tháng",
-            },
-          ],
+              ten: "Nhận thức nhu cầu người thân",
+              mo_ta: "Quan sát và chia sẻ những mong muốn về tinh thần/sức khỏe của cha mẹ, ông bà.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Thực hành tiết kiệm",
-          mo_ta: "Đặt và thực hiện mục tiêu tiết kiệm",
+          ten: "Biện pháp xây dựng và phát triển mối quan hệ với mọi người trong gia đình",
+          mo_ta: "Kết nối đa thế hệ.",
           nhiem_vu: [
             {
-              ten: "Đặt mục tiêu SMART",
-              mo_ta: "VD: Tiết kiệm 500k/tháng trong 6 tháng để mua...",
-            },
-            {
-              ten: "Theo dõi tiến độ",
-              mo_ta: "Ghi chép và báo cáo tiến độ tiết kiệm",
-            },
-          ],
+              ten: "Gắn kết bằng đối thoại",
+              mo_ta: "Thảo luận cách hóa giải bất đồng ý kiến giữa các thế hệ thường gặp.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Văn hóa gia đình",
-          mo_ta: "Xây dựng văn hóa ứng xử tích cực trong gia đình",
+          ten: "Chia sẻ những việc làm đã thể hiện sự quan tâm, chăm sóc người thân",
+          mo_ta: "Lan tỏa giá trị hiếu thảo.",
           nhiem_vu: [
             {
-              ten: "Trao đổi với chuyên gia",
-              mo_ta: "Mời chuyên gia tâm lý nói chuyện về quan hệ gia đình",
-            },
-            {
-              ten: "Thảo luận case study",
-              mo_ta: "Giải quyết các tình huống mâu thuẫn thế hệ",
-            },
-          ],
+              ten: "Nhật ký yêu thương",
+              mo_ta: "Kể về một tình huống cụ thể bạn đã giúp đỡ hoặc động viên người thân.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Thực hiện mục tiêu tiết kiệm tài chính của gia đình",
+          mo_ta: "Trách nhiệm kinh tế.",
+          nhiem_vu: [
+            {
+              ten: "Kế hoạch tiết kiệm hộ gia đình",
+              mo_ta: "Đề xuất cắt giảm các chi phí lãng phí: Điện, nước, mua sắm không cần thiết.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Hiểu biết về quản lý tài chính cá nhân",
-        "Có thói quen tiết kiệm",
-        "Biết cách xây dựng văn hóa gia đình tích cực",
-      ],
-      phuong_phap_goi_y: [
-        "Thực hành",
-        "Mời chuyên gia",
-        "Thảo luận",
-        "Dự án cá nhân",
-      ],
-      so_tiet_de_xuat: 4,
-      thang_thuc_hien: [11, 12],
-      tu_khoa_tim_kiem: [
-        "tài chính cá nhân",
-        "tiết kiệm",
-        "ngân sách",
-        "gia đình",
-      ],
-
-      goi_y_tich_hop: {
-        bien_ban_hop: [
-          "Thảo luận cách lồng ghép giáo dục tài chính vào giảng dạy",
-          "Phối hợp với phụ huynh trong giáo dục quản lý tiền bạc",
-        ],
-        ke_hoach_day_hoc: [
-          "Tích hợp NLS 1.3 khi cho HS sử dụng app quản lý tài chính",
-          "Tích hợp giáo dục đạo đức về tiết kiệm, trách nhiệm",
-        ],
-        ngoai_khoa: [
-          "Workshop 'Quản lý tài chính cho Gen Z'",
-          "Cuộc thi lập kế hoạch tài chính cá nhân",
-        ],
-      },
+      ket_qua_can_dat: ["Gắn kết gia đình", "Có trách nhiệm tài chính"],
+      phuong_phap_goi_y: ["Đóng vai", "Viết nhật ký"],
+      tu_khoa_tim_kiem: ["gia đình", "tài chính", "chăm sóc"],
+      so_tiet_de_xuat: 3,
+      thang_thuc_hien: [12]
     },
-
     {
       ma: "11.5",
       ten: "Phát triển cộng đồng",
       mach_noi_dung: "xa_hoi",
-      muc_tieu: [
-        "Xây dựng và thực hiện kế hoạch truyền thông cộng đồng",
-        "Đóng vai trò khởi xướng các dự án nhỏ",
-        "Phát triển kỹ năng lãnh đạo",
-      ],
+      muc_tieu: ["Xây dựng các mối quan hệ xã hội tích cực", "Ứng xử văn minh trên mạng xã hội", "Lập kế hoạch và thực hiện dự án cộng đồng theo chuẩn 5W1H"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Thiết kế chiến dịch truyền thông",
-          mo_ta: "Xây dựng kế hoạch truyền thông cho vấn đề cộng đồng",
+          ten: "Tìm hiểu biện pháp xây dựng và phát triển cộng đồng",
+          mo_ta: "Khảo sát các mô hình 'Ngày Chủ nhật xanh', 'Bếp ăn tình thương'.",
           nhiem_vu: [
             {
-              ten: "Chọn chủ đề",
-              mo_ta: "Xác định vấn đề cộng đồng cần truyền thông",
+              ten: "Phân tích ý nghĩa liên kết xã hội",
+              mo_ta: "Đánh giá tác động của các hoạt động tình nguyện đến sự gắn kết tại địa phương.",
+              thoi_luong_de_xuat: "20 phút"
             },
             {
-              ten: "Lập kế hoạch IMC",
-              mo_ta:
-                "Thiết kế chiến dịch: mục tiêu, đối tượng, thông điệp, kênh",
-            },
-          ],
+              ten: "Khảo sát nhu cầu cộng đồng nội khu",
+              mo_ta: "Xác định các vấn đề cần hỗ trợ tại nơi sinh sống/trường học (Vệ sinh, an ninh, hỗ trợ người già).",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Khởi xướng dự án an sinh",
-          mo_ta: "Đóng vai trò người khởi xướng các dự án xã hội",
+          ten: "Xây dựng văn hóa mạng xã hội văn minh",
+          mo_ta: "Nhận diện hành vi ứng xử văn minh và an toàn số.",
           nhiem_vu: [
             {
-              ten: "Viết đề xuất dự án",
-              mo_ta: "Đề xuất: mục tiêu, hoạt động, ngân sách, đánh giá",
+              ten: "Xử lý bạo lực mạng (Anti-group)",
+              mo_ta: "Thảo luận về tôn trọng bản quyền, tránh Body shaming/Hate speech và kiểm chứng thông tin.",
+              thoi_luong_de_xuat: "25 phút"
             },
             {
-              ten: "Huy động nguồn lực",
-              mo_ta: "Kêu gọi sự tham gia, quyên góp từ cộng đồng",
-            },
-          ],
+              ten: "Thiết kế bộ quy tắc ứng xử Netiquette",
+              mo_ta: "Lập danh sách các việc Nên và Không nên làm khi tham gia thảo luận công khai trên mạng.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Triển khai và đánh giá tác động",
-          mo_ta: "Thực hiện dự án và đo lường kết quả",
+          ten: "Lập và triển khai kế hoạch hoạt động cộng đồng (5W1H)",
+          mo_ta: "Thiết kế dự án thực tế.",
           nhiem_vu: [
             {
-              ten: "Triển khai",
-              mo_ta: "Thực hiện các hoạt động theo kế hoạch",
+              ten: "Thiết kế dự án 5W1H",
+              mo_ta: "Lập kế hoạch chi tiết cho dự án 'Thu gom pin cũ' hoặc 'Tủ sách yêu thương'.",
+              thoi_luong_de_xuat: "30 phút"
             },
             {
-              ten: "Đánh giá tác động",
-              mo_ta: "Đo lường kết quả, viết báo cáo tổng kết",
-            },
-          ],
-        },
+              ten: "Vận động và truyền thông dự án",
+              mo_ta: "Tạo poster/clips ngắn để kêu gọi mọi người cùng tham gia dự án cộng đồng của nhóm.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có kỹ năng thiết kế chiến dịch truyền thông",
-        "Có kinh nghiệm khởi xướng và quản lý dự án",
-        "Phát triển năng lực lãnh đạo",
-      ],
-      phuong_phap_goi_y: [
-        "Dự án",
-        "Truyền thông",
-        "Lãnh đạo nhóm",
-        "Đánh giá tác động",
-      ],
+      ket_qua_can_dat: ["Ứng xử văn minh trên mạng", "Thành thạo lập dự án 5W1H", "Có trách nhiệm với cộng đồng"],
+      phuong_phap_goi_y: ["Dự án", "Thảo luận", "Làm việc nhóm"],
+      tu_khoa_tim_kiem: ["cộng đồng", "5W1H", "văn hóa mạng", "tình nguyện"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [12, 1],
-      tu_khoa_tim_kiem: [
-        "truyền thông",
-        "dự án xã hội",
-        "lãnh đạo",
-        "khởi xướng",
-      ],
+      thang_thuc_hien: [1]
     },
-
     {
       ma: "11.6",
       ten: "Bảo tồn cảnh quan thiên nhiên",
       mach_noi_dung: "tu_nhien",
-      muc_tieu: [
-        "Đánh giá thực trạng bảo tồn tại các di tích, danh lam thắng cảnh",
-        "Đề xuất giải pháp bảo tồn gắn với phát triển du lịch bền vững",
-      ],
+      muc_tieu: ["Đánh giá thực trạng bảo tồn danh thắng", "Phân tích mâu thuẫn giữa phát triển kinh tế và bảo tồn di sản"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Đánh giá thực trạng bảo tồn",
-          mo_ta: "Khảo sát và đánh giá tình trạng bảo tồn di tích",
+          ten: "Lập kế hoạch đánh giá thực trạng bảo tồn",
+          mo_ta: "Công cụ khảo sát: Trash-track, sự xâm lấn, biển báo.",
           nhiem_vu: [
             {
-              ten: "Khảo sát thực địa",
-              mo_ta: "Đi thực tế đánh giá tình trạng bảo tồn",
-            },
-            {
-              ten: "Phỏng vấn stakeholders",
-              mo_ta: "Trao đổi với người quản lý, người dân, du khách",
-            },
-          ],
+              ten: "Thiết kế phiếu đánh giá danh thắng",
+              mo_ta: "Xây dựng checklist: Hiện trạng rác thải (Thấp/TB/Cao), Hệ thống biển báo, Mức độ xâm lấn của dịch vụ hàng quán.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Đề xuất giải pháp bền vững",
-          mo_ta: "Xây dựng đề xuất bảo tồn gắn với phát triển du lịch",
+          ten: "Tuyên truyền và thực hiện việc làm bảo tồn",
+          mo_ta: "Kết nối du lịch với bảo vệ môi trường.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu mô hình",
-              mo_ta:
-                "Tìm hiểu các mô hình du lịch bền vững trong và ngoài nước",
-            },
-            {
-              ten: "Viết đề xuất",
-              mo_ta: "Đề xuất giải pháp phù hợp với điều kiện địa phương",
-            },
-          ],
-        },
+              ten: "Kịch bản thuyết minh xanh",
+              mo_ta: "Xây dựng bài thuyết minh du lịch (Guide script) lồng ghép thông điệp bảo vệ di sản văn hóa/thiên nhiên.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có khả năng đánh giá thực trạng bảo tồn",
-        "Đề xuất được giải pháp phát triển bền vững",
-      ],
-      phuong_phap_goi_y: ["Khảo sát", "Nghiên cứu", "Đề xuất", "Thuyết trình"],
+      ket_qua_can_dat: ["Có tư duy phản biện kinh tế-môi trường", "Biết lập báo cáo điều tra"],
+      phuong_phap_goi_y: ["Điều tra", "Thuyết trình"],
+      tu_khoa_tim_kiem: ["cảnh quan", "bảo tồn", "du lịch xanh"],
       so_tiet_de_xuat: 3,
-      thang_thuc_hien: [1, 2],
-      tu_khoa_tim_kiem: [
-        "bảo tồn",
-        "du lịch bền vững",
-        "di tích",
-        "danh thắng",
-      ],
+      thang_thuc_hien: [2]
     },
-
     {
       ma: "11.7",
       ten: "Bảo vệ môi trường",
       mach_noi_dung: "tu_nhien",
-      muc_tieu: [
-        "Thực hiện các dự án môi trường có tính khoa học kỹ thuật",
-        "Tái chế rác thải thành vật phẩm có ích",
-        "Tổ chức chiến dịch truyền thông đa phương tiện",
-      ],
+      muc_tieu: ["Kiểm toán tài nguyên gia đình", "Phân tích tác động của sản xuất bền vững", "Đề xuất giải pháp bảo vệ môi trường toàn diện"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Dự án tái chế sáng tạo",
-          mo_ta: "Tái chế rác thải thành vật phẩm có ích",
+          ten: "Tìm hiểu thực trạng khai thác tài nguyên và ô nhiễm",
+          mo_ta: "Dữ liệu suy giảm rừng và ô nhiễm nguồn nước.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu kỹ thuật",
-              mo_ta: "Tìm hiểu cách tái chế: nhựa, giấy, vải, điện tử",
+              ten: "Báo cáo tài nguyên địa phương",
+              mo_ta: "Thu thập số liệu về sự sụt giảm nguồn nước ngầm hoặc diện tích cây xanh tại nơi sinh sống.",
+              thoi_luong_de_xuat: "20 phút"
             },
             {
-              ten: "Tạo sản phẩm",
-              mo_ta: "Làm sản phẩm tái chế: túi vải, chậu cây, đồ trang trí",
-            },
-          ],
+              ten: "Phân tích chuỗi cung ứng 'bẩn'",
+              mo_ta: "Thảo luận về tác động của các ngành công nghiệp thời trang nhanh hoặc đồ nhựa dùng một lần.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Chiến dịch truyền thông số",
-          mo_ta: "Tổ chức chiến dịch truyền thông đa phương tiện về BVMT",
+          ten: "Sử dụng năng lượng tiết kiệm và hiệu quả",
+          mo_ta: "Kiểm toán năng lượng tại gia đình.",
           nhiem_vu: [
             {
-              ten: "Sản xuất nội dung",
-              mo_ta: "Làm video, podcast, infographic về môi trường",
-              ky_nang_can_dat: ["NLS 1.2", "NLS 2.3"],
+              ten: "Kết toán hóa đơn năng lượng",
+              mo_ta: "Phân tích hóa đơn điện/nước gia đình trong 3 tháng và xác định nguyên nhân lãng phí.",
+              thoi_luong_de_xuat: "25 phút"
             },
             {
-              ten: "Lan tỏa trên MXH",
-              mo_ta: "Đăng tải và quảng bá trên các nền tảng số",
-            },
-          ],
+              ten: "Thiết kế nhà thông minh/tiết kiệm",
+              mo_ta: "Đề xuất các biện pháp lắp đặt hoặc thay đổi thói quen để giảm tiêu thụ năng lượng.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Thực hiện các giải pháp bảo vệ môi trường",
+          mo_ta: "Giải pháp công nghệ và sinh học.",
+          nhiem_vu: [
+            {
+              ten: "Mô hình sản xuất sạch - Compost",
+              mo_ta: "Thiết kế quy trình xử lý rác thải hữu cơ thành phân bón tại hộ gia đình/trường học.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Chiến dịch truyền thông 'Sống Xanh'",
+              mo_ta: "Tạo thông điệp hình ảnh/video về việc tái chế sáng tạo (Upcycling).",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Tạo được sản phẩm tái chế",
-        "Tổ chức được chiến dịch truyền thông số",
-      ],
-      phuong_phap_goi_y: [
-        "Dự án STEM",
-        "Truyền thông số",
-        "Workshop",
-        "Triển lãm",
-      ],
+      ket_qua_can_dat: ["Biết kiểm toán năng lượng", "Có thói quen tiêu dùng bền vững", "Biết xử lý rác thải"],
+      phuong_phap_goi_y: ["Kiểm toán", "Dự án", "Thực hành"],
+      tu_khoa_tim_kiem: ["môi trường", "năng lượng", "tái chế", "bền vững"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [2, 3],
-      tu_khoa_tim_kiem: ["tái chế", "môi trường", "truyền thông", "STEM"],
+      thang_thuc_hien: [3]
     },
-
     {
       ma: "11.8",
       ten: "Các nhóm nghề cơ bản và yêu cầu của thị trường lao động",
       mach_noi_dung: "huong_nghiep",
-      muc_tieu: [
-        "Tìm hiểu các nhóm nghề cơ bản trong xã hội hiện đại",
-        "Phân tích xu hướng phát triển của các nghề",
-        "Hiểu yêu cầu của thị trường lao động",
-      ],
+      muc_tieu: ["Phân loại các nhóm nghề theo chuẩn ISCO", "Đánh giá yêu cầu của nhà tuyển dụng và xu hướng việc làm 4.0"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Nghiên cứu thị trường lao động",
-          mo_ta: "Tìm hiểu các nhóm nghề và xu hướng phát triển",
+          ten: "Phân loại các nhóm nghề cơ bản",
+          mo_ta: "Hệ thống hóa thế giới nghề nghiệp.",
           nhiem_vu: [
             {
-              ten: "Phân loại nhóm nghề",
-              mo_ta:
-                "Nghiên cứu: công nghệ, y tế, giáo dục, tài chính, sáng tạo...",
+              ten: "Bản đồ nghề nghiệp ISCO",
+              mo_ta: "Phân loại nghề theo các nhóm chuẩn Việt Nam và quốc tế.",
+              thoi_luong_de_xuat: "25 phút"
             },
             {
-              ten: "Phân tích xu hướng",
-              mo_ta:
-                "Xác định nghề hot, nghề có nguy cơ biến mất do AI/automation",
-            },
-          ],
+              ten: "Trò chơi 'Giải mã nghề nghiệp'",
+              mo_ta: "Đoán tên nghề và yêu cầu đặc thù của các nghề mới nổi.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Phân tích yêu cầu tuyển dụng",
-          mo_ta: "Tìm hiểu yêu cầu của thị trường",
+          ten: "Yêu cầu của nhà tuyển dụng trong kỷ nguyên số",
+          mo_ta: "Sự dịch chuyển từ lao động thủ công sang trí óc.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu tin tuyển dụng",
-              mo_ta: "Phân tích: bằng cấp, kỹ năng, kinh nghiệm yêu cầu",
+              ten: "Phân tích mô tả công việc (JD)",
+              mo_ta: "Đọc và bóc tách các yêu cầu về kỹ năng cứng và kỹ năng mềm của 1 vị trí cụ thể.",
+              thoi_luong_de_xuat: "25 phút"
             },
             {
-              ten: "Phỏng vấn HR",
-              mo_ta: "Trao đổi với nhà tuyển dụng về tiêu chí tuyển dụng",
-            },
-          ],
+              ten: "Kỹ năng thích ứng 4.0",
+              mo_ta: "Thảo luận về vai trò của tự học và khả năng sử dụng công nghệ (AI, Big Data) trong công việc.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Khám phá thị trường lao động thực tế",
+          mo_ta: "Tìm hiểu thông tin tuyển dụng thực tế.",
+          nhiem_vu: [
+            {
+              ten: "Sưu tầm và phân loại tin tuyển dụng",
+              mo_ta: "Tìm kiếm trên các trang uy tín và phân tích mức lương, chế độ đãi ngộ của ngành quan tâm.",
+              thoi_luong_de_xuat: "30 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Hiểu biết về các nhóm nghề",
-        "Nắm được xu hướng phát triển nghề nghiệp",
-        "Biết được yêu cầu của thị trường lao động",
-      ],
-      phuong_phap_goi_y: [
-        "Nghiên cứu",
-        "Phỏng vấn",
-        "Tham quan doanh nghiệp",
-        "Mời chuyên gia",
-      ],
+      ket_qua_can_dat: ["Hiểu hệ thống nghề nghiệp", "Am hiểu yêu cầu thị trường", "Cập nhật xu hướng 4.0"],
+      phuong_phap_goi_y: ["Nghiên cứu", "Phân tích JD", "Thảo luận"],
+      tu_khoa_tim_kiem: ["nghề cơ bản", "thị trường lao động", "ISCO", "tuyển dụng"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [3, 4],
-      tu_khoa_tim_kiem: [
-        "thị trường lao động",
-        "xu hướng nghề",
-        "tuyển dụng",
-        "nhóm nghề",
-      ],
+      thang_thuc_hien: [4]
     },
-
     {
       ma: "11.9",
       ten: "Rèn luyện phẩm chất, năng lực phù hợp với nhóm nghề lựa chọn",
       mach_noi_dung: "huong_nghiep",
-      muc_tieu: [
-        "Xác định phẩm chất đặc thù cần có cho nghề đã chọn",
-        "Lập kế hoạch rèn luyện các phẩm chất, năng lực",
-      ],
+      muc_tieu: ["Sử dụng trắc nghiệm mật mã Holland (RIASEC)", "Tự đánh giá và xây dựng lộ trình rèn luyện chuyên sâu định hướng nghề"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Xác định phẩm chất cần thiết",
-          mo_ta: "Nghiên cứu các phẩm chất đặc thù của nghề",
+          ten: "Tự đánh giá sự phù hợp với nhóm nghề",
+          mo_ta: "Công cụ hướng nghiệp chuẩn quốc tế.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu yêu cầu nghề",
-              mo_ta:
-                "VD: Y - cẩn trọng, y đức; IT - logic, sáng tạo; Giáo dục - kiên nhẫn",
+              ten: "Thực hành trắc nghiệm RIASEC",
+              mo_ta: "Đối chiếu mã RIASEC cá nhân với đặc thù nhóm nghề định chọn.",
+              thoi_luong_de_xuat: "25 phút"
             },
             {
-              ten: "Tự đánh giá",
-              mo_ta: "So sánh phẩm chất bản thân với yêu cầu nghề",
-            },
-          ],
+              ten: "Phân tích Profile chuyên gia",
+              mo_ta: "Tìm hiểu tiểu sử và tố chất của một người thành đạt trong nghề để học tập.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Lập kế hoạch rèn luyện",
-          mo_ta: "Xây dựng kế hoạch phát triển phẩm chất còn thiếu",
+          ten: "Thiết kế lộ trình phát triển năng lực nghề nghiệp",
+          mo_ta: "Thiết kế lộ trình năng lực.",
           nhiem_vu: [
             {
-              ten: "Xác định khoảng cách",
-              mo_ta: "Liệt kê những gì còn thiếu so với yêu cầu",
+              ten: "Bản đồ rèn luyện năng lực (Gap Analysis)",
+              mo_ta: "Xác định khoảng cách giữa năng lực hiện tại and yêu cầu nghề nghiệp -> Đề xuất hành động.",
+              thoi_luong_de_xuat: "30 phút"
             },
             {
-              ten: "Lập kế hoạch",
-              mo_ta: "Xây dựng lộ trình rèn luyện trong 1-2 năm",
-            },
-          ],
-        },
+              ten: "Thực hành kỹ năng chuyên biệt",
+              mo_ta: "Tập dượt một kỹ năng cốt lõi của nghề (VD: Thiết kế đồ họa cơ bản, Kỹ năng thuyết phục khách hàng).",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Xác định được các phẩm chất cần rèn luyện",
-        "Có kế hoạch phát triển cụ thể",
-      ],
-      phuong_phap_goi_y: ["Tự đánh giá", "Lập kế hoạch", "Tư vấn", "Thực hành"],
-      so_tiet_de_xuat: 3,
-      thang_thuc_hien: [4],
-      tu_khoa_tim_kiem: [
-        "phẩm chất nghề",
-        "năng lực",
-        "rèn luyện",
-        "khoảng cách",
-      ],
+      ket_qua_can_dat: ["Hiểu rõ tố chất cá nhân", "Có bản kế hoạch rèn luyện khoa học"],
+      phuong_phap_goi_y: ["Trắc nghiệm", "Lập kế hoạch", "Thực hành"],
+      tu_khoa_tim_kiem: ["RIASEC", "năng lực nghề nghiệp", "kế hoạch cá nhân"],
+      so_tiet_de_xuat: 4,
+      thang_thuc_hien: [5]
     },
-
     {
       ma: "11.10",
-      ten: "Xây dựng và thực hiện kế hoạch học tập theo hướng ngành, nghề lựa chọn",
+      ten: "Xây dựng và thực hiện kế hoạch học tập theo định hướng nghề",
       mach_noi_dung: "huong_nghiep",
-      muc_tieu: [
-        "Xác định các môn học thế mạnh để xét tuyển đại học",
-        "Xây dựng thời gian biểu học tập chi tiết",
-      ],
+      muc_tieu: ["Tham vấn hướng nghiệp chuyên sâu", "Thiết lập lộ trình học tập tối ưu cho năm lớp 12"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Chọn tổ hợp xét tuyển",
-          mo_ta: "Xác định các môn học cần tập trung",
+          ten: "Phân tích hệ thống trường và cơ hội đào tạo",
+          mo_ta: "Đại học, Cao đẳng, Du học và Đào tạo nghề.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu phương thức",
-              mo_ta: "Tìm hiểu các trường, ngành và phương thức xét tuyển",
+              ten: "So sánh các phương án đào tạo",
+              mo_ta: "Phân tích ma trận: Độ khó xét tuyển - Chi phí - Cơ hội việc làm.",
+              thoi_luong_de_xuat: "30 phút"
             },
-            { ten: "Chọn tổ hợp", mo_ta: "Xác định khối thi/tổ hợp phù hợp" },
-          ],
+            {
+              ten: "Xác định khối thi/tổ hợp môn học",
+              mo_ta: "Lựa chọn chiến thuật tập trung cho năm lớp 12 dựa trên thế mạnh cá nhân.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Lập lộ trình ôn tập",
-          mo_ta: "Xây dựng kế hoạch học tập chi tiết",
+          ten: "Thực hành tham vấn hướng nghiệp",
+          mo_ta: "Quy trình kết nối với chuyên gia/thầy cô.",
           nhiem_vu: [
             {
-              ten: "Đánh giá hiện trạng",
-              mo_ta: "Xác định điểm mạnh/yếu của từng môn",
-            },
-            {
-              ten: "Lập kế hoạch",
-              mo_ta: "Xây dựng lịch học chi tiết theo tuần/tháng",
-            },
-          ],
+              ten: "Phiên tham vấn mô phỏng (Mock Coaching)",
+              mo_ta: "Học sinh đóng vai người tư vấn và người cần tư vấn để hiểu cách giải quyết các nút thắt tâm lý chọn nghề.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Thiết lập bản đồ mục tiêu lớp 12",
+          mo_ta: "Lộ trình học tập chi tiết.",
+          nhiem_vu: [
+            {
+              ten: "Xây dựng bảng tiến độ (Gantt chart cá nhân)",
+              mo_ta: "Xác định các mốc học tập, ôn luyện và nộp hồ sơ cho năm học tới.",
+              thoi_luong_de_xuat: "30 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Xác định được tổ hợp xét tuyển phù hợp",
-        "Có kế hoạch học tập chi tiết",
-      ],
-      phuong_phap_goi_y: [
-        "Lập kế hoạch",
-        "Tư vấn hướng nghiệp",
-        "Theo dõi tiến độ",
-      ],
+      ket_qua_can_dat: ["Quyết tâm cho năm cuối cấp", "Biết khai thác nguồn lực hỗ trợ"],
+      phuong_phap_goi_y: ["Coaching", "Tư vấn", "Lập kế hoạch"],
+      tu_khoa_tim_kiem: ["kế hoạch 12", "tham vấn", "định hướng chuyên sâu"],
       so_tiet_de_xuat: 3,
-      thang_thuc_hien: [5],
-      tu_khoa_tim_kiem: [
-        "kế hoạch học tập",
-        "xét tuyển",
-        "tổ hợp môn",
-        "ôn tập",
-      ],
+      thang_thuc_hien: [5]
     },
   ],
 };
@@ -2044,629 +1822,646 @@ export const CHUONG_TRINH_LOP_12: ChuongTrinhKhoi = {
   chu_de: [
     {
       ma: "12.1",
-      ten: "Xây dựng và phát triển nhà trường",
+      ten: "Phát triển các mối quan hệ tốt đẹp với thầy cô và các bạn",
       mach_noi_dung: "xa_hoi",
-      muc_tieu: [
-        "Phản hồi góp ý xây dựng cho nhà trường dựa trên 3 năm học tập",
-        "Truyền lửa cho thế hệ đàn em",
-        "Tổng kết và tri ân những gì nhận được",
-      ],
+      muc_tieu: ["Nuôi dưỡng, mở rộng các mối quan hệ tích cực", "Hợp tác trong hoạt động chung", "Xây dựng truyền thống nhà trường"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Phản hồi góp ý xây dựng",
-          mo_ta: "Đóng góp ý kiến cải thiện dựa trên trải nghiệm 3 năm",
+          ten: "Tìm hiểu cách nuôi dưỡng, giữ gìn và mở rộng các mối quan hệ tốt đẹp với thầy cô và bạn bè",
+          mo_ta: "Nghệ thuật giao tiếp và gắn kết bền vững.",
           nhiem_vu: [
             {
-              ten: "Viết góp ý",
-              mo_ta:
-                "Tổng hợp các điểm cần cải thiện: chương trình, cơ sở vật chất, hoạt động",
-            },
-            {
-              ten: "Đề xuất giải pháp",
-              mo_ta: "Đưa ra giải pháp khả thi từ góc nhìn học sinh",
-            },
-          ],
+              ten: "Giá trị của sự chân thành",
+              mo_ta: "Thảo luận về cách giữ lửa cho các tình bạn và sự tôn kính thầy cô sau khi ra trường.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Mentoring đàn em",
-          mo_ta: "Chia sẻ kinh nghiệm với học sinh lớp dưới",
+          ten: "Tìm hiểu về cách hợp tác với mọi người trong hoạt động chung",
+          mo_ta: "Kỹ năng làm việc nhóm đỉnh cao.",
           nhiem_vu: [
             {
-              ten: "Tổ chức chia sẻ",
-              mo_ta: "Talk về kinh nghiệm học tập, hoạt động, hướng nghiệp",
-            },
-            {
-              ten: "Mentoring 1-1",
-              mo_ta: "Hướng dẫn trực tiếp cho 1-2 em lớp dưới",
-            },
-          ],
+              ten: "Hợp tác để thành công",
+              mo_ta: "Phân tích các yếu tố: Lắng nghe, chia sẻ trách nhiệm, giải quyết mâu thuẫn nhóm.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Tri ân và tổng kết",
-          mo_ta: "Tri ân thầy cô, bạn bè và tổng kết hành trình 3 năm",
+          ten: "Thể hiện cách nuôi dưỡng, giữ gìn và mở rộng mối quan hệ tốt đẹp với thầy cô",
+          mo_ta: "Chuẩn bị cho lễ ra trường.",
           nhiem_vu: [
             {
-              ten: "Viết thư tri ân",
-              mo_ta: "Viết thư cảm ơn thầy cô, bạn bè đã đồng hành",
-            },
-            {
-              ten: "Tổ chức lễ tri ân",
-              mo_ta: "Tham gia tổ chức lễ tri ân cuối khóa",
-            },
-          ],
+              ten: "Tri ân người lái đò",
+              mo_ta: "Thực hành viết thư cảm ơn, tổ chức các buổi gặp mặt ấm cúng.",
+              thoi_luong_de_xuat: "15 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Phân tích dư luận xã hội về quan hệ bạn bè trên mạng xã hội",
+          mo_ta: "Tư duy phản biện trước dư luận.",
+          nhiem_vu: [
+            {
+              ten: "Lập trường trước đám đông",
+              mo_ta: "Thảo luận về các scandal bạn bè trên mạng và cách giữ lập trường đúng đắn.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Thực hiện các hoạt động xây dựng truyền thống nhà trường",
+          mo_ta: "Ghi dấu ấn khối 12.",
+          nhiem_vu: [
+            {
+              ten: "Dự án tiếp nối truyền thống",
+              mo_ta: "Lập kế hoạch tổ chức sự kiện chào đón khóa dưới hoặc tặng quà lưu niệm cho trường.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Đóng góp ý kiến xây dựng cho nhà trường",
-        "Truyền cảm hứng cho thế hệ tiếp nối",
-        "Có ý thức biết ơn",
-      ],
-      phuong_phap_goi_y: [
-        "Chia sẻ kinh nghiệm",
-        "Mentoring",
-        "Viết phản hồi",
-        "Tổ chức sự kiện",
-      ],
+      ket_qua_can_dat: ["Thấu cảm sâu sắc", "Hợp tác hiệu quả", "Tự hào về trường"],
+      phuong_phap_goi_y: ["Trải nghiệm", "Viết sáng tạo"],
+      tu_khoa_tim_kiem: ["quan hệ", "tri ân", "nhà trường"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [9],
-      tu_khoa_tim_kiem: ["tri ân", "góp ý", "mentoring", "lớp 12"],
+      thang_thuc_hien: [9]
     },
-
     {
       ma: "12.2",
-      ten: "Khám phá bản thân",
+      ten: "Tôi trưởng thành",
       mach_noi_dung: "ban_than",
-      muc_tieu: [
-        "Tổng kết hành trình phát triển bản thân qua 12 năm học",
-        "Khẳng định bản sắc cá nhân",
-        "Chuẩn bị tâm lý cho giai đoạn trưởng thành",
-      ],
+      muc_tieu: ["Nhận diện sự trưởng thành qua 3 năm", "Bồi dưỡng phẩm chất ý chí và tư duy độc lập", "Khẳng định giá trị bản thân trước tương lai"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Tổng kết hành trình bản thân",
-          mo_ta: "Nhìn lại sự thay đổi và trưởng thành qua 12 năm",
+          ten: "Nhận diện sự trưởng thành cá nhân",
+          mo_ta: "Soi chiếu sự thay đổi từ lớp 10 đến lớp 12.",
           nhiem_vu: [
             {
-              ten: "Viết tự truyện mini",
-              mo_ta:
-                "Viết về hành trình trưởng thành: thay đổi, bài học, thành tựu",
-            },
-            {
-              ten: "Timeline cá nhân",
-              mo_ta: "Tạo timeline các mốc quan trọng trong cuộc đời",
-            },
-          ],
+              ten: "Chân dung tuổi 18: Trước và Sau",
+              mo_ta: "Viết bài luận ngắn hoặc làm sơ đồ tư duy so sánh quan điểm sống, cách ứng xử và trách nhiệm của bản thân qua 3 năm.",
+              thoi_luong_de_xuat: "30 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Khẳng định bản sắc",
-          mo_ta:
-            "Định hình rõ bản sắc cá nhân trước khi bước vào cuộc sống mới",
+          ten: "Phẩm chất ý chí và Động lực nội tại",
+          mo_ta: "Bồi đắp sức mạnh tinh thần cho giai đoạn vượt vũ môn.",
           nhiem_vu: [
             {
-              ten: "Personal branding",
-              mo_ta: "Xây dựng hình ảnh cá nhân: CV, LinkedIn, portfolio",
+              ten: "Phân tích tấm gương nghị lực",
+              mo_ta: "Kể về một nhân vật thực tế đã vượt qua nghịch cảnh để thành công, rút ra bộ từ khóa 'vượt khó' cho mình.",
+              thoi_luong_de_xuat: "20 phút"
             },
             {
-              ten: "Elevator pitch",
-              mo_ta: "Chuẩn bị bài giới thiệu bản thân 60 giây",
-            },
-          ],
+              ten: "Xây dựng hệ thống kỷ luật tự thân",
+              mo_ta: "Thiết lập các thói quen tích cực để duy trì sự tập trung cao độ trong học tập.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Tư duy độc lập và Bản lĩnh cá nhân",
+          mo_ta: "Khẳng định cái tôi tỉnh táo trước đám đông.",
+          nhiem_vu: [
+            {
+              ten: "Tranh luận: Áp lực đồng lứa (Peer Pressure)",
+              mo_ta: "Thảo luận cách bảo vệ quan điểm cá nhân khi đa số bạn bè có xu hướng khác biệt.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Ra quyết định dựa trên hệ giá trị",
+              mo_ta: "Thực hành quy trình 5 bước để đưa ra một quyết định quan trọng (VD: Chọn trường, Chọn khối).",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có cái nhìn tổng quan về hành trình phát triển",
-        "Khẳng định được bản sắc cá nhân",
-        "Sẵn sàng cho giai đoạn mới",
-      ],
-      phuong_phap_goi_y: ["Viết tự truyện", "Personal branding", "Chia sẻ"],
-      so_tiet_de_xuat: 3,
-      thang_thuc_hien: [9, 10],
-      tu_khoa_tim_kiem: ["bản sắc", "personal branding", "trưởng thành", "CV"],
+      ket_qua_can_dat: ["Sống trách nhiệm", "Có ý chí mạnh mẽ", "Tư duy độc lập"],
+      phuong_phap_goi_y: ["Trắc nghiệm tâm lý", "Thảo luận", "Viết sáng tạo"],
+      tu_khoa_tim_kiem: ["trưởng thành", "ý chí", "tư duy độc lập", "18 tuổi"],
+      so_tiet_de_xuat: 4,
+      thang_thuc_hien: [10]
     },
-
     {
       ma: "12.3",
-      ten: "Rèn luyện bản thân",
+      ten: "Hoàn thiện bản thân",
       mach_noi_dung: "ban_than",
-      muc_tieu: [
-        "Quản lý stress trong giai đoạn cao điểm",
-        "Duy trì động lực học tập và phấn đấu",
-        "Xây dựng sức khỏe tinh thần",
-      ],
+      muc_tieu: ["Tự đánh giá và nâng cấp các kỹ năng sinh tồn", "Phát triển năng lực theo định hướng nghề nghiệp", "Xây dựng hình ảnh cá nhân chuyên nghiệp"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Quản lý stress mùa thi",
-          mo_ta: "Học cách đối phó với áp lực thi cử",
+          ten: "Kỹ năng sinh tồn và Tự phục vụ nâng cao",
+          mo_ta: "Sẵn sàng cho cuộc sống độc lập (Ra ở riêng/Ở ký túc xá).",
           nhiem_vu: [
             {
-              ten: "Nhận diện stress",
-              mo_ta:
-                "Hiểu các biểu hiện stress và ngưỡng chịu đựng của bản thân",
+              ten: "Kiểm tra năng lực tự quản",
+              mo_ta: "Đánh giá mức độ thành thạo về: Nấu ăn dinh dưỡng, Quản lý tài chính cá nhân, Sơ cứu y tế cơ bản.",
+              thoi_luong_de_xuat: "30 phút"
             },
             {
-              ten: "Kỹ thuật giảm stress",
-              mo_ta: "Thực hành: thiền, yoga, thể dục, sở thích cá nhân",
-            },
-          ],
+              ten: "Quản lý thời gian và stress",
+              mo_ta: "Áp dụng ma trận Eisenhower hoặc kỹ thuật Pomodoro để tối ưu hóa việc học tập và nghỉ ngơi.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Duy trì động lực",
-          mo_ta: "Giữ vững tinh thần trong suốt năm học cuối",
+          ten: "Nâng cấp năng lực nghề nghiệp tương lai",
+          mo_ta: "Giai đoạn nước rút bồi đắp kiến thức chuyên ngành.",
           nhiem_vu: [
             {
-              ten: "Xác định Why",
-              mo_ta: "Nhắc nhở bản thân về mục tiêu, lý do phấn đấu",
+              ten: "Dự án: '100 ngày thay đổi'",
+              mo_ta: "Cam kết học một kỹ năng bổ trợ (VD: Tin học văn phòng, Ngoại ngữ chuyên ngành) và báo cáo kết quả theo tuần.",
+              thoi_luong_de_xuat: "45 phút"
             },
             {
-              ten: "Hệ thống hỗ trợ",
-              mo_ta: "Xây dựng nhóm bạn, mentor hỗ trợ lẫn nhau",
-            },
-          ],
+              ten: "Tìm kiếm cơ hội trải nghiệm nghề",
+              mo_ta: "Lập danh sách các hoạt động ngoại khóa, câu lạc bộ liên quan đến ngành nghề mong muốn.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Sức khỏe tinh thần",
-          mo_ta: "Chăm sóc sức khỏe tinh thần trong giai đoạn áp lực",
+          ten: "Xây dựng hình ảnh cá nhân (Personal Branding)",
+          mo_ta: "Định vị bản thân trên không gian mạng và đời thực.",
           nhiem_vu: [
             {
-              ten: "Self-care routine",
-              mo_ta: "Xây dựng thói quen chăm sóc bản thân mỗi ngày",
+              ten: "Dọn dẹp dấu chân kỹ thuật số (Digital Footprint)",
+              mo_ta: "Xây dựng profile mạng xã hội hướng tới sự chuyên nghiệp và tích cực.",
+              thoi_luong_de_xuat: "30 phút"
             },
             {
-              ten: "Nhận diện cần hỗ trợ",
-              mo_ta: "Biết khi nào cần tìm kiếm sự giúp đỡ từ chuyên gia",
-            },
-          ],
-        },
+              ten: "Thực hành phong thái và giao tiếp thuyết phục",
+              mo_ta: "Rèn luyện ngôn ngữ cơ thể, cách chào hỏi và trình bày trước đám đông.",
+              thoi_luong_de_xuat: "30 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có kỹ năng quản lý stress hiệu quả",
-        "Duy trì được động lực học tập",
-        "Chăm sóc được sức khỏe tinh thần",
-      ],
-      phuong_phap_goi_y: ["Thực hành cá nhân", "Nhóm hỗ trợ", "Chia sẻ"],
-      so_tiet_de_xuat: 4,
-      thang_thuc_hien: [10, 11],
-      tu_khoa_tim_kiem: ["stress", "động lực", "sức khỏe tinh thần", "mùa thi"],
+      ket_qua_can_dat: ["Thành thạo kỹ năng tự lập", "Nâng cao năng lực chuyên môn", "Có hình ảnh cá nhân uy tín"],
+      phuong_phap_goi_y: ["Coaching", "Luyện tập", "Dự án cá nhân"],
+      tu_khoa_tim_kiem: ["hoàn thiện", "tự lập", "kỹ năng", "thời gian"],
+      so_tiet_de_xuat: 5,
+      thang_thuc_hien: [11]
     },
-
     {
       ma: "12.4",
-      ten: "Đánh giá và điều chỉnh kế hoạch nghề nghiệp",
-      mach_noi_dung: "huong_nghiep",
+      ten: "Trách nhiệm với gia đình",
+      mach_noi_dung: "xa_hoi",
       muc_tieu: [
-        "Đánh giá lại kế hoạch nghề nghiệp đã lập từ lớp 10, 11",
-        "Điều chỉnh phù hợp với tình hình thực tế",
-        "Chuẩn bị hồ sơ xét tuyển",
+        "Thực hiện trách nhiệm của người trưởng thành trong việc gánh vác công việc gia đình",
+        "Chuẩn bị tâm lý và các kỹ năng sinh tồn cần thiết khi sinh sống xa nhà",
+        "Xây dựng và duy trì nếp sống gia đình văn minh, hạnh phúc"
       ],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Rà soát kế hoạch",
-          mo_ta: "Đánh giá mức độ thực hiện kế hoạch nghề nghiệp từ trước",
+          ten: "Thực hiện trách nhiệm của người trưởng thành trong gia đình",
+          mo_ta: "Chuyển từ vai trò được chăm sóc sang vai trò gánh vác.",
           nhiem_vu: [
             {
-              ten: "So sánh kế hoạch vs thực tế",
-              mo_ta: "Xem lại mục tiêu đã đặt, những gì đã làm được",
-            },
-            {
-              ten: "Phân tích gap",
-              mo_ta: "Xác định khoảng cách giữa mong muốn và thực tế",
-            },
-          ],
+              ten: "Gánh vác việc lớn trong gia đình",
+              mo_ta: "Hỗ trợ cha mẹ quản lý chi tiêu định kỳ hoặc tham gia quyết định các công việc trọng đại của gia đình.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Điều chỉnh kế hoạch",
-          mo_ta: "Cập nhật kế hoạch theo tình hình mới",
+          ten: "Chuẩn bị tâm lý và kỹ năng khi sinh sống xa nhà",
+          mo_ta: "Trang bị hành trang cho cuộc sống sinh viên tự lập.",
           nhiem_vu: [
             {
-              ten: "Cập nhật Plan B, C",
-              mo_ta: "Điều chỉnh các phương án dự phòng cho phù hợp",
+              ten: "Kỹ năng sống độc lập cơ bản",
+              mo_ta: "Thực hành: Lên thực đơn tiết kiệm, cách xử lý sự cố điện nước đơn giản, an ninh phòng trọ.",
+              thoi_luong_de_xuat: "20 phút"
             },
             {
-              ten: "Xác định lộ trình mới",
-              mo_ta: "Lập lộ trình chi tiết cho 6-12 tháng tới",
-            },
-          ],
+              ten: "Quản lý tài chính cá nhân khi xa nhà",
+              mo_ta: "Thiết lập ngân sách hàng tháng: Tiền nhà, tiền ăn, học phí và quỹ dự phòng.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Chuẩn bị hồ sơ",
-          mo_ta: "Hoàn thiện hồ sơ xét tuyển đại học/cao đẳng/du học",
+          ten: "Dự án: 'Bữa cơm sum họp - Gắn kết yêu thương'",
+          mo_ta: "Thực hành vai trò người tổ chức cuộc sống gia đình.",
           nhiem_vu: [
             {
-              ten: "CV và thư động lực",
-              mo_ta: "Viết CV và motivation letter",
-            },
-            {
-              ten: "Portfolio",
-              mo_ta: "Tổng hợp sản phẩm, thành tích 3 năm THPT",
-            },
-          ],
+              ten: "Thiết kế và tổ chức bữa cơm gia đình",
+              mo_ta: "Tự lên kế hoạch, đi chợ và chuẩn bị một bữa tối cho gia đình, kết hợp đối thoại chia sẻ dự định tương lai.",
+              thoi_luong_de_xuat: "45 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 4,
+          ten: "Xây dựng truyền thống gia đình hiện đại",
+          mo_ta: "Giữ gìn giá trị cũ và kiến tạo giá trị mới.",
+          nhiem_vu: [
+            {
+              ten: "Thiết kế 'Gia phả số' hoặc 'Album kỷ niệm số'",
+              mo_ta: "Sử dụng công nghệ để lưu trữ lịch sử gia đình, tạo sự kết nối giữa các thế hệ.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có kế hoạch nghề nghiệp được cập nhật",
-        "Hồ sơ xét tuyển hoàn chỉnh",
-        "Sẵn sàng cho các kỳ thi, phỏng vấn",
-      ],
-      phuong_phap_goi_y: ["Phân tích SWOT", "Viết CV", "Thực hành phỏng vấn"],
-      so_tiet_de_xuat: 5,
-      thang_thuc_hien: [11, 12],
-      tu_khoa_tim_kiem: ["kế hoạch nghề nghiệp", "CV", "xét tuyển", "hồ sơ"],
+      ket_qua_can_dat: ["Biết gánh vác trách nhiệm", "Sẵn sàng cho cuộc sống xa nhà", "Thành thạo kỹ năng tự phục vụ"],
+      phuong_phap_goi_y: ["Thảo luận", "Lập dự án", "Đóng vai"],
+      tu_khoa_tim_kiem: ["gia đình", "tự lập", "kỹ năng sinh tồn", "quản lý tài chính"],
+      so_tiet_de_xuat: 4,
+      thang_thuc_hien: [12]
     },
-
     {
       ma: "12.5",
-      ten: "Xây dựng và bảo vệ Tổ quốc",
+      ten: "Xây dựng cộng đồng và hội nhập quốc tế",
       mach_noi_dung: "xa_hoi",
-      muc_tieu: [
-        "Hiểu sâu về quyền và nghĩa vụ công dân trưởng thành",
-        "Sẵn sàng thực hiện nghĩa vụ quân sự/công dân",
-        "Có ý thức bảo vệ chủ quyền quốc gia",
-      ],
+      muc_tieu: ["Hợp tác quốc tế và xử lý 'Sốc văn hóa'", "Giải quyết vấn đề xã hội bằng dự án chuyên nghiệp", "Phát triển tư duy công dân toàn cầu"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Công dân trưởng thành",
-          mo_ta: "Tìm hiểu quyền và nghĩa vụ khi đủ 18 tuổi",
+          ten: "Hội nhập quốc tế và đa dạng văn hóa",
+          mo_ta: "Tư duy công dân toàn cầu chân chính.",
           nhiem_vu: [
-            { ten: "Quyền bầu cử", mo_ta: "Tìm hiểu về quyền bầu cử, ứng cử" },
             {
-              ten: "Nghĩa vụ pháp lý",
-              mo_ta: "Hiểu về trách nhiệm pháp lý khi trưởng thành",
+              ten: "Thuyết trình văn hóa ASEAN",
+              mo_ta: "Chọn 1 quốc gia ASEAN, giới thiệu nét văn hóa: Chào hỏi, ẩm thực, cấm kỵ.",
+              thoi_luong_de_xuat: "25 phút"
             },
-          ],
+            {
+              ten: "Kỹ năng xử lý 'Sốc văn hóa'",
+              mo_ta: "Thực hành các tình huống giả định khi học tập/làm việc tại môi trường đa quốc gia.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Nghĩa vụ quân sự",
-          mo_ta:
-            "Tìm hiểu về nghĩa vụ quân sự và các hình thức phục vụ tổ quốc",
+          ten: "Dự án tình nguyện cộng đồng (Nâng cao)",
+          mo_ta: "Kỹ năng quản trị dự án chuyên nghiệp.",
           nhiem_vu: [
             {
-              ten: "Luật nghĩa vụ quân sự",
-              mo_ta: "Tìm hiểu quy định về đăng ký, tạm hoãn, miễn",
+              ten: "Thiết kế dự án cộng đồng 12",
+              mo_ta: "Lập kế hoạch với: Gantt chart (tiến độ), Quản lý rủi ro và Báo cáo tài chính minh bạch.",
+              thoi_luong_de_xuat: "30 phút"
             },
             {
-              ten: "Các hình thức phục vụ",
-              mo_ta: "Nghĩa vụ quân sự, dân quân tự vệ, dự bị động viên",
-            },
-          ],
-        },
-        {
-          so_thu_tu: 3,
-          ten: "Bảo vệ chủ quyền",
-          mo_ta: "Ý thức về chủ quyền quốc gia trong thời đại mới",
-          nhiem_vu: [
-            {
-              ten: "Chủ quyền biển đảo",
-              mo_ta: "Tìm hiểu về Biển Đông, Hoàng Sa, Trường Sa",
-            },
-            {
-              ten: "An ninh mạng",
-              mo_ta: "Bảo vệ chủ quyền trên không gian mạng",
-            },
-          ],
-        },
+              ten: "Vận động nguồn lực (Fundraising)",
+              mo_ta: "Xây dựng kế hoạch kêu gọi hỗ trợ từ các tổ chức xã hội hoặc cộng đồng.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Sẵn sàng thực hiện quyền và nghĩa vụ công dân",
-        "Có ý thức bảo vệ tổ quốc",
-        "Hiểu biết về an ninh quốc gia",
-      ],
-      phuong_phap_goi_y: ["Thảo luận", "Nghiên cứu luật", "Gặp gỡ bộ đội"],
+      ket_qua_can_dat: ["Tôn trọng sự khác biệt", "Thành thạo quản lý dự án", "Tự tin hội nhập"],
+      phuong_phap_goi_y: ["Lập dự án", "Nghiên cứu", "Case study"],
+      tu_khoa_tim_kiem: ["cộng đồng", "hội nhập", "sốc văn hóa", "Gantt"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [12],
-      tu_khoa_tim_kiem: ["nghĩa vụ quân sự", "công dân", "bầu cử", "chủ quyền"],
+      thang_thuc_hien: [1]
     },
-
     {
       ma: "12.6",
-      ten: "Giữ gìn và phát huy di sản văn hóa, danh lam thắng cảnh",
+      ten: "Chung tay gìn giữ, bảo tồn cảnh quan thiên nhiên",
       mach_noi_dung: "tu_nhien",
-      muc_tieu: [
-        "Trở thành người bảo vệ và quảng bá di sản văn hóa",
-        "Có kỹ năng làm du lịch cộng đồng",
-        "Ý thức gìn giữ cho thế hệ sau",
-      ],
+      muc_tieu: ["Thực hiện các giải pháp sáng tạo để bảo tồn danh thắng."],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Ambassador văn hóa",
-          mo_ta: "Trở thành đại sứ quảng bá di sản địa phương",
+          ten: "Tìm hiểu các giải pháp tích cực, sáng tạo trong việc bảo tồn cảnh quan thiên nhiên",
+          mo_ta: "Ứng dụng công nghệ và ý tưởng mới.",
           nhiem_vu: [
             {
-              ten: "Tạo content",
-              mo_ta: "Viết blog, làm video giới thiệu di sản địa phương",
-            },
-            {
-              ten: "Tour guide",
-              mo_ta: "Thực hành làm hướng dẫn viên cho khách tham quan",
-            },
-          ],
+              ten: "Bảo tồn 4.0",
+              mo_ta: "Sử dụng mạng xã hội, VR/AR để quảng bá và giáo dục bảo tồn danh thắng.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Du lịch cộng đồng",
-          mo_ta: "Tìm hiểu và tham gia mô hình du lịch bền vững",
+          ten: "Tìm hiểu về hoạt động tuyên truyền trong cộng đồng",
+          mo_ta: "Kỹ năng vận động xã hội.",
           nhiem_vu: [
             {
-              ten: "Nghiên cứu mô hình",
-              mo_ta: "Tìm hiểu các mô hình du lịch cộng đồng thành công",
-            },
-            {
-              ten: "Đề xuất sản phẩm",
-              mo_ta: "Đề xuất sản phẩm du lịch cho địa phương",
-            },
-          ],
+              ten: "Chiến dịch lan tỏa",
+              mo_ta: "Thiết kế poster, video clip ngắn truyền cảm hứng bảo vệ thiên nhiên.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Thực hiện giải pháp sáng tạo bảo tồn cảnh quan",
+          mo_ta: "Hành động thực tế tại địa phương.",
+          nhiem_vu: [
+            {
+              ten: "Ngày hội danh thắng xanh",
+              mo_ta: "Tổ chức một buổi dọn dẹp hoặc trồng cây kết hợp tuyên truyền tại di tích.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có khả năng quảng bá di sản",
-        "Hiểu về du lịch bền vững",
-        "Có sản phẩm du lịch sáng tạo",
-      ],
-      phuong_phap_goi_y: ["Làm content", "Thực địa", "Dự án nhóm"],
-      so_tiet_de_xuat: 4,
-      thang_thuc_hien: [1],
-      tu_khoa_tim_kiem: ["di sản", "du lịch", "văn hóa", "ambassador"],
+      ket_qua_can_dat: ["Sáng tạo trong bảo tồn", "Tuyên truyền hiệu quả"],
+      phuong_phap_goi_y: ["Dự án", "Truyền thông"],
+      tu_khoa_tim_kiem: ["cảnh quan", "bảo tồn", "sáng tạo"],
+      so_tiet_de_xuat: 3,
+      thang_thuc_hien: [2]
     },
-
     {
       ma: "12.7",
-      ten: "Tham gia xây dựng cộng đồng",
-      mach_noi_dung: "xa_hoi",
-      muc_tieu: [
-        "Đóng góp thực sự cho cộng đồng trước khi rời đi",
-        "Để lại di sản cho thế hệ sau",
-        "Xây dựng network và uy tín cá nhân",
-      ],
+      ten: "Bảo vệ thế giới tự nhiên",
+      mach_noi_dung: "tu_nhien",
+      muc_tieu: ["Hành động vì đa dạng sinh học", "Lan tỏa lối sống xanh và thích ứng biến đổi khí hậu"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Legacy project",
-          mo_ta: "Thực hiện dự án để lại cho cộng đồng/trường",
+          ten: "Tìm hiểu tác động của biến đổi khí hậu địa phương",
+          mo_ta: "Kết nối hiện tượng toàn cầu với thực tế nơi sinh sống.",
           nhiem_vu: [
             {
-              ten: "Xác định legacy",
-              mo_ta:
-                "Chọn dự án có ý nghĩa: thư viện, vườn trường, quỹ học bổng...",
-            },
-            {
-              ten: "Thực hiện",
-              mo_ta: "Triển khai và bàn giao cho thế hệ sau",
-            },
-          ],
+              ten: "Xây dựng kịch bản ứng phó thời tiết cực đoan",
+              mo_ta: "Phân tích tác động của hạn hán, lũ lụt hoặc ô nhiễm tại địa phương và đề xuất các biện pháp thích nghi.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Networking",
-          mo_ta: "Xây dựng mạng lưới quan hệ cho tương lai",
+          ten: "Bảo tồn đa dạng sinh học",
+          mo_ta: "Hành động bảo vệ các giống loài quý hiếm.",
           nhiem_vu: [
             {
-              ten: "Alumni network",
-              mo_ta: "Kết nối với cựu học sinh thành đạt",
+              ten: "Chiến dịch: 'Nói không với sản phẩm hoang dã'",
+              mo_ta: "Ký cam kết và thực hành tuyên truyền thay đổi hành vi tiêu dùng cho người thân và cộng đồng.",
+              thoi_luong_de_xuat: "25 phút"
             },
             {
-              ten: "Mentor network",
-              mo_ta: "Tìm kiếm mentor trong lĩnh vực quan tâm",
-            },
-          ],
+              ten: "Khám phá danh sách Đỏ Việt Nam",
+              mo_ta: "Tìm hiểu về 1 loài động/thực vật đặc hữu của vùng miền và các mối đe dọa chúng đang đối mặt.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
+        {
+          so_thu_tu: 3,
+          ten: "Duy trì lối sống thuận tự nhiên",
+          mo_ta: "Thực hành sống xanh mỗi ngày.",
+          nhiem_vu: [
+            {
+              ten: "Thử thách 7 ngày giảm thiểu rác nhựa",
+              mo_ta: "Ghi nhật ký thay đổi thói quen sử dụng đồ nhựa trong sinh hoạt cá nhân.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Hoàn thành dự án di sản",
-        "Có mạng lưới quan hệ",
-        "Để lại dấu ấn tích cực",
-      ],
-      phuong_phap_goi_y: ["PBL", "Networking", "Mentoring"],
-      so_tiet_de_xuat: 4,
-      thang_thuc_hien: [2],
-      tu_khoa_tim_kiem: ["cộng đồng", "legacy", "networking", "dự án"],
+      ket_qua_can_dat: ["Am hiểu về môi trường", "Có kỹ năng thích ứng", "Biết bảo vệ đa dạng sinh học"],
+      phuong_phap_goi_y: ["Case study", "Cam kết", "Dự án nhỏ"],
+      tu_khoa_tim_kiem: ["thế giới tự nhiên", "biến đổi khí hậu", "đa dạng sinh học", "sống xanh"],
+      so_tiet_de_xuat: 3,
+      thang_thuc_hien: [2]
     },
-
     {
       ma: "12.8",
-      ten: "Bảo vệ cảnh quan, môi trường tự nhiên",
-      mach_noi_dung: "tu_nhien",
-      muc_tieu: [
-        "Cam kết lối sống bền vững lâu dài",
-        "Có khả năng advocacy môi trường",
-        "Tạo ảnh hưởng đến người khác",
-      ],
+      ten: "Nghề nghiệp và yêu cầu của xã hội hiện đại",
+      mach_noi_dung: "huong_nghiep",
+      muc_tieu: ["Thích ứng với xu hướng CMCN 4.0", "Xây dựng chiến lược Reskilling và Upskilling cá nhân", "Am hiểu an toàn lao động và đạo đức nghề nghiệp"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Sustainable lifestyle",
-          mo_ta: "Xây dựng lối sống bền vững cá nhân",
+          ten: "Thị trường lao động trong kỷ nguyên AI",
+          mo_ta: "Sự dịch chuyển và thay thế nghề nghiệp.",
           nhiem_vu: [
             {
-              ten: "Carbon footprint",
-              mo_ta: "Tính toán và cam kết giảm dấu chân carbon",
+              ten: "Phân tích tác động của tự động hóa",
+              mo_ta: "Thảo luận về các nhóm kỹ năng không thể bị thay thế bởi máy móc.",
+              thoi_luong_de_xuat: "25 phút"
             },
             {
-              ten: "Zero-waste challenge",
-              mo_ta: "Thử thách 30 ngày giảm rác thải",
-            },
-          ],
+              ten: "Khám phá các nghề nghiệp xanh",
+              mo_ta: "Tìm hiểu xu hướng chuyển dịch sang các ngành kinh tế tuần hoàn và năng lượng tái tạo.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Environmental advocacy",
-          mo_ta: "Vận động người khác bảo vệ môi trường",
+          ten: "Chiến lược thích ứng và học tập suốt đời",
+          mo_ta: "Xây dựng tư duy phát triển.",
           nhiem_vu: [
             {
-              ten: "Chiến dịch truyền thông",
-              mo_ta: "Tổ chức chiến dịch về vấn đề môi trường cụ thể",
+              ten: "Lập kế hoạch Reskilling (Tái đào tạo)",
+              mo_ta: "Thiết kế lộ trình học tập khi nghề nghiệp hiện tại bị đe dọa bởi công nghệ mới.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 3,
+          ten: "An toàn lao động và Luật pháp chuyên sâu",
+          mo_ta: "Bảo vệ bản thân trong môi trường làm việc chuyên nghiệp.",
+          nhiem_vu: [
+            {
+              ten: "Giải mã Luật An toàn lao động 2015",
+              mo_ta: "Phân tích quyền lợi, nghĩa vụ và quy trình bảo hộ khi làm việc thực tế.",
+              thoi_luong_de_xuat: "25 phút"
             },
             {
-              ten: "Petition/Đề xuất",
-              mo_ta: "Gửi đề xuất chính sách cho cơ quan chức năng",
-            },
-          ],
-        },
+              ten: "Đạo đức nghề nghiệp trong thế giới số",
+              mo_ta: "Thảo luận về tính trung thực, bảo mật thông tin và đạo đức khi sử dụng AI trong công việc.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có lối sống bền vững",
-        "Tạo ảnh hưởng đến người xung quanh",
-        "Có sản phẩm vận động môi trường",
-      ],
-      phuong_phap_goi_y: ["Challenge cá nhân", "Vận động", "Truyền thông"],
+      ket_qua_can_dat: ["Tự tin trước xu hướng 4.0", "Am hiểu luật pháp lao động", "Có tư duy đạo đức nghề nghiệp"],
+      phuong_phap_goi_y: ["Thảo luận", "Case study", "Chuyên gia chia sẻ"],
+      tu_khoa_tim_kiem: ["4.0", "AI", "Reskilling", "luật lao động", "đạo đức"],
       so_tiet_de_xuat: 3,
-      thang_thuc_hien: [3],
-      tu_khoa_tim_kiem: ["môi trường", "bền vững", "carbon", "zero-waste"],
+      thang_thuc_hien: [3]
     },
-
     {
       ma: "12.9",
-      ten: "Kỹ năng sống tự lập",
-      mach_noi_dung: "ban_than",
-      muc_tieu: [
-        "Có đầy đủ kỹ năng sống độc lập",
-        "Sẵn sàng cho cuộc sống xa nhà",
-        "Quản lý được cuộc sống cá nhân",
-      ],
+      ten: "Định hướng học tập và nghề nghiệp",
+      mach_noi_dung: "huong_nghiep",
+      muc_tieu: ["Xác định chính xác hướng đi sau tốt nghiệp", "Hoàn thiện hồ sơ xét tuyển chuyên nghiệp", "Chuẩn bị tâm thế vững vàng cho kỳ thi quốc gia"],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Quản lý tài chính cá nhân nâng cao",
-          mo_ta: "Kỹ năng tài chính cho người trưởng thành",
+          ten: "Ra quyết định chọn hướng đi và trường đào tạo",
+          mo_ta: "Lựa chọn chiến lược dựa trên dữ liệu thực tế.",
           nhiem_vu: [
             {
-              ten: "Budgeting thực tế",
-              mo_ta: "Lập ngân sách sinh hoạt thực tế cho sinh viên",
+              ten: "Đối soát năng lực and nguyện vọng",
+              mo_ta: "So sánh điểm học tập, điểm thi thử với điểm chuẩn các năm của trường đại học mục tiêu.",
+              thoi_luong_de_xuat: "25 phút"
             },
             {
-              ten: "Mở tài khoản",
-              mo_ta: "Thực hành mở tài khoản ngân hàng, ví điện tử",
-            },
-          ],
+              ten: "Phân tích tài chính cho đại học",
+              mo_ta: "Tính toán học phí, sinh hoạt phí và tìm kiếm các nguồn học bổng/hỗ trợ tài chính.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 2,
-          ten: "Kỹ năng sinh hoạt",
-          mo_ta: "Các kỹ năng cần thiết khi sống xa nhà",
+          ten: "Tham vấn chuyên gia và hướng dẫn thủ tục",
+          mo_ta: "Gỡ rối các thắc mắc về quy chế.",
           nhiem_vu: [
             {
-              ten: "Nấu ăn cơ bản",
-              mo_ta: "Học 10 món ăn cơ bản, dinh dưỡng cho sinh viên",
-            },
-            {
-              ten: "Quản lý nhà cửa",
-              mo_ta: "Dọn dẹp, giặt giũ, bảo quản đồ đạc",
-            },
-          ],
+              ten: "Tư vấn chọn nghề 1-1",
+              mo_ta: "Thực hành đặt câu hỏi chuyên sâu cho chuyên gia về triển vọng nghề nghiệp của các ngành 'hot'.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         },
         {
           so_thu_tu: 3,
-          ten: "Thuê và ở trọ",
-          mo_ta: "Kỹ năng tìm và thuê phòng trọ an toàn",
+          ten: "Kỹ năng lập hồ sơ and Quản trị mục tiêu",
+          mo_ta: "Hành chính chuyên nghiệp.",
           nhiem_vu: [
             {
-              ten: "Tìm phòng trọ",
-              mo_ta: "Cách tìm, đánh giá phòng trọ an toàn",
+              ten: "Chuẩn bị túi hồ sơ vàng",
+              mo_ta: "Checklist các giấy tờ cần thiết, kỹ năng scan and upload hồ sơ trực tuyến chuẩn xác.",
+              thoi_luong_de_xuat: "25 phút"
             },
-            { ten: "Hợp đồng thuê", mo_ta: "Đọc hiểu và ký hợp đồng thuê nhà" },
-          ],
-        },
+            {
+              ten: "Chiến thuật ôn thi giai đoạn cuối",
+              mo_ta: "Xây dựng lịch học tập khoa học và các bài tập giải tỏa áp lực tâm lý thi cử.",
+              thoi_luong_de_xuat: "30 phút"
+            }
+          ]
+        }
       ],
-      ket_qua_can_dat: [
-        "Có kỹ năng quản lý tài chính",
-        "Biết các kỹ năng sinh hoạt cơ bản",
-        "Biết cách tìm và thuê phòng trọ",
-      ],
-      phuong_phap_goi_y: ["Thực hành", "Simulation", "Học từ người đi trước"],
-      so_tiet_de_xuat: 5,
-      thang_thuc_hien: [3, 4],
-      tu_khoa_tim_kiem: [
-        "tự lập",
-        "sinh viên",
-        "phòng trọ",
-        "nấu ăn",
-        "ngân sách",
-      ],
+      ket_qua_can_dat: ["Quyết định hướng đi sáng suốt", "Hồ sơ xét tuyển hoàn chỉnh", "Tâm lý tự tin"],
+      phuong_phap_goi_y: ["Tư vấn", "Thực hành thủ tục", "Workshops"],
+      tu_khoa_tim_kiem: ["tốt nghiệp", "xét tuyển", "chọn ngành", "ôn thi"],
+      so_tiet_de_xuat: 4,
+      thang_thuc_hien: [4, 5]
     },
-
     {
       ma: "12.10",
-      ten: "Thực hiện kế hoạch nghề nghiệp",
+      ten: "Chào đón tương lai (Bước vào thế giới nghề nghiệp)",
       mach_noi_dung: "huong_nghiep",
+      muc_tieu: ["Chuẩn bị hồ sơ ứng tuyển và rèn luyện kỹ năng phỏng vấn thực tế."],
+      hoat_dong: [
+        {
+          so_thu_tu: 1,
+          ten: "Chuẩn bị hồ sơ ứng tuyển (Portfolio/CV)",
+          mo_ta: "Tạo dấu ấn chuyên nghiệp đầu đời.",
+          nhiem_vu: [
+            {
+              ten: "Viết CV chuyên nghiệp",
+              mo_ta: "Cấu trúc CV, từ khóa năng lực, lỗi cần tránh và viết Cover Letter.",
+              thoi_luong_de_xuat: "45 phút",
+              link_tai_lieu_tham_khao: ["https://topcv.vn/mau-cv", "https://canva.com/cv-templates"]
+            }
+          ]
+        },
+        {
+          so_thu_tu: 2,
+          ten: "Kỹ năng phỏng vấn",
+          mo_ta: "Chinh phục nhà tuyển dụng.",
+          nhiem_vu: [
+            {
+              ten: "Phỏng vấn thử (Mock Interview)",
+              mo_ta: "Thực hành trả lời các câu hỏi thường gặp theo phương pháp STAR (Situation, Task, Action, Result).",
+              thoi_luong_de_xuat: "45 phút",
+              link_tai_lieu_tham_khao: ["https://youtube.com/results?search_query=STAR+method+interview"]
+            }
+          ]
+        },
+        {
+          so_thu_tu: 3,
+          ten: "Tìm hiểu quy chế tuyển sinh/tuyển dụng",
+          mo_ta: "Nắm vững luật chơi.",
+          nhiem_vu: [
+            {
+              ten: "Giải mã thông báo tuyển dụng/tuyển sinh",
+              mo_ta: "Cách đọc JD (Job Description), hiểu các yêu cầu ẩn và chuẩn bị hồ sơ hành chính.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        }
+      ],
+      ket_qua_can_dat: ["Có CV sẵn sàng", "Tự tin phỏng vấn", "Hiểu quy trình tuyển dụng"],
+      phuong_phap_goi_y: ["Đóng vai", "Thực hành viết"],
+      tu_khoa_tim_kiem: ["CV", "phỏng vấn", "STAR method", "tuyển dụng"],
+      so_tiet_de_xuat: 3,
+      thang_thuc_hien: [5]
+    },
+    {
+      ma: "12.11",
+      ten: "Xây dựng giá trị gia đình",
+      mach_noi_dung: "xa_hoi",
       muc_tieu: [
-        "Hoàn tất các bước chuẩn bị cho con đường đã chọn",
-        "Có kế hoạch hành động 1 năm đầu sau tốt nghiệp",
-        "Sẵn sàng bước vào giai đoạn mới",
+        "Nhận diện và trân trọng các giá trị gia đình truyền thống và hiện đại",
+        "Thực hiện trách nhiệm của người trưởng thành trong việc xây dựng nếp nhà",
+        "Giải quyết xung đột thế hệ bằng đối thoại văn minh",
       ],
       hoat_dong: [
         {
           so_thu_tu: 1,
-          ten: "Finalize quyết định",
-          mo_ta: "Chốt lựa chọn nghề nghiệp/học tập",
+          ten: "Hội nghị Gia đình",
+          mo_ta: "Thực hành dân chủ và giải quyết mâu thuẫn trong gia đình",
           nhiem_vu: [
             {
-              ten: "Quyết định cuối cùng",
-              mo_ta: "Chọn trường/ngành/công việc sau tốt nghiệp",
-            },
-            {
-              ten: "Kế hoạch B, C",
-              mo_ta: "Chuẩn bị phương án dự phòng nếu không đạt kế hoạch A",
+              ten: "Sắm vai giải quyết xung đột",
+              mo_ta: "Xử lý tình huống con chọn nghề khác ý cha mẹ dựa trên sự thấu cảm",
+              ky_nang_can_dat: ["2.1", "2.2"],
             },
           ],
         },
         {
           so_thu_tu: 2,
-          ten: "Gap year planning",
-          mo_ta: "Lập kế hoạch nếu chọn gap year",
+          ten: "Người Quản gia Tập sự",
+          mo_ta: "Chủ động gánh vác trách nhiệm tổ chức cuộc sống gia đình",
           nhiem_vu: [
             {
-              ten: "Mục tiêu gap year",
-              mo_ta:
-                "Xác định mục tiêu cụ thể: làm việc, tình nguyện, học thêm...",
-            },
-            {
-              ten: "Lịch trình gap year",
-              mo_ta: "Lập kế hoạch chi tiết cho 1 năm",
-            },
-          ],
-        },
-        {
-          so_thu_tu: 3,
-          ten: "First 100 days plan",
-          mo_ta: "Kế hoạch 100 ngày đầu sau tốt nghiệp",
-          nhiem_vu: [
-            {
-              ten: "Onboarding plan",
-              mo_ta: "Kế hoạch hòa nhập môi trường mới (đại học/công việc)",
-            },
-            {
-              ten: "Quick wins",
-              mo_ta: "Các mục tiêu ngắn hạn để tạo đà thành công",
+              ten: "Lập kế hoạch quản gia",
+              mo_ta: "Quán xuyến nhà cửa khi cha mẹ vắng nhà, thể hiện sự trưởng thành",
+              ky_nang_can_dat: ["1.3"],
             },
           ],
         },
       ],
       ket_qua_can_dat: [
-        "Có quyết định rõ ràng về hướng đi",
-        "Có kế hoạch 100 ngày đầu",
-        "Sẵn sàng cho giai đoạn mới",
+        "Biết cách đối thoại để giữ gìn hòa khí điểm tựa gia đình",
+        "Thể hiện được sự trưởng thành qua hành động gánh vác",
       ],
-      phuong_phap_goi_y: ["Lập kế hoạch", "Coaching", "Chia sẻ"],
+      phuong_phap_goi_y: ["Đóng vai", "Tranh biện", "Dự án cá nhân"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [4, 5],
-      tu_khoa_tim_kiem: [
-        "kế hoạch nghề nghiệp",
-        "gap year",
-        "100 ngày đầu",
-        "tốt nghiệp",
-      ],
+      thang_thuc_hien: [10, 11],
+      goi_y_tich_hop: {
+        bien_ban_hop: [
+          "Thảo luận cách lồng ghép giá trị gia đình vào các môn học",
+          "Chia sẻ kinh nghiệm xử lý tình huống xung đột thế hệ",
+        ],
+        ke_hoach_day_hoc: [
+          "Tích hợp đạo đức: Lòng biết ơn và Trách nhiệm",
+          "Hoạt động triển lãm ảnh 'Góc nhỏ yêu thương'",
+          "Kết nối giá trị Hiếu thảo với truyền thống Uống nước nhớ nguồn (1.1)",
+        ],
+        ngoai_khoa: [
+          "Ngày hội gia đình: 'Sợi dây kết nối thế hệ'",
+          "Cuộc thi viết: 'Lá thư gửi tương lai của gia đình'",
+        ],
+      },
     },
   ],
 };
@@ -2683,11 +2478,11 @@ export function getChuDeTheoThang(khoi: number, thang: number): ChuDe | null {
     khoi === 10
       ? CHUONG_TRINH_LOP_10
       : khoi === 11
-      ? CHUONG_TRINH_LOP_11
-      : CHUONG_TRINH_LOP_12;
+        ? CHUONG_TRINH_LOP_11
+        : CHUONG_TRINH_LOP_12;
 
   return (
-    chuongTrinh.chu_de.find((cd) => cd.thang_thuc_hien.includes(thang)) || null
+    chuongTrinh.chu_de.find((cd) => cd.thang_thuc_hien?.includes(thang)) || null
   );
 }
 
@@ -2702,8 +2497,8 @@ export function timChuDeTheoTen(
     khoi === 10
       ? CHUONG_TRINH_LOP_10
       : khoi === 11
-      ? CHUONG_TRINH_LOP_11
-      : CHUONG_TRINH_LOP_12;
+        ? CHUONG_TRINH_LOP_11
+        : CHUONG_TRINH_LOP_12;
 
   const searchLower = tenHoacTuKhoa.toLowerCase();
 
@@ -2725,8 +2520,8 @@ export function getTatCaChuDe(khoi: number): ChuDe[] {
     khoi === 10
       ? CHUONG_TRINH_LOP_10
       : khoi === 11
-      ? CHUONG_TRINH_LOP_11
-      : CHUONG_TRINH_LOP_12;
+        ? CHUONG_TRINH_LOP_11
+        : CHUONG_TRINH_LOP_12;
 
   return chuongTrinh.chu_de;
 }
@@ -2739,8 +2534,8 @@ export function getThongTinKhoi(khoi: number): Omit<ChuongTrinhKhoi, "chu_de"> {
     khoi === 10
       ? CHUONG_TRINH_LOP_10
       : khoi === 11
-      ? CHUONG_TRINH_LOP_11
-      : CHUONG_TRINH_LOP_12;
+        ? CHUONG_TRINH_LOP_11
+        : CHUONG_TRINH_LOP_12;
 
   const { chu_de, ...thongTin } = chuongTrinh;
   return thongTin;
@@ -2848,8 +2643,8 @@ export function taoContextBienBanHop(khoi: number, thang: number): string {
 **Số tiết**: ${chuDe.so_tiet_de_xuat}
 
 **Đặc điểm tâm lý HS khối ${khoi}**: ${thongTinKhoi.dac_diem_tam_ly_lua_tuoi
-    .slice(0, 2)
-    .join("; ")}
+      .slice(0, 2)
+      .join("; ")}
 
 **Mục tiêu cần đạt**:
 ${chuDe.muc_tieu.map((mt, i) => `- ${mt}`).join("\n")}
@@ -2860,8 +2655,8 @@ ${chuDe.hoat_dong.map((hd) => `- ${hd.ten}: ${hd.mo_ta}`).join("\n")}
 **Phương pháp gợi ý**: ${chuDe.phuong_phap_goi_y.join(", ")}
 
 **Lưu ý khi thảo luận**: Cần quan tâm đến ${thongTinKhoi.muc_tieu_phat_trien_nang_luc
-    .slice(0, 2)
-    .join(", ")}
+      .slice(0, 2)
+      .join(", ")}
 `;
 }
 

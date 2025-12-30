@@ -8,6 +8,7 @@ export interface PPCTChuDe {
   shdc: number // Sinh hoạt dưới cờ
   hdgd: number // Hoạt động giáo dục theo chủ đề
   shl: number // Sinh hoạt lớp
+  hoat_dong?: string[] // Danh sách các hoạt động chính trong chủ đề
   tuan_bat_dau?: number
   tuan_ket_thuc?: number
   ghi_chu?: string
@@ -20,7 +21,7 @@ export interface PPCTKhoi {
 }
 
 // ============================================
-// PPCT KHỐI 10
+// PPCT KHỐI 10 - THÍCH ỨNG VÀ KHÁM PHÁ
 // ============================================
 export const PPCT_KHOI_10: PPCTKhoi = {
   khoi: 10,
@@ -33,6 +34,14 @@ export const PPCT_KHOI_10: PPCTKhoi = {
       shdc: 3,
       hdgd: 3,
       shl: 3,
+      hoat_dong: [
+        "Tìm hiểu nội quy trường lớp và quy định cộng đồng",
+        "Tìm hiểu truyền thống nhà trường",
+        "Thực hiện nội quy và quy định cộng đồng",
+        "Giáo dục truyền thống nhà trường",
+        "Kế hoạch truyền thông 'Trường học hạnh phúc'",
+        "Xây dựng và thực hiện kế hoạch tự rèn luyện"
+      ],
       tuan_bat_dau: 1,
       tuan_ket_thuc: 3,
     },
@@ -43,6 +52,15 @@ export const PPCT_KHOI_10: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Xác định tính cách bản thân",
+        "Tìm hiểu về điều chỉnh tư duy theo hướng tích cực",
+        "Tìm hiểu về quan điểm sống",
+        "Lập và thực hiện kế hoạch rèn luyện phát huy điểm mạnh, hạn chế điểm yếu",
+        "Điều chỉnh tư duy của bản thân theo hướng tích cực",
+        "Rèn luyện tính cách và tư duy tích cực",
+        "Thể hiện quan điểm sống của bản thân"
+      ],
       tuan_bat_dau: 4,
       tuan_ket_thuc: 7,
     },
@@ -53,86 +71,164 @@ export const PPCT_KHOI_10: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Tìm hiểu biểu hiện của người có trách nhiệm",
+        "Tìm hiểu sự tự chủ, lòng tự trọng và ý chí vượt khó",
+        "Tìm hiểu biểu hiện của người có tư duy phản biện",
+        "Tìm hiểu về kế hoạch tài chính cá nhân",
+        "Thực hành trách nhiệm, tự chủ, tự trọng, ý chí vượt khó",
+        "Thực hành quy trình phản biện 4 bước có cấu trúc",
+        "Xây dựng và thực hiện kế hoạch tài chính cá nhân",
+        "Rèn luyện tính trách nhiệm trong thực hiện mục tiêu"
+      ],
       tuan_bat_dau: 8,
       tuan_ket_thuc: 11,
     },
     {
       chu_de_so: 4,
-      ten: "Trách nhiệm với gia đình",
+      ten: "Chủ động, tự tin trong học tập và giao tiếp",
       tong_tiet: 12,
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Tìm hiểu biểu hiện của sự chủ động trong các môi trường",
+        "Tìm hiểu sự tự tin và thân thiện trong giao tiếp",
+        "Thể hiện sự chủ động trong học tập và giao tiếp",
+        "Thực hành giao tiếp tự tin, thân thiện với bạn bè",
+        "Thực hành giao tiếp, ứng xử với thầy, cô giáo",
+        "Thực hành ứng xử phù hợp trong giao tiếp ở gia đình",
+        "Rèn luyện tính chủ động, tự tin trong cuộc sống"
+      ],
       tuan_bat_dau: 12,
       tuan_ket_thuc: 15,
     },
     {
       chu_de_so: 5,
-      ten: "Xây dựng cộng đồng",
+      ten: "Trách nhiệm với gia đình",
       tong_tiet: 12,
       shdc: 4,
       hdgd: 4,
       shl: 4,
-      tuan_bat_dau: 19,
-      tuan_ket_thuc: 22,
-      ghi_chu: "Tuần 16-18: Kiểm tra HKI",
+      hoat_dong: [
+        "Tìm hiểu về trách nhiệm với gia đình",
+        "Thể hiện trách nhiệm với gia đình",
+        "Xây dựng kế hoạch thực hiện hoạt động lao động trong gia đình",
+        "Đề xuất biện pháp phát triển kinh tế gia đình",
+        "Thực hiện trách nhiệm với gia đình và đánh giá"
+      ],
+      tuan_bat_dau: 18,
+      tuan_ket_thuc: 21,
+      ghi_chu: "Tuần 16-17: Kiểm tra HKI",
     },
     {
       chu_de_so: 6,
-      ten: "Bảo tồn cảnh quan thiên nhiên",
+      ten: "Tham gia xây dựng cộng đồng",
       tong_tiet: 9,
       shdc: 3,
       hdgd: 3,
       shl: 3,
-      tuan_bat_dau: 23,
-      tuan_ket_thuc: 25,
+      hoat_dong: [
+        "Tìm hiểu biện pháp mở rộng quan hệ và thu hút cộng đồng",
+        "Xác định nội dung tuyên truyền về văn hóa ứng xử nơi công cộng",
+        "Thực hiện biện pháp mở rộng quan hệ và thu hút cộng đồng",
+        "Lập kế hoạch tuyên truyền văn hóa ứng xử nơi công cộng",
+        "Thực hiện kế hoạch tuyên truyền văn hóa ứng xử",
+        "Tham gia kết nối cộng đồng và đánh giá"
+      ],
+      tuan_bat_dau: 22,
+      tuan_ket_thuc: 24,
     },
     {
       chu_de_so: 7,
-      ten: "Bảo vệ môi trường",
+      ten: "Bảo tồn cảnh quan thiên nhiên",
       tong_tiet: 12,
       shdc: 4,
       hdgd: 4,
       shl: 4,
-      tuan_bat_dau: 26,
-      tuan_ket_thuc: 29,
+      hoat_dong: [
+        "Tìm hiểu hành vi, việc làm bảo tồn cảnh quan thiên nhiên",
+        "Tìm hiểu về hoạt động tuyên truyền bảo vệ cảnh quan thiên nhiên",
+        "Nhận xét, đánh giá việc bảo tồn cảnh quan ở địa phương",
+        "Xây dựng và thực hiện kế hoạch tuyên truyền bảo vệ cảnh quan",
+        "Tuyên truyền bảo vệ cảnh quan thiên nhiên và đánh giá"
+      ],
+      tuan_bat_dau: 25,
+      tuan_ket_thuc: 28,
     },
     {
       chu_de_so: 8,
-      ten: "Tìm hiểu nghề nghiệp",
+      ten: "Bảo vệ môi trường tự nhiên",
       tong_tiet: 9,
       shdc: 3,
       hdgd: 3,
       shl: 3,
-      tuan_bat_dau: 30,
-      tuan_ket_thuc: 32,
+      hoat_dong: [
+        "Phân tích, đánh giá thực trạng môi trường tự nhiên ở địa phương",
+        "Thuyết trình về ý nghĩa của việc bảo vệ môi trường tự nhiên",
+        "Thực hiện các giải pháp bảo vệ môi trường tự nhiên",
+        "Thực hiện bảo vệ môi trường tự nhiên ở địa phương và đánh giá"
+      ],
+      tuan_bat_dau: 29,
+      tuan_ket_thuc: 31,
     },
     {
       chu_de_so: 9,
-      ten: "Lập kế hoạch nghề nghiệp cá nhân",
-      tong_tiet: 6,
-      shdc: 2,
-      hdgd: 2,
-      shl: 2,
-      tuan_bat_dau: 33,
-      tuan_ket_thuc: 34,
-    },
-    {
-      chu_de_so: 10,
-      ten: "Tổng kết năm học",
+      ten: "Tìm hiểu nghề nghiệp",
       tong_tiet: 3,
       shdc: 1,
       hdgd: 1,
       shl: 1,
+      hoat_dong: [
+        "Tìm hiểu hoạt động sản xuất, kinh doanh, dịch vụ ở địa phương",
+        "Xác định, tìm hiểu các thông tin về nghề em quan tâm ở địa phương",
+        "Lập kế hoạch và thực hiện trải nghiệm nghề",
+        "Rèn luyện bản thân theo yêu cầu của nghề em quan tâm"
+      ],
+      tuan_bat_dau: 32,
+      tuan_ket_thuc: 32,
+    },
+    {
+      chu_de_so: 10,
+      ten: "Hiểu bản thân để chọn nghề phù hợp",
+      tong_tiet: 6,
+      shdc: 2,
+      hdgd: 2,
+      shl: 2,
+      hoat_dong: [
+        "Tìm hiểu yêu cầu của việc chọn nghề phù hợp",
+        "Lựa chọn nghề nghiệp phù hợp với bản thân",
+        "Đánh giá sự phù hợp của bản thân với nghề định lựa chọn",
+        "Xây dựng kế hoạch rèn luyện bản thân theo định hướng nghề nghiệp",
+        "Rèn luyện năng lực, phẩm chất theo kế hoạch"
+      ],
+      tuan_bat_dau: 33,
+      tuan_ket_thuc: 34,
+    },
+    {
+      chu_de_so: 11,
+      ten: "Lập kế hoạch học tập, rèn luyện theo định hướng nghề nghiệp",
+      tong_tiet: 3,
+      shdc: 1,
+      hdgd: 1,
+      shl: 1,
+      hoat_dong: [
+        "Tìm hiểu hệ thống trường đào tạo liên quan đến nghề định chọn",
+        "Tìm hiểu về tham vấn chọn nghề và định hướng học tập",
+        "Tìm hiểu cách lập kế hoạch học tập, rèn luyện theo định hướng nghề nghiệp",
+        "Trình bày thông tin về hệ thống đào tạo nghề",
+        "Thực hành tham vấn chọn nghề và định hướng học tập",
+        "Xây dựng kế hoạch học tập, rèn luyện bản thân theo nghề",
+        "Học tập, rèn luyện theo định hướng nghề nghiệp và đánh giá"
+      ],
       tuan_bat_dau: 35,
       tuan_ket_thuc: 35,
-      ghi_chu: "Sẽ cập nhật sau",
     },
   ],
 }
 
 // ============================================
-// PPCT KHỐI 11
+// PPCT KHỐI 11 - PHÁT TRIỂN VÀ BẢN SẮC
 // ============================================
 export const PPCT_KHOI_11: PPCTKhoi = {
   khoi: 11,
@@ -145,9 +241,16 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 3,
       hdgd: 3,
       shl: 3,
+      hoat_dong: [
+        "Tìm hiểu cách phát triển mối quan hệ tốt đẹp với thầy cô, bạn bè",
+        "Tìm hiểu cách làm chủ và kiểm soát các mối quan hệ với bạn bè ở trường, qua mạng xã hội",
+        "Xây dựng mối quan hệ tốt đẹp với thầy cô, bạn bè",
+        "Rèn luyện kỹ năng làm chủ và kiểm soát các mối quan hệ với bạn bè ở trường, qua mạng xã hội",
+        "Lập kế hoạch đánh giá hiệu quả hoạt động xây dựng truyền thống nhà trường",
+        "Chủ động, tự tin làm quen và thiết lập mối quan hệ"
+      ],
       tuan_bat_dau: 1,
       tuan_ket_thuc: 3,
-      ghi_chu: "Đóng góp cho sự phát triển nhà trường, quản lý quan hệ trên mạng xã hội",
     },
     {
       chu_de_so: 2,
@@ -156,9 +259,16 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Khám phá đặc điểm riêng của bản thân",
+        "Tìm hiểu về cách thể hiện sự tự tin đối với những đặc điểm riêng của bản thân",
+        "Tìm hiểu cách điều chỉnh bản thân để thích ứng với sự thay đổi",
+        "Thiết kế và trình bày sản phẩm giới thiệu đặc điểm riêng của bản thân",
+        "Xây dựng kế hoạch phát triển sở trường liên quan đến định hướng nghề nghiệp",
+        "Thể hiện sự tự tin về đặc điểm riêng trong các tình huống thực tiễn"
+      ],
       tuan_bat_dau: 4,
       tuan_ket_thuc: 7,
-      ghi_chu: "Quản lý cảm xúc, nhận diện giá trị cốt lõi",
     },
     {
       chu_de_so: 3,
@@ -167,9 +277,15 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Tìm hiểu cách tuân thủ kỉ luật, quy định của nhóm, lớp, tập thể",
+        "Tuân thủ những quy định chung của tổ, lớp, chi đoàn, trường, cộng đồng",
+        "Rèn luyện và phát triển các kĩ năng còn thiếu sót của bản thân",
+        "Khích lệ, động viên bạn bè phát huy khả năng, cố gắng",
+        "Giúp bạn bè xác định mục tiêu, xây dựng kế hoạch tự hoàn thiện"
+      ],
       tuan_bat_dau: 8,
       tuan_ket_thuc: 11,
-      ghi_chu: "Kỷ luật tự giác, tổ chức cuộc sống cá nhân khoa học",
     },
     {
       chu_de_so: 4,
@@ -178,9 +294,14 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 3,
       hdgd: 3,
       shl: 3,
+      hoat_dong: [
+        "Tìm hiểu những việc cần làm thể hiện sự quan tâm, chăm sóc thường xuyên đến người thân",
+        "Biện pháp xây dựng và phát triển mối quan hệ với mọi người trong gia đình",
+        "Chia sẻ những việc làm đã thể hiện sự quan tâm, chăm sóc người thân",
+        "Thực hiện mục tiêu tiết kiệm tài chính của gia đình"
+      ],
       tuan_bat_dau: 12,
       tuan_ket_thuc: 14,
-      ghi_chu: "Vai trò trụ cột trong gia đình, kỹ năng chăm sóc người thân",
     },
     {
       chu_de_so: 5,
@@ -189,9 +310,16 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Tìm hiểu biện pháp xây dựng và phát triển cộng đồng",
+        "Xây dựng văn hóa mạng xã hội văn minh",
+        "Lập kế hoạch dự án cộng đồng (Chuẩn 5W1H)",
+        "Hoạt động: Thu gom pin cũ đổi cây xanh",
+        "Tham gia các hoạt động tình nguyện tình nghĩa"
+      ],
       tuan_bat_dau: 15,
       tuan_ket_thuc: 18,
-      ghi_chu: "Kết thúc HKI. Thiết kế và thực hiện dự án an sinh xã hội",
+      ghi_chu: "Kết thúc HKI",
     },
     {
       chu_de_so: 6,
@@ -200,9 +328,14 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 2,
       hdgd: 2,
       shl: 2,
+      hoat_dong: [
+        "Tuân thủ quy tắc giữ gìn và bảo vệ cảnh quan, di tích, danh lam thắng cảnh",
+        "Lập kế hoạch đánh giá thực trạng bảo tồn danh lam thắng cảnh của cộng đồng địa phương",
+        "Điều tra thực trạng theo kế hoạch và viết báo cáo",
+        "Nhận thức tác động của phát triển kinh tế đến việc bảo tồn cảnh quan"
+      ],
       tuan_bat_dau: 19,
       tuan_ket_thuc: 20,
-      ghi_chu: "Dự án nhanh hoặc tham quan thực tế",
     },
     {
       chu_de_so: 7,
@@ -211,9 +344,13 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Tác động của sản xuất, kinh doanh đến môi trường địa phương",
+        "Cải thiện quá trình sản xuất, kinh doanh theo hướng bền vững",
+        "Đề xuất các giải pháp bảo vệ môi trường toàn diện"
+      ],
       tuan_bat_dau: 21,
       tuan_ket_thuc: 24,
-      ghi_chu: "Quản lý tài nguyên, lối sống xanh bền vững",
     },
     {
       chu_de_so: 8,
@@ -222,9 +359,14 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Phân loại các nhóm nghề cơ bản (Chuẩn ISCO Việt Nam)",
+        "Tìm hiểu ý nghĩa của việc đảm bảo an toàn và sức khỏe nghề nghiệp",
+        "Phân tích yêu cầu của nhà tuyển dụng/Xu hướng 4.0",
+        "Dịch chuyển lao động trong kỷ nguyên số"
+      ],
       tuan_bat_dau: 25,
       tuan_ket_thuc: 28,
-      ghi_chu: "Phân tích các nhóm nghề, đối chiếu yêu cầu thị trường lao động",
     },
     {
       chu_de_so: 9,
@@ -233,9 +375,14 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Phân tích điểm mạnh, điểm yếu của bản thân đối với từng nhóm nghề",
+        "Xác định nhóm nghề/nghề lựa chọn dựa vào năng lực bản thân",
+        "Đề xuất các giải pháp học tập, rèn luyện theo nghề lựa chọn",
+        "Chia sẻ thuận lợi và khó khăn trong quá trình rèn luyện"
+      ],
       tuan_bat_dau: 29,
       tuan_ket_thuc: 32,
-      ghi_chu: "Cá nhân hóa quá trình rèn luyện theo nhóm ngành đã chọn",
     },
     {
       chu_de_so: 10,
@@ -244,15 +391,23 @@ export const PPCT_KHOI_11: PPCTKhoi = {
       shdc: 3,
       hdgd: 3,
       shl: 3,
+      hoat_dong: [
+        "Tìm hiểu hệ thống trường đào tạo liên quan đến nghề định chọn",
+        "Tìm hiểu về tham vấn chọn nghề và định hướng học tập",
+        "Tìm hiểu cách lập kế hoạch học tập, rèn luyện theo nghề lựa chọn",
+        "Trình bày thông tin về hệ thống đào tạo nghề",
+        "Thực hành tham vấn chọn nghề và định hướng học tập",
+        "Xây dựng kế hoạch học tập, rèn luyện bản thân theo nghề",
+        "Học tập, rèn luyện theo định hướng nghề nghiệp và đánh giá"
+      ],
       tuan_bat_dau: 33,
       tuan_ket_thuc: 35,
-      ghi_chu: "Chuẩn bị cho kỳ thi tốt nghiệp và đại học",
     },
   ],
 }
 
 // ============================================
-// PPCT KHỐI 12
+// PPCT KHỐI 12 - TRƯỞNG THÀNH VÀ CHUYỂN TIẾP
 // ============================================
 export const PPCT_KHOI_12: PPCTKhoi = {
   khoi: 12,
@@ -265,9 +420,15 @@ export const PPCT_KHOI_12: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Tìm hiểu cách nuôi dưỡng, giữ gìn và mở rộng các mối quan hệ tốt đẹp với thầy cô và bạn bè",
+        "Tìm hiểu về cách hợp tác với mọi người trong hoạt động chung",
+        "Thể hiện cách nuôi dưỡng, giữ gìn và mở rộng mối quan hệ tốt đẹp với thầy cô",
+        "Phân tích dư luận xã hội về quan hệ bạn bè trên mạng xã hội",
+        "Thực hiện các hoạt động xây dựng truyền thống nhà trường"
+      ],
       tuan_bat_dau: 1,
       tuan_ket_thuc: 4,
-      ghi_chu: "Khởi động năm học cuối cấp. Làm chủ, kiểm soát quan hệ trên mạng xã hội",
     },
     {
       chu_de_so: 2,
@@ -276,9 +437,13 @@ export const PPCT_KHOI_12: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Xác định những biểu hiện trưởng thành của cá nhân",
+        "Tìm hiểu biểu hiện của phẩm chất ý chí và sự đam mê",
+        "Nhận diện đặc điểm của người có tư duy độc lập"
+      ],
       tuan_bat_dau: 5,
       tuan_ket_thuc: 8,
-      ghi_chu: "Nhận diện sự trưởng thành, rèn luyện ý chí và đam mê",
     },
     {
       chu_de_so: 3,
@@ -287,9 +452,12 @@ export const PPCT_KHOI_12: PPCTKhoi = {
       shdc: 5,
       hdgd: 5,
       shl: 5,
+      hoat_dong: [
+        "Đánh giá các kỹ năng sinh tồn và tự phục vụ",
+        "Rèn luyện phẩm chất và năng lực theo định hướng tương lai"
+      ],
       tuan_bat_dau: 9,
       tuan_ket_thuc: 13,
-      ghi_chu: "Trọng tâm HKI. Tuân thủ kỷ luật, pháp luật. Kế hoạch tài chính cá nhân",
     },
     {
       chu_de_so: 4,
@@ -298,9 +466,12 @@ export const PPCT_KHOI_12: PPCTKhoi = {
       shdc: 4,
       hdgd: 4,
       shl: 4,
+      hoat_dong: [
+        "Thực hiện trách nhiệm của người trưởng thành trong gia đình",
+        "Chuẩn bị tâm lý và kỹ năng khi sinh sống xa nhà"
+      ],
       tuan_bat_dau: 14,
       tuan_ket_thuc: 17,
-      ghi_chu: "Giải quyết mâu thuẫn gia đình, quản lý kinh tế gia đình",
     },
     {
       chu_de_so: 5,
@@ -309,9 +480,12 @@ export const PPCT_KHOI_12: PPCTKhoi = {
       shdc: 3,
       hdgd: 3,
       shl: 3,
+      hoat_dong: [
+        "Tham gia các hoạt động cộng đồng và hội nhập quốc tế",
+        "Đề xuất giải pháp cho các vấn đề xã hội phổ biến"
+      ],
       tuan_bat_dau: 19,
       tuan_ket_thuc: 21,
-      ghi_chu: "Bắt đầu HKII. Hoạt động xã hội hóa, xây dựng văn hóa cộng đồng",
     },
     {
       chu_de_so: 6,
@@ -320,9 +494,13 @@ export const PPCT_KHOI_12: PPCTKhoi = {
       shdc: 3,
       hdgd: 3,
       shl: 3,
+      hoat_dong: [
+        "Tìm hiểu các giải pháp tích cực, sáng tạo trong việc bảo tồn cảnh quan thiên nhiên",
+        "Tìm hiểu về hoạt động tuyên truyền trong cộng đồng",
+        "Thực hiện giải pháp sáng tạo bảo tồn cảnh quan"
+      ],
       tuan_bat_dau: 22,
       tuan_ket_thuc: 24,
-      ghi_chu: "Đánh giá thực trạng bảo tồn tại địa phương, đề xuất giải pháp",
     },
     {
       chu_de_so: 7,
@@ -331,9 +509,12 @@ export const PPCT_KHOI_12: PPCTKhoi = {
       shdc: 3,
       hdgd: 3,
       shl: 3,
+      hoat_dong: [
+        "Ảnh hưởng của biến đổi khí hậu đến đời sống",
+        "Tham gia bảo vệ đa dạng sinh học"
+      ],
       tuan_bat_dau: 25,
       tuan_ket_thuc: 27,
-      ghi_chu: "Nhận diện hành vi bảo vệ/xâm hại động vật hoang dã",
     },
     {
       chu_de_so: 8,
@@ -342,34 +523,62 @@ export const PPCT_KHOI_12: PPCTKhoi = {
       shdc: 3,
       hdgd: 3,
       shl: 3,
+      hoat_dong: [
+        "Tìm hiểu về xu hướng phát triển nghề nghiệp trong xã hội hiện đại",
+        "Xác định phẩm chất, năng lực cần có của người lao động hiện đại",
+        "Rèn luyện tính chuyên nghiệp trong công việc",
+        "Biện pháp đảm bảo an toàn và sức khỏe nghề nghiệp"
+      ],
       tuan_bat_dau: 28,
       tuan_ket_thuc: 30,
-      ghi_chu: "Xu hướng phát triển nghề nghiệp, đạo đức nghề nghiệp",
     },
     {
       chu_de_so: 9,
-      ten: "Rèn luyện phẩm chất, năng lực phù hợp định hướng nghề nghiệp",
+      ten: "Định hướng học tập và nghề nghiệp",
       tong_tiet: 9,
       shdc: 3,
       hdgd: 3,
       shl: 3,
+      hoat_dong: [
+        "Lựa chọn hướng đi và trường đào tạo phù hợp",
+        "Tìm hiểu về tham vấn chọn nghề và định hướng học tập",
+        "Hoàn thiện hồ sơ và thủ tục xét tuyển"
+      ],
       tuan_bat_dau: 31,
       tuan_ket_thuc: 33,
-      ghi_chu: "Rèn luyện theo kế hoạch nghề nghiệp cá nhân",
     },
     {
       chu_de_so: 10,
-      ten: "Quyết định lựa chọn nghề phù hợp",
-      tong_tiet: 9,
-      shdc: 3,
-      hdgd: 3,
-      shl: 3,
-      tuan_bat_dau: 33,
+      ten: "Chào đón tương lai (Bước vào thế giới nghề nghiệp)",
+      tong_tiet: 6,
+      shdc: 2,
+      hdgd: 2,
+      shl: 2,
+      hoat_dong: [
+        "Chuẩn bị hồ sơ ứng tuyển (Portfolio/CV)",
+        "Thực hành phỏng vấn thử (Phương pháp STAR)",
+        "Giải mã thông báo tuyển dụng và quy chế tuyển sinh"
+      ],
+      tuan_bat_dau: 34,
+      tuan_ket_thuc: 34,
+    },
+    {
+      chu_de_so: 11,
+      ten: "Xây dựng giá trị gia đình",
+      tong_tiet: 6,
+      shdc: 2,
+      hdgd: 2,
+      shl: 2,
+      hoat_dong: [
+        "Xây dựng gia đình bền vững",
+        "Tổ chức cuộc sống gia đình hạnh phúc"
+      ],
+      tuan_bat_dau: 35,
       tuan_ket_thuc: 35,
-      ghi_chu: "Hoàn thiện kế hoạch nghề nghiệp, chuẩn bị tốt nghiệp",
     },
   ],
 }
+
 
 // ============================================
 // HÀM TRUY XUẤT PPCT

@@ -11,7 +11,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Trợ lý TTCM môn HĐTN, HN & GDĐP",
   description: "Tự động hóa văn bản giáo dục với AI. Hỗ trợ tạo biên bản họp, giáo án và các tài liệu chuyên môn.",
-  generator: "v0.app",
+  generator: "Tranthachbtx@gmail.com",
   icons: {
     icon: [
       {
