@@ -88,8 +88,7 @@ function formatForWord(text: unknown): string {
     // Clean up lines
     .split("\n")
     .map((line) => line.trim())
-    // Collapse multiple empty lines into a single newline to follow administrative standards
-    // (spacing should be handled by paragraph properties, not empty rows)
+    // Collapse multiple empty lines into a single newline
     .filter((line, index, arr) => line !== "" || (index > 0 && arr[index - 1] !== ""))
     .join("\n")
     .trim()
@@ -98,9 +97,18 @@ function formatForWord(text: unknown): string {
 
   if (!formatted) return "";
 
-  // Use a unique marker for paragraph breaks
-  return formatted.replace(/\n/g, "{{BR}}");
+  // Standardize administrative styling (Decree 30/2020/NĐ-CP):
+  // - Line spacing: 1.5 lines
+  // - First line indent: 1.27cm (720 twips)
+  // - Justified alignment
+  // - Font: Times New Roman, Size 13pt (26 half-points)
+
+  // Use a marker for line breaks and a special marker for the start
+  return "[[STYLE_FIX]]" + formatted.replace(/\n/g, "{{BR}}");
 }
+
+const vStylePara = `<w:pPr><w:ind w:firstLine="720"/><w:jc w:val="both"/><w:spacing w:line="360" w:lineRule="auto" w:after="0"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr><w:t>`;
+const vStyleBreak = `</w:t></w:r></w:p><w:p>${vStylePara}`;
 
 function getChuDeNumber(month: string): string {
   const monthNum = Number.parseInt(month);
@@ -179,19 +187,30 @@ async function processTemplate(
   if (documentXml) {
     let xmlContent = documentXml.asText();
 
-    // Replace {{BR}} with actual Word paragraph break sequence
-    // We include standard Vietnamese administrative styles (Decree 30/2020/NĐ-CP):
-    // - w:jc val="both": Justified alignment
-    // - w:ind w:firstLine="720": First line indentation (1.27cm)
-    // - w:rFonts: Times New Roman
-    // - w:sz val="26": 13pt content size
-    // - w:spacing: 1.3 line spacing (312) and 6pt after (120)
-    const vStyle = `</w:t></w:r></w:p><w:p><w:pPr><w:ind w:firstLine="720"/><w:jc w:val="both"/><w:spacing w:line="312" w:lineRule="auto" w:after="120"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr><w:t>`;
-    xmlContent = xmlContent.replace(/\{\{BR\}\}/g, vStyle);
+    // Administrative styles according to Decree 30/2020/NĐ-CP
+    // Font: Times New Roman, Size: 13pt (26 half-points), Spacing: 1.5 lines (360 twips)
+    const adminStylesPara = `<w:pPr><w:ind w:firstLine="720"/><w:jc w:val="both"/><w:spacing w:line="360" w:lineRule="auto" w:after="0"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr><w:t>`;
+    const adminStylesBreak = `</w:t></w:r></w:p><w:p>${adminStylesPara}`;
+
+    // 1. Handle internal line breaks
+    xmlContent = xmlContent.replace(/\{\{BR\}\}/g, adminStylesBreak);
+
+    // 2. Handle first-line paragraph formatting using the [[STYLE_FIX]] marker
+    // We look for paragraphs containing the marker and inject the administrative style properties
+    // This fixed the common issue where the first line inherits a different style from the template
+    xmlContent = xmlContent.replace(/(<w:p(?: [^>]*)?>)(<w:pPr>.*?<\/w:pPr>)?(<w:r(?: [^>]*)?><w:rPr>.*?<\/w:rPr><w:t(?: [^>]*)?>.*?\[\[STYLE_FIX\]\])/g, (match, pOpen, pPr, rest) => {
+      // Replace existing pPr with administrative pPr or inject if missing
+      const newPPr = `<w:pPr><w:ind w:firstLine="720"/><w:jc w:val="both"/><w:spacing w:line="360" w:lineRule="auto" w:after="0"/></w:pPr>`;
+      return `${pOpen}${newPPr}${rest}`;
+    });
+
+    // 3. Remove markers
+    xmlContent = xmlContent.replace(/\[\[STYLE_FIX\]\]/g, "");
 
     // Enforce Vietnamese Administrative Margins (Decree 30)
-    // Left: 30mm (1701 twips), Right: 15mm (850 twips), Top/Bottom: 20mm (1134 twips)
     xmlContent = xmlContent.replace(/<w:pgMar[^>]*\/>/g, '<w:pgMar w:top="1134" w:right="850" w:bottom="1134" w:left="1701" w:header="720" w:footer="720" w:gutter="0"/>');
+
+    processedZip.file("word/document.xml", xmlContent);
 
     processedZip.file("word/document.xml", xmlContent);
   }

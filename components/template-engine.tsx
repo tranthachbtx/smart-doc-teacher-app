@@ -1826,36 +1826,49 @@ const TemplateEngine = () => {
 
                 {/* Duration selection - only show in full plan mode */}
                 {lessonFullPlanMode && (
-                  <div className="space-y-2">
-                    <Label>Số tiết</Label>
-                    <Select
-                      value={lessonDuration}
-                      onValueChange={setLessonDuration}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {selectedChuDe?.tong_tiet ? (
-                          Array.from(
-                            { length: selectedChuDe.tong_tiet },
-                            (_, i) => i + 1
-                          ).map((num) => (
-                            <SelectItem key={num} value={num.toString()}>
-                              {num} tiết ({Math.ceil(num / 3)} tuần)
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <>
-                            <SelectItem value="3">3 tiết (1 tuần)</SelectItem>
-                            <SelectItem value="6">6 tiết (2 tuần)</SelectItem>
-                            <SelectItem value="9">9 tiết (3 tuần)</SelectItem>
-                            <SelectItem value="12">12 tiết (4 tuần)</SelectItem>
-                            <SelectItem value="15">15 tiết (5 tuần)</SelectItem>
-                          </>
-                        )}
-                      </SelectContent>
-                    </Select>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-indigo-600" />
+                        Thời gian thực hiện (Số tiết hoặc Phút)
+                      </Label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="VD: 3 tiết, 90 phút..."
+                          value={lessonDuration}
+                          onChange={(e) => setLessonDuration(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Select
+                          value={lessonDuration.match(/^\d+$/) ? lessonDuration : ""}
+                          onValueChange={(val) => setLessonDuration(val)}
+                        >
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Chọn nhanh..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {selectedChuDe?.tong_tiet ? (
+                              Array.from(
+                                { length: selectedChuDe.tong_tiet },
+                                (_, i) => i + 1
+                              ).map((num) => (
+                                <SelectItem key={num} value={num.toString()}>
+                                  {num} tiết ({Math.ceil(num / 3)} tuần)
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <>
+                                <SelectItem value="3">3 tiết (1 tuần)</SelectItem>
+                                <SelectItem value="6">6 tiết (2 tuần)</SelectItem>
+                                <SelectItem value="9">9 tiết (3 tuần)</SelectItem>
+                                <SelectItem value="12">12 tiết (4 tuần)</SelectItem>
+                                <SelectItem value="15">15 tiết (5 tuần)</SelectItem>
+                              </>
+                            )}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                     {lessonGrade && selectedChuDeSo && (
                       <div className="text-xs text-muted-foreground mt-1 space-y-1">
                         <div>
@@ -2398,34 +2411,59 @@ const TemplateEngine = () => {
                       </div>
                     )}
 
-                    {lessonFullPlanMode && lessonResult.thiet_bi_day_hoc && (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <Label className="text-slate-700 font-medium">
-                            Thiết bị dạy học & Học liệu:
-                          </Label>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() =>
-                              copyToClipboard(
-                                lessonResult.thiet_bi_day_hoc || ""
-                              )
-                            }
-                          >
-                            <Copy className="w-4 h-4" />
-                          </Button>
+                    {lessonFullPlanMode && (lessonResult.gv_chuan_bi || lessonResult.hs_chuan_bi || lessonResult.thiet_bi_day_hoc) && (
+                      <div className="space-y-4">
+                        <div className="p-3 bg-slate-100 rounded-lg">
+                          <Label className="text-slate-800 font-bold block mb-2">II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU</Label>
+
+                          {lessonResult.gv_chuan_bi && (
+                            <div className="space-y-2 mb-4">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-indigo-700 font-medium italic">1. Đối với giáo viên (Tích hợp NLS & Đạo đức):</Label>
+                                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(lessonResult.gv_chuan_bi || "")}>
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                              </div>
+                              <Textarea
+                                value={lessonResult.gv_chuan_bi || ""}
+                                onChange={(e) => setLessonResult({ ...lessonResult, gv_chuan_bi: e.target.value })}
+                                className="min-h-[100px] bg-slate-50"
+                              />
+                            </div>
+                          )}
+
+                          {lessonResult.hs_chuan_bi && (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-indigo-700 font-medium italic">2. Đối với học sinh và Hướng dẫn về nhà (Tích hợp NLS & Đạo đức):</Label>
+                                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(lessonResult.hs_chuan_bi || "")}>
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                              </div>
+                              <Textarea
+                                value={lessonResult.hs_chuan_bi || ""}
+                                onChange={(e) => setLessonResult({ ...lessonResult, hs_chuan_bi: e.target.value })}
+                                className="min-h-[100px] bg-slate-50"
+                              />
+                            </div>
+                          )}
+
+                          {!lessonResult.gv_chuan_bi && !lessonResult.hs_chuan_bi && lessonResult.thiet_bi_day_hoc && (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Label className="text-slate-700 font-medium italic">Thiết bị dạy học & Học liệu:</Label>
+                                <Button variant="ghost" size="sm" onClick={() => copyToClipboard(lessonResult.thiet_bi_day_hoc || "")}>
+                                  <Copy className="w-4 h-4" />
+                                </Button>
+                              </div>
+                              <Textarea
+                                value={lessonResult.thiet_bi_day_hoc || ""}
+                                onChange={(e) => setLessonResult({ ...lessonResult, thiet_bi_day_hoc: e.target.value })}
+                                className="min-h-[80px] bg-slate-50"
+                              />
+                            </div>
+                          )}
                         </div>
-                        <Textarea
-                          value={lessonResult.thiet_bi_day_hoc || ""}
-                          onChange={(e) =>
-                            setLessonResult({
-                              ...lessonResult,
-                              thiet_bi_day_hoc: e.target.value,
-                            })
-                          }
-                          className="min-h-[80px] bg-slate-50"
-                        />
                       </div>
                     )}
 

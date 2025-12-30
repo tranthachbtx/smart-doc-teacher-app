@@ -185,9 +185,8 @@ Nội dung tích hợp phải GẮN VỚI TỪNG HOẠT ĐỘNG cụ thể trong
 THÔNG TIN ĐẦU VÀO:
 - Tên Bài học/Chủ đề: "${lessonTopic}"
 - Khối lớp: ${grade}
-- Đặc điểm chương trình: ${
-    curriculum?.title || "Hoạt động trải nghiệm, Hướng nghiệp"
-  }
+- Đặc điểm chương trình: ${curriculum?.title || "Hoạt động trải nghiệm, Hướng nghiệp"
+    }
 - Mức độ Bloom: ${curriculum?.bloomLevel || "Nhận biết, Hiểu"}
 - Đặc điểm học sinh: ${gradeInfo.profile}
 - Trọng tâm: ${gradeInfo.focus}
@@ -207,13 +206,13 @@ HƯỚNG DẪN VỊ TRÍ TÍCH HỢP:
 
 KHUNG NĂNG LỰC SỐ (chọn 2-4 phù hợp với hoạt động):
 ${Object.entries(DIGITAL_LITERACY_FRAMEWORK)
-  .map(([k, v]) => `- NLS ${k}: ${v.name} - ${v.description}`)
-  .join("\n")}
+      .map(([k, v]) => `- NLS ${k}: ${v.name} - ${v.description}`)
+      .join("\n")}
 
 KHUNG GIÁO DỤC ĐẠO ĐỨC (chọn 1-2 phù hợp):
 ${Object.entries(MORAL_EDUCATION_THEMES)
-  .map(([k, v]) => `- ${v.name}: ${v.description}`)
-  .join("\n")}
+      .map(([k, v]) => `- ${v.name}: ${v.description}`)
+      .join("\n")}
 
 QUY TẮC ĐỊNH DẠNG BẮT BUỘC:
 - KHÔNG dùng dấu ** trong nội dung
@@ -347,12 +346,11 @@ export function getEventPrompt(
       );
       if (hoatDongList.length > 0) {
         hoatDongContext = `
-DANH SÁCH HOẠT ĐỘNG CÓ THỂ TỔ CHỨC NGOẠI KHÓA (${
-          hoatDongList.length
-        } hoạt động):
+DANH SÁCH HOẠT ĐỘNG CÓ THỂ TỔ CHỨC NGOẠI KHÓA (${hoatDongList.length
+          } hoạt động):
 ${hoatDongList
-  .map((hd, i) => `${i + 1}. ${hd.ten}${hd.mo_ta ? ` - ${hd.mo_ta}` : ""}`)
-  .join("\n")}
+            .map((hd, i) => `${i + 1}. ${hd.ten}${hd.mo_ta ? ` - ${hd.mo_ta}` : ""}`)
+            .join("\n")}
 `;
       }
     }
@@ -413,26 +411,25 @@ ${HUONG_DAN_TAO_KICH_BAN.nguyen_tac_chung.map((n) => `- ${n}`).join("\n")}
 
 2. CẤU TRÚC TIÊU CHUẨN (45 phút):
 - Tổng thời gian: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.tong_thoi_gian}
-- Khởi động: ${
-    HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.thoi_gian
-  } - ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.muc_dich}
+- Khởi động: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.thoi_gian
+    } - ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.muc_dich}
 - Phần chính: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.phan_chinh.thoi_gian}
 - Kết thúc: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.ket_thuc.thoi_gian}
 
 3. CÁC LOẠI KỊCH BẢN HIỆU QUẢ:
 ${HUONG_DAN_TAO_KICH_BAN.loai_kich_ban_hieu_qua
-  .map(
-    (kb, i) =>
-      `${i + 1}. ${kb.ten}: ${kb.mo_ta} (Phù hợp: ${kb.phu_hop_voi.join(", ")})`
-  )
-  .join("\n")}
+      .map(
+        (kb, i) =>
+          `${i + 1}. ${kb.ten}: ${kb.mo_ta} (Phù hợp: ${kb.phu_hop_voi.join(", ")})`
+      )
+      .join("\n")}
 
 4. KỸ THUẬT SÂN KHẤU:
 - Âm thanh: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.am_thanh.join(", ")}
 - Sân khấu: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.san_khau.join(", ")}
 - Diễn viên: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.dien_vien.join(
-    ", "
-  )}
+        ", "
+      )}
 `;
 
   // Build curriculum context string (giữ nguyên logic cũ)
@@ -469,14 +466,13 @@ ${cauHoiContext}
 
 ${huongDanKichBan}
 
-${
-  mauKichBanContext
-    ? `
+${mauKichBanContext
+      ? `
 MẪU KỊCH BẢN THAM KHẢO (ĐÃ TỔ CHỨC THÀNH CÔNG):
 ${mauKichBanContext}
 `
-    : ""
-}
+      : ""
+    }
 
 ${cauHoiSauKichContext}
 
@@ -526,26 +522,26 @@ YÊU CẦU CHI TIẾT:
 
 4. MỤC ĐÍCH YÊU CẦU - PHẢI TƯƠNG ĐỒNG VỚI KẾT QUẢ CẦN ĐẠT CỦA CHỦ ĐỀ
 
-5. KỊCH BẢN CHI TIẾT - viết như kịch bản đạo diễn (THAM KHẢO MẪU Ở TRÊN)
-   - SỬ DỤNG CÂU HỎI GỢI MỞ từ database để tạo các phần tương tác với học sinh
-   - SỬ DỤNG CÂU HỎI TƯƠNG TÁC SAU KỊCH để thiết kế phần hỏi đáp (3-6 câu, từ dễ đến khó, kết thúc bằng câu mở)
-   - Đưa câu hỏi vào lời dẫn chương trình hoặc kịch bản để khơi gợi suy nghĩ
+5. KỊCH BẢN CHI TIẾT - PHẢI trình bày theo văn phong hành chính nghiệp vụ:
+   - I. MỤC ĐÍCH, Ý NGHĨA: Nêu rõ tầm quan trọng của hoạt động.
+   - II. NỘI DUNG VÀ HÌNH THỨC: Mô tả chi tiết kịch bản sân khấu, các phân cảnh, lời thoại MC and các hoạt động tương tác (Sử dụng câu hỏi gợi mở từ database).
+   - III. TỔ CHỨC THỰC HIỆN: Phân công nhiệm vụ cụ thể cho các tổ/nhóm học sinh.
 
-6. THÔNG ĐIỆP KẾT THÚC - Chọn hoặc điều chỉnh từ danh sách gợi ý, phù hợp với chủ đề
+6. THÔNG ĐIỆP KẾT THÚC: Sâu sắc, truyền cảm hứng, gắn với giá trị cốt lõi của chủ đề.
 
 QUY TẮC ĐỊNH DẠNG VĂN BẢN - CỰC KỲ QUAN TRỌNG:
-- KHÔNG dùng dấu ** trong nội dung
-- KHÔNG dùng TAB hoặc thụt dòng
-- Mỗi đoạn văn PHẢI cách nhau bằng DÒNG TRỐNG (dùng \\n\\n)
-- Viết tiếng Việt, CHỈ dùng tiếng Anh cho tên công cụ công nghệ
+- KHÔNG dùng dấu ** trong nội dung.
+- KHÔNG dùng TAB hoặc thụt dòng.
+- Sử dụng hệ thống đề mục chuẩn (I, II, III -> 1, 2, 3 -> a, b, c).
+- Mỗi đoạn văn PHẢI cách nhau bằng DÒNG TRỐNG (dùng \\n\\n).
 
 ĐỊNH DẠNG KẾT QUẢ - JSON thuần túy:
 {
-  "ten_chu_de": "Tên chủ đề sáng tạo bằng tiếng Việt",
-  "nang_luc": "- Năng lực tự chủ và tự học: [Mô tả cụ thể gắn với kết quả cần đạt].\\n\\n- Năng lực giao tiếp và hợp tác: [Mô tả].\\n\\n- Năng lực giải quyết vấn đề và sáng tạo: [Mô tả].",
-  "pham_chat": "- Trách nhiệm: [Mô tả cụ thể].\\n\\n- Chăm chỉ: [Mô tả].",
-  "muc_dich_yeu_cau": "- [Kết quả 1 - tương đồng với kết quả cần đạt của chủ đề].\\n\\n- [Kết quả 2].\\n\\n- [Kết quả 3].",
-  "kich_ban_chi_tiet": "PHẦN 1: MỞ ĐẦU (5-7 phút)\\n\\nNgười dẫn chương trình: [Lời chào và dẫn dắt chi tiết]\\n\\n[Hoạt động khởi động - trò chơi/âm nhạc/chia sẻ]\\n\\nPHẦN 2: HOẠT ĐỘNG CHÍNH (20-25 phút)\\n\\n[Nội dung chi tiết thực hiện HOẠT ĐỘNG CỐT LÕI]\\n\\nKỊCH NGẮN: [TÊN KỊCH]\\n\\nNhân vật: [Danh sách]\\n\\nCảnh 1: [Tên cảnh]\\n\\n[Tên nhân vật]: [Lời thoại]\\n\\nCảnh 2: [Tên cảnh]\\n\\n[Tiếp tục...]\\n\\nPHẦN 3: CÂU HỎI TƯƠNG TÁC (10 phút)\\n\\nMC: [Lời dẫn vào phần hỏi đáp]\\n\\nCâu 1 (Dễ): [Câu hỏi trắc nghiệm]\\n\\nCâu 2 (Trung bình): [Câu hỏi]\\n\\nCâu 3 (Mở): [Câu hỏi thảo luận]\\n\\nPHẦN 4: KẾT THÚC (5 phút)\\n\\n[Tổng kết và thông điệp]",
-  "thong_diep_ket_thuc": "Thông điệp truyền cảm hứng 2-3 câu dành cho học sinh, gắn với KẾT QUẢ CẦN ĐẠT của chủ đề."
+  "ten_chu_de": "Tên chủ đề sáng tạo bằng tiếng Việt (IN HOA)",
+  "nang_luc": "- Năng lực tự chủ và tự học: [Mô tả cụ thể gắn với hoạt động].\\n\\n- Năng lực giao tiếp và hợp tác: [Mô tả].\\n\\n- Năng lực thích ứng với cuộc sống: [Mô tả].",
+  "pham_chat": "- Trách nhiệm: [Mô tả cụ thể].\\n\\n- Nhân ái/Trung thực: [Mô tả].",
+  "muc_dich_yeu_cau": "- [Yêu cầu cần đạt 1: chuyển hóa từ khung chương trình].\\n\\n- [Yêu cầu cần đạt 2].",
+  "kich_ban_chi_tiet": "I. MỤC ĐÍCH, Ý NGHĨA\\n\\n[Nội dung]\\n\\nII. NỘI DUNG VÀ HÌNH THỨC TỔ CHỨC\\n\\n1. Khởi động (5-7 phút): [Chi tiết]\\n\\n2. Hoạt động chính - Tiểu phẩm/Talkshow (20-25 phút): [Kịch bản chi tiết gồm Phân cảnh, Nhân vật, Lời thoại MC và Diễn viên]\\n\\n3. Hoạt động tương tác (10 phút): [Sử dụng bộ câu hỏi gợi mở để giao lưu]\\n\\nIII. TỔ CHỨC THỰC HIỆN\\n\\n[Phân công cụ thể]",
+  "thong_diep_ket_thuc": "Thông điệp truyền cảm hứng (2-3 câu) đúc kết giá trị của toàn bộ hoạt động."
 }`;
 }

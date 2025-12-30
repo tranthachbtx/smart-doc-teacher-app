@@ -592,6 +592,23 @@ export const CHUONG_TRINH_LOP_10: ChuongTrinhKhoi = {
         },
         {
           so_thu_tu: 7,
+          ten: "Rèn luyện kỹ năng giao tiếp nâng cao",
+          mo_ta: "Kỹ năng lắng nghe thấu cảm và phản hồi tích cực.",
+          nhiem_vu: [
+            {
+              ten: "Thực hành Lắng nghe chủ động",
+              mo_ta: "Bài tập cặp: Nghe and diễn đạt lại nội dung của bạn mà không phán xét.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Kỹ năng phản hồi tích cực",
+              mo_ta: "Cách đưa ra lời góp ý chân thành and khích lệ người khác để xây dựng sự tự tin cho bạn.",
+              thoi_luong_de_xuat: "30 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 8,
           ten: "Rèn luyện tính chủ động, tự tin trong cuộc sống",
           mo_ta: "Tổng kết và cam kết thay đổi.",
           nhiem_vu: [
@@ -665,6 +682,23 @@ export const CHUONG_TRINH_LOP_10: ChuongTrinhKhoi = {
         },
         {
           so_thu_tu: 5,
+          ten: "Xây dựng lối sống hài hòa, trách nhiệm trong gia đình",
+          mo_ta: "Giải quyết mâu thuẫn and quản lý nguồn lực.",
+          nhiem_vu: [
+            {
+              ten: "Xử lý xung đột quan điểm",
+              mo_ta: "Thảo luận nhóm về cách trình bày mong muốn của bản thân với cha mẹ một cách lễ phép and thuyết phục.",
+              thoi_luong_de_xuat: "35 phút"
+            },
+            {
+              ten: "Sản phẩm: 'Bữa cơm sum vầy'",
+              mo_ta: "Lên thực đơn and cùng gia đình chuẩn bị một bữa tối ấm áp để gắn kết tình cảm.",
+              thoi_luong_de_xuat: "45 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
           ten: "Thực hiện trách nhiệm với gia đình và đánh giá",
           mo_ta: "Tổng kết kết quả thực hiện kế hoạch.",
           nhiem_vu: [
@@ -824,6 +858,23 @@ export const CHUONG_TRINH_LOP_10: ChuongTrinhKhoi = {
         },
         {
           so_thu_tu: 5,
+          ten: "Ứng dụng công nghệ trong bảo tồn cảnh quan",
+          mo_ta: "Sáng tạo nội dung số để quảng bá.",
+          nhiem_vu: [
+            {
+              ten: "Thiết kế Poster/Clip tuyên truyền",
+              mo_ta: "Sử dụng Canva/Capcut để tạo sản phẩm quảng bá vẻ đẹp danh thắng.",
+              thoi_luong_de_xuat: "35 phút"
+            },
+            {
+              ten: "Digital Storytelling về thiên nhiên",
+              mo_ta: "Kể một câu chuyện truyền cảm hứng về vẻ đẹp/lịch sử của cảnh quan qua clip ngắn.",
+              thoi_luong_de_xuat: "35 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 6,
           ten: "Tuyên truyền bảo vệ cảnh quan thiên nhiên và đánh giá",
           mo_ta: "Lan tỏa thông điệp tới cộng đồng.",
           nhiem_vu: [
@@ -885,6 +936,23 @@ export const CHUONG_TRINH_LOP_10: ChuongTrinhKhoi = {
         },
         {
           so_thu_tu: 4,
+          ten: "Hành động sống xanh mỗi ngày",
+          mo_ta: "Giảm rác thải nhựa and tiêu dùng bền vững.",
+          nhiem_vu: [
+            {
+              ten: "Kiểm toán rác thải nhựa cá nhân",
+              mo_ta: "Thống kê lượng nhựa dùng 1 lần trong tuần and tìm giải pháp thay thế.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Xây dựng thói quen 'Zero Waste'",
+              mo_ta: "Lập cam kết thực hiện 3R (Reduce, Reuse, Recycle) tại nhà.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 5,
           ten: "Thực hiện bảo vệ môi trường tự nhiên ở địa phương và đánh giá",
           mo_ta: "Tham gia các chiến dịch môi trường tập thể.",
           nhiem_vu: [
@@ -1239,13 +1307,30 @@ export const CHUONG_TRINH_LOP_11: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "20 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 7,
+          ten: "Rèn luyện kỹ năng giao tiếp nâng cao",
+          mo_ta: "Kỹ năng lắng nghe thấu cảm và phản hồi tích cực.",
+          nhiem_vu: [
+            {
+              ten: "Thực hành Lắng nghe chủ động",
+              mo_ta: "Bài tập cặp: Nghe và diễn đạt lại nội dung của bạn mà không phán xét.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Kỹ năng thuyết trình ấn tượng",
+              mo_ta: "Thiết kế nội dung (Cấu trúc 3 phần) and rèn luyện phong thái tự tin trước đám đông.",
+              thoi_luong_de_xuat: "30 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Thấu cảm trong giao tiếp", "Sử dụng MXH an toàn"],
-      phuong_phap_goi_y: ["Đóng vai", "Dự án truyền thông"],
-      tu_khoa_tim_kiem: ["nhà trường", "quan hệ", "mạng xã hội"],
+      ket_qua_can_dat: ["Thấu cảm trong giao tiếp", "Sử dụng MXH an toàn", "Chủ động trong học tập", "Tự tin giao tiếp", "Biết lắng nghe thấu cảm"],
+      phuong_phap_goi_y: ["Đóng vai", "Dự án truyền thông", "Thuyết trình", "Trò chơi"],
+      tu_khoa_tim_kiem: ["nhà trường", "quan hệ", "mạng xã hội", "tự tin", "chủ động", "giao tiếp"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [9]
+      thang_thuc_hien: [9, 12]
     },
     {
       ma: "11.2",
@@ -1324,13 +1409,30 @@ export const CHUONG_TRINH_LOP_11: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "20 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 7,
+          ten: "Xây dựng lối sống xanh (Green Lifestyle)",
+          mo_ta: "Hành động thực tế giảm thiểu tác động.",
+          nhiem_vu: [
+            {
+              ten: "Kiểm toán 'Dấu chân nhựa'",
+              mo_ta: "Thống kê lượng nhựa dùng 1 lần cá nhân sử dụng trong tuần and đề xuất giải pháp thay thế.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Chiến dịch: 'Waste-free Zone'",
+              mo_ta: "Lập kế hoạch giảm rác thải tại gia đình/lớp học bằng các bước cụ thể.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Tự tin thể hiện mình", "Thích ứng nhanh"],
-      phuong_phap_goi_y: ["Trắc nghiệm", "Chia sẻ nhóm"],
-      tu_khoa_tim_kiem: ["điểm mạnh", "bản sắc", "thích ứng"],
+      ket_qua_can_dat: ["Tự tin thể hiện mình", "Thích ứng nhanh", "Ý thức bảo vệ môi trường", "Hành động sống xanh", "Biết phân loại rác"],
+      phuong_phap_goi_y: ["Trắc nghiệm", "Chia sẻ nhóm", "Thực hành", "Dự án", "Thuyết trình"],
+      tu_khoa_tim_kiem: ["điểm mạnh", "bản sắc", "thích ứng", "môi trường", "sống xanh", "rác thải"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [10]
+      thang_thuc_hien: [10, 4]
     },
     {
       ma: "11.3",
@@ -1397,13 +1499,30 @@ export const CHUONG_TRINH_LOP_11: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "25 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Ứng dụng công nghệ trong bảo tồn cảnh quan",
+          mo_ta: "Sáng tạo nội dung số để quảng bá.",
+          nhiem_vu: [
+            {
+              ten: "Thiết kế Virtual Tour (Mô phỏng)",
+              mo_ta: "Sử dụng ảnh/video để tạo một chuyến tham quan ảo giới thiệu điểm nhấn của danh thắng.",
+              thoi_luong_de_xuat: "35 phút"
+            },
+            {
+              ten: "Digital Storytelling về thiên nhiên",
+              mo_ta: "Kể một câu chuyện truyền cảm hứng về vẻ đẹp/lịch sử của cảnh quan qua clip ngắn.",
+              thoi_luong_de_xuat: "35 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Sống kỉ luật", "Biết giúp đỡ bạn bè"],
-      phuong_phap_goi_y: ["Lập kế hoạch", "Thảo luận"],
-      tu_khoa_tim_kiem: ["kỉ luật", "kỹ năng", "hỗ trợ"],
+      ket_qua_can_dat: ["Sống kỉ luật", "Biết giúp đỡ bạn bè", "Hiểu giá trị cảnh quan", "Biết cách bảo tồn sáng tạo", "Thành thạo công cụ số cơ bản"],
+      phuong_phap_goi_y: ["Lập kế hoạch", "Thảo luận", "Dự án", "Tham quan ảo", "Thuyết trình"],
+      tu_khoa_tim_kiem: ["kỉ luật", "kỹ năng", "hỗ trợ", "cảnh quan", "bảo tồn", "công nghệ"],
       so_tiet_de_xuat: 4,
-      thang_thuc_hien: [11]
+      thang_thuc_hien: [11, 3]
     },
     {
       ma: "11.4",
@@ -1458,13 +1577,35 @@ export const CHUONG_TRINH_LOP_11: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "25 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 5,
+          ten: "Xây dựng lối sống hài hòa, trách nhiệm trong gia đình",
+          mo_ta: "Giải quyết mâu thuẫn and quản lý nguồn lực.",
+          nhiem_vu: [
+            {
+              ten: "Xử lý xung đột quan điểm",
+              mo_ta: "Thảo luận nhóm về cách trình bày mong muốn của bản thân với cha mẹ một cách lễ phép and thuyết phục.",
+              thoi_luong_de_xuat: "30 phút"
+            },
+            {
+              ten: "Lập kế hoạch chi tiêu gia đình (Mini)",
+              mo_ta: "Thử sức phân bổ ngân sách 1 tuần cho các nhu cầu thiết yếu của gia đình.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Sản phẩm: 'Bữa cơm yêu thương'",
+              mo_ta: "Lên thực đơn và chuẩn bị một bữa ăn cho gia đình để bày tỏ lòng biết ơn.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Gắn kết gia đình", "Có trách nhiệm tài chính"],
-      phuong_phap_goi_y: ["Đóng vai", "Viết nhật ký"],
-      tu_khoa_tim_kiem: ["gia đình", "tài chính", "chăm sóc"],
+      ket_qua_can_dat: ["Gắn kết gia đình", "Có trách nhiệm tài chính", "Biết chia sẻ công việc", "Giao tiếp gia đình hiệu quả", "Biết lập kế hoạch chi tiêu"],
+      phuong_phap_goi_y: ["Đóng vai", "Viết nhật ký", "Thảo luận", "Lập dự án", "Trải nghiệm"],
+      tu_khoa_tim_kiem: ["gia đình", "tài chính", "chăm sóc", "trách nhiệm", "chi tiêu"],
       so_tiet_de_xuat: 3,
-      thang_thuc_hien: [12]
+      thang_thuc_hien: [12, 1]
     },
     {
       ma: "11.5",
@@ -1559,12 +1700,46 @@ export const CHUONG_TRINH_LOP_11: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "25 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 3,
+          ten: "Cộng đồng tham gia bảo tồn di sản",
+          mo_ta: "Kết nối tri thức với cộng đồng địa phương.",
+          nhiem_vu: [
+            {
+              ten: "Hướng dẫn viên di sản (Local Guide)",
+              mo_ta: "Thiết kế một tour giới thiệu lịch sử và giá trị của danh thắng địa phương.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Số hóa bản đồ danh thắng",
+              mo_ta: "Đánh dấu và mô tả các điểm cần bảo tồn trên bản đồ số công cộng.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Phân tích mâu thuẫn giữa phát triển kinh tế và bảo tồn di sản",
+          mo_ta: "Tư duy phản biện đa chiều.",
+          nhiem_vu: [
+            {
+              ten: "Case study: 'Đánh đổi' môi trường lấy kinh tế",
+              mo_ta: "Thảo luận về một dự án phát triển du lịch/công nghiệp gây ảnh hưởng đến di sản thiên nhiên/văn hóa.",
+              thoi_luong_de_xuat: "30 phút"
+            },
+            {
+              ten: "Đề xuất giải pháp phát triển bền vững",
+              mo_ta: "Tìm kiếm các mô hình du lịch sinh thái, kinh tế xanh có thể áp dụng tại địa phương.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Có tư duy phản biện kinh tế-môi trường", "Biết lập báo cáo điều tra"],
-      phuong_phap_goi_y: ["Điều tra", "Thuyết trình"],
-      tu_khoa_tim_kiem: ["cảnh quan", "bảo tồn", "du lịch xanh"],
-      so_tiet_de_xuat: 3,
+      ket_qua_can_dat: ["Có tư duy phản biện kinh tế-môi trường", "Biết lập báo cáo điều tra", "Am hiểu di sản địa phương"],
+      phuong_phap_goi_y: ["Điều tra", "Thuyết trình", "Bản đồ số"],
+      tu_khoa_tim_kiem: ["cảnh quan", "bảo tồn", "du lịch xanh", "số hóa"],
+      so_tiet_de_xuat: 2,
       thang_thuc_hien: [2]
     },
     {
@@ -1682,10 +1857,27 @@ export const CHUONG_TRINH_LOP_11: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "30 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Chuẩn bị tâm thế bước vào thị trường lao động",
+          mo_ta: "Tập dượt các kỹ năng xin việc cơ bản.",
+          nhiem_vu: [
+            {
+              ten: "Mô phỏng phỏng vấn (Mock Interview)",
+              mo_ta: "Thực hành trả lời các câu hỏi phỏng vấn phổ biến theo phương pháp STAR.",
+              thoi_luong_de_xuat: "35 phút"
+            },
+            {
+              ten: "Xây dựng Profile LinkedIn cơ bản",
+              mo_ta: "Tìm hiểu cách trình bày năng lực cá nhân chuyên nghiệp trên mạng xã hội nghề nghiệp.",
+              thoi_luong_de_xuat: "30 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Hiểu hệ thống nghề nghiệp", "Am hiểu yêu cầu thị trường", "Cập nhật xu hướng 4.0"],
-      phuong_phap_goi_y: ["Nghiên cứu", "Phân tích JD", "Thảo luận"],
+      ket_qua_can_dat: ["Hiểu hệ thống nghề nghiệp", "Am hiểu yêu cầu thị trường", "Cập nhật xu hướng 4.0", "Biết kỹ năng phỏng vấn"],
+      phuong_phap_goi_y: ["Nghiên cứu", "Phân tích JD", "Phỏng vấn thử"],
       tu_khoa_tim_kiem: ["nghề cơ bản", "thị trường lao động", "ISCO", "tuyển dụng"],
       so_tiet_de_xuat: 4,
       thang_thuc_hien: [4]
@@ -1729,11 +1921,28 @@ export const CHUONG_TRINH_LOP_11: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "25 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 3,
+          ten: "Phát triển kỹ năng nghề nghiệp chuyên sâu",
+          mo_ta: "Nâng cao năng lực thực hành.",
+          nhiem_vu: [
+            {
+              ten: "Rèn luyện kỹ năng đàm phán/lãnh đạo",
+              mo_ta: "Tham gia workshop nhỏ về một kỹ năng mềm cốt yếu.",
+              thoi_luong_de_xuat: "40 phút"
+            },
+            {
+              ten: "Tìm kiếm người dẫn dắt (Mentorship)",
+              mo_ta: "Mô phỏng cách kết nối and đặt vấn đề với một người đi trước giàu kinh nghiệm.",
+              thoi_luong_de_xuat: "40 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Hiểu rõ tố chất cá nhân", "Có bản kế hoạch rèn luyện khoa học"],
-      phuong_phap_goi_y: ["Trắc nghiệm", "Lập kế hoạch", "Thực hành"],
-      tu_khoa_tim_kiem: ["RIASEC", "năng lực nghề nghiệp", "kế hoạch cá nhân"],
+      ket_qua_can_dat: ["Hiểu rõ tố chất cá nhân", "Có bản kế hoạch rèn luyện khoa học", "Phát triển kỹ năng mềm"],
+      phuong_phap_goi_y: ["Trắc nghiệm", "Lập kế hoạch", "Workshop"],
+      tu_khoa_tim_kiem: ["RIASEC", "năng lực nghề nghiệp", "kế hoạch cá nhân", "mentorship"],
       so_tiet_de_xuat: 4,
       thang_thuc_hien: [5]
     },
@@ -1885,11 +2094,33 @@ export const CHUONG_TRINH_LOP_12: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "25 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 6,
+          ten: "Kỹ năng hóa giải mâu thuẫn trong quan hệ",
+          mo_ta: "Hàn gắn and dung hòa các mối quan hệ trước khi ra trường.",
+          nhiem_vu: [
+            {
+              ten: "Xử lý xung đột Thầy - Trò (Đóng vai)",
+              mo_ta: "Thực hành cách bày tỏ quan điểm trái chiều với giáo viên một cách lịch sự, tôn trọng.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Xây dựng mạng lưới hỗ trợ đồng lứa (Peer support network)",
+              mo_ta: "Lập kế hoạch cùng học, cùng ôn thi and hỗ trợ tinh thần cho nhau trong giai đoạn áp lực.",
+              thoi_luong_de_xuat: "20 phút"
+            },
+            {
+              ten: "Ứng xử nhã nhặn trên nhóm chat lớp",
+              mo_ta: "Thảo luận về văn hóa số: Cách trao đổi, phản hồi and giữ hòa khí trong các hội nhóm lớp.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Thấu cảm sâu sắc", "Hợp tác hiệu quả", "Tự hào về trường"],
-      phuong_phap_goi_y: ["Trải nghiệm", "Viết sáng tạo"],
-      tu_khoa_tim_kiem: ["quan hệ", "tri ân", "nhà trường"],
+      ket_qua_can_dat: ["Thấu cảm sâu sắc", "Hợp tác hiệu quả", "Tự hào về trường", "Hóa giải mâu thuẫn"],
+      phuong_phap_goi_y: ["Trải nghiệm", "Viết sáng tạo", "Đóng vai"],
+      tu_khoa_tim_kiem: ["quan hệ", "tri ân", "nhà trường", "hợp tác"],
       so_tiet_de_xuat: 4,
       thang_thuc_hien: [9]
     },
@@ -1944,11 +2175,33 @@ export const CHUONG_TRINH_LOP_12: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "25 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Tầm nhìn tương lai và Sứ mệnh cá nhân (Ikigai)",
+          mo_ta: "Xác định mục đích sống ý nghĩa.",
+          nhiem_vu: [
+            {
+              ten: "Xác định tuyên bố sứ mệnh cá nhân",
+              mo_ta: "Viết ra giá trị cốt lõi mà bản thân muốn theo đuổi trọn đời.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Kiến thức tài chính: Bước vào đời",
+              mo_ta: "Tìm hiểu về thuế, bảo hiểm and cách quản lý thu nhập khi bắt đầu đi làm thêm/đi học xa.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Huấn luyện sức bật tinh thần (Resilience)",
+              mo_ta: "Cách đối diện and học hỏi từ những thất bại, sai lầm trong quá khứ.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Sống trách nhiệm", "Có ý chí mạnh mẽ", "Tư duy độc lập"],
-      phuong_phap_goi_y: ["Trắc nghiệm tâm lý", "Thảo luận", "Viết sáng tạo"],
-      tu_khoa_tim_kiem: ["trưởng thành", "ý chí", "tư duy độc lập", "18 tuổi"],
+      ket_qua_can_dat: ["Sống trách nhiệm", "Có ý chí mạnh mẽ", "Tư duy độc lập", "Có tầm nhìn tương lai"],
+      phuong_phap_goi_y: ["Trắc nghiệm tâm lý", "Thảo luận", "Viết sáng tạo", "Tư duy Ikigai"],
+      tu_khoa_tim_kiem: ["trưởng thành", "ý chí", "tư duy độc lập", "18 tuổi", "sứ mệnh"],
       so_tiet_de_xuat: 4,
       thang_thuc_hien: [10]
     },
@@ -2174,11 +2427,28 @@ export const CHUONG_TRINH_LOP_12: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "25 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Cộng đồng vận động vì danh thắng",
+          mo_ta: "Kêu gọi sự chung tay từ xã hội.",
+          nhiem_vu: [
+            {
+              ten: "Thuyết phục chính quyền/tổ chức",
+              mo_ta: "Thực hành trình bày dự án bảo tồn với đại diện địa phương.",
+              thoi_luong_de_xuat: "30 phút"
+            },
+            {
+              ten: "Tổ chức 'Ngày chủ nhật xanh' tại di tích",
+              mo_ta: "Lên kế hoạch dọn dẹp kết hợp tuyên truyền trực tiếp cho du khách.",
+              thoi_luong_de_xuat: "35 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Sáng tạo trong bảo tồn", "Tuyên truyền hiệu quả"],
-      phuong_phap_goi_y: ["Dự án", "Truyền thông"],
-      tu_khoa_tim_kiem: ["cảnh quan", "bảo tồn", "sáng tạo"],
+      ket_qua_can_dat: ["Sáng tạo trong bảo tồn", "Tuyên truyền hiệu quả", "Kỹ năng vận động xã hội"],
+      phuong_phap_goi_y: ["Dự án", "Truyền thông", "Vận động"],
+      tu_khoa_tim_kiem: ["cảnh quan", "bảo tồn", "sáng tạo", "vận động"],
       so_tiet_de_xuat: 3,
       thang_thuc_hien: [2]
     },
@@ -2228,10 +2498,27 @@ export const CHUONG_TRINH_LOP_12: ChuongTrinhKhoi = {
               thoi_luong_de_xuat: "20 phút"
             }
           ]
+        },
+        {
+          so_thu_tu: 4,
+          ten: "Hành động vì đa dạng sinh học and lối sống xanh",
+          mo_ta: "Cam kết bảo vệ thiên nhiên từ những việc nhỏ.",
+          nhiem_vu: [
+            {
+              ten: "Điều tra các loài sinh vật cần bảo vệ",
+              mo_ta: "Tìm hiểu các loài động/thực vật đặc hữu của vùng and đề xuất cách bảo vệ môi trường sống của chúng.",
+              thoi_luong_de_xuat: "25 phút"
+            },
+            {
+              ten: "Chiến dịch: 'Nói không với nhựa dùng một lần'",
+              mo_ta: "Phát động phong trào thay đổi thói quen tiêu dùng trong trường học.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
         }
       ],
-      ket_qua_can_dat: ["Am hiểu về môi trường", "Có kỹ năng thích ứng", "Biết bảo vệ đa dạng sinh học"],
-      phuong_phap_goi_y: ["Case study", "Cam kết", "Dự án nhỏ"],
+      ket_qua_can_dat: ["Am hiểu về môi trường", "Có kỹ năng thích ứng", "Biết bảo vệ đa dạng sinh học", "Hành động vì đa dạng sinh học", "Lan tỏa lối sống xanh"],
+      phuong_phap_goi_y: ["Case study", "Cam kết", "Dự án nhỏ", "Dự án", "Truyền thông"],
       tu_khoa_tim_kiem: ["thế giới tự nhiên", "biến đổi khí hậu", "đa dạng sinh học", "sống xanh"],
       so_tiet_de_xuat: 3,
       thang_thuc_hien: [2]
@@ -2413,6 +2700,8 @@ export const CHUONG_TRINH_LOP_12: ChuongTrinhKhoi = {
         "Nhận diện và trân trọng các giá trị gia đình truyền thống và hiện đại",
         "Thực hiện trách nhiệm của người trưởng thành trong việc xây dựng nếp nhà",
         "Giải quyết xung đột thế hệ bằng đối thoại văn minh",
+        "Xác định hệ giá trị cốt lõi của gia đình",
+        "Phát triển kỹ năng duy trì hạnh phúc gia đình bền vững",
       ],
       hoat_dong: [
         {
@@ -2424,6 +2713,7 @@ export const CHUONG_TRINH_LOP_12: ChuongTrinhKhoi = {
               ten: "Sắm vai giải quyết xung đột",
               mo_ta: "Xử lý tình huống con chọn nghề khác ý cha mẹ dựa trên sự thấu cảm",
               ky_nang_can_dat: ["2.1", "2.2"],
+              thoi_luong_de_xuat: "25 phút"
             },
           ],
         },
@@ -2436,9 +2726,22 @@ export const CHUONG_TRINH_LOP_12: ChuongTrinhKhoi = {
               ten: "Lập kế hoạch quản gia",
               mo_ta: "Quán xuyến nhà cửa khi cha mẹ vắng nhà, thể hiện sự trưởng thành",
               ky_nang_can_dat: ["1.3"],
+              thoi_luong_de_xuat: "30 phút"
             },
           ],
         },
+        {
+          so_thu_tu: 3,
+          ten: "Xây dựng giá trị gia đình bền vững",
+          mo_ta: "Định vị hệ giá trị cốt lõi.",
+          nhiem_vu: [
+            {
+              ten: "Xác lập 'Hiến chương gia đình'",
+              mo_ta: "Thảo luận and đồng thuận về các nguyên tắc ứng xử, tôn trọng and hỗ trợ lẫn nhau.",
+              thoi_luong_de_xuat: "35 phút"
+            }
+          ]
+        }
       ],
       ket_qua_can_dat: [
         "Biết cách đối thoại để giữ gìn hòa khí điểm tựa gia đình",

@@ -423,6 +423,7 @@ export async function generateLessonPlan(
           muc_tieu_pham_chat: data.muc_tieu_pham_chat || "",
           gv_chuan_bi: data.gv_chuan_bi || "",
           hs_chuan_bi: data.hs_chuan_bi || "",
+          thiet_bi_day_hoc: data.thiet_bi_day_hoc || (data.gv_chuan_bi && data.hs_chuan_bi ? `1. Đối với giáo viên: ${data.gv_chuan_bi}\n2. Đối với học sinh và Hướng dẫn về nhà: ${data.hs_chuan_bi}` : data.gv_chuan_bi || data.hs_chuan_bi || ""),
           hoat_dong_duoi_co: data.hoat_dong_duoi_co || "",
           shdc: data.shdc || "",
           shl: data.shl || "",

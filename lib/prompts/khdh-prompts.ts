@@ -85,7 +85,7 @@ Tôi sẽ cung cấp thông tin về chủ đề/bài học. Nhiệm vụ của 
 
 YÊU CẦU CỐT LÕI:
 1. MỤC TIÊU: Kiến thức (biết gì?), Năng lực (làm được gì? - chia rõ chung/đặc thù), Phẩm chất (thể hiện ntn?). Sử dụng động từ hành động chuẩn xác (Nhận diện, Phân tích, Thực hành, Thiết kế, Tổ chức).
-2. THIẾT BỊ DẠY HỌC: Liệt kê chi tiết, thực tế cho GV và HS. NẾU người dùng không cung cấp thiết bị cụ thể, bạn PHẢI tự suy luận dựa trên các hoạt động (ví dụ: dùng video thì cần máy chiếu/loa, dùng tranh luận thì cần thẻ màu/giấy A0, dùng sắm vai thì cần đạo cụ kịch bản).
+2. THIẾT BỊ DẠY HỌC: Phải TÍCH HỢP NLS và Đạo đức (phần mềm, video, tình huống). Chia rõ: 1. Đối với giáo viên; 2. Đối với học sinh và Hướng dẫn về nhà (nhiệm vụ chuẩn bị/thực hành từ tiết trước).
 3. TIẾN TRÌNH DẠY HỌC (HDGD): Bắt buộc 4 hoạt động lớn (Mở đầu, Khám phá, Luyện tập, Vận dụng).
 4. SINH HOẠT DƯỚI CỜ (SHDC) & SINH HOẠT LỚP (SHL): Phải thiết kế cấu trúc chi tiết theo từng tuần (Tuần 1-4 hoặc 1-5 tùy thời lượng chủ đề). Mỗi tuần phải có tên hoạt động, mục tiêu, và kịch bản thực hiện cụ thể.
 5. CẤU TRÚC HOẠT ĐỘNG (BẮT BUỘC): Mỗi hoạt động con phải đủ 4 tiểu mục a, b, c, d. Đặc biệt phần SẢN PHẨM (c) phải mô tả vật lý (Phiếu học tập, Sơ đồ, Câu trả lời cụ thể...).
@@ -428,7 +428,7 @@ HƯỚNG DẪN SỬ DỤNG CÂU HỎI GỢI MỞ:
 - Sử dụng câu hỏi phù hợp trong phần "Bước 1: Chuyển giao nhiệm vụ" để khơi gợi HS suy nghĩ
 - Chọn câu hỏi theo loại phù hợp với mục tiêu hoạt động:
   + QUAN_SAT, KET_NOI: Dùng cho Hoạt động Khởi động
-  + PHAN_BIEN, TU_DUY, DA_CHIEU: Dùng cho Hoạt động Khám phá
+  + PHAN_BIEN, TU_DUY, DA_CHIEU, PHAN_TICH: Dùng cho Hoạt động Khám phá
   + THUC_HANH, CHIEN_LUOC, HANH_DONG: Dùng cho Hoạt động Luyện tập
   + TONG_HOP, GIA_TRI, CAM_XUC: Dùng cho Hoạt động Vận dụng
 - Có thể điều chỉnh câu hỏi cho phù hợp với bối cảnh cụ thể của bài học
@@ -683,8 +683,8 @@ Hãy soạn Kế hoạch dạy học và trả về JSON thuần túy với cấ
   "muc_tieu_kien_thuc": "- Yêu cầu cần đạt 1: [Chi tiết cụ thể, đo lường được].\\n\\n- Yêu cầu cần đạt 2: [Chi tiết].\\n\\n- Yêu cầu cần đạt 3: [Chi tiết].",
   "muc_tieu_nang_luc": "a) Năng lực chung:\\n\\n- Tự chủ và tự học: [Mô tả hành vi HS cụ thể].\\n\\n- Giao tiếp và hợp tác: [Mô tả hành vi HS].\\n\\nb) Năng lực đặc thù HĐTN:\\n\\n- Thích ứng với cuộc sống: [Mô tả hành vi HS].\\n\\n- Định hướng nghề nghiệp: [Mô tả hành vi HS].",
   "muc_tieu_pham_chat": "- Trách nhiệm: [Mô tả hành vi HS thể hiện qua hoạt động cụ thể].\\n\\n- [Phẩm chất 2]: [Mô tả hành vi cụ thể].",
-  "gv_chuan_bi": "Bạn PHẢI liệt kê các thiết bị phù hợp với bài dạy. VÍ DỤ: - Máy chiếu, laptop; - Video về chủ đề...; - Giấy A0, bút dạ (cho thảo luận nhóm); - Phiếu học tập số 1, 2...; - Thẻ màu (cho tranh luận).",
-  "hs_chuan_bi": "Bạn PHẢI liệt kê những gì HS cần mang theo/chuẩn bị. VÍ DỤ: - SGK, vở ghi; - Smartphone (nếu dùng NLS); - Đọc trước bài...; - Sổ tay rèn luyện.",
+  "gv_chuan_bi": "Bạn PHẢI thiết kế nội dung cho mục '1. Đối với giáo viên'. Bao gồm các thiết bị, học liệu đã TÍCH HỢP Năng lực số and Đạo đức (Video tình huống, phần mềm, bộ thẻ...).",
+  "hs_chuan_bi": "Bạn PHẢI thiết kế nội dung cho mục '2. Đối với học sinh và Hướng dẫn về nhà'. Bao gồm dụng cụ học tập VÀ các nhiệm vụ chuẩn bị/thực hành từ tiết trước gắn với NLS and Đạo đức.",
   "shdc": "HƯỚNG DẪN: Thiết kế cấu trúc sinh hoạt dưới cờ cho TẤT CẢ các tuần trong chủ đề (Tuần 1, 2, 3, 4...). Cụ thể cho từng tuần: \\n- Tuần [X]: [Tên hoạt động]\\n+ Mục tiêu: [Mục tiêu]\\n+ Chuẩn bị: [Chuẩn bị specific]\\n+ Tiến trình: [Bước 1, Bước 2, Bước 3... chi tiết như kịch bản]\\n+ Câu hỏi giao lưu: [Câu hỏi].",
   "shl": "HƯỚNG DẪN: Thiết kế cấu trúc sinh hoạt lớp cho TẤT CẢ các tuần trong chủ đề. Cụ thể cho từng tuần: \\n- Tuần [X]: [Tên hoạt động]\\n+ Mục tiêu: [Mục tiêu]\\n+ Đánh giá tuần qua: [Nội dung đánh giá]\\n+ Sinh hoạt theo chủ đề: [Hoạt động cụ thể và các bước thực hiện]\\n+ Kế hoạch tuần tới: [Nội dung].",
   "hoat_dong_khoi_dong": "a) Mục tiêu: [Hoạt động này nhằm đạt mục tiêu gì?].\\n\\nb) Nội dung: [GV giao nhiệm vụ gì? HS thực hiện như thế nào? + Tích hợp NLS nếu có].\\n\\nc) Sản phẩm: [MÔ TẢ CỤ THỂ sản phẩm đầu ra].\\n\\nd) Tổ chức thực hiện:\\n\\n- Bước 1: Chuyển giao nhiệm vụ - GV [chi tiết].\\n\\n- Bước 2: Thực hiện nhiệm vụ - HS [chi tiết, ... phút].\\n\\n- Bước 3: Báo cáo, thảo luận - HS [chi tiết].\\n\\n- Bước 4: Kết luận, nhận định - GV [chi tiết].",

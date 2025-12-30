@@ -1,32 +1,31 @@
 /**
- * CƠ SỞ DỮ LIỆU CÂU HỎI GỢI MỞ
- * Dành cho từng nhiệm vụ trong chương trình HĐTN, HN
+ * CƠ SỞ DỮ LIỆU  + PHAN_BIEN, TU_DUY, DA_CHIEU, PHAN_TICH: Dùng cho Hoạt động Khám phávụ trong chương trình HĐTN, HN
  * Bộ sách: Kết nối Tri thức với Cuộc sống
  */
 
 // Interface cho câu hỏi gợi mở
 export interface CauHoiGoiMo {
   loai:
-    | "quan_sat"
-    | "ket_noi"
-    | "van_dung"
-    | "phan_bien"
-    | "trach_nhiem"
-    | "doi_chieu"
-    | "phat_trien"
-    | "da_chieu"
-    | "tu_duy"
-    | "thuc_te"
-    | "kha_thi"
-    | "tac_dong"
-    | "cam_xuc"
-    | "gia_tri"
-    | "hanh_dong"
-    | "phan_tu"
-    | "chien_luoc"
-    | "thuc_hanh"
-    | "he_thong"
-    | "tong_hop"
+  | "quan_sat"
+  | "ket_noi"
+  | "van_dung"
+  | "phan_bien"
+  | "trach_nhiem"
+  | "doi_chieu"
+  | "phat_trien"
+  | "da_chieu"
+  | "tu_duy"
+  | "thuc_te"
+  | "kha_thi"
+  | "tac_dong"
+  | "cam_xuc"
+  | "gia_tri"
+  | "hanh_dong"
+  | "phan_tich"
+  | "chien_luoc"
+  | "thuc_hanh"
+  | "he_thong"
+  | "tong_hop"
   cau_hoi: string
   muc_dich?: string
 }
@@ -236,7 +235,7 @@ export const CAU_HOI_KHOI_11: KhoiCauHoi = {
           ten_nhiem_vu: "Lập kế hoạch quản lý thời gian/tài chính",
           cau_hoi: [
             { loai: "thuc_hanh", cau_hoi: "Em đã thử phương pháp quản lý thời gian nào chưa? Kết quả ra sao?" },
-            { loai: "phan_tu", cau_hoi: "Đâu là 'kẻ đánh cắp thời gian' lớn nhất của em hiện nay?" },
+            { loai: "phan_tich", cau_hoi: "Đâu là 'kẻ đánh cắp thời gian' lớn nhất của em hiện nay?" },
             { loai: "hanh_dong", cau_hoi: "Nếu mỗi ngày tiết kiệm được 30 phút, em sẽ dùng nó để làm gì có ý nghĩa?" },
           ],
         },
@@ -353,7 +352,7 @@ export const CAU_HOI_KHOI_12: KhoiCauHoi = {
         {
           ten_nhiem_vu: "Đánh giá hành trình trưởng thành THPT",
           cau_hoi: [
-            { loai: "phan_tu", cau_hoi: "Sai lầm nào trong 3 năm THPT đã dạy em bài học giá trị nhất?" },
+            { loai: "phan_tich", cau_hoi: "Sai lầm nào trong 3 năm THPT đã dạy em bài học giá trị nhất?" },
             { loai: "cam_xuc", cau_hoi: "Nếu được quay lại ngày đầu tiên vào lớp 10, em sẽ nói gì với chính mình?" },
           ],
         },
@@ -598,7 +597,7 @@ export const LOAI_CAU_HOI = {
   cam_xuc: "Câu hỏi cảm xúc - Kết nối với trải nghiệm cảm xúc",
   gia_tri: "Câu hỏi giá trị - Xác định giá trị cốt lõi",
   hanh_dong: "Câu hỏi hành động - Thúc đẩy hành động cụ thể",
-  phan_tu: "Câu hỏi phân tích - Phân tích nguyên nhân",
+  phan_tich: "Câu hỏi phân tích - Phân tích nguyên nhân",
   chien_luoc: "Câu hỏi chiến lược - Xây dựng kế hoạch",
   thuc_hanh: "Câu hỏi thực hành - Rút kinh nghiệm từ thực tế",
   he_thong: "Câu hỏi hệ thống - Nhìn nhận vấn đề ở cấp độ rộng",
