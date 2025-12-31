@@ -1216,3 +1216,4 @@ export const createEventTemplate = async (): Promise<Blob> => {
 
     return await Packer.toBlob(doc);
 };
+

@@ -65,8 +65,23 @@ async function callGeminiWithRetry(
             model,
             contents: prompt,
           });
+
+          // Extract text from response - SDK uses getter property
+          let text: string = "";
+          try {
+            const rawText = response.text;
+            text = typeof rawText === 'string' ? rawText : "";
+          } catch (e) {
+            console.log(`[v0] [${keyLabel}] Error extracting text:`, e);
+            text = "";
+          }
+
+          if (!text) {
+            throw new Error("Empty response from Gemini API");
+          }
+
           console.log(`[v0] [${keyLabel}] Success with model: ${model}`);
-          return response.text || "";
+          return text;
         } catch (error: any) {
           lastError = error;
           const errorMsg = error?.message || "";
@@ -132,12 +147,16 @@ async function callGeminiWithRetry(
 }
 
 function removeMarkdownBold(text: string): string {
-  if (!text) return text;
+  if (!text || typeof text !== 'string') return text ?? "";
   return text.replace(/\*\*/g, "").replace(/\*/g, "");
 }
 
 function parseGeminiJSON(text: string): any {
-  console.log("[v0] Raw response (first 500 chars):", text.substring(0, 500));
+  console.log("[v0] Raw response (first 500 chars):", (text || "").substring(0, 500));
+
+  if (!text) {
+    throw new Error("Không nhận được nội dung từ Gemini (Empty response)");
+  }
 
   const cleaned = text
     .replace(/```json\s*/gi, "")
@@ -254,8 +273,8 @@ function parseGeminiJSON(text: string): any {
         `"${key}"\\s*:\\s*"([^"]*(?:\\\\.[^"]*)*)"`,
         "g"
       );
-      const match = cleaned.match(regex);
-      if (match) {
+      const match = regex.exec(cleaned);
+      if (match && match[1]) {
         result[key] = removeMarkdownBold(
           match[1].replace(/\\n/g, "\n").replace(/\\"/g, '"')
         );
@@ -434,9 +453,8 @@ export async function generateLessonPlan(
           muc_tieu_kien_thuc: data.muc_tieu_kien_thuc || "",
           muc_tieu_nang_luc: data.muc_tieu_nang_luc || "",
           muc_tieu_pham_chat: data.muc_tieu_pham_chat || "",
-          gv_chuan_bi: data.gv_chuan_bi || "",
+          gv_chuan_bi: data.gv_chuan_bi || data.thiet_bi_day_hoc || "",
           hs_chuan_bi: data.hs_chuan_bi || "",
-          thiet_bi_day_hoc: data.thiet_bi_day_hoc || (data.gv_chuan_bi && data.hs_chuan_bi ? `1. Đối với giáo viên: ${data.gv_chuan_bi}\n2. Đối với học sinh và Hướng dẫn về nhà: ${data.hs_chuan_bi}` : data.gv_chuan_bi || data.hs_chuan_bi || ""),
           hoat_dong_duoi_co: data.hoat_dong_duoi_co || "",
           shdc: data.shdc || "",
           shl: data.shl || "",

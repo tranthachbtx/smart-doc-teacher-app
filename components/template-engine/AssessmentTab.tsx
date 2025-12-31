@@ -200,7 +200,9 @@ export function AssessmentTab({
                                     </div>
                                     <div>
                                         <CardTitle className="text-xl text-indigo-900">
-                                            {assessmentResult.ten_ke_hoach}
+                                            {typeof assessmentResult.ten_ke_hoach === 'string'
+                                                ? assessmentResult.ten_ke_hoach
+                                                : 'Kế hoạch kiểm tra'}
                                         </CardTitle>
                                         <CardDescription>
                                             Mục tiêu: {Array.isArray(assessmentResult.muc_tieu) ? assessmentResult.muc_tieu.length : 0} yêu cầu cần đạt
@@ -224,17 +226,31 @@ export function AssessmentTab({
                                     <ListOrdered className="h-4 w-4 text-indigo-600" />
                                     Nội dung nhiệm vụ giao cho học sinh
                                 </h3>
-                                <div className="grid gap-4">
-                                    {(assessmentResult.nhiem_vu || []).map((nv: any, idx: number) => (
-                                        <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-100">
-                                            <div className="font-medium text-slate-900 mb-1">{idx + 1}. {nv.ten_nhiem_vu || nv.yeu_cau}</div>
-                                            <div className="text-sm text-slate-600 mb-2">{nv.mo_ta}</div>
-                                            <div className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded inline-block">
-                                                Tiêu chí: {nv.tieu_chi_danh_gia}
+
+                                {assessmentResult.noi_dung_nhiem_vu ? (
+                                    <div className="bg-slate-50 p-4 rounded-lg border border-slate-100 text-sm text-slate-700 whitespace-pre-wrap">
+                                        {typeof assessmentResult.noi_dung_nhiem_vu === 'string'
+                                            ? assessmentResult.noi_dung_nhiem_vu
+                                            : typeof assessmentResult.noi_dung_nhiem_vu === 'object'
+                                                ? Object.entries(assessmentResult.noi_dung_nhiem_vu)
+                                                    .map(([key, value]) => `${key}: ${typeof value === 'string' ? value : JSON.stringify(value)}`)
+                                                    .join('\n')
+                                                : String(assessmentResult.noi_dung_nhiem_vu)
+                                        }
+                                    </div>
+                                ) : (
+                                    <div className="grid gap-4">
+                                        {(assessmentResult.nhiem_vu || []).map((nv: any, idx: number) => (
+                                            <div key={idx} className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                                                <div className="font-medium text-slate-900 mb-1">{idx + 1}. {nv?.ten_nhiem_vu || nv?.yeu_cau || 'N/A'}</div>
+                                                <div className="text-sm text-slate-600 mb-2">{nv?.mo_ta || ''}</div>
+                                                <div className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded inline-block">
+                                                    Tiêu chí: {nv?.tieu_chi_danh_gia || 'N/A'}
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Rubric Preview */}
@@ -247,26 +263,37 @@ export function AssessmentTab({
                                     <table className="w-full text-sm">
                                         <thead className="bg-slate-100 text-slate-700">
                                             <tr>
-                                                <th className="p-2 text-left border-r">Tiêu chí</th>
-                                                <th className="p-2 text-center border-r">Mức 1 (Đạt)</th>
-                                                <th className="p-2 text-center border-r">Mức 2 (Khá)</th>
-                                                <th className="p-2 text-center">Mức 3 (Tốt)</th>
+                                                <th className="p-2 text-left border-r w-1/4">Tiêu chí</th>
+                                                <th className="p-2 text-center border-r w-3/4" colSpan={3}>Các mức độ</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y">
-                                            {(assessmentResult.cong_cu_danh_gia?.rubric || []).slice(0, 3).map((r: any, idx: number) => (
+                                            {(assessmentResult.bang_kiem_rubric || assessmentResult.cong_cu_danh_gia?.rubric || []).slice(0, 5).map((r: any, idx: number) => (
                                                 <tr key={idx}>
-                                                    <td className="p-2 border-r font-medium">{r.tieu_chi}</td>
-                                                    <td className="p-2 border-r text-slate-600">{r.muc_1}</td>
-                                                    <td className="p-2 border-r text-slate-600">{r.muc_2}</td>
-                                                    <td className="p-2 text-slate-600">{r.muc_3}</td>
+                                                    <td className="p-2 border-r font-medium align-top">
+                                                        {typeof r?.tieu_chi === 'string' ? r.tieu_chi : (r?.tieu_chi ? JSON.stringify(r.tieu_chi) : 'N/A')}
+                                                        <div className="text-xs text-muted-foreground mt-1 font-normal">Trọng số: {r?.trong_so || 'N/A'}</div>
+                                                    </td>
+                                                    <td className="p-2 text-slate-600 col-span-3">
+                                                        {!r?.muc_do ? 'N/A' : typeof r.muc_do === 'string' ? r.muc_do : (
+                                                            <div className="grid grid-cols-1 gap-2">
+                                                                {r.muc_do?.dat && <div><span className="font-semibold text-green-600">Đạt:</span> {String(r.muc_do.dat)}</div>}
+                                                                {r.muc_do?.tot && <div><span className="font-semibold text-blue-600">Tốt:</span> {String(r.muc_do.tot)}</div>}
+                                                                {r.muc_do?.xuat_sac && <div><span className="font-semibold text-purple-600">Xuất sắc:</span> {String(r.muc_do.xuat_sac)}</div>}
+                                                                {r.muc_do?.chua_dat && <div><span className="font-semibold text-red-600">Chưa đạt:</span> {String(r.muc_do.chua_dat)}</div>}
+                                                                {r.muc_do?.muc_1 && <div><span className="font-semibold text-green-600">Mức 1:</span> {String(r.muc_do.muc_1)}</div>}
+                                                                {r.muc_do?.muc_2 && <div><span className="font-semibold text-blue-600">Mức 2:</span> {String(r.muc_do.muc_2)}</div>}
+                                                                {r.muc_do?.muc_3 && <div><span className="font-semibold text-purple-600">Mức 3:</span> {String(r.muc_do.muc_3)}</div>}
+                                                            </div>
+                                                        )}
+                                                    </td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
-                                    {(assessmentResult.cong_cu_danh_gia?.rubric || []).length > 3 && (
+                                    {(assessmentResult.bang_kiem_rubric || assessmentResult.cong_cu_danh_gia?.rubric || []).length > 5 && (
                                         <div className="text-center p-2 text-xs text-muted-foreground bg-slate-50">
-                                            ... và {(assessmentResult.cong_cu_danh_gia?.rubric || []).length - 3} tiêu chí khác
+                                            ... và {(assessmentResult.bang_kiem_rubric || assessmentResult.cong_cu_danh_gia?.rubric || []).length - 5} tiêu chí khác
                                         </div>
                                     )}
                                 </div>
@@ -276,7 +303,13 @@ export function AssessmentTab({
                                 <Info className="h-5 w-5 text-yellow-600 shrink-0" />
                                 <div>
                                     <h4 className="font-medium text-yellow-800 text-sm">Lời khuyên chuyên môn</h4>
-                                    <p className="text-sm text-yellow-700 mt-1">{assessmentResult.loi_khuyen}</p>
+                                    <p className="text-sm text-yellow-700 mt-1">
+                                        {typeof assessmentResult.loi_khuyen === 'string'
+                                            ? assessmentResult.loi_khuyen
+                                            : assessmentResult.loi_khuyen
+                                                ? JSON.stringify(assessmentResult.loi_khuyen)
+                                                : 'Không có lời khuyên'}
+                                    </p>
                                 </div>
                             </div>
 

@@ -67,7 +67,8 @@ export function useTemplateGeneration() {
     tasks: LessonTask[],
     ppctData: PPCTItem[],
     distribution?: Record<string, number>,
-    suggestions?: { shdc?: string; hdgd?: string; shl?: string }
+    suggestions?: { shdc?: string; hdgd?: string; shl?: string },
+    chuDeInfo?: { shdc: number; hdgd: number; shl: number; tong_tiet: number; hoat_dong?: string[] } | null
   ) => {
     setIsGenerating(true);
     setError(null);
@@ -75,6 +76,21 @@ export function useTemplateGeneration() {
     // Build instructions
     let fullInstructions = customInstructions || "";
     const selectedTasks = tasks.filter((t) => t.selected);
+
+    // Add period distribution info to instructions if available
+    if (chuDeInfo && fullPlanMode) {
+      fullInstructions += `\n\n=== PHÂN PHỐI TIẾT THEO PPCT ===
+Tổng số tiết của chủ đề: ${chuDeInfo.tong_tiet} tiết
+- Sinh hoạt dưới cờ (SHDC): ${chuDeInfo.shdc} tiết
+- Hoạt động giáo dục theo chủ đề (HĐGD): ${chuDeInfo.hdgd} tiết  
+- Sinh hoạt lớp (SHL): ${chuDeInfo.shl} tiết
+
+YÊU CẦU: Hãy thiết kế KHBD đầy đủ bao gồm cả 3 loại hoạt động trên với thời lượng tương ứng.`;
+
+      if (chuDeInfo.hoat_dong && chuDeInfo.hoat_dong.length > 0) {
+        fullInstructions += `\n\nCác hoạt động gợi ý từ SGK:\n${chuDeInfo.hoat_dong.map((h, i) => `${i + 1}. ${h}`).join('\n')}`;
+      }
+    }
 
     if (selectedTasks.length > 0) {
       const tasksPrompt = selectedTasks

@@ -112,7 +112,9 @@ export async function getTemplate(type: TemplateType): Promise<TemplateInfo | nu
   })
 }
 
-export async function getEffectiveTemplate(type: "meeting" | "event" | "lesson"): Promise<TemplateInfo | null> {
+import { createMeetingTemplate, createLessonTemplate } from "./docx-templates"
+
+export async function getEffectiveTemplate(type: "meeting" | "event" | "lesson" | "assessment"): Promise<TemplateInfo | null> {
   // First try to get session template
   const sessionTemplate = await getTemplate(type)
   if (sessionTemplate) {
@@ -126,8 +128,36 @@ export async function getEffectiveTemplate(type: "meeting" | "event" | "lesson")
     return defaultTemplate
   }
 
-  const builtInTemplate = await loadDefaultTemplate(type)
-  return builtInTemplate
+  // Then try to load from public/templates (via default-templates.ts)
+  // We need to cast type to match the expected union in loadDefaultTemplate
+  // Note: loadDefaultTemplate might not support 'assessment' yet, so we handle it below
+  if (type !== 'assessment') {
+    const builtInTemplate = await loadDefaultTemplate(type as any)
+    if (builtInTemplate) return builtInTemplate
+  }
+
+  // Finally, fallback to generating one programmatically
+  // Note: For assessment, we return null because the auto-generated template
+  // uses text placeholders like {{khoi}} which are not real docxtemplater placeholders.
+  // The export service will handle assessment by creating the Word file directly.
+  let generatedBlob: Blob | null = null;
+
+  if (type === 'meeting') {
+    generatedBlob = await createMeetingTemplate();
+  } else if (type === 'lesson') {
+    generatedBlob = await createLessonTemplate();
+  }
+  // Assessment is intentionally excluded - export service creates file directly
+
+  if (generatedBlob) {
+    const arrayBuffer = await generatedBlob.arrayBuffer();
+    return {
+      name: `Mẫu tạo tự động - ${type}.docx`,
+      data: arrayBuffer
+    }
+  }
+
+  return null
 }
 
 export async function deleteTemplate(type: TemplateType): Promise<void> {

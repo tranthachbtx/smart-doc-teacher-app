@@ -180,7 +180,18 @@ async function processTemplate(
     nullGetter: () => "",
   });
 
-  doc.render(data);
+  try {
+    doc.render(data);
+  } catch (error: any) {
+    // Log detailed error for debugging
+    console.error("[ExportService] Docxtemplater render error:", error);
+    if (error.properties && error.properties.errors) {
+      error.properties.errors.forEach((e: any) => {
+        console.error("[ExportService] Template error:", e.message, "| Properties:", e.properties);
+      });
+    }
+    throw new Error(`Lỗi xử lý template: ${error.message || "Không rõ lỗi"}`);
+  }
 
   const processedZip = doc.getZip();
   const documentXml = processedZip.file("word/document.xml");
@@ -441,45 +452,346 @@ export const ExportService = {
       grade: string;
       term: string;
       productType: string;
+      topic: string;
     }
   ) {
-    const { grade, term, productType } = options;
+    const { grade, term, productType, topic } = options;
 
     // Helper to format Matrix as a text table
     const formatMatrix = (matrix: any[]) => {
       if (!Array.isArray(matrix)) return "";
-      return matrix.map(m => `+ Mức độ: ${m.muc_do}\n  Mô tả: ${m.mo_ta}`).join("\n\n");
+      return matrix.map(m => `+ Mức độ: ${m?.muc_do || 'N/A'}\n  Mô tả: ${m?.mo_ta || ''}`).join("\n\n");
     };
 
     // Helper to format Rubric as a text table
     const formatRubric = (rubric: any[]) => {
       if (!Array.isArray(rubric)) return "";
       return rubric.map(r => {
-        const levels = r.muc_do;
+        const levels = r?.muc_do;
         let levelText = "";
-        if (typeof levels === 'string') {
+        if (!levels) {
+          levelText = "";
+        } else if (typeof levels === 'string') {
           levelText = levels;
-        } else {
+        } else if (typeof levels === 'object') {
           levelText = `\n  - Xuất sắc: ${levels.xuat_sac || ''}\n  - Tốt: ${levels.tot || ''}\n  - Đạt: ${levels.dat || ''}\n  - Chưa đạt: ${levels.chua_dat || ''}`;
         }
-        return `+ Tiêu chí: ${r.tieu_chi} (Trọng số: ${r.trong_so})${levelText}`;
+        return `+ Tiêu chí: ${r?.tieu_chi || 'N/A'} (Trọng số: ${r?.trong_so || 'N/A'})${levelText}`;
       }).join("\n\n");
     };
 
     const data = {
-      ten_ke_hoach: result.ten_ke_hoach,
-      muc_tieu: formatForWord(Array.isArray(result.muc_tieu) ? result.muc_tieu.join("\n") : result.muc_tieu),
-      noi_dung_nhiem_vu: formatForWord(result.noi_dung_nhiem_vu),
-      hinh_thuc_to_chuc: formatForWord(result.hinh_thuc_to_chuc),
+      // Required template fields
+      ten_truong: DEPT_INFO.school.replace("Trường THPT ", ""),
+      to_chuyen_mon: DEPT_INFO.name,
+      hoc_ky: term,
+      // Content fields - properly format complex data structures
+      ten_ke_hoach: typeof result.ten_ke_hoach === 'string'
+        ? result.ten_ke_hoach
+        : `Kế hoạch kiểm tra ${term}`,
+      // Format muc_tieu: handle array of objects with loai and chi_tiet
+      muc_tieu: formatForWord((() => {
+        if (!result.muc_tieu) return "";
+        if (typeof result.muc_tieu === 'string') return result.muc_tieu;
+        if (Array.isArray(result.muc_tieu)) {
+          return result.muc_tieu.map((item: any) => {
+            if (typeof item === 'string') return item;
+            if (item.loai && item.chi_tiet) {
+              const details = Array.isArray(item.chi_tiet) ? item.chi_tiet.join("\n- ") : item.chi_tiet;
+              return `${item.loai}:\n- ${details}`;
+            }
+            return "";
+          }).filter(Boolean).join("\n\n");
+        }
+        return "";
+      })()),
+      // Format noi_dung_nhiem_vu: handle object with tieu_de_du_an, boi_canh, yeu_cau_san_pham, thoi_han
+      noi_dung_nhiem_vu: formatForWord((() => {
+        if (!result.noi_dung_nhiem_vu) return "";
+        if (typeof result.noi_dung_nhiem_vu === 'string') return result.noi_dung_nhiem_vu;
+        if (typeof result.noi_dung_nhiem_vu === 'object') {
+          const obj = result.noi_dung_nhiem_vu;
+          const parts: string[] = [];
+          if (obj.tieu_de_du_an) parts.push(`Tên dự án: ${obj.tieu_de_du_an}`);
+          if (obj.boi_canh) parts.push(`Bối cảnh: ${obj.boi_canh}`);
+          if (obj.yeu_cau_san_pham) parts.push(`Yêu cầu sản phẩm: ${obj.yeu_cau_san_pham}`);
+          if (obj.thoi_han) parts.push(`Thời hạn: ${obj.thoi_han}`);
+          return parts.join("\n\n");
+        }
+        return "";
+      })()),
+      hinh_thuc_to_chuc: formatForWord(
+        typeof result.hinh_thuc_to_chuc === 'string'
+          ? result.hinh_thuc_to_chuc
+          : ""
+      ),
       ma_tran_dac_ta: formatForWord(formatMatrix(result.ma_tran_dac_ta)),
       bang_kiem_rubric: formatForWord(formatRubric(result.bang_kiem_rubric)),
-      loi_khuyen: formatForWord(result.loi_khuyen),
-      khoi: grade,
-      ky_danh_gia: term,
-      loai_san_pham: productType,
+      loi_khuyen: formatForWord(
+        typeof result.loi_khuyen === 'string'
+          ? result.loi_khuyen
+          : ""
+      ),
+      khoi: grade || "10",
+      ky_danh_gia: term || "",
+      loai_san_pham: productType || "",
+      san_pham: productType || "", // Map to {{san_pham}} in template
+      ten_chu_de: topic || "",
     };
 
     const fileName = `KH_KiemTra_${term}_Khoi${grade}.docx`.replace(/\s+/g, "_");
-    return processTemplate(data, template?.data || null, fileName);
+
+    // If no user-uploaded template, create Word file directly using docx library
+    if (!template?.data) {
+      const docx = await import("docx");
+      const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle } = docx;
+
+      // Standard document formatting constants (in TWIPs - 1/20 of a point)
+      const FIRST_LINE_INDENT = 720; // 0.5 inch = 720 TWIPs
+      const LINE_SPACING = 276; // 1.15 line spacing
+      const SPACING_AFTER = 120; // 6pt after paragraph
+      const FONT_SIZE = 26; // 13pt
+      const FONT_NAME = "Times New Roman";
+
+      // Helper to create a paragraph with proper formatting
+      const createFormattedParagraph = (
+        text: string,
+        options: {
+          bold?: boolean;
+          italics?: boolean;
+          isTitle?: boolean;
+          isBullet?: boolean;
+          noIndent?: boolean;
+        } = {}
+      ) => {
+        const { bold = false, italics = false, isTitle = false, isBullet = false, noIndent = false } = options;
+        return new Paragraph({
+          alignment: isTitle ? AlignmentType.CENTER : AlignmentType.JUSTIFIED,
+          indent: isTitle || noIndent || isBullet ? undefined : { firstLine: FIRST_LINE_INDENT },
+          spacing: { line: LINE_SPACING, after: SPACING_AFTER },
+          children: [new TextRun({
+            text: isBullet ? `• ${text}` : text,
+            size: isTitle ? 28 : FONT_SIZE,
+            font: FONT_NAME,
+            bold,
+            italics
+          })],
+        });
+      };
+
+      // Helper to create multiple paragraphs from text with newlines
+      const createParagraphs = (text: string, options: { bold?: boolean; italics?: boolean } = {}): any[] => {
+        if (!text) return [];
+        const lines = text.split(/\n/).filter(line => line.trim());
+        return lines.map(line => {
+          const trimmedLine = line.trim();
+          // Check if line starts with bullet point markers
+          const isBullet = /^[-•+]\s/.test(trimmedLine) || /^\d+\.\s/.test(trimmedLine);
+          const cleanLine = trimmedLine.replace(/^[-•+]\s/, '').replace(/^\d+\.\s/, '');
+
+          return createFormattedParagraph(
+            isBullet ? cleanLine : trimmedLine,
+            { ...options, isBullet, noIndent: isBullet }
+          );
+        });
+      };
+
+      // Safe text formatter that handles any input type
+      const formatText = (text: unknown): string => {
+        if (text === null || text === undefined) return "";
+        if (typeof text === 'string') {
+          return text.replace(/\[\[STYLE_FIX\]\]/g, "").replace(/\{\{BR\}\}/g, "\n");
+        }
+        return String(text);
+      };
+
+      // Prepare content strings
+      const safeData = {
+        ten_ke_hoach: formatText(data.ten_ke_hoach) || "Kế hoạch kiểm tra",
+        ten_truong: formatText(data.ten_truong) || "Bùi Thị Xuân - Mũi Né",
+        to_chuyen_mon: formatText(data.to_chuyen_mon) || "Tổ HĐTN, HN & GDĐP",
+        khoi: formatText(data.khoi) || "10",
+        ky_danh_gia: formatText(data.ky_danh_gia) || "",
+        san_pham: formatText(data.san_pham) || "",
+        ten_chu_de: formatText(data.ten_chu_de) || "",
+        muc_tieu: formatText(data.muc_tieu) || "",
+        noi_dung_nhiem_vu: formatText(data.noi_dung_nhiem_vu) || "",
+        hinh_thuc_to_chuc: formatText(data.hinh_thuc_to_chuc) || "",
+        ma_tran_dac_ta: formatText(data.ma_tran_dac_ta) || "",
+        bang_kiem_rubric: formatText(data.bang_kiem_rubric) || "",
+        loi_khuyen: formatText(data.loi_khuyen) || "",
+      };
+
+      // Build document children array
+      const docChildren: (typeof Paragraph | typeof Table)[] = [
+        // Header Table - 2 columns
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: {
+            top: { style: BorderStyle.NONE },
+            bottom: { style: BorderStyle.NONE },
+            left: { style: BorderStyle.NONE },
+            right: { style: BorderStyle.NONE },
+            insideHorizontal: { style: BorderStyle.NONE },
+            insideVertical: { style: BorderStyle.NONE },
+          },
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  width: { size: 40, type: WidthType.PERCENTAGE },
+                  children: [
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "TRƯỜNG THPT", bold: true, size: 26, font: FONT_NAME })] }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: safeData.ten_truong, bold: true, size: 26, font: FONT_NAME })] }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: `TỔ: ${safeData.to_chuyen_mon}`, size: 24, font: FONT_NAME })] }),
+                  ],
+                }),
+                new TableCell({
+                  width: { size: 60, type: WidthType.PERCENTAGE },
+                  children: [
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", bold: true, size: 26, font: FONT_NAME })] }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Độc lập - Tự do - Hạnh phúc", bold: true, size: 26, font: FONT_NAME, underline: {} })] }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        new Paragraph({ text: "" }),
+        // Title - Centered, Bold, Uppercase
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 120 },
+          children: [new TextRun({ text: "KẾ HOẠCH KIỂM TRA ĐÁNH GIÁ ĐỊNH KỲ", bold: true, size: 32, font: FONT_NAME })]
+        }),
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          spacing: { after: 200 },
+          children: [new TextRun({ text: `${(safeData.ky_danh_gia || "").toUpperCase()} - NĂM HỌC 20... - 20...`, bold: true, size: 28, font: FONT_NAME })]
+        }),
+        new Paragraph({ text: "" }),
+        // Info section - No indent, standard spacing
+        new Paragraph({
+          spacing: { after: SPACING_AFTER },
+          children: [new TextRun({ text: "Môn học/HĐGD: ", bold: true, size: FONT_SIZE, font: FONT_NAME }), new TextRun({ text: "Hoạt động trải nghiệm, Hướng nghiệp", size: FONT_SIZE, font: FONT_NAME })]
+        }),
+        new Paragraph({
+          spacing: { after: SPACING_AFTER },
+          children: [new TextRun({ text: "Khối lớp: ", bold: true, size: FONT_SIZE, font: FONT_NAME }), new TextRun({ text: safeData.khoi, size: FONT_SIZE, font: FONT_NAME })]
+        }),
+        new Paragraph({
+          spacing: { after: SPACING_AFTER },
+          children: [new TextRun({ text: "Thời điểm đánh giá: ", bold: true, size: FONT_SIZE, font: FONT_NAME }), new TextRun({ text: safeData.ky_danh_gia, size: FONT_SIZE, font: FONT_NAME })]
+        }),
+        new Paragraph({
+          spacing: { after: SPACING_AFTER },
+          children: [new TextRun({ text: "Chủ đề/Nội dung: ", bold: true, size: FONT_SIZE, font: FONT_NAME }), new TextRun({ text: safeData.ten_chu_de, size: FONT_SIZE, font: FONT_NAME })]
+        }),
+        new Paragraph({ text: "" }),
+        // I. Objectives
+        new Paragraph({
+          spacing: { before: 200, after: SPACING_AFTER },
+          children: [new TextRun({ text: "I. MỤC TIÊU ĐÁNH GIÁ", bold: true, size: 28, font: FONT_NAME })]
+        }),
+        ...createParagraphs(safeData.muc_tieu),
+        // II. Forms & Products
+        new Paragraph({
+          spacing: { before: 200, after: SPACING_AFTER },
+          children: [new TextRun({ text: "II. HÌNH THỨC VÀ SẢN PHẨM", bold: true, size: 28, font: FONT_NAME })]
+        }),
+        createFormattedParagraph(`Hình thức tổ chức: ${safeData.hinh_thuc_to_chuc}`, { noIndent: true }),
+        createFormattedParagraph(`Sản phẩm yêu cầu: ${safeData.san_pham}`, { noIndent: true }),
+        new Paragraph({ text: "" }),
+        new Paragraph({
+          spacing: { after: SPACING_AFTER },
+          children: [new TextRun({ text: "Nội dung nhiệm vụ cụ thể:", bold: true, italics: true, size: FONT_SIZE, font: FONT_NAME })]
+        }),
+        ...createParagraphs(safeData.noi_dung_nhiem_vu),
+        // III. Matrix
+        new Paragraph({
+          spacing: { before: 200, after: SPACING_AFTER },
+          children: [new TextRun({ text: "III. MA TRẬN ĐẶC TẢ", bold: true, size: 28, font: FONT_NAME })]
+        }),
+        ...createParagraphs(safeData.ma_tran_dac_ta),
+        // IV. Rubric
+        new Paragraph({
+          spacing: { before: 200, after: SPACING_AFTER },
+          children: [new TextRun({ text: "IV. TIÊU CHÍ ĐÁNH GIÁ (RUBRIC)", bold: true, size: 28, font: FONT_NAME })]
+        }),
+        ...createParagraphs(safeData.bang_kiem_rubric),
+        // V. Notes
+        new Paragraph({
+          spacing: { before: 200, after: SPACING_AFTER },
+          children: [new TextRun({ text: "V. GHI CHÚ CHO GIÁO VIÊN", bold: true, size: 28, font: FONT_NAME })]
+        }),
+        ...createParagraphs(safeData.loi_khuyen),
+        new Paragraph({ text: "" }),
+        new Paragraph({ text: "" }),
+        // Footer - Signatures Table
+        new Table({
+          width: { size: 100, type: WidthType.PERCENTAGE },
+          borders: {
+            top: { style: BorderStyle.NONE },
+            bottom: { style: BorderStyle.NONE },
+            left: { style: BorderStyle.NONE },
+            right: { style: BorderStyle.NONE },
+            insideHorizontal: { style: BorderStyle.NONE },
+            insideVertical: { style: BorderStyle.NONE },
+          },
+          rows: [
+            new TableRow({
+              children: [
+                new TableCell({
+                  width: { size: 50, type: WidthType.PERCENTAGE },
+                  children: [
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "TỔ TRƯỞNG CHUYÊN MÔN", bold: true, size: FONT_SIZE, font: FONT_NAME })] }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(Ký và ghi rõ họ tên)", italics: true, size: 24, font: FONT_NAME })] }),
+                  ],
+                }),
+                new TableCell({
+                  width: { size: 50, type: WidthType.PERCENTAGE },
+                  children: [
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "GIÁO VIÊN LẬP KẾ HOẠCH", bold: true, size: FONT_SIZE, font: FONT_NAME })] }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "(Ký và ghi rõ họ tên)", italics: true, size: 24, font: FONT_NAME })] }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+      ];
+
+      const doc = new Document({
+        sections: [{
+          properties: {},
+          children: docChildren as any[],
+        }],
+      });
+
+      const blob = await Packer.toBlob(doc);
+
+      // Save file
+      let saveAs: (blob: Blob, filename: string) => void;
+      try {
+        const fileSaver = await import("file-saver");
+        saveAs = (fileSaver as any).saveAs || (fileSaver as any).default?.saveAs || (fileSaver as any).default;
+      } catch {
+        saveAs = (blob: Blob, filename: string) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        };
+      }
+
+      saveAs(blob, fileName);
+      return { success: true, method: "download" as const };
+    }
+
+    return processTemplate(data, template.data, fileName);
   },
 };

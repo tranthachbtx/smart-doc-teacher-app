@@ -21,9 +21,12 @@ import {
     BookOpen,
     Clock,
     Plus,
+    Minus,
     MessageSquare,
     CheckCircle,
     X,
+    ChevronUp,
+    ChevronDown,
 } from "lucide-react";
 import type { LessonResult, LessonTask } from "@/lib/types";
 import type { PPCTChuDe } from "@/lib/data/ppct-database";
@@ -38,6 +41,7 @@ interface LessonTabProps {
     setLessonAutoFilledTheme: (value: string) => void;
     lessonDuration: string;
     setLessonDuration: (value: string) => void;
+    selectedChuDe: PPCTChuDe | null;
     setSelectedChuDe: (value: PPCTChuDe | null) => void;
     setLessonMonth: (value: string) => void;
     lessonFullPlanMode: boolean;
@@ -81,6 +85,7 @@ export function LessonTab({
     setLessonAutoFilledTheme,
     lessonDuration,
     setLessonDuration,
+    selectedChuDe,
     setSelectedChuDe,
     setLessonMonth,
     lessonFullPlanMode,
@@ -114,6 +119,97 @@ export function LessonTab({
     setSuccess,
     lessonTopic,
 }: LessonTabProps) {
+    // State for expand/collapse activity suggestion boxes
+    const [expandedActivities, setExpandedActivities] = React.useState<Record<string, boolean>>({
+        shdc: true,
+        hdgd: true,
+        shl: true,
+    });
+
+    const toggleActivity = (key: string) => {
+        setExpandedActivities(prev => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    // Activity Suggestion Box Component
+    const ActivitySuggestionBox = ({
+        label,
+        value,
+        onChange,
+        placeholder,
+        colorClass,
+        periodCount
+    }: {
+        label: string;
+        value: string;
+        onChange: (value: string) => void;
+        placeholder: string;
+        colorClass: 'blue' | 'green' | 'orange';
+        periodCount: number;
+    }) => {
+        const colorMap = {
+            blue: {
+                bg: 'bg-blue-50 dark:bg-blue-950',
+                border: 'border-blue-200 dark:border-blue-800',
+                header: 'hover:bg-blue-100 dark:hover:bg-blue-900',
+                text: 'text-blue-800 dark:text-blue-200',
+                badge: 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200',
+                dot: 'bg-blue-500',
+            },
+            green: {
+                bg: 'bg-green-50 dark:bg-green-950',
+                border: 'border-green-200 dark:border-green-800',
+                header: 'hover:bg-green-100 dark:hover:bg-green-900',
+                text: 'text-green-800 dark:text-green-200',
+                badge: 'bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200',
+                dot: 'bg-green-500',
+            },
+            orange: {
+                bg: 'bg-orange-50 dark:bg-orange-950',
+                border: 'border-orange-200 dark:border-orange-800',
+                header: 'hover:bg-orange-100 dark:hover:bg-orange-900',
+                text: 'text-orange-800 dark:text-orange-200',
+                badge: 'bg-orange-100 text-orange-700 dark:bg-orange-800 dark:text-orange-200',
+                dot: 'bg-orange-500',
+            },
+        };
+
+        const colors = colorMap[colorClass];
+        const key = colorClass === 'blue' ? 'shdc' : colorClass === 'green' ? 'hdgd' : 'shl';
+        const isExpanded = expandedActivities[key];
+
+        return (
+            <div className={`${colors.bg} rounded-lg border ${colors.border} overflow-hidden`}>
+                <div
+                    className={`flex items-center justify-between p-3 cursor-pointer ${colors.header} transition-colors`}
+                    onClick={() => toggleActivity(key)}
+                >
+                    <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${colors.dot}`}></div>
+                        <Label className={`${colors.text} font-medium cursor-pointer`}>
+                            {label}
+                        </Label>
+                        {periodCount > 0 && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${colors.badge} font-medium`}>
+                                {periodCount} tiết
+                            </span>
+                        )}
+                    </div>
+                    {isExpanded ? <ChevronUp className={`h-4 w-4 ${colors.text}`} /> : <ChevronDown className={`h-4 w-4 ${colors.text}`} />}
+                </div>
+                {isExpanded && (
+                    <div className="p-3 pt-0">
+                        <Textarea
+                            placeholder={placeholder}
+                            value={value}
+                            onChange={(e) => onChange(e.target.value)}
+                            className="min-h-[80px] text-sm bg-white dark:bg-slate-900"
+                        />
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <Card>
             <CardContent className="space-y-4">
@@ -179,26 +275,14 @@ export function LessonTab({
                     </div>
                 </div>
 
-                {/* Theme and Duration Inputs */}
+                {/* Theme Input */}
                 <div className="space-y-2">
                     <Label>Tên Chủ Đề (Tự động điền)</Label>
-                    <div className="flex gap-2">
-                        <Input
-                            value={lessonAutoFilledTheme}
-                            onChange={(e) => setLessonAutoFilledTheme(e.target.value)}
-                            placeholder="Tên chủ đề sẽ tự động hiển thị..."
-                            className="flex-1"
-                        />
-                        <div className="w-24 flex items-center gap-2 border rounded-md px-3 bg-slate-50">
-                            <Clock className="h-4 w-4 text-slate-500" />
-                            <Input
-                                value={lessonDuration}
-                                onChange={(e) => setLessonDuration(e.target.value)}
-                                className="border-none bg-transparent h-8 w-full p-0 focus-visible:ring-0"
-                                placeholder="Tiết"
-                            />
-                        </div>
-                    </div>
+                    <Input
+                        value={lessonAutoFilledTheme}
+                        onChange={(e) => setLessonAutoFilledTheme(e.target.value)}
+                        placeholder="Tên chủ đề sẽ tự động hiển thị..."
+                    />
                 </div>
 
                 {/* Full Plan Mode Toggle */}
@@ -215,58 +299,121 @@ export function LessonTab({
                     />
                 </div>
 
+                {/* Period Distribution - Show when a chu de is selected */}
+                {selectedChuDe && lessonFullPlanMode && (
+                    <div className="space-y-4 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-indigo-600" />
+                                <Label className="text-indigo-800 dark:text-indigo-200 font-medium">
+                                    Phân phối tiết theo PPCT
+                                </Label>
+                            </div>
+                            <span className="text-sm text-indigo-600 font-medium">
+                                Tổng: {selectedChuDe.tong_tiet} tiết (Tuần {selectedChuDe.tuan_bat_dau || '?'} - {selectedChuDe.tuan_ket_thuc || '?'})
+                            </span>
+                        </div>
+
+                        {/* Period Distribution Grid */}
+                        <div className="grid grid-cols-3 gap-3">
+                            {/* SHDC */}
+                            <div className="bg-blue-100 dark:bg-blue-900 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">SHDC</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-lg font-bold text-blue-800 dark:text-blue-200">{selectedChuDe.shdc}</span>
+                                        <span className="text-xs text-blue-600">tiết</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-blue-600 dark:text-blue-400">Sinh hoạt dưới cờ</p>
+                            </div>
+
+                            {/* HDGD */}
+                            <div className="bg-green-100 dark:bg-green-900 rounded-lg p-3 border border-green-200 dark:border-green-700">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-semibold text-green-700 dark:text-green-300">HĐGD</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-lg font-bold text-green-800 dark:text-green-200">{selectedChuDe.hdgd}</span>
+                                        <span className="text-xs text-green-600">tiết</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-green-600 dark:text-green-400">Hoạt động giáo dục</p>
+                            </div>
+
+                            {/* SHL */}
+                            <div className="bg-orange-100 dark:bg-orange-900 rounded-lg p-3 border border-orange-200 dark:border-orange-700">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-xs font-semibold text-orange-700 dark:text-orange-300">SHL</span>
+                                    <div className="flex items-center gap-1">
+                                        <span className="text-lg font-bold text-orange-800 dark:text-orange-200">{selectedChuDe.shl}</span>
+                                        <span className="text-xs text-orange-600">tiết</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-orange-600 dark:text-orange-400">Sinh hoạt lớp</p>
+                            </div>
+                        </div>
+
+                        {/* Suggested Activities from PPCT */}
+                        {selectedChuDe.hoat_dong && selectedChuDe.hoat_dong.length > 0 && (
+                            <div className="mt-3 p-3 bg-white/60 dark:bg-slate-800/60 rounded-lg border border-indigo-100 dark:border-indigo-800">
+                                <Label className="text-xs text-indigo-700 dark:text-indigo-300 font-medium">
+                                    Hoạt động gợi ý từ SGK:
+                                </Label>
+                                <ul className="mt-2 space-y-1.5">
+                                    {selectedChuDe.hoat_dong.map((activity, idx) => (
+                                        <li key={idx} className="text-xs text-indigo-600 dark:text-indigo-400 flex items-start gap-2">
+                                            <CheckCircle className="h-3 w-3 text-indigo-500 mt-0.5 flex-shrink-0" />
+                                            <span>{activity}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Activity Suggestions with Editable Content */}
                 {lessonFullPlanMode && (
-                    <div className="space-y-4 p-4 bg-indigo-50 dark:bg-indigo-950 rounded-lg border border-indigo-200 dark:border-indigo-800">
+                    <div className="space-y-3">
                         <div className="flex items-center gap-2">
                             <Info className="h-4 w-4 text-indigo-600" />
                             <Label className="text-indigo-800 dark:text-indigo-200 font-medium">
-                                Gợi ý nội dung theo loại hoạt động (tùy chọn)
+                                Gợi ý nội dung theo loại hoạt động
                             </Label>
                         </div>
-                        <p className="text-xs text-indigo-600 dark:text-indigo-400">
+                        <p className="text-xs text-muted-foreground">
                             Nhập gợi ý cụ thể để AI tạo nội dung chuyên sâu hơn cho từng loại hoạt động
                         </p>
 
-                        <div className="space-y-3">
-                            {/* SHDC Suggestion */}
-                            <div className="space-y-1">
-                                <Label className="text-sm text-indigo-700 dark:text-indigo-300">
-                                    Sinh hoạt dưới cờ (SHDC)
-                                </Label>
-                                <Textarea
-                                    placeholder="VD: Tổ chức diễn đàn về ý nghĩa truyền thống nhà trường, mời cựu HS chia sẻ..."
-                                    value={shdcSuggestion}
-                                    onChange={(e) => setShdcSuggestion(e.target.value)}
-                                    className="min-h-[60px] text-sm"
-                                />
-                            </div>
+                        {/* SHDC Suggestion with expand/collapse */}
+                        <ActivitySuggestionBox
+                            label="Sinh hoạt dưới cờ (SHDC)"
+                            value={shdcSuggestion}
+                            onChange={setShdcSuggestion}
+                            placeholder="VD: Tổ chức diễn đàn về ý nghĩa truyền thống nhà trường, mời cựu HS chia sẻ..."
+                            colorClass="blue"
+                            periodCount={selectedChuDe?.shdc || 0}
+                        />
 
-                            {/* HDGD Suggestion */}
-                            <div className="space-y-1">
-                                <Label className="text-sm text-indigo-700 dark:text-indigo-300">
-                                    Hoạt động giáo dục (HĐGD)
-                                </Label>
-                                <Textarea
-                                    placeholder="VD: Thảo luận nhóm về các giá trị cốt lõi, đóng vai tình huống thực tế..."
-                                    value={hdgdSuggestion}
-                                    onChange={(e) => setHdgdSuggestion(e.target.value)}
-                                    className="min-h-[60px] text-sm"
-                                />
-                            </div>
+                        {/* HDGD Suggestion */}
+                        <ActivitySuggestionBox
+                            label="Hoạt động giáo dục (HĐGD)"
+                            value={hdgdSuggestion}
+                            onChange={setHdgdSuggestion}
+                            placeholder="VD: Thảo luận nhóm về các giá trị cốt lõi, đóng vai tình huống thực tế..."
+                            colorClass="green"
+                            periodCount={selectedChuDe?.hdgd || 0}
+                        />
 
-                            {/* SHL Suggestion */}
-                            <div className="space-y-1">
-                                <Label className="text-sm text-indigo-700 dark:text-indigo-300">
-                                    Sinh hoạt lớp (SHL)
-                                </Label>
-                                <Textarea
-                                    placeholder="VD: Chia sẻ cảm nhận cá nhân, lập kế hoạch hành động, đánh giá lẫn nhau..."
-                                    value={shlSuggestion}
-                                    onChange={(e) => setShlSuggestion(e.target.value)}
-                                    className="min-h-[60px] text-sm"
-                                />
-                            </div>
-                        </div>
+                        {/* SHL Suggestion */}
+                        <ActivitySuggestionBox
+                            label="Sinh hoạt lớp (SHL)"
+                            value={shlSuggestion}
+                            onChange={setShlSuggestion}
+                            placeholder="VD: Chia sẻ cảm nhận cá nhân, lập kế hoạch hành động, đánh giá lẫn nhau..."
+                            colorClass="orange"
+                            periodCount={selectedChuDe?.shl || 0}
+                        />
                     </div>
                 )}
 
@@ -276,29 +423,17 @@ export function LessonTab({
                             <div className="flex items-center gap-2">
                                 <BookOpen className="h-4 w-4 text-green-600" />
                                 <Label className="text-green-800 dark:text-green-200 font-medium">
-                                    Nhiệm vụ gợi ý từ SGK ({curriculumTasks.filter((t) => t.selected).length} /{" "}
-                                    {curriculumTasks.length} nhiệm vụ đã chọn)
+                                    Nhiệm vụ gợi ý từ SGK ({curriculumTasks.length} nhiệm vụ)
                                 </Label>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={distributeTimeForTasks}
-                                    className="text-green-700 hover:text-green-800 text-xs bg-transparent"
-                                >
-                                    <Clock className="h-3 w-3 mr-1" />
-                                    Phân bổ lại
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setShowCurriculumTasks(!showCurriculumTasks)}
-                                    className="text-green-700 hover:text-green-800"
-                                >
-                                    {showCurriculumTasks ? "Ẩn" : "Hiện"}
-                                </Button>
-                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowCurriculumTasks(!showCurriculumTasks)}
+                                className="text-green-700 hover:text-green-800"
+                            >
+                                {showCurriculumTasks ? "Ẩn" : "Hiện"}
+                            </Button>
                         </div>
 
                         {showCurriculumTasks && (
@@ -312,22 +447,13 @@ export function LessonTab({
                                         >
                                             <div className="flex items-start justify-between gap-2">
                                                 <div className="flex-1 space-y-2">
-                                                    <div className="flex items-center gap-2">
-                                                        <Switch
-                                                            checked={task.selected || false}
-                                                            onCheckedChange={(checked) =>
-                                                                updateLessonTask(task.id, "selected", checked)
-                                                            }
-                                                            className="data-[state=checked]:bg-green-500"
-                                                        />
-                                                        <Input
-                                                            value={task.name}
-                                                            onChange={(e) =>
-                                                                updateLessonTask(task.id, "name", e.target.value)
-                                                            }
-                                                            className="h-7 text-sm font-medium text-green-800 dark:text-green-200 border-none bg-transparent focus:ring-0 px-0"
-                                                        />
-                                                    </div>
+                                                    <Input
+                                                        value={task.name}
+                                                        onChange={(e) =>
+                                                            updateLessonTask(task.id, "name", e.target.value)
+                                                        }
+                                                        className="h-7 text-sm font-medium text-green-800 dark:text-green-200 border-green-200 bg-transparent focus:ring-1 focus:ring-green-400"
+                                                    />
                                                     <Textarea
                                                         value={task.content}
                                                         onChange={(e) =>
@@ -354,25 +480,14 @@ export function LessonTab({
                                                                 Sản phẩm: {task.sanPhamDuKien}
                                                             </span>
                                                         )}
-                                                        <div className="flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-1 rounded">
-                                                            <Clock className="h-3 w-3" />
-                                                            <input
-                                                                type="number"
-                                                                min="0"
-                                                                max="999"
-                                                                value={task.time || 0}
-                                                                onChange={(e) =>
-                                                                    updateLessonTask(
-                                                                        task.id,
-                                                                        "time",
-                                                                        Number.parseInt(e.target.value) || 0
-                                                                    )
-                                                                }
-                                                                className="w-12 bg-transparent border-none text-center text-xs font-medium focus:outline-none focus:ring-1 focus:ring-orange-400 rounded disabled:opacity-50"
-                                                                disabled={!task.selected}
-                                                            />
-                                                            <span>phút</span>
-                                                        </div>
+                                                        {(task.time || task.thoiLuongDeXuat) && (
+                                                            <div className="flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                                                                <Clock className="h-3 w-3" />
+                                                                <span className="text-xs font-medium">
+                                                                    {task.time || task.thoiLuongDeXuat} phút
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>

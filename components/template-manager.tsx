@@ -739,7 +739,7 @@ export function TemplateManager({
     </Card>
   );
 
-    const downloadMeetingWordTemplate = async () => {
+  const downloadMeetingWordTemplate = async () => {
     try {
       const blob = await createMeetingTemplate();
       const url = URL.createObjectURL(blob);
@@ -750,8 +750,8 @@ export function TemplateManager({
       URL.revokeObjectURL(url);
       showMessage("success", "Đã tải mẫu Biên bản Họp Tổ");
     } catch (error) {
-       console.error("Error creating meeting template:", error);
-       showMessage("error", "Không thể tạo mẫu Word");
+      console.error("Error creating meeting template:", error);
+      showMessage("error", "Không thể tạo mẫu Word");
     }
   };
 
@@ -766,23 +766,30 @@ export function TemplateManager({
       URL.revokeObjectURL(url);
       showMessage("success", "Đã tải mẫu Kế hoạch Bài dạy");
     } catch (error) {
-       console.error("Error creating lesson template:", error);
-       showMessage("error", "Không thể tạo mẫu Word");
+      console.error("Error creating lesson template:", error);
+      showMessage("error", "Không thể tạo mẫu Word");
     }
   };
 
   const downloadAssessmentWordTemplate = async () => {
-      try {
-        const blob = await createAssessmentTemplate();
-         // Save to IDB as default_assessment
-        const arrayBuffer = await blob.arrayBuffer();
-        await saveTemplate("default_assessment" as any, "Mau_Ke_Hoach_Kiem_Tra.docx", arrayBuffer);
-        await loadTemplates();
-        showMessage("success", "Đã tạo mẫu Kế hoạch Kiểm tra chuẩn");
-      } catch (error) {
-        console.error("Error creating Assessment Word template:", error);
-        showMessage("error", "Không thể tạo file mẫu Word");
-      }
+    try {
+      const blob = await createAssessmentTemplate();
+      // Download the file
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Mau-Ke-hoach-Kiem-tra.docx";
+      a.click();
+      URL.revokeObjectURL(url);
+      // Also save to IDB as default_assessment
+      const arrayBuffer = await blob.arrayBuffer();
+      await saveTemplate("default_assessment" as any, "Mau_Ke_Hoach_Kiem_Tra.docx", arrayBuffer);
+      await loadTemplates();
+      showMessage("success", "Đã tải và lưu mẫu Kế hoạch Kiểm tra");
+    } catch (error) {
+      console.error("Error creating Assessment Word template:", error);
+      showMessage("error", "Không thể tạo file mẫu Word");
+    }
   };
 
   const downloadEventWordTemplate = async () => {
@@ -796,8 +803,8 @@ export function TemplateManager({
       URL.revokeObjectURL(url);
       showMessage("success", "Đã tải mẫu Kế hoạch Ngoại khóa");
     } catch (error) {
-       console.error("Error creating event template:", error);
-       showMessage("error", "Không thể tạo mẫu Word");
+      console.error("Error creating event template:", error);
+      showMessage("error", "Không thể tạo mẫu Word");
     }
   };
 
@@ -812,8 +819,7 @@ export function TemplateManager({
               Cài đặt Mẫu & PPCT
             </DialogTitle>
             <DialogDescription>
-              Quản lý mẫu Word và Phân phối chương trình cho các chức năng xuất
-              file.
+              Quản lý mẫu xuất file Word
             </DialogDescription>
           </DialogHeader>
 
@@ -830,22 +836,26 @@ export function TemplateManager({
           )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-            <TabsList className="grid grid-cols-4 w-full">
+            <TabsList className="grid grid-cols-5 w-full">
               <TabsTrigger value="default" className="gap-1.5 text-xs">
                 <Star className="w-3.5 h-3.5" />
-                Mẫu mặc định
+                Mẫu
               </TabsTrigger>
               <TabsTrigger value="session" className="gap-1.5 text-xs">
                 <FileText className="w-3.5 h-3.5" />
-                Mẫu phiên
+                Mẫu Phiên
               </TabsTrigger>
               <TabsTrigger value="ppct" className="gap-1.5 text-xs">
                 <BookOpen className="w-3.5 h-3.5" />
                 PPCT
               </TabsTrigger>
+              <TabsTrigger value="khtt" className="gap-1.5 text-xs">
+                <CheckCircle className="w-3.5 h-3.5" />
+                KTĐG
+              </TabsTrigger>
               <TabsTrigger value="guide" className="gap-1.5 text-xs">
-                <AlertCircle className="w-3.5 h-3.5" />
-                Hướng dẫn
+                <HelpCircle className="w-3.5 h-3.5" />
+                HD
               </TabsTrigger>
             </TabsList>
 
@@ -1139,6 +1149,101 @@ export function TemplateManager({
                   </div>
                 </div>
               )}
+            </TabsContent>
+
+            {/* KHTT - Kế hoạch Kiểm tra Tab */}
+            <TabsContent value="khtt" className="space-y-4 mt-4">
+              <div className="space-y-4">
+                <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
+                  <h3 className="font-semibold text-indigo-900 text-sm mb-2 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    Mẫu Kế hoạch Kiểm tra Đánh giá
+                  </h3>
+                  <p className="text-xs text-indigo-700 mb-3">
+                    Tải mẫu Word để xem trước và chỉnh sửa cấu trúc kế hoạch kiểm tra theo nhu cầu của bạn.
+                  </p>
+                </div>
+
+                {/* Download Buttons */}
+                <div className="grid grid-cols-1 gap-3">
+                  <Card className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-800">Mẫu Kế hoạch Kiểm tra chuẩn</h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          File Word với các placeholder để xuất Kế hoạch Kiểm tra
+                        </p>
+                      </div>
+                      <Button
+                        onClick={downloadAssessmentWordTemplate}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                        size="sm"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Tải mẫu
+                      </Button>
+                    </div>
+                  </Card>
+
+                  {defaultAssessmentTemplate && (
+                    <Card className="p-4 bg-green-50 border-green-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-600" />
+                          <div>
+                            <h4 className="font-medium text-sm text-green-800">Đã có mẫu mặc định</h4>
+                            <p className="text-xs text-green-600">{defaultAssessmentTemplate.name}</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete("default_assessment" as any)}
+                          className="text-red-600 border-red-200"
+                        >
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          Xóa
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Placeholder Variables */}
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm text-gray-800">
+                    Các biến placeholder trong mẫu
+                  </h4>
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono">
+                    <p><span className="text-blue-600">{"{{ten_truong}}"}</span> - Tên trường</p>
+                    <p><span className="text-blue-600">{"{{to_chuyen_mon}}"}</span> - Tên tổ chuyên môn</p>
+                    <p><span className="text-blue-600">{"{{hoc_ky}}"}</span> - Học kỳ</p>
+                    <p><span className="text-blue-600">{"{{khoi}}"}</span> - Khối lớp</p>
+                    <p><span className="text-blue-600">{"{{ky_danh_gia}}"}</span> - Kỳ đánh giá</p>
+                    <p><span className="text-blue-600">{"{{ten_chu_de}}"}</span> - Tên chủ đề</p>
+                    <p><span className="text-blue-600">{"{{san_pham}}"}</span> - Loại sản phẩm</p>
+                    <p><span className="text-blue-600">{"{{muc_tieu}}"}</span> - Mục tiêu đánh giá</p>
+                    <p><span className="text-blue-600">{"{{noi_dung_nhiem_vu}}"}</span> - Nội dung nhiệm vụ</p>
+                    <p><span className="text-blue-600">{"{{hinh_thuc_to_chuc}}"}</span> - Hình thức tổ chức</p>
+                    <p><span className="text-blue-600">{"{{ma_tran_dac_ta}}"}</span> - Ma trận đặc tả</p>
+                    <p><span className="text-blue-600">{"{{bang_kiem_rubric}}"}</span> - Rubric đánh giá</p>
+                    <p><span className="text-blue-600">{"{{loi_khuyen}}"}</span> - Lời khuyên cho giáo viên</p>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <div className="flex gap-2">
+                    <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs text-yellow-700">
+                      <p className="font-medium">Lưu ý quan trọng:</p>
+                      <p className="mt-1">
+                        Hiện tại, chức năng xuất Kế hoạch Kiểm tra sử dụng thư viện tạo file Word trực tiếp
+                        thay vì dùng template, để đảm bảo tính ổn định. Mẫu này chỉ để tham khảo cấu trúc.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
 
             {/* Word Template Guide Tab */}

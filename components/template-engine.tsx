@@ -284,6 +284,42 @@ const TemplateEngine = () => {
     }
   }, [lessonGrade, selectedChuDeSo]);
 
+  // Auto-fill activity suggestions based on selected chu de
+  useEffect(() => {
+    if (selectedChuDe && selectedChuDe.hoat_dong && selectedChuDe.hoat_dong.length > 0) {
+      const activities = selectedChuDe.hoat_dong;
+
+      // Categorize activities based on keywords
+      const shdcActivities: string[] = [];
+      const hdgdActivities: string[] = [];
+      const shlActivities: string[] = [];
+
+      activities.forEach((activity) => {
+        const lowerActivity = activity.toLowerCase();
+        if (lowerActivity.includes("tìm hiểu") || lowerActivity.includes("giáo dục") || lowerActivity.includes("diễn đàn") || lowerActivity.includes("xác định")) {
+          shdcActivities.push(`• ${activity}`);
+        } else if (lowerActivity.includes("thực hiện") || lowerActivity.includes("thực hành") || lowerActivity.includes("thể hiện") || lowerActivity.includes("xây dựng") || lowerActivity.includes("lập")) {
+          hdgdActivities.push(`• ${activity}`);
+        } else if (lowerActivity.includes("rèn luyện") || lowerActivity.includes("điều chỉnh") || lowerActivity.includes("đánh giá") || lowerActivity.includes("chia sẻ")) {
+          shlActivities.push(`• ${activity}`);
+        } else {
+          // Default: add to HDGD as most activities are educational
+          hdgdActivities.push(`• ${activity}`);
+        }
+      });
+
+      // Always update when chu de changes
+      setShdcSuggestion(shdcActivities.join("\n"));
+      setHdgdSuggestion(hdgdActivities.join("\n"));
+      setShlSuggestion(shlActivities.join("\n"));
+    } else {
+      // Clear suggestions when no chu de selected
+      setShdcSuggestion("");
+      setHdgdSuggestion("");
+      setShlSuggestion("");
+    }
+  }, [selectedChuDe]);
+
   useEffect(() => {
     if (lessonGrade && selectedChuDeSo) {
       // Map chu de to month for curriculum tasks
@@ -621,7 +657,8 @@ const TemplateEngine = () => {
       lessonTasks,
       ppctData,
       taskTimeDistribution,
-      { shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion }
+      { shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion },
+      selectedChuDe // Pass chu de info for period distribution
     );
 
     if (result.success && result.data) {
@@ -743,17 +780,18 @@ const TemplateEngine = () => {
         return;
       }
 
-      // Use default template retrieval logic if we add "assessment" type support
-      // For now, pass null or a generic one
-      const templateToUse = assessmentTemplate || await getTemplate("default_meeting"); // Fallback to meeting template as base if needed
 
+      // For Assessment, we always create the Word file directly (skip docxtemplater)
+      // because auto-generated templates don't work well with docxtemplater
+      // and user-uploaded templates may have malformed placeholders
       const result = await ExportService.exportAssessmentPlan(
         assessmentResult,
-        templateToUse,
+        null, // Always pass null to force direct file creation
         {
           grade: assessmentGrade,
           term: assessmentTerm,
-          productType: assessmentProductType
+          productType: assessmentProductType,
+          topic: assessmentTopic
         }
       );
 
@@ -1333,7 +1371,7 @@ const TemplateEngine = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
               <FileText className="w-4 h-4 text-white" />
             </div>
-            <h1 className="text-base font-semibold text-slate-700">Trợ lí cho Trần Thạch - THTP Bùi Thị Xuân - Mũi Né</h1>
+            <h1 className="text-base font-semibold text-slate-700">Trợ lí cho Trần Thạch - THTP Bùi Thị Xuân - Mũi Né - Lâm Đồng</h1>
           </div>
         </div>
       </header>
@@ -1423,7 +1461,7 @@ const TemplateEngine = () => {
               className="bg-white border-slate-200 shadow-sm text-slate-600 hover:text-blue-600 hover:border-blue-300 h-10 px-4 rounded-xl whitespace-nowrap"
             >
               <Settings className="w-4 h-4 mr-2" />
-              Cài đặt mẫu
+              Cài đặt
             </Button>
           </div>
 
@@ -1459,6 +1497,7 @@ const TemplateEngine = () => {
               setLessonAutoFilledTheme={setLessonAutoFilledTheme}
               lessonDuration={lessonDuration}
               setLessonDuration={setLessonDuration}
+              selectedChuDe={selectedChuDe}
               setSelectedChuDe={setSelectedChuDe}
               setLessonMonth={setLessonMonth}
               lessonFullPlanMode={lessonFullPlanMode}
@@ -1493,271 +1532,272 @@ const TemplateEngine = () => {
               lessonTopic={lessonTopic}
             />
           </TabsContent>
-      <TabsContent value="event">
-        <EventTab
-          selectedGradeEvent={selectedGradeEvent}
-          setSelectedGradeEvent={setSelectedGradeEvent}
-          selectedEventMonth={selectedEventMonth}
-          setSelectedEventMonth={setSelectedEventMonth}
-          autoFilledTheme={autoFilledTheme}
-          eventBudget={eventBudget}
-          setEventBudget={setEventBudget}
-          eventChecklist={eventChecklist}
-          setEventChecklist={setEventChecklist}
-          eventCustomInstructions={eventCustomInstructions}
-          setEventCustomInstructions={setEventCustomInstructions}
-          eventResult={eventResult}
-          setEventResult={setEventResult}
-          isGenerating={isGenerating}
-          onGenerate={handleGenerateEvent}
-          isExporting={isExporting}
-          onExport={() => handleExport("event")}
-          copyToClipboard={copyToClipboard}
-        />
-      </TabsContent>
-<TabsContent value="assessment">
-  <AssessmentTab
-    assessmentGrade={assessmentGrade}
-    setAssessmentGrade={setAssessmentGrade}
-    assessmentTerm={assessmentTerm}
-    setAssessmentTerm={setAssessmentTerm}
-    assessmentProductType={assessmentProductType}
-    setAssessmentProductType={setAssessmentProductType}
-    assessmentTopic={assessmentTopic}
-    setAssessmentTopic={setAssessmentTopic}
-    assessmentTemplate={assessmentTemplate}
-    onTemplateUpload={(file) => handleTemplateUpload(file, "assessment" as any)}
-    assessmentResult={assessmentResult}
-    isGenerating={isGenerating}
-    onGenerate={handleGenerateAssessment}
-    isExporting={isExporting}
-    onExport={handleExportAssessment}
-  />
-</TabsContent>
-<TabsContent value="history">
-  <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
-    <CardContent className="p-6 space-y-6">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-        <Input
-          placeholder="Tìm kiếm dự án (tên bài, tháng, loại)..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-11 bg-slate-50 border-slate-200 rounded-xl focus:ring-amber-500 focus:border-amber-500"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {projects
-          .filter(p =>
-            !searchQuery ||
-            p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            p.type.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-          .map((project) => (
-            <div
-              key={project.id}
-              className="group relative p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-200"
-            >
-              <div className="flex justify-between items-start mb-3">
-                <div className={`p-2 rounded-lg ${project.type === 'meeting' ? 'bg-blue-50 text-blue-600' :
-                  project.type === 'lesson' ? 'bg-green-50 text-green-600' :
-                    'bg-purple-50 text-purple-600'
-                  }`}>
-                  {project.type === 'meeting' ? <FileText className="w-4 h-4" /> :
-                    project.type === 'lesson' ? <BookOpen className="w-4 h-4" /> :
-                      <Calendar className="w-4 h-4" />}
+          <TabsContent value="event">
+            <EventTab
+              selectedGradeEvent={selectedGradeEvent}
+              setSelectedGradeEvent={setSelectedGradeEvent}
+              selectedEventMonth={selectedEventMonth}
+              setSelectedEventMonth={setSelectedEventMonth}
+              autoFilledTheme={autoFilledTheme}
+              setAutoFilledTheme={setAutoFilledTheme}
+              eventBudget={eventBudget}
+              setEventBudget={setEventBudget}
+              eventChecklist={eventChecklist}
+              setEventChecklist={setEventChecklist}
+              eventCustomInstructions={eventCustomInstructions}
+              setEventCustomInstructions={setEventCustomInstructions}
+              eventResult={eventResult}
+              setEventResult={setEventResult}
+              isGenerating={isGenerating}
+              onGenerate={handleGenerateEvent}
+              isExporting={isExporting}
+              onExport={() => handleExport("event")}
+              copyToClipboard={copyToClipboard}
+            />
+          </TabsContent>
+          <TabsContent value="assessment">
+            <AssessmentTab
+              assessmentGrade={assessmentGrade}
+              setAssessmentGrade={setAssessmentGrade}
+              assessmentTerm={assessmentTerm}
+              setAssessmentTerm={setAssessmentTerm}
+              assessmentProductType={assessmentProductType}
+              setAssessmentProductType={setAssessmentProductType}
+              assessmentTopic={assessmentTopic}
+              setAssessmentTopic={setAssessmentTopic}
+              assessmentTemplate={assessmentTemplate}
+              onTemplateUpload={(file) => handleTemplateUpload(file, "assessment" as any)}
+              assessmentResult={assessmentResult}
+              isGenerating={isGenerating}
+              onGenerate={handleGenerateAssessment}
+              isExporting={isExporting}
+              onExport={handleExportAssessment}
+            />
+          </TabsContent>
+          <TabsContent value="history">
+            <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
+              <CardContent className="p-6 space-y-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+                  <Input
+                    placeholder="Tìm kiếm dự án (tên bài, tháng, loại)..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 h-11 bg-slate-50 border-slate-200 rounded-xl focus:ring-amber-500 focus:border-amber-500"
+                  />
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-slate-300 hover:text-red-500 h-8 w-8"
-                  onClick={async (e) => {
-                    e.stopPropagation();
-                    if (confirm('Bạn có chắc muốn xóa dự án này?')) {
-                      await deleteProject(project.id);
-                      loadProjects();
-                    }
-                  }}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </div>
 
-              <h3 className="font-semibold text-slate-800 line-clamp-2 mb-2 group-hover:text-amber-700">
-                {project.title}
-              </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {projects
+                    .filter(p =>
+                      !searchQuery ||
+                      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      p.type.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map((project) => (
+                      <div
+                        key={project.id}
+                        className="group relative p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:border-amber-200 transition-all duration-200"
+                      >
+                        <div className="flex justify-between items-start mb-3">
+                          <div className={`p-2 rounded-lg ${project.type === 'meeting' ? 'bg-blue-50 text-blue-600' :
+                            project.type === 'lesson' ? 'bg-green-50 text-green-600' :
+                              'bg-purple-50 text-purple-600'
+                            }`}>
+                            {project.type === 'meeting' ? <FileText className="w-4 h-4" /> :
+                              project.type === 'lesson' ? <BookOpen className="w-4 h-4" /> :
+                                <Calendar className="w-4 h-4" />}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-slate-300 hover:text-red-500 h-8 w-8"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (confirm('Bạn có chắc muốn xóa dự án này?')) {
+                                await deleteProject(project.id);
+                                loadProjects();
+                              }
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
 
-              <div className="flex flex-wrap gap-2 mb-4">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-slate-100 text-slate-500 rounded">
-                  {project.type === 'meeting' ? 'Họp Tổ' :
-                    project.type === 'lesson' ? 'Bài dạy' : 'Sự kiện'}
-                </span>
-                {project.grade && (
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-blue-100 text-blue-600 rounded">
-                    Lớp {project.grade}
-                  </span>
-                )}
-                {project.month && (
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-100 text-amber-600 rounded">
-                    Tháng {project.month}
-                  </span>
-                )}
-              </div>
+                        <h3 className="font-semibold text-slate-800 line-clamp-2 mb-2 group-hover:text-amber-700">
+                          {project.title}
+                        </h3>
 
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <div className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {new Date(project.createdAt).toLocaleDateString('vi-VN')}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-slate-100 text-slate-500 rounded">
+                            {project.type === 'meeting' ? 'Họp Tổ' :
+                              project.type === 'lesson' ? 'Bài dạy' : 'Sự kiện'}
+                          </span>
+                          {project.grade && (
+                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-blue-100 text-blue-600 rounded">
+                              Lớp {project.grade}
+                            </span>
+                          )}
+                          {project.month && (
+                            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-100 text-amber-600 rounded">
+                              Tháng {project.month}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-xs text-slate-400">
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {new Date(project.createdAt).toLocaleDateString('vi-VN')}
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 gap-1 h-7"
+                            onClick={() => loadProjectToWorkbench(project)}
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Mở lại
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+
+                  {projects.length === 0 && (
+                    <div className="col-span-full py-20 text-center space-y-3">
+                      <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
+                        <Archive className="w-8 h-8 text-slate-300" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-medium text-slate-500">Thư viện trống</p>
+                        <p className="text-sm text-slate-400">Các nội dung bạn tạo sẽ tự động được lưu tại đây.</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 gap-1 h-7"
-                  onClick={() => loadProjectToWorkbench(project)}
-                >
-                  <ExternalLink className="w-3 h-3" />
-                  Mở lại
-                </Button>
-              </div>
-            </div>
-          ))}
-
-        {projects.length === 0 && (
-          <div className="col-span-full py-20 text-center space-y-3">
-            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto">
-              <Archive className="w-8 h-8 text-slate-300" />
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium text-slate-500">Thư viện trống</p>
-              <p className="text-sm text-slate-400">Các nội dung bạn tạo sẽ tự động được lưu tại đây.</p>
-            </div>
-          </div>
-        )}
-      </div>
-    </CardContent>
-  </Card>
-</TabsContent>
-    </Tabs >
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs >
       </main >
 
-  {/* Template Manager Dialog */ }
-  < TemplateManager
-open = { showSettings }
-onOpenChange = { setShowSettings }
-onTemplateSelect = {(template, type) => {
-  if (type && type.includes("meeting")) setMeetingTemplate(template);
-  else if (type && type.includes("lesson")) setLessonTemplate(template);
-  else if (type && type.includes("event")) setEventTemplate(template);
-  else if (type && type.includes("assessment")) setAssessmentTemplate(template);
-}}
-defaultTemplateStatus = {{
-  meeting: hasDefaultMeetingTemplate,
-    lesson: hasDefaultLessonTemplate,
-      event: hasDefaultEventTemplate,
+      {/* Template Manager Dialog */}
+      < TemplateManager
+        open={showSettings}
+        onOpenChange={setShowSettings}
+        onTemplateSelect={(template, type) => {
+          if (type && type.includes("meeting")) setMeetingTemplate(template);
+          else if (type && type.includes("lesson")) setLessonTemplate(template);
+          else if (type && type.includes("event")) setEventTemplate(template);
+          else if (type && type.includes("assessment")) setAssessmentTemplate(template);
+        }}
+        defaultTemplateStatus={{
+          meeting: hasDefaultMeetingTemplate,
+          lesson: hasDefaultLessonTemplate,
+          event: hasDefaultEventTemplate,
         }}
       />
 
-  < Dialog open = { showPPCTDialog } onOpenChange = { setShowPPCTDialog } >
-    <DialogContent className="max-w-md">
-      <DialogHeader>
-        <DialogTitle>Thêm Phân phốiChương trình</DialogTitle>
-      </DialogHeader>
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label>Tháng</Label>
-          <Select
-            value={newPPCTItem.month}
-            onValueChange={(v) =>
-              setNewPPCTItem({ ...newPPCTItem, month: v })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Chọn tháng" />
-            </SelectTrigger>
-            <SelectContent>
-              {["9", "10", "11", "12", "1", "2", "3", "4", "5"].map((m) => (
-                <SelectItem key={m} value={m}>
-                  Tháng {m}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Chủ đề / Nội dung</Label>
-          <Input
-            placeholder="VD: Thể hiện phẩm chất tốt đẹp của người học sinh"
-            value={newPPCTItem.theme}
-            onChange={(e) =>
-              setNewPPCTItem({ ...newPPCTItem, theme: e.target.value })
-            }
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Số tiết</Label>
-          <Select
-            value={newPPCTItem.periods.toString()}
-            onValueChange={(v) =>
-              setNewPPCTItem({
-                ...newPPCTItem,
-                periods: Number.parseInt(v),
-              })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
-                <SelectItem key={n} value={n.toString()}>
-                  {n} tiết
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label>Danh sách Hoạt động (mỗi dòng một hoạt động)</Label>
-          <Textarea
-            placeholder="VD: Tìm hiểu nội quy trường lớp&#10;Tìm hiểu truyền thống nhà trường"
-            value={newPPCTItem.activities?.join("\n") || ""}
-            onChange={(e) =>
-              setNewPPCTItem({
-                ...newPPCTItem,
-                activities: e.target.value.split("\n").filter(a => a.trim() !== ""),
-              })
-            }
-            className="min-h-[100px]"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Ghi chú (tùy chọn)</Label>
-          <Input
-            placeholder="VD: Kết hợp với chào mừng 20/11"
-            value={newPPCTItem.notes || ""}
-            onChange={(e) =>
-              setNewPPCTItem({ ...newPPCTItem, notes: e.target.value })
-            }
-          />
-        </div>
-        <div className="flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowPPCTDialog(false)}
-          >
-            Hủy
-          </Button>
-          <Button
-            onClick={() => {
-              handleAddPPCTItem();
-            }}
-          >
-            Thêm
-          </Button>
-        </div>
-      </div>
-    </DialogContent>
+      < Dialog open={showPPCTDialog} onOpenChange={setShowPPCTDialog} >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Thêm Phân phốiChương trình</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Tháng</Label>
+              <Select
+                value={newPPCTItem.month}
+                onValueChange={(v) =>
+                  setNewPPCTItem({ ...newPPCTItem, month: v })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn tháng" />
+                </SelectTrigger>
+                <SelectContent>
+                  {["9", "10", "11", "12", "1", "2", "3", "4", "5"].map((m) => (
+                    <SelectItem key={m} value={m}>
+                      Tháng {m}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Chủ đề / Nội dung</Label>
+              <Input
+                placeholder="VD: Thể hiện phẩm chất tốt đẹp của người học sinh"
+                value={newPPCTItem.theme}
+                onChange={(e) =>
+                  setNewPPCTItem({ ...newPPCTItem, theme: e.target.value })
+                }
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Số tiết</Label>
+              <Select
+                value={newPPCTItem.periods.toString()}
+                onValueChange={(v) =>
+                  setNewPPCTItem({
+                    ...newPPCTItem,
+                    periods: Number.parseInt(v),
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
+                    <SelectItem key={n} value={n.toString()}>
+                      {n} tiết
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Danh sách Hoạt động (mỗi dòng một hoạt động)</Label>
+              <Textarea
+                placeholder="VD: Tìm hiểu nội quy trường lớp&#10;Tìm hiểu truyền thống nhà trường"
+                value={newPPCTItem.activities?.join("\n") || ""}
+                onChange={(e) =>
+                  setNewPPCTItem({
+                    ...newPPCTItem,
+                    activities: e.target.value.split("\n").filter(a => a.trim() !== ""),
+                  })
+                }
+                className="min-h-[100px]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Ghi chú (tùy chọn)</Label>
+              <Input
+                placeholder="VD: Kết hợp với chào mừng 20/11"
+                value={newPPCTItem.notes || ""}
+                onChange={(e) =>
+                  setNewPPCTItem({ ...newPPCTItem, notes: e.target.value })
+                }
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowPPCTDialog(false)}
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={() => {
+                  handleAddPPCTItem();
+                }}
+              >
+                Thêm
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
       </Dialog >
     </div >
   );

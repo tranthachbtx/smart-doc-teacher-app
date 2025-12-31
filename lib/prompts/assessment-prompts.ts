@@ -68,16 +68,23 @@ export function getAssessmentPrompt(
     topic: string,
     curriculum: string = "Kết nối tri thức" // Default book
 ): string {
+    // Defensive: ensure all inputs are strings
+    const safeGrade = grade || "10";
+    const safeTerm = term || "Giữa kì 1";
+    const safeProductType = productType || "";
+    const safeTopic = topic || "";
+    const safeCurriculum = curriculum || "Kết nối tri thức";
+
     // Determine Rubric Suggestion based on Product Type
     let rubricSuggestion = "";
     // Simple matching (can be improved)
-    if (productType.includes("Video") || productType.includes("Tranh") || productType.includes("Poster") || productType.includes("Truyền thông")) {
+    if (safeProductType.includes("Video") || safeProductType.includes("Tranh") || safeProductType.includes("Poster") || safeProductType.includes("Truyền thông")) {
         rubricSuggestion = JSON.stringify(RUBRIC_TEMPLATES.MEDIA);
-    } else if (productType.includes("Kế hoạch") || productType.includes("Báo cáo") || productType.includes("Hồ sơ")) {
+    } else if (safeProductType.includes("Kế hoạch") || safeProductType.includes("Báo cáo") || safeProductType.includes("Hồ sơ")) {
         rubricSuggestion = JSON.stringify(RUBRIC_TEMPLATES.PLAN_REPORT);
-    } else if (productType.includes("Thuyết trình") || productType.includes("Tiểu phẩm") || productType.includes("Sự kiện")) {
+    } else if (safeProductType.includes("Thuyết trình") || safeProductType.includes("Tiểu phẩm") || safeProductType.includes("Sự kiện")) {
         rubricSuggestion = JSON.stringify(RUBRIC_TEMPLATES.PERFORMANCE);
-    } else if (productType.includes("Mô hình") || productType.includes("Chế tạo") || productType.includes("Thủ công")) {
+    } else if (safeProductType.includes("Mô hình") || safeProductType.includes("Chế tạo") || safeProductType.includes("Thủ công")) {
         rubricSuggestion = JSON.stringify(RUBRIC_TEMPLATES.MAKING);
     }
 
@@ -86,11 +93,11 @@ export function getAssessmentPrompt(
 NHIỆM VỤ: Soạn thảo "KẾ HOẠCH KIỂM TRA ĐÁNH GIÁ ĐỊNH KỲ BẰNG SẢN PHẨM" cho học sinh.
 
 THÔNG TIN ĐẦU VÀO:
-- Khối lớp: ${grade}
-- Kỳ đánh giá: ${term}
-- Loại sản phẩm: ${productType}
-- Chủ đề/Nội dung trọng tâm: ${topic}
-- Bộ sách: ${curriculum}
+- Khối lớp: ${safeGrade}
+- Kỳ đánh giá: ${safeTerm}
+- Loại sản phẩm: ${safeProductType}
+- Chủ đề/Nội dung trọng tâm: ${safeTopic}
+- Bộ sách: ${safeCurriculum}
 
 CẤU TRÚC ĐẦU RA (JSON Format):
 Bạn hãy trả về kết quả dưới dạng JSON với các trường sau:

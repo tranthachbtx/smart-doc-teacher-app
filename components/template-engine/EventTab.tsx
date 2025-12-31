@@ -16,10 +16,10 @@ import {
     Download,
     Loader2,
     Copy,
-    MessageSquare,
+    Clock,
 } from "lucide-react";
 import type { EventResult } from "@/lib/types";
-import { ACADEMIC_MONTHS, getThemeDetails } from "@/lib/hdtn-curriculum";
+import { getChuDeListByKhoi, type PPCTChuDe } from "@/lib/data/ppct-database";
 
 interface EventTabProps {
     selectedGradeEvent: string;
@@ -27,6 +27,7 @@ interface EventTabProps {
     selectedEventMonth: string;
     setSelectedEventMonth: (value: string) => void;
     autoFilledTheme: string;
+    setAutoFilledTheme: (value: string) => void;
     eventBudget: string;
     setEventBudget: (value: string) => void;
     eventChecklist: string;
@@ -48,6 +49,7 @@ export function EventTab({
     selectedEventMonth,
     setSelectedEventMonth,
     autoFilledTheme,
+    setAutoFilledTheme,
     eventBudget,
     setEventBudget,
     eventChecklist,
@@ -63,13 +65,19 @@ export function EventTab({
     copyToClipboard,
 }: EventTabProps) {
 
-    // Derived state for theme details
-    const eventThemeDetails = React.useMemo(() => {
-        if (selectedGradeEvent && selectedEventMonth) {
-            return getThemeDetails(selectedGradeEvent, selectedEventMonth);
+    // State for selected chu de details
+    const [selectedChuDe, setSelectedChuDe] = React.useState<PPCTChuDe | null>(null);
+
+    // State for event duration (in minutes)
+    const [eventDuration, setEventDuration] = React.useState("45");
+
+    // Get chu de list for selected grade
+    const chuDeList = React.useMemo(() => {
+        if (selectedGradeEvent) {
+            return getChuDeListByKhoi(selectedGradeEvent);
         }
-        return null;
-    }, [selectedGradeEvent, selectedEventMonth]);
+        return [];
+    }, [selectedGradeEvent]);
 
     return (
         <Card className="shadow-xl border-0 bg-white/90 backdrop-blur">
@@ -80,7 +88,12 @@ export function EventTab({
                         <Label>Chọn Khối</Label>
                         <Select
                             value={selectedGradeEvent}
-                            onValueChange={setSelectedGradeEvent}
+                            onValueChange={(value) => {
+                                setSelectedGradeEvent(value);
+                                setSelectedEventMonth("");
+                                setAutoFilledTheme("");
+                                setSelectedChuDe(null);
+                            }}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Chọn khối..." />
@@ -94,18 +107,28 @@ export function EventTab({
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Chọn Tháng</Label>
+                        <Label>Chọn Chủ Đề</Label>
                         <Select
                             value={selectedEventMonth}
-                            onValueChange={setSelectedEventMonth}
+                            onValueChange={(value) => {
+                                setSelectedEventMonth(value);
+                                const chuDe = chuDeList.find(
+                                    (cd) => cd.chu_de_so === Number.parseInt(value)
+                                );
+                                if (chuDe) {
+                                    setAutoFilledTheme(chuDe.ten);
+                                    setSelectedChuDe(chuDe);
+                                }
+                            }}
+                            disabled={!selectedGradeEvent}
                         >
                             <SelectTrigger>
-                                <SelectValue placeholder="Chọn tháng..." />
+                                <SelectValue placeholder={selectedGradeEvent ? "Chọn chủ đề..." : "Chọn khối trước"} />
                             </SelectTrigger>
                             <SelectContent>
-                                {ACADEMIC_MONTHS.map((m) => (
-                                    <SelectItem key={m.value} value={m.value}>
-                                        {m.label}
+                                {chuDeList.map((chuDe) => (
+                                    <SelectItem key={chuDe.chu_de_so} value={chuDe.chu_de_so.toString()}>
+                                        Chủ đề {chuDe.chu_de_so}: {chuDe.ten}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -113,31 +136,81 @@ export function EventTab({
                     </div>
                 </div>
 
-                {/* Auto-filled Theme */}
-                {autoFilledTheme && (
+                {/* Theme Display */}
+                {selectedChuDe && (
                     <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                         <p className="text-sm font-medium text-purple-800 mb-2">
                             Chủ đề từ SGK:
                         </p>
                         <p className="text-purple-700 font-semibold">{autoFilledTheme}</p>
-                        {eventThemeDetails && (
-                            <div className="mt-3 space-y-2 text-sm text-purple-700">
-                                <p>
-                                    <strong>Mục tiêu:</strong>{" "}
-                                    {eventThemeDetails.objectives.join("; ")}
-                                </p>
-                                <p>
-                                    <strong>Hoạt động gợi ý:</strong>{" "}
-                                    {eventThemeDetails.activities.join(", ")}
-                                </p>
-                                <p>
-                                    <strong>Kỹ năng:</strong>{" "}
-                                    {eventThemeDetails.skills.join(", ")}
-                                </p>
-                            </div>
+                        {selectedChuDe.tuan_bat_dau && selectedChuDe.tuan_ket_thuc && (
+                            <p className="text-xs text-purple-600 mt-2">
+                                <strong>Thời gian:</strong> Tuần {selectedChuDe.tuan_bat_dau} - Tuần {selectedChuDe.tuan_ket_thuc}
+                            </p>
                         )}
                     </div>
                 )}
+
+                {/* Event Duration */}
+                <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-purple-600" />
+                        Thời lượng hoạt động
+                    </Label>
+                    <div className="flex items-center gap-2">
+                        <Input
+                            type="number"
+                            min="15"
+                            max="240"
+                            value={eventDuration}
+                            onChange={(e) => setEventDuration(e.target.value)}
+                            className="w-24"
+                            placeholder="45"
+                        />
+                        <span className="text-sm text-muted-foreground">phút</span>
+                        <div className="flex gap-1 ml-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEventDuration("45")}
+                                className={eventDuration === "45" ? "bg-purple-100 border-purple-300" : ""}
+                            >
+                                45p
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEventDuration("90")}
+                                className={eventDuration === "90" ? "bg-purple-100 border-purple-300" : ""}
+                            >
+                                90p
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEventDuration("120")}
+                                className={eventDuration === "120" ? "bg-purple-100 border-purple-300" : ""}
+                            >
+                                2h
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEventDuration("180")}
+                                className={eventDuration === "180" ? "bg-purple-100 border-purple-300" : ""}
+                            >
+                                3h
+                            </Button>
+                        </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                        Chọn hoặc nhập thời lượng phù hợp với kế hoạch của trường
+                    </p>
+                </div>
 
                 <div className="space-y-2">
                     <Label>Dự toán kinh phí (tùy chọn)</Label>
@@ -148,216 +221,177 @@ export function EventTab({
                         rows={3}
                     />
                     <p className="text-xs text-muted-foreground">
-                        AI sẽ cố gắng bám sát dự toán bạn cung cấp để xây dựng kế hoạch.
+                        Để trống nếu không cần dự toán kinh phí
                     </p>
                 </div>
 
                 <div className="space-y-2">
                     <Label>Checklist chuẩn bị (tùy chọn)</Label>
                     <Textarea
-                        placeholder="Nhập danh sách cần chuẩn bị...&#10;VD: Âm thanh, ánh sáng, phông nền, quà tặng..."
+                        placeholder="Nhập các công việc cần chuẩn bị...&#10;VD: In ấn tài liệu, Chuẩn bị phòng họp..."
                         value={eventChecklist}
                         onChange={(e) => setEventChecklist(e.target.value)}
                         rows={3}
                     />
-                    <p className="text-xs text-muted-foreground">
-                        AI sẽ sử dụng checklist này để làm gợi ý cho phần chuẩn bị.
-                    </p>
                 </div>
 
                 <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-purple-600" />
-                        Chỉ dẫn thêm cho AI (tùy chọn)
-                    </Label>
+                    <Label>Yêu cầu bổ sung</Label>
                     <Textarea
-                        placeholder="Nhập yêu cầu bổ sung cho AI, ví dụ: Thêm kịch ngắn về chủ đề gia đình, có mini game Kahoot, mời cựu học sinh chia sẻ..."
+                        placeholder="Nhập yêu cầu chi tiết hoặc điều chỉnh về nội dung kế hoạch..."
                         value={eventCustomInstructions}
                         onChange={(e) => setEventCustomInstructions(e.target.value)}
-                        className="min-h-[80px] resize-none"
+                        rows={3}
                     />
-                    <p className="text-xs text-slate-500">
-                        AI sẽ cập nhật nội dung dựa trên chỉ dẫn của bạn
-                    </p>
                 </div>
 
                 {/* Generate Button */}
                 <Button
                     onClick={onGenerate}
                     disabled={isGenerating || !selectedGradeEvent || !selectedEventMonth}
-                    className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white gap-2"
-                    size="lg"
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
                     {isGenerating ? (
                         <>
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                            Đang tạo kịch bản...
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Đang tạo...
                         </>
                     ) : (
                         <>
-                            <Sparkles className="w-5 h-5" />
-                            Tạo Kịch bản Ngoại khóa AI
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Tạo Kế hoạch Ngoại khóa
                         </>
                     )}
                 </Button>
 
-                {/* Results */}
+                {/* Result Display */}
                 {eventResult && (
-                    <div className="space-y-4 mt-6">
-                        <h3 className="font-semibold text-lg text-slate-800">
-                            Kết quả kịch bản ngoại khóa:
-                        </h3>
-
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-purple-700 font-medium">
-                                        Tên chủ đề:
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => copyToClipboard(eventResult.ten_chu_de)}
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                                <Input
-                                    value={eventResult.ten_chu_de}
-                                    onChange={(e) =>
-                                        setEventResult({
-                                            ...eventResult,
-                                            ten_chu_de: e.target.value,
-                                        })
+                    <div className="space-y-4 p-4 bg-slate-50 rounded-lg border">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-lg font-semibold text-slate-800">
+                                Kết quả
+                            </h3>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                        copyToClipboard(JSON.stringify(eventResult, null, 2))
                                     }
-                                />
+                                >
+                                    <Copy className="h-4 w-4 mr-1" />
+                                    Copy
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={onExport}
+                                    disabled={isExporting}
+                                >
+                                    {isExporting ? (
+                                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                    ) : (
+                                        <Download className="h-4 w-4 mr-1" />
+                                    )}
+                                    Xuất Word
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Event Result Content */}
+                        <div className="space-y-3">
+                            <div className="p-3 bg-white rounded border">
+                                <h4 className="font-medium text-purple-800 mb-2">
+                                    {eventResult.ten_ke_hoach}
+                                </h4>
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <p>
+                                        <strong>Thời gian:</strong> {eventResult.thoi_gian}
+                                    </p>
+                                    <p>
+                                        <strong>Địa điểm:</strong> {eventResult.dia_diem}
+                                    </p>
+                                    <p>
+                                        <strong>Đối tượng:</strong> {eventResult.doi_tuong}
+                                    </p>
+                                    <p>
+                                        <strong>Số lượng:</strong> {eventResult.so_luong}
+                                    </p>
+                                </div>
                             </div>
 
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-purple-700 font-medium">
-                                        Mục đích yêu cầu:
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            copyToClipboard(eventResult.muc_dich_yeu_cau)
-                                        }
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
+                            {/* Objectives */}
+                            {eventResult.muc_tieu && (
+                                <div className="p-3 bg-white rounded border">
+                                    <h5 className="font-medium text-sm mb-2">Mục tiêu:</h5>
+                                    <p className="text-sm text-slate-600">
+                                        {typeof eventResult.muc_tieu === 'string'
+                                            ? eventResult.muc_tieu
+                                            : JSON.stringify(eventResult.muc_tieu)}
+                                    </p>
                                 </div>
-                                <Textarea
-                                    value={eventResult.muc_dich_yeu_cau}
-                                    onChange={(e) =>
-                                        setEventResult({
-                                            ...eventResult,
-                                            muc_dich_yeu_cau: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[100px]"
-                                />
-                            </div>
+                            )}
 
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-purple-700 font-medium">
-                                        Kịch bản chi tiết:
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            copyToClipboard(eventResult.kich_ban_chi_tiet)
-                                        }
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
+                            {/* Content */}
+                            {eventResult.noi_dung && (
+                                <div className="p-3 bg-white rounded border">
+                                    <h5 className="font-medium text-sm mb-2">Nội dung:</h5>
+                                    {Array.isArray(eventResult.noi_dung) ? (
+                                        <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                                            {eventResult.noi_dung.map((item, idx) => (
+                                                <li key={idx}>{typeof item === 'string' ? item : JSON.stringify(item)}</li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-sm text-slate-600">
+                                            {typeof eventResult.noi_dung === 'string'
+                                                ? eventResult.noi_dung
+                                                : JSON.stringify(eventResult.noi_dung)}
+                                        </p>
+                                    )}
                                 </div>
-                                <Textarea
-                                    value={eventResult.kich_ban_chi_tiet}
-                                    onChange={(e) =>
-                                        setEventResult({
-                                            ...eventResult,
-                                            kich_ban_chi_tiet: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[300px]"
-                                />
-                            </div>
+                            )}
 
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-purple-700 font-medium">
-                                        Phân công chuẩn bị:
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            copyToClipboard(eventResult.phan_cong_chuan_bi)
-                                        }
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
+                            {/* Timeline */}
+                            {eventResult.tien_trinh && eventResult.tien_trinh.length > 0 && (
+                                <div className="p-3 bg-white rounded border">
+                                    <h5 className="font-medium text-sm mb-2">Tiến trình:</h5>
+                                    <div className="space-y-2">
+                                        {eventResult.tien_trinh.map((step, idx) => (
+                                            <div key={idx} className="flex gap-2 text-sm">
+                                                <span className="font-medium text-purple-600 whitespace-nowrap">
+                                                    {step.thoi_gian}:
+                                                </span>
+                                                <span className="text-slate-600">{step.hoat_dong}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                                <Textarea
-                                    value={eventResult.phan_cong_chuan_bi}
-                                    onChange={(e) =>
-                                        setEventResult({
-                                            ...eventResult,
-                                            phan_cong_chuan_bi: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[150px]"
-                                />
-                            </div>
+                            )}
 
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-purple-700 font-medium">
-                                        Dự trù kinh phí tham khảo:
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            copyToClipboard(eventResult.du_tru_kinh_phi)
-                                        }
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
+                            {/* Checklist */}
+                            {eventResult.checklist_chuan_bi && eventResult.checklist_chuan_bi.length > 0 && (
+                                <div className="p-3 bg-white rounded border">
+                                    <h5 className="font-medium text-sm mb-2">Công việc chuẩn bị:</h5>
+                                    <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                                        {eventResult.checklist_chuan_bi.map((item, idx) => (
+                                            <li key={idx}>{item}</li>
+                                        ))}
+                                    </ul>
                                 </div>
-                                <Textarea
-                                    value={eventResult.du_tru_kinh_phi}
-                                    onChange={(e) =>
-                                        setEventResult({
-                                            ...eventResult,
-                                            du_tru_kinh_phi: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[100px]"
-                                />
-                            </div>
+                            )}
 
-                            <Button
-                                onClick={onExport}
-                                disabled={isExporting}
-                                className="w-full bg-green-600 hover:bg-green-700"
-                            >
-                                {isExporting ? (
-                                    <>
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                        Đang xuất file...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Download className="w-4 h-4 mr-2" />
-                                        Xuất file Word (Kế hoạch)
-                                    </>
-                                )}
-                            </Button>
+                            {/* Budget */}
+                            {eventResult.du_toan_kinh_phi && eventResult.du_toan_kinh_phi.length > 0 && (
+                                <div className="p-3 bg-white rounded border">
+                                    <h5 className="font-medium text-sm mb-2">Dự toán kinh phí:</h5>
+                                    <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                                        {eventResult.du_toan_kinh_phi.map((item, idx) => (
+                                            <li key={idx}>{item}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
