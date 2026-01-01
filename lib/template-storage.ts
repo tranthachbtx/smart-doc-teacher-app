@@ -5,7 +5,7 @@ const STORE_NAME = "templates"
 const PPCT_STORE_NAME = "ppct"
 const PROJECT_STORE_NAME = "projects" // New store for History/Projects
 
-export type TemplateType = "meeting" | "event" | "lesson" | "assessment" | "default_meeting" | "default_event" | "default_lesson" | "default_assessment"
+export type TemplateType = "meeting" | "event" | "lesson" | "assessment" | "ncbh" | "default_meeting" | "default_event" | "default_lesson" | "default_assessment" | "default_ncbh"
 
 export interface StoredTemplate {
   type: TemplateType
@@ -39,7 +39,7 @@ export interface StoredPPCT {
 
 export interface ProjectHistory {
   id: string
-  type: "meeting" | "lesson" | "event" | "assessment"
+  type: "meeting" | "lesson" | "event" | "assessment" | "ncbh"
   title: string
   data: any
   grade?: string
@@ -112,9 +112,9 @@ export async function getTemplate(type: TemplateType): Promise<TemplateInfo | nu
   })
 }
 
-import { createMeetingTemplate, createLessonTemplate } from "./docx-templates"
+import { createMeetingTemplate, createLessonTemplate, createNCBHTemplate } from "./docx-templates"
 
-export async function getEffectiveTemplate(type: "meeting" | "event" | "lesson" | "assessment"): Promise<TemplateInfo | null> {
+export async function getEffectiveTemplate(type: "meeting" | "event" | "lesson" | "assessment" | "ncbh"): Promise<TemplateInfo | null> {
   // First try to get session template
   const sessionTemplate = await getTemplate(type)
   if (sessionTemplate) {
@@ -129,23 +129,20 @@ export async function getEffectiveTemplate(type: "meeting" | "event" | "lesson" 
   }
 
   // Then try to load from public/templates (via default-templates.ts)
-  // We need to cast type to match the expected union in loadDefaultTemplate
-  // Note: loadDefaultTemplate might not support 'assessment' yet, so we handle it below
-  if (type !== 'assessment') {
+  if (type !== 'ncbh') {
     const builtInTemplate = await loadDefaultTemplate(type as any)
     if (builtInTemplate) return builtInTemplate
   }
 
   // Finally, fallback to generating one programmatically
-  // Note: For assessment, we return null because the auto-generated template
-  // uses text placeholders like {{khoi}} which are not real docxtemplater placeholders.
-  // The export service will handle assessment by creating the Word file directly.
   let generatedBlob: Blob | null = null;
 
   if (type === 'meeting') {
     generatedBlob = await createMeetingTemplate();
   } else if (type === 'lesson') {
     generatedBlob = await createLessonTemplate();
+  } else if (type === 'ncbh') {
+    generatedBlob = await createNCBHTemplate();
   }
   // Assessment is intentionally excluded - export service creates file directly
 

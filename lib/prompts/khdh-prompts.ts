@@ -80,24 +80,28 @@ BỐI CẢNH & TRIẾT LÝ
 // ============================================================
 
 export const KHDH_TASK = `
-NHIỆM VỤ (TASK)
-Tôi sẽ cung cấp thông tin về chủ đề/bài học. Nhiệm vụ của bạn là soạn thảo một Kế hoạch bài dạy (Giáo án) chuyên nghiệp, sáng tạo và thực tiễn.
+MỤC TIÊU SẢN PHẨM: Tạo ra một bộ Kế hoạch bài dạy (KHBD) SIÊU CHI TIẾT, ĐẲNG CẤP và CHUYÊN SÂU. Nội dung phải phong phú, đầy đủ và bám sát thực tế, đảm bảo chất lượng sư phạm cao nhất.
 
-YÊU CẦU CỐT LÕI:
-1. MỤC TIÊU: Kiến thức (biết gì?), Năng lực (làm được gì? - chia rõ chung/đặc thù), Phẩm chất (thể hiện ntn?). Sử dụng động từ hành động chuẩn xác (Nhận diện, Phân tích, Thực hành, Thiết kế, Tổ chức).
-2. THIẾT BỊ DẠY HỌC: Phải TÍCH HỢP NLS và Đạo đức (phần mềm, video, tình huống). Chia rõ: 1. Đối với giáo viên; 2. Đối với học sinh và Hướng dẫn về nhà (nhiệm vụ chuẩn bị/thực hành từ tiết trước).
-3. TIẾN TRÌNH DẠY HỌC (HDGD): Bắt buộc 4 hoạt động lớn (Mở đầu, Khám phá, Luyện tập, Vận dụng).
-4. SINH HOẠT DƯỚI CỜ (SHDC) & SINH HOẠT LỚP (SHL): Phải thiết kế cấu trúc chi tiết theo từng tuần (Tuần 1-4 hoặc 1-5 tùy thời lượng chủ đề). Mỗi tuần phải có tên hoạt động, mục tiêu, và kịch bản thực hiện cụ thể.
-5. CẤU TRÚC HOẠT ĐỘNG (BẮT BUỘC): Mỗi hoạt động con phải đủ 4 tiểu mục a, b, c, d. Đặc biệt phần SẢN PHẨM (c) phải mô tả vật lý (Phiếu học tập, Sơ đồ, Câu trả lời cụ thể...).
-6. TÍCH HỢP: NLS và Đạo đức phải được "nhúng" vào đúng bối cảnh sư phạm, không ghi chung chung.
-7. THỂ THỨC HÀNH CHÍNH (BẮT BUỘC):
-   - Tuân thủ cấu trúc phân cấp đề mục theo Nghị định 30/2020/NĐ-CP: 
-     + Cấp 1 (Chương/Phần): I, II, III (In hoa, đậm)
-     + Cấp 2 (Mục): 1, 2, 3 (In thường, đậm)
-     + Cấp 3 (Tiểu mục): a, b, c (In thường, đứng)
-     + Cấp 4 (Ý nhỏ): Gạch đầu dòng (-)
-   - Tuyệt đối không sử dụng #, ##, ### (Markdown headers).
-   - Nội dung phải được trình bày súc tích, chuyên nghiệp, đúng văn phong hành chính.
+QUY TẮC "THIẾT GIÁP" (BẮT BUỘC):
+1. TUYỆT ĐỐI KHÔNG tự tạo các tiêu đề mục lớn như "I. MỤC TIÊU", "II. THIẾT BỊ DẠY HỌC", "III. TIẾN TRÌNH", "A. SHDC", "B. HĐGD", "C. SHL", "V. HƯỚNG DẪN VỀ NHÀ". 
+2. CHỈ trả về nội dung thuần túy của từng tiểu mục.
+3. LUÔN LUÔN tạo nội dung cho "huong_dan_ve_nha" gồm: (1) Bài tập cụ thể và (2) Nhiệm vụ chuẩn bị bài sau cực kỳ chi tiết.
+4. Tuân thủ định dạng [COT_1]...[/COT_1] và [COT_2]...[/COT_2] cho mọi hoạt động giáo dục.
+5. VIẾT CỰC KỲ CHI TIẾT: Không viết gạch đầu dòng ngắn ngủi. Hãy mô tả kịch bản, lời giảng của GV (VD: "GV dẫn dắt: 'Chào các em, hôm nay chúng ta sẽ...'"), các tình huống giả định, và phản ứng của HS.
+
+YÊU CẦU CHI TIẾT NỘI DUNG:
+1. MỤC TIÊU (Mô tả sâu):
+   - Kiến thức: Không chỉ liệt kê tên bài, phải nêu rõ HS sẽ hiểu sâu sắc khía cạnh nào.
+   - Năng lực: Chia rõ Năng lực chung (3 NL) và Năng lực đặc thù (HĐTN). Mỗi năng lực phải gắn với hành vi cụ thể trong bài.
+2. THIẾT BỊ & HỌC LIỆU (Phong phú):
+   - Liệt kê ít nhất 5-7 loại thiết bị/học liệu (Link video, Tranh ảnh, Phiếu học tập số, Ứng dụng AI...).
+   - Chia rõ nhiệm vụ chuẩn bị của GV và HS.
+3. TIẾN TRÌNH DẠY HỌC (Trọng tâm - Viết dài):
+   - Mỗi hoạt động (Khởi động, Khám phá, Luyện tập, Vận dụng) phải là một kịch bản hoàn chỉnh.
+   - Cột 1: Ghi rõ Mục tiêu (viết dài), Nội dung (mô tả ít nhất 2 nhiệm vụ nhỏ), Sản phẩm (mô tả chi tiết nội dung sản phẩm đó).
+   - Cột 2: Viết kịch bản 4 bước. Mỗi bước phải có lời thoại/dẫn dắt của GV và hành động tương ứng của HS. Phải có ít nhất 2-3 tình huống xử lý sư phạm.
+4. SHDC & SHL: Thiết kế chi tiết cho 4 TUẦN. Mỗi tuần ít nhất 20 dòng nội dung dẫn dắt.
+5. TÍCH HỢP NLS & ĐẠO ĐỨC: Nhúng sâu vào nội dung giảng dạy, không viết tách biệt.
 `;
 
 
@@ -179,38 +183,91 @@ Hoạt động VẬN DỤNG:
 `;
 
 // ============================================================
-// PHẦN 4: CẤU TRÚC HOẠT ĐỘNG CHI TIẾT (CHUẨN CV5512)
+// PHẦN 4: CẤU TRÚC HOẠT ĐỘNG CHI TIẾT (ĐỊNH DẠNG BẢNG 2 CỘT - XU HƯỚNG 2024-2025)
 // ============================================================
 
 export const ACTIVITY_STRUCTURE = `
-CẤU TRÚC MỖI HOẠT ĐỘNG (THEO CHUẨN CV5512 - PHỤ LỤC IV):
+CẤU TRÚC MỖI HOẠT ĐỘNG (THEO ĐỊNH DẠNG BẢNG 2 CỘT - TEMPLATE KHBD 2024-2025):
 
-Mỗi hoạt động BẮT BUỘC phải trình bày theo cấu trúc phân cấp a, b, c, d như sau:
+*** QUAN TRỌNG: TUÂN THỦ ĐỊNH DẠNG SAU ĐỂ ĐIỀN VÀO BẢNG 2 CỘT TRONG WORD ***
 
-a) Mục tiêu: 
-   - Sử dụng động từ hành động đo lường được (Nhận diện, Trình bày, Phân tích, Đánh giá, Thực hành).
-   - Xác định rõ đích đến của hoạt động về mặt kiến thức/kỹ năng/thái độ.
+Mỗi hoạt động (hoat_dong_khoi_dong, hoat_dong_kham_pha, hoat_dong_luyen_tap, hoat_dong_van_dung)
+PHẢI được trình bày theo định dạng sau để hệ thống tự động điền vào 2 cột của bảng Word:
+
+=== ĐỊNH DẠNG BẮT BUỘC ===
+
+[COT_1]
+a) Mục tiêu:
+- [Mô tả chi tiết, viết ít nhất 5 dòng về mục tiêu kiến thức và kỹ năng cần đạt].
+- [Liên hệ ý nghĩa thực tiễn của hoạt động đối với sự phát triển của HS].
 
 b) Nội dung:
-   - Mô tả cụ thể kịch bản tương tác giữa GV và HS.
-   - GV giao nhiệm vụ gì (Đọc, xem, làm việc cá nhân/nhóm, sắm vai)?
-   - HS thực hiện nhiệm vụ như thế nào?
-   - **TÍCH HỢP NLS/ĐẠO ĐỨC**: Phải mô tả lồng ghép trực tiếp vào tình huống của hoạt động.
+- [Mô tả chi tiết kịch bản hoạt động].
+- [Liệt kê các câu hỏi dẫn dắt, các nhiệm vụ thảo luận nhóm hoặc thực hành cá nhân].
+- [Sử dụng ít nhất 10 dòng để mô tả cách thức học sinh tham gia].
 
 c) Sản phẩm:
-   - PHẢI LÀ SẢN PHẨM VẬT LÝ HOẶC QUAN SÁT ĐƯỢC.
-   - Ví dụ: "Phiếu học tập số 1 đã hoàn thiện", "Sơ đồ tư duy trên giấy A3/Canva", "Kịch bản sắm vai chi tiết", "Kết quả khảo sát trên Mentimeter".
-   - Tránh viết chung chung như "HS hiểu bài" hay "HS hào hứng".
+- [Mô tả chi tiết kết quả đạt được: Nội dung ghi trên phiếu học tập, kết quả thảo luận, sơ đồ tư duy, hoặc sản phẩm số cụ thể].
+- [Phải mô tả được 'diện mạo' của sản phẩm đó].
+[/COT_1]
 
-d) Tổ chức thực hiện: (Trình bày đúng 4 bước sư phạm sau)
-   
-   - Bước 1: CHUYỂN GIAO NHIỆM VỤ: GV lệnh cho HS làm gì, dùng công cụ gì, thời gian bao lâu, tiêu chí đánh giá ntn.
-   
-   - Bước 2: THỰC HIỆN NHIỆM VỤ: HS làm việc cá nhân/cặp/nhóm. GV quan sát, gợi mở, hỗ trợ những HS/nhóm gặp khó khăn.
-   
-   - Bước 3: BÁO CÁO, THẢO LUẬN: GV gọi đại diện báo cáo. HS nhóm khác chất vấn, bổ sung, tranh biện.
-   
-   - Bước 4: KẾT LUẬN, NHẬN ĐỊNH: GV chốt lại các ý chính, nhận xét thái độ làm việc và đánh giá sản phẩm của HS. Kết nối vào hoạt động sau.
+[COT_2]
+Bước 1: CHUYỂN GIAO NHIỆM VỤ
+• GV: [Viết lời thoại dẫn dắt của GV. Mô tả cách GV trình chiếu, phát phiếu, hoặc nêu tình huống. VD: GV đặt câu hỏi phản biện: "..."]
+• HS: [Mô tả cách HS lắng nghe, ghi chép và sẵn sàng thực hiện].
+
+Bước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)
+• GV: [Mô tả cách GV đi quanh lớp, quan sát từng nhóm, hỗ trợ HS gặp khó khăn, đặt câu hỏi gợi mở thêm].
+• HS: [Mô tả chi tiết quá trình thảo luận: HS A làm gì, nhóm trưởng điều phối ra sao, cách HS tra cứu thông tin hoặc thực hành]. (Viết ít nhất 8 dòng)
+
+Bước 3: BÁO CÁO, THẢO LUẬN ([X] phút)
+• GV: [Mô tả cách GV mời đại diện báo cáo ngẫu nhiên, sử dụng kỹ thuật 'mảnh ghép' hoặc 'khăn trải bàn' để điều phối].
+• HS: [Mô tả nội dung HS nói gì, cách các nhóm khác đặt câu hỏi chất vấn và phản biện lẫn nhau].
+
+Bước 4: KẾT LUẬN, NHẬN ĐỊNH
+• GV: [Tổng hợp các ý kiến, chốt kiến thức cốt lõi. Đặc biệt phải có phần khen ngợi, động viên và rút ra bài học giáo dục đạo đức/năng lực số].
+• HS: [Ghi nhớ và hoàn thiện vào vở ghi/phiếu học tập].
+[/COT_2]
+
+=== VÍ DỤ HOẠT ĐỘNG KHỞI ĐỘNG (10 phút) ===
+
+[COT_1]
+a) Mục tiêu:
+- Tạo hứng thú, kết nối kiến thức đã học với nội dung mới
+- Kích hoạt kinh nghiệm sống của học sinh về chủ đề
+
+b) Nội dung:
+- HS xem video/hình ảnh và chia sẻ cảm nhận
+- Thảo luận cặp đôi về câu hỏi gợi mở
+
+c) Sản phẩm:
+- Câu trả lời miệng của học sinh
+- Kết quả khảo sát nhanh (nếu có)
+[/COT_1]
+
+[COT_2]
+Bước 1: CHUYỂN GIAO NHIỆM VỤ
+• GV: Chiếu video/hình ảnh, đặt câu hỏi gợi mở, phổ biến yêu cầu
+• HS: Quan sát, lắng nghe, ghi chú câu hỏi
+
+Bước 2: THỰC HIỆN NHIỆM VỤ (5 phút)
+• GV: Quan sát, di chuyển hỗ trợ các cặp đôi
+• HS: Thảo luận cặp đôi, ghi lại ý kiến
+
+Bước 3: BÁO CÁO, THẢO LUẬN (3 phút)
+• GV: Mời 2-3 HS chia sẻ, điều phối ý kiến
+• HS: Trình bày ngắn gọn, lắng nghe bạn phản hồi
+
+Bước 4: KẾT LUẬN, NHẬN ĐỊNH
+• GV: Tổng hợp ý kiến, dẫn dắt vào bài học mới
+• HS: Ghi nhận, sẵn sàng cho hoạt động tiếp theo
+[/COT_2]
+
+=== LƯU Ý ===
+- KHÔNG thêm tiêu đề "HOẠT ĐỘNG 1: KHỞI ĐỘNG" vì đã có sẵn trong template Word
+- Marker [COT_1] và [COT_2] giúp hệ thống tự động tách nội dung vào 2 cột
+- Thời gian cụ thể cho từng bước (đặc biệt Bước 2 và Bước 3)
+- Nội dung GV và HS phải chi tiết, cụ thể, không chung chung
 `;
 
 // ============================================================
@@ -673,7 +730,12 @@ ${moralThemes}
 
 ${FORMAT_RULES}
 
-ĐỊNH DẠNG ĐẦU RA (OUTPUT FORMAT) - THEO MẪU KẾ HOẠCH GIÁO DỤC CHỦ ĐỀ:
+ĐỊNH DẠNG ĐẦU RA (OUTPUT FORMAT) - ĐỊNH DẠNG BẢNG 2 CỘT:
+
+*** QUAN TRỌNG: SỬ DỤNG MARKER [COT_1] VÀ [COT_2] ***
+
+Mỗi hoạt động (hoat_dong_khoi_dong, hoat_dong_kham_pha, hoat_dong_luyen_tap, hoat_dong_van_dung) 
+PHẢI sử dụng marker [COT_1]...[/COT_1] và [COT_2]...[/COT_2] để hệ thống tự động điền vào 2 cột của bảng Word.
 
 Hãy soạn Kế hoạch dạy học và trả về JSON thuần túy với cấu trúc sau:
 
@@ -683,20 +745,21 @@ Hãy soạn Kế hoạch dạy học và trả về JSON thuần túy với cấ
   "muc_tieu_kien_thuc": "- Yêu cầu cần đạt 1: [Chi tiết cụ thể, đo lường được].\\n\\n- Yêu cầu cần đạt 2: [Chi tiết].\\n\\n- Yêu cầu cần đạt 3: [Chi tiết].",
   "muc_tieu_nang_luc": "a) Năng lực chung:\\n\\n- Tự chủ và tự học: [Mô tả hành vi HS cụ thể].\\n\\n- Giao tiếp và hợp tác: [Mô tả hành vi HS].\\n\\nb) Năng lực đặc thù HĐTN:\\n\\n- Thích ứng với cuộc sống: [Mô tả hành vi HS].\\n\\n- Định hướng nghề nghiệp: [Mô tả hành vi HS].",
   "muc_tieu_pham_chat": "- Trách nhiệm: [Mô tả hành vi HS thể hiện qua hoạt động cụ thể].\\n\\n- [Phẩm chất 2]: [Mô tả hành vi cụ thể].",
-  "gv_chuan_bi": "Bạn PHẢI thiết kế nội dung cho mục '1. Đối với giáo viên'. Bao gồm các thiết bị, học liệu đã TÍCH HỢP Năng lực số and Đạo đức (Video tình huống, phần mềm, bộ thẻ...).",
-  "hs_chuan_bi": "Bạn PHẢI thiết kế nội dung cho mục '2. Đối với học sinh và Hướng dẫn về nhà'. Bao gồm dụng cụ học tập VÀ các nhiệm vụ chuẩn bị/thực hành từ tiết trước gắn với NLS and Đạo đức.",
-  "shdc": "HƯỚNG DẪN: Thiết kế cấu trúc sinh hoạt dưới cờ cho TẤT CẢ các tuần trong chủ đề (Tuần 1, 2, 3, 4...). Cụ thể cho từng tuần: \\n- Tuần [X]: [Tên hoạt động]\\n+ Mục tiêu: [Mục tiêu]\\n+ Chuẩn bị: [Chuẩn bị specific]\\n+ Tiến trình: [Bước 1, Bước 2, Bước 3... chi tiết như kịch bản]\\n+ Câu hỏi giao lưu: [Câu hỏi].",
-  "shl": "HƯỚNG DẪN: Thiết kế cấu trúc sinh hoạt lớp cho TẤT CẢ các tuần trong chủ đề. Cụ thể cho từng tuần: \\n- Tuần [X]: [Tên hoạt động]\\n+ Mục tiêu: [Mục tiêu]\\n+ Đánh giá tuần qua: [Nội dung đánh giá]\\n+ Sinh hoạt theo chủ đề: [Hoạt động cụ thể và các bước thực hiện]\\n+ Kế hoạch tuần tới: [Nội dung].",
-  "hoat_dong_khoi_dong": "a) Mục tiêu: [Hoạt động này nhằm đạt mục tiêu gì?].\\n\\nb) Nội dung: [GV giao nhiệm vụ gì? HS thực hiện như thế nào? + Tích hợp NLS nếu có].\\n\\nc) Sản phẩm: [MÔ TẢ CỤ THỂ sản phẩm đầu ra].\\n\\nd) Tổ chức thực hiện:\\n\\n- Bước 1: Chuyển giao nhiệm vụ - GV [chi tiết].\\n\\n- Bước 2: Thực hiện nhiệm vụ - HS [chi tiết, ... phút].\\n\\n- Bước 3: Báo cáo, thảo luận - HS [chi tiết].\\n\\n- Bước 4: Kết luận, nhận định - GV [chi tiết].",
-  "hoat_dong_kham_pha": "NHIỆM VỤ 1: [Tên nhiệm vụ 1]\\n\\na) Mục tiêu: [Mục tiêu nhiệm vụ 1].\\n\\nb) Nội dung: [Chi tiết + Tích hợp NLS + Tích hợp đạo đức].\\n\\nc) Sản phẩm: [MÔ TẢ CỤ THỂ].\\n\\nd) Tổ chức thực hiện:\\n\\n- Bước 1: Chuyển giao nhiệm vụ - [chi tiết].\\n\\n- Bước 2: Thực hiện nhiệm vụ - [chi tiết, ... phút].\\n\\n- Bước 3: Báo cáo, thảo luận - [chi tiết].\\n\\n- Bước 4: Kết luận, nhận định - [chi tiết].\\n\\nNHIỆM VỤ 2: [Tên nhiệm vụ 2]\\n\\n[Tương tự cấu trúc nhiệm vụ 1]",
-  "hoat_dong_luyen_tap": "NHIỆM VỤ 1: [Tên nhiệm vụ]\\n\\na) Mục tiêu: [Chi tiết].\\n\\nb) Nội dung: [Chi tiết + Tích hợp NLS tạo sản phẩm số].\\n\\nc) Sản phẩm: [MÔ TẢ CỤ THỂ].\\n\\nd) Tổ chức thực hiện: [4 bước chi tiết].",
-  "hoat_dong_van_dung": "NHIỆM VỤ 1: [Tên nhiệm vụ]\\n\\na) Mục tiêu: [Chi tiết].\\n\\nb) Nội dung: [Chi tiết + Tích hợp NLS chia sẻ + cam kết đạo đức].\\n\\nc) Sản phẩm: [MÔ TẢ CỤ THỂ].\\n\\nd) Tổ chức thực hiện: [4 bước chi tiết].",
-  "ho_so_day_hoc": "PHIẾU HỌC TẬP (sử dụng mẫu PHT phù hợp):\\n\\n[Tiêu đề và nội dung chi tiết dựa trên mẫu PHT-01/02/03/04]\\n\\nRUBRIC ĐÁNH GIÁ (sử dụng mẫu RB phù hợp):\\n\\n[Tiêu chí và mức độ dựa trên mẫu RB-01/02/03/04]",
-  "tich_hop_nls": "TỔNG HỢP TÍCH HỢP NLS THEO HOẠT ĐỘNG:\\n\\n- Hoạt động Khởi động: NLS [Mã] - [Mô tả].\\n\\n- Hoạt động Khám phá: NLS [Mã] - [Mô tả].\\n\\n- Hoạt động Luyện tập: NLS [Mã] - [Mô tả].\\n\\n- Hoạt động Vận dụng: NLS [Mã] - [Mô tả + an toàn thông tin].",
-  "tich_hop_dao_duc": "TỔNG HỢP GIÁO DỤC ĐẠO ĐỨC THEO HOẠT ĐỘNG:\\n\\n- Hoạt động Khám phá: [Phẩm chất] - [Tình huống].\\n\\n- Hoạt động Luyện tập: [Phẩm chất] - [Bài tập].\\n\\n- Hoạt động Vận dụng: [Phẩm chất] - [Cam kết].",
-  "ky_thuat_day_hoc": "KHUNG KỸ THUẬT DẠY HỌC:\\n\\n- [KyThuatDayHoc1]\\n\\n- [KyThuatDayHoc2]",
-  "tich_hop_dao_duc_va_bai_hat": "TỔNG HỢP ĐẠO ĐỨC VÀ BÀI HÁT:\\n\\n- Hoạt động Khám phá: [Phẩm chất] - [Bài hát/video gợi mở].\\n\\n- Hoạt động Luyện tập: [Phẩm chất] - [Bài hát/video liên quan].\\n\\n- Hoạt động Vận dụng: [Phẩm chất] - [Bài hát/video kết thúc].",
-  "huong_dan_ve_nha": "PHẢI bao gồm 2 phần: \\n1. Hướng dẫn học bài cũ và nhiệm vụ thực hành tại nhà cụ thể. \\n2. Hướng dẫn CHUẨN BỊ CHI TIẾT cho chủ đề/bài học tiếp theo (đọc gì, mang gì, sưu tầm gì)."
+  "gv_chuan_bi": "- [Thiết bị/học liệu 1]\\n- [Thiết bị/học liệu 2 - TÍCH HỢP NLS]\\n- [Video/tình huống đạo đức mẫu]",
+  "hs_chuan_bi": "- [Dụng cụ học tập cần mang]\\n- [Nhiệm vụ chuẩn bị cụ thể từ tiết trước]\\n- [Nội dung cần sưu tầm/tìm hiểu trước]",
+  "shdc": "- Tuần 1: [Tên hoạt động]\\n  + Mục tiêu: [...]\\n  + Tiến trình: B1-[...], B2-[...], B3-[...]\\n\\n- Tuần 2: [Tên hoạt động]\\n  [Tương tự]",
+  "shl": "- Tuần 1: [Tên hoạt động]\\n  + Đánh giá tuần qua: [...]\\n  + Sinh hoạt chủ đề: [...]\\n  + Kế hoạch tuần tới: [...]",
+  "hoat_dong_khoi_dong": "[COT_1]\\na) Mục tiêu:\\n- Tạo hứng thú, kết nối kiến thức đã học với nội dung mới\\n- Kích hoạt kinh nghiệm sống của học sinh về chủ đề\\n\\nb) Nội dung:\\n- [Mô tả nhiệm vụ HS thực hiện]\\n- [Phương pháp/hình thức tổ chức]\\n\\nc) Sản phẩm:\\n- [Sản phẩm cụ thể, quan sát được]\\n[/COT_1]\\n\\n[COT_2]\\nBước 1: CHUYỂN GIAO NHIỆM VỤ\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 3: BÁO CÁO, THẢO LUẬN ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 4: KẾT LUẬN, NHẬN ĐỊNH\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n[/COT_2]",
+  "hoat_dong_kham_pha": "[COT_1]\\na) Mục tiêu:\\n- [Mục tiêu 1]\\n- [Mục tiêu 2]\\n\\nb) Nội dung:\\n- [Nhiệm vụ + Tích hợp NLS + Đạo đức]\\n\\nc) Sản phẩm:\\n- [Sản phẩm cụ thể]\\n[/COT_1]\\n\\n[COT_2]\\nBước 1: CHUYỂN GIAO NHIỆM VỤ\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 3: BÁO CÁO, THẢO LUẬN ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 4: KẾT LUẬN, NHẬN ĐỊNH\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n[/COT_2]",
+  "hoat_dong_luyen_tap": "[COT_1]\\na) Mục tiêu:\\n- [Mục tiêu thực hành]\\n\\nb) Nội dung:\\n- [Nhiệm vụ + Tích hợp NLS tạo sản phẩm số]\\n\\nc) Sản phẩm:\\n- [Sản phẩm cụ thể: poster/video/bài trình bày...]\\n[/COT_1]\\n\\n[COT_2]\\nBước 1: CHUYỂN GIAO NHIỆM VỤ\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 3: BÁO CÁO, THẢO LUẬN ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 4: KẾT LUẬN, NHẬN ĐỊNH\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n[/COT_2]",
+  "hoat_dong_van_dung": "[COT_1]\\na) Mục tiêu:\\n- [Mục tiêu vận dụng]\\n\\nb) Nội dung:\\n- [Nhiệm vụ + Cam kết hành động]\\n\\nc) Sản phẩm:\\n- [Kế hoạch/Cam kết cá nhân]\\n[/COT_1]\\n\\n[COT_2]\\nBước 1: CHUYỂN GIAO NHIỆM VỤ\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 3: BÁO CÁO, THẢO LUẬN ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 4: KẾT LUẬN, NHẬN ĐỊNH\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n[/COT_2]",
+  "ho_so_day_hoc": "PHIẾU HỌC TẬP:\\n[Tiêu đề và nội dung]\\n\\nRUBRIC ĐÁNH GIÁ:\\n- Tiêu chí 1: [Mức Tốt] | [Mức Đạt] | [Mức Cần cố gắng]\\n- Tiêu chí 2: [...]",
+  "tich_hop_nls": "- Khởi động: NLS [Mã] - [Mô tả]\\n- Khám phá: NLS [Mã] - [Mô tả]\\n- Luyen tập: NLS [Mã] - [Mô tả]\\n- Vận dụng: NLS [Mã] - [Mô tả]",
+  "tich_hop_dao_duc": "- Khám phá: [Phẩm chất] - [Tình huống]\\n- Luyện tập: [Phẩm chất] - [Bài tập]\\n- Vận dụng: [Phẩm chất] - [Cam kết]",
+  "ky_thuat_day_hoc": "- [Kỹ thuật 1]: [Mô tả cách áp dụng]\\n- [Kỹ thuật 2]: [Mô tả cách áp dụng]",
+  "tich_hop_dao_duc_va_bai_hat": "- Khởi động: [Tên bài hát/video gợi mở]\\n- Kết thúc: [Tên bài hát/video kết thúc]",
+  "huong_dan_ve_nha": "1. Bài tập về nhà và thực hành: [Mô tả chi tiết bài tập/nhiệm vụ HS cần hoàn thành tại nhà].\\n\\n2. Chuẩn bị cho nội dung/chủ đề kế tiếp: [Ghi rõ tên chủ đề tiếp theo, các tài liệu cần đọc, học liệu cần mang hoặc nhiệm vụ sưu tầm cụ thể]."
+}
 }`;
 }
 

@@ -360,7 +360,7 @@ export const createMeetingTemplate = async (): Promise<Blob> => {
 };
 
 export const createLessonTemplate = async (): Promise<Blob> => {
-    const { Document, Packer, Paragraph, TextRun, AlignmentType } =
+    const { Document, Packer, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell, WidthType } =
         await import("docx");
 
     const doc = new Document({
@@ -448,7 +448,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{{muc_tieu_kien_thuc}}", size: 24 }),
+                            new TextRun({ text: "{muc_tieu_kien_thuc}", size: 24 }),
                         ],
                     }),
                     new Paragraph({
@@ -458,7 +458,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{{muc_tieu_nang_luc}}", size: 24 }),
+                            new TextRun({ text: "{muc_tieu_nang_luc}", size: 24 }),
                         ],
                     }),
                     new Paragraph({
@@ -468,7 +468,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{{muc_tieu_pham_chat}}", size: 24 }),
+                            new TextRun({ text: "{muc_tieu_pham_chat}", size: 24 }),
                         ],
                     }),
                     new Paragraph({ text: "" }),
@@ -492,7 +492,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                         ],
                     }),
                     new Paragraph({
-                        children: [new TextRun({ text: "{{gv_chuanbi}}", size: 24 })],
+                        children: [new TextRun({ text: "{gv_chuan_bi}", size: 24 })],
                     }),
                     new Paragraph({
                         children: [
@@ -504,16 +504,16 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                         ],
                     }),
                     new Paragraph({
-                        children: [new TextRun({ text: "{{hs_chuanbi}}", size: 24 })],
+                        children: [new TextRun({ text: "{hs_chuan_bi}", size: 24 })],
                     }),
                     new Paragraph({ text: "" }),
                     // Section III - Hoạt động
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "III. CÁC HOẠT ĐỘNG DẠY HỌC",
+                                text: "III. TIẾN TRÌNH DẠY HỌC",
                                 bold: true,
-                                size: 26,
+                                size: 28,
                             }),
                         ],
                     }),
@@ -521,126 +521,107 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "GỢI Ý NỘI DUNG SINH HOẠT DƯỚI CỜ VÀ SINH HOẠT LỚP",
+                                text: "A. SINH HOẠT DƯỚI CỜ / SINH HOẠT LỚP",
                                 bold: true,
                                 size: 24,
-                                underline: {},
                             }),
                         ],
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{{hoat_dong_duoi_co}}", size: 24 }),
+                            new TextRun({ text: "{shdc}", size: 24 }),
+                        ],
+                    }),
+                    new Paragraph({ text: "" }),
+                    new Paragraph({
+                        children: [
+                            new TextRun({ text: "{shl}", size: 24 }),
                         ],
                     }),
                     new Paragraph({ text: "" }),
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "HOẠT ĐỘNG GIÁO DỤC THEO CHỦ ĐỀ",
+                                text: "B. HOẠT ĐỘNG GIÁO DỤC THEO CHỦ ĐỀ",
                                 bold: true,
                                 size: 24,
-                                underline: {},
                             }),
                         ],
+                    }),
+                    new Paragraph({ text: "" }),
+
+                    // Function to create an activity table in the template
+                    ...(["khoi_dong", "kham_pha", "luyen_tap", "van_dung"].flatMap((actKey) => {
+                        const actNames: Record<string, string> = {
+                            khoi_dong: "KHỞI ĐỘNG",
+                            kham_pha: "KHÁM PHÁ",
+                            luyen_tap: "LUYỆN TẬP",
+                            van_dung: "VẬN DỤNG"
+                        };
+                        return [
+                            new Paragraph({
+                                children: [new TextRun({ text: `HOẠT ĐỘNG: ${actNames[actKey]}`, bold: true, size: 24 })]
+                            }),
+                            // Import Table related from docx dynamically or use existing imports
+                            // (Assuming Table, TableRow, TableCell are available as per createMeetingTemplate)
+                            new Table({
+                                width: { size: 100, type: WidthType.PERCENTAGE },
+                                rows: [
+                                    new TableRow({
+                                        children: [
+                                            new TableCell({
+                                                width: { size: 40, type: WidthType.PERCENTAGE },
+                                                children: [new Paragraph({ children: [new TextRun({ text: "THÔNG TIN HOẠT ĐỘNG", bold: true, size: 24 })] })],
+                                                shading: { fill: "F8F9FA" }
+                                            }),
+                                            new TableCell({
+                                                width: { size: 60, type: WidthType.PERCENTAGE },
+                                                children: [new Paragraph({ children: [new TextRun({ text: "TỔ CHỨC THỰC HIỆN", bold: true, size: 24 })] })],
+                                                shading: { fill: "F8F9FA" }
+                                            }),
+                                        ]
+                                    }),
+                                    new TableRow({
+                                        children: [
+                                            new TableCell({
+                                                children: [new Paragraph({ children: [new TextRun({ text: `{hoat_dong_${actKey}_cot_1}`, size: 24 })] })]
+                                            }),
+                                            new TableCell({
+                                                children: [new Paragraph({ children: [new TextRun({ text: `{hoat_dong_${actKey}_cot_2}`, size: 24 })] })]
+                                            }),
+                                        ]
+                                    })
+                                ]
+                            }),
+                            new Paragraph({ text: "" })
+                        ];
+                    })),
+
+                    new Paragraph({
+                        children: [
+                            new TextRun({
+                                text: "IV. HỒ SƠ DẠY HỌC & PHỤ LỤC",
+                                bold: true,
+                                size: 28,
+                            }),
+                        ],
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "{ho_so_day_hoc}", size: 24 })],
                     }),
                     new Paragraph({ text: "" }),
                     new Paragraph({
                         children: [
                             new TextRun({
-                                text: "A. HOẠT ĐỘNG KHỞI ĐỘNG",
+                                text: "V. HƯỚNG DẪN VỀ NHÀ",
                                 bold: true,
-                                size: 24,
+                                size: 28,
                             }),
                         ],
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{{hoat_dong_khoi_dong}}", size: 24 }),
-                        ],
-                    }),
-                    new Paragraph({ text: "" }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: "B. HOẠT ĐỘNG KHÁM PHÁ",
-                                bold: true,
-                                size: 24,
-                            }),
-                        ],
-                    }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({ text: "{{hoat_dong_kham_pha}}", size: 24 }),
-                        ],
-                    }),
-                    new Paragraph({ text: "" }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: "C. HOẠT ĐỘNG LUYỆN TẬP",
-                                bold: true,
-                                size: 24,
-                            }),
-                        ],
-                    }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({ text: "{{hoat_dong_luyen_tap}}", size: 24 }),
-                        ],
-                    }),
-                    new Paragraph({ text: "" }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: "D. HOẠT ĐỘNG VẬN DỤNG",
-                                bold: true,
-                                size: 24,
-                            }),
-                        ],
-                    }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({ text: "{{hoat_dong_van_dung}}", size: 24 }),
-                        ],
-                    }),
-                    new Paragraph({ text: "" }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: "E. Tích hợp và hồ sơ:",
-                                bold: true,
-                                size: 24,
-                            }),
-                        ],
-                    }),
-                    new Paragraph({
-                        children: [new TextRun({ text: "{{tich_hop_nls}}", size: 24 })],
-                    }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({ text: "{{tich_hop_dao_duc}}", size: 24 }),
-                        ],
-                    }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({ text: "{{ho_so_day_hoc}}", size: 24 }),
-                        ],
-                    }),
-                    new Paragraph({ text: "" }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({
-                                text: "HƯỚNG DẪN VỀ NHÀ",
-                                bold: true,
-                                size: 24,
-                                underline: {},
-                            }),
-                        ],
-                    }),
-                    new Paragraph({
-                        children: [
-                            new TextRun({ text: "{{huong_dan_on_tap}}", size: 24 }),
+                            new TextRun({ text: "{huong_dan_ve_nha}", size: 24 }),
                         ],
                     }),
                 ],
@@ -674,12 +655,9 @@ export const createAssessmentTemplate = async (): Promise<Blob> => {
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
                         borders: {
-                            top: { style: BorderStyle.NONE },
-                            bottom: { style: BorderStyle.NONE },
-                            left: { style: BorderStyle.NONE },
-                            right: { style: BorderStyle.NONE },
-                            insideHorizontal: { style: BorderStyle.NONE },
-                            insideVertical: { style: BorderStyle.NONE },
+                            top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE },
+                            left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE },
+                            insideHorizontal: { style: BorderStyle.NONE }, insideVertical: { style: BorderStyle.NONE },
                         },
                         rows: [
                             new TableRow({
@@ -689,11 +667,15 @@ export const createAssessmentTemplate = async (): Promise<Blob> => {
                                         children: [
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "TRƯỜNG THPT {{ten_truong}}", bold: true, size: 13, font: "Times New Roman" })],
+                                                children: [new TextRun({ text: "SỞ GD&ĐT BÌNH THUẬN", size: 24, font: "Times New Roman" })],
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "TỔ: {{to_chuyen_mon}}", bold: true, size: 13, font: "Times New Roman" })],
+                                                children: [new TextRun({ text: "TRƯỜNG THPT {ten_truong}", bold: true, size: 24, font: "Times New Roman" })],
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "TỔ: {to_chuyen_mon}", bold: true, size: 24, font: "Times New Roman" })],
                                             }),
                                         ],
                                     }),
@@ -702,11 +684,15 @@ export const createAssessmentTemplate = async (): Promise<Blob> => {
                                         children: [
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", bold: true, size: 13, font: "Times New Roman" })],
+                                                children: [new TextRun({ text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", bold: true, size: 24, font: "Times New Roman" })],
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "Độc lập - Tự do - Hạnh phúc", bold: true, size: 13, font: "Times New Roman", underline: {} })],
+                                                children: [new TextRun({ text: "Độc lập - Tự do - Hạnh phúc", bold: true, size: 24, font: "Times New Roman" })],
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "─────────────────", size: 24, font: "Times New Roman" })],
                                             }),
                                         ],
                                     }),
@@ -718,48 +704,47 @@ export const createAssessmentTemplate = async (): Promise<Blob> => {
                     new Paragraph({ text: "" }),
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
-                        children: [new TextRun({ text: "KẾ HOẠCH KIỂM TRA ĐÁNH GIÁ ĐỊNH KỲ", bold: true, size: 16, font: "Times New Roman" })],
+                        children: [new TextRun({ text: "KẾ HOẠCH KIỂM TRA ĐÁNH GIÁ ĐỊNH KỲ", bold: true, size: 32, font: "Times New Roman" })],
                     }),
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
-                        children: [new TextRun({ text: "{{hoc_ky}} - NĂM HỌC 20... - 20...", bold: true, size: 14, font: "Times New Roman" })],
+                        children: [new TextRun({ text: "{ten_ke_hoach}", bold: true, size: 28, font: "Times New Roman" })],
                     }),
                     new Paragraph({ text: "" }),
 
                     // Info
-                    new Paragraph({ children: [new TextRun({ text: "Môn học/HĐGD: Hoạt động trải nghiệm, Hướng nghiệp", size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "Khối lớp: {{khoi}}", size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "Thời điểm đánh giá: {{ky_danh_gia}}", size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "Chủ đề/Nội dung: {{ten_chu_de}}", size: 13, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "Học kỳ: {hoc_ky}", size: 26, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "Khối lớp: {khoi}", size: 26, font: "Times New Roman" })] }),
                     new Paragraph({ text: "" }),
 
                     // I. Objectives
-                    new Paragraph({ children: [new TextRun({ text: "I. MỤC TIÊU ĐÁNH GIÁ", bold: true, size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "{{muc_tieu}}", size: 13, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "I. MỤC TIÊU ĐÁNH GIÁ", bold: true, size: 28, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "{muc_tieu}", size: 26, font: "Times New Roman" })] }),
                     new Paragraph({ text: "" }),
 
-                    // II. Forms & Products
-                    new Paragraph({ children: [new TextRun({ text: "II. HÌNH THỨC VÀ SẢN PHẨM", bold: true, size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "- Hình thức tổ chức: {{hinh_thuc_to_chuc}}", size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "- Sản phẩm yêu cầu: {{san_pham}}", size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ text: "" }),
-                    new Paragraph({ children: [new TextRun({ text: "Nội dung nhiệm vụ cụ thể:", bold: true, italics: true, size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "{{noi_dung_nhiem_vu}}", size: 13, font: "Times New Roman" })] }),
+                    // II. Nhiệm vụ
+                    new Paragraph({ children: [new TextRun({ text: "II. NỘI DUNG VÀ NHIỆM VỤ KIỂM TRA", bold: true, size: 28, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "{noi_dung_nhiem_vu}", size: 26, font: "Times New Roman" })] }),
                     new Paragraph({ text: "" }),
 
-
-                    // III. Matrix
-                    new Paragraph({ children: [new TextRun({ text: "III. MA TRẬN ĐẶC TẢ", bold: true, size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "{{ma_tran_dac_ta}}", size: 13, font: "Times New Roman" })] }),
+                    // III. Hình thức
+                    new Paragraph({ children: [new TextRun({ text: "III. HÌNH THỨC TỔ CHỨC", bold: true, size: 28, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "{hinh_thuc_to_chuc}", size: 26, font: "Times New Roman" })] }),
                     new Paragraph({ text: "" }),
 
-
-                    // IV. Rubric
-                    new Paragraph({ children: [new TextRun({ text: "IV. TIÊU CHÍ ĐÁNH GIÁ (RUBRIC)", bold: true, size: 13, font: "Times New Roman" })] }),
-                    new Paragraph({ children: [new TextRun({ text: "{{bang_kiem_rubric}}", size: 13, font: "Times New Roman" })] }),
+                    // IV. Matrix
+                    new Paragraph({ children: [new TextRun({ text: "IV. MA TRẬN ĐẶC TẢ", bold: true, size: 28, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "{ma_tran_dac_ta}", size: 26, font: "Times New Roman" })] }),
                     new Paragraph({ text: "" }),
 
+                    // V. Rubric
+                    new Paragraph({ children: [new TextRun({ text: "V. RUBRIC ĐÁNH GIÁ CHI TIẾT", bold: true, size: 28, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "{bang_kiem_rubric}", size: 26, font: "Times New Roman" })] }),
                     new Paragraph({ text: "" }),
+
+                    // VI. Lời khuyên
+                    new Paragraph({ children: [new TextRun({ text: "VI. GHI CHÚ VÀ LỜI KHUYÊN", bold: true, size: 28, font: "Times New Roman" })] }),
+                    new Paragraph({ children: [new TextRun({ text: "{loi_khuyen}", size: 26, font: "Times New Roman" })] }),
                     // Footer/Signatures
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
@@ -1216,4 +1201,284 @@ export const createEventTemplate = async (): Promise<Blob> => {
 
     return await Packer.toBlob(doc);
 };
+export const createNCBHTemplate = async (): Promise<Blob> => {
+    const {
+        Document,
+        Packer,
+        Paragraph,
+        TextRun,
+        Table,
+        TableRow,
+        TableCell,
+        WidthType,
+        AlignmentType,
+        BorderStyle,
+        SpacingMode,
+    } = await import("docx");
 
+    const doc = new Document({
+        styles: {
+            default: {
+                document: {
+                    run: {
+                        font: "Times New Roman",
+                        size: 26, // equivalent to 13pt
+                    },
+                    paragraph: {
+                        spacing: {
+                            line: 276, // equivalent to 1.15 line spacing (more compact and professional)
+                            before: 60, // 3pt
+                            after: 60, // 3pt
+                        },
+                    },
+                },
+            },
+        },
+        sections: [
+            {
+                properties: {
+                    page: {
+                        margin: {
+                            top: 1134, // 2cm
+                            right: 1134, // 2cm
+                            bottom: 1134, // 2cm
+                            left: 1701, // 3cm
+                        },
+                    },
+                },
+                children: [
+                    // Header Section
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        borders: {
+                            top: { style: BorderStyle.NONE },
+                            bottom: { style: BorderStyle.NONE },
+                            left: { style: BorderStyle.NONE },
+                            right: { style: BorderStyle.NONE },
+                            insideHorizontal: { style: BorderStyle.NONE },
+                            insideVertical: { style: BorderStyle.NONE },
+                        },
+                        rows: [
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: { size: 40, type: WidthType.PERCENTAGE },
+                                        children: [
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "{{ten_truong}}", bold: true, size: 24 })],
+                                                spacing: { before: 0, after: 0, line: 240 },
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "TỔ: {{to_chuyen_mon}}", bold: true, size: 24 })],
+                                                spacing: { before: 0, after: 0, line: 240 },
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "———", size: 24 })],
+                                                spacing: { before: 0, after: 0, line: 240 },
+                                            }),
+                                        ],
+                                    }),
+                                    new TableCell({
+                                        width: { size: 60, type: WidthType.PERCENTAGE },
+                                        children: [
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", bold: true, size: 24 })],
+                                                spacing: { before: 0, after: 0, line: 240 },
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "Độc lập - Tự do - Hạnh phúc", bold: true, size: 26 })],
+                                                spacing: { before: 0, after: 0, line: 240 },
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "—————————", bold: true, size: 24 })],
+                                                spacing: { before: 0, after: 0, line: 240 },
+                                            }),
+                                        ],
+                                    }),
+                                ],
+                            }),
+                        ],
+                    }),
+
+                    new Paragraph({ text: "", spacing: { before: 240, after: 240 } }),
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [
+                            new TextRun({ text: "HỒ SƠ VÀ BIÊN BẢN", bold: true, size: 32 }),
+                        ],
+                        spacing: { before: 0, after: 0, line: 240 },
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [
+                            new TextRun({ text: "SINH HOẠT CHUYÊN MÔN THEO NGHIÊN CỨU BÀI HỌC", bold: true, size: 28 }),
+                        ],
+                        spacing: { before: 0, after: 120, line: 240 },
+                    }),
+                    new Paragraph({
+                        alignment: AlignmentType.CENTER,
+                        children: [
+                            new TextRun({ text: "Bài dạy nghiên cứu: {{ten_bai}}", italics: true, size: 26, bold: true }),
+                        ],
+                        spacing: { before: 0, after: 360, line: 240 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "I. GIAI ĐOẠN 1: THIẾT KẾ BÀI DẠY (TẬP THỂ TỔ XÂY DỰNG)", bold: true, size: 28 })],
+                        spacing: { before: 240, after: 120 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "1. Lý do chọn bài dạy nghiên cứu:", bold: true, size: 26 })],
+                        spacing: { before: 120, after: 60 },
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "{{ly_do_chon}}" })],
+                        spacing: { before: 0, after: 120 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "2. Mục tiêu bài học (Yêu cầu cần đạt):", bold: true, size: 26 })],
+                        spacing: { before: 120, after: 60 },
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "{{muc_tieu}}" })],
+                        spacing: { before: 0, after: 120 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "3. Chuỗi các hoạt động học dự kiến:", bold: true, size: 26 })],
+                        spacing: { before: 120, after: 60 },
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "{{chuoi_hoat_dong}}" })],
+                        spacing: { before: 0, after: 120 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "4. Các phương án hỗ trợ học sinh gặp khó khăn:", bold: true, size: 26 })],
+                        spacing: { before: 120, after: 60 },
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "{{phuong_an_ho_tro}}" })],
+                        spacing: { before: 0, after: 120 },
+                    }),
+
+                    new Paragraph({ text: "", spacing: { before: 240, after: 240 } }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "II. GIAI ĐOẠN 2 & 3: DẠY MINH HỌA - QUAN SÁT VÀ PHÂN TÍCH BÀI HỌC", bold: true, size: 28 })],
+                        spacing: { before: 240, after: 60 },
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "(Thời gian: {{ngay_thuc_hien}} - Khối: {{khoi}})", italics: true, size: 24 })],
+                        spacing: { before: 0, after: 120 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "1. Chia sẻ của giáo viên dạy minh họa:", bold: true, size: 26 })],
+                        spacing: { before: 120, after: 60 },
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "{{chia_se_nguoi_day}}" })],
+                        spacing: { before: 0, after: 120 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "2. Thảo luận của đồng nghiệp (Tập trung minh chứng về việc học của HS):", bold: true, size: 26 })],
+                        spacing: { before: 120, after: 60 },
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "{{nhan_xet_nguoi_du}}" })],
+                        spacing: { before: 0, after: 120 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "3. Phân tích nguyên nhân và giải pháp điều chỉnh:", bold: true, size: 26 })],
+                        spacing: { before: 120, after: 60 },
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "{{nguyen_nhan_giai_phap}}" })],
+                        spacing: { before: 0, after: 120 },
+                    }),
+
+                    new Paragraph({
+                        children: [new TextRun({ text: "4. Bài học kinh nghiệm rút ra cho các bài học sau:", bold: true, size: 26 })],
+                        spacing: { before: 120, after: 60 },
+                    }),
+                    new Paragraph({
+                        children: [new TextRun({ text: "{{bai_hoc_kinh_nghiem}}" })],
+                        spacing: { before: 0, after: 120 },
+                    }),
+
+                    new Paragraph({ text: "", spacing: { before: 360, after: 360 } }),
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        borders: {
+                            top: { style: BorderStyle.NONE },
+                            bottom: { style: BorderStyle.NONE },
+                            left: { style: BorderStyle.NONE },
+                            right: { style: BorderStyle.NONE },
+                            insideHorizontal: { style: BorderStyle.NONE },
+                            insideVertical: { style: BorderStyle.NONE },
+                        },
+                        rows: [
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: { size: 50, type: WidthType.PERCENTAGE },
+                                        children: [
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "NGƯỜI GHI BIÊN BẢN", bold: true, size: 24 })],
+                                                spacing: { before: 0, after: 60, line: 240 },
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "(Ký và ghi rõ họ tên)", italics: true, size: 20 })],
+                                                spacing: { before: 0, after: 840, line: 240 },
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "................................", size: 24 })],
+                                                spacing: { before: 0, after: 0, line: 240 },
+                                            }),
+                                        ],
+                                    }),
+                                    new TableCell({
+                                        width: { size: 50, type: WidthType.PERCENTAGE },
+                                        children: [
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "TỔ TRƯỞNG CHUYÊN MÔN", bold: true, size: 24 })],
+                                                spacing: { before: 0, after: 60, line: 240 },
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "(Ký và ghi rõ họ tên)", italics: true, size: 20 })],
+                                                spacing: { before: 0, after: 840, line: 240 },
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "................................", size: 24 })],
+                                                spacing: { before: 0, after: 0, line: 240 },
+                                            }),
+                                        ],
+                                    }),
+                                ],
+                            }),
+                        ],
+                    }),
+                ],
+            },
+        ],
+    });
+
+
+    return await Packer.toBlob(doc);
+};

@@ -1,6 +1,6 @@
 "use server";
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HDTN_CURRICULUM } from "@/lib/hdtn-curriculum";
 import {
   getMeetingPrompt,
@@ -9,18 +9,20 @@ import {
 } from "@/lib/prompts/ai-prompts";
 import { getAssessmentPrompt } from "@/lib/prompts/assessment-prompts";
 import { getKHDHPrompt } from "@/lib/prompts/khdh-prompts";
+import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
 
 const MODELS = [
-  "gemini-2.5-flash",
-  "gemini-1.5-flash",
-  "gemini-1.5-pro",
   "gemini-2.0-flash-exp",
+  "gemini-1.5-flash",
+  "gemini-1.5-flash-8b",
+  "gemini-1.5-pro",
 ];
 
 function getApiKeys(): string[] {
   const keys: string[] = [];
   const primaryKey = process.env.GEMINI_API_KEY;
   const backupKey = process.env.GEMINI_API_KEY_2;
+  const backupKey3 = process.env.GEMINI_API_KEY_3;
 
   if (primaryKey && primaryKey.trim() !== "") {
     keys.push(primaryKey);
@@ -28,15 +30,21 @@ function getApiKeys(): string[] {
   if (backupKey && backupKey.trim() !== "") {
     keys.push(backupKey);
   }
+  if (backupKey3 && backupKey3.trim() !== "") {
+    keys.push(backupKey3);
+  }
 
   return keys;
 }
 
 async function callGeminiWithRetry(
   prompt: string,
-  maxRetries = 2
+  preferredModel?: string,
+  maxRetries = 2,
+  images?: Array<{ mimeType: string; data: string }>
 ): Promise<string> {
-  const apiKeys = getApiKeys();
+  // Get and shuffle API keys to distribute load during parallel calls
+  const apiKeys = getApiKeys().sort(() => Math.random() - 0.5);
 
   if (apiKeys.length === 0) {
     throw new Error(
@@ -45,26 +53,48 @@ async function callGeminiWithRetry(
   }
 
   let lastError: Error | null = null;
+  const modelsToTry = preferredModel
+    ? [preferredModel, ...MODELS.filter((m) => m !== preferredModel)]
+    : MODELS;
 
   // Try each API key
-  for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
+  keyLoop: for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
     const apiKey = apiKeys[keyIndex];
-    const genAI = new GoogleGenAI({ apiKey });
+    const genAI = new GoogleGenerativeAI(apiKey);
     const keyLabel = keyIndex === 0 ? "Primary" : "Backup";
 
     console.log(`[v0] Using ${keyLabel} API Key...`);
 
     // Try each model with current API key
-    for (const model of MODELS) {
+    for (const model of modelsToTry) {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
           console.log(
             `[v0] [${keyLabel}] Trying model: ${model}, attempt: ${attempt + 1}`
           );
-          const response = await genAI.models.generateContent({
-            model,
-            contents: prompt,
+
+          // Build contents array for multimodal support
+          const contents: any[] = [{ text: prompt }];
+          if (images && images.length > 0) {
+            images.forEach((img) => {
+              contents.push({
+                inlineData: {
+                  mimeType: img.mimeType,
+                  data: img.data,
+                },
+              });
+            });
+          }
+
+          const modelInstance = genAI.getGenerativeModel({ model });
+          const result = await modelInstance.generateContent({
+            contents: [{ role: "user", parts: contents }],
+            generationConfig: {
+              maxOutputTokens: 8192,
+              temperature: 0.7,
+            }
           });
+          const response = await result.response;
 
           // Extract text from response - SDK uses getter property
           let text: string = "";
@@ -88,19 +118,28 @@ async function callGeminiWithRetry(
           const isQuotaError =
             errorMsg.includes("429") ||
             errorMsg.includes("quota") ||
-            errorMsg.includes("RESOURCE_EXHAUSTED");
+            errorMsg.includes("RESOURCE_EXHAUSTED") ||
+            error.status === 429;
 
           const isModelNotFound =
-            errorMsg.includes("404") || errorMsg.includes("not found");
+            errorMsg.includes("404") ||
+            errorMsg.includes("not found") ||
+            error.status === 404;
 
           if (isModelNotFound) {
             console.log(
-              `[v0] [${keyLabel}] Model ${model} not available, trying next...`
+              `[v0] [${keyLabel}] Model ${model} not available on this key, trying next model...`
             );
             break;
           }
 
           if (isQuotaError) {
+            // If we have more keys to try, skip this key entirely for now
+            if (keyIndex < apiKeys.length - 1) {
+              console.log(`[v0] [${keyLabel}] Quota exhausted, switching to NEXT API KEY...`);
+              continue keyLoop;
+            }
+
             const retryMatch = errorMsg.match(/retry in (\d+)/i);
             const retryDelay = retryMatch
               ? Number.parseInt(retryMatch[1]) * 1000
@@ -108,7 +147,7 @@ async function callGeminiWithRetry(
 
             if (attempt < maxRetries - 1) {
               console.log(
-                `[v0] [${keyLabel}] Quota limit hit, waiting ${retryDelay / 1000
+                `[v0] [${keyLabel}] Quota limit hit (last key), waiting ${retryDelay / 1000
                 }s before retry...`
               );
               await new Promise((resolve) => setTimeout(resolve, retryDelay));
@@ -142,7 +181,7 @@ async function callGeminiWithRetry(
   throw new Error(
     `Đã hết quota API cho tất cả các key và model. ` +
     `Vui lòng đợi 1-2 phút rồi thử lại. ` +
-    `Hoặc thêm GEMINI_API_KEY_2 dự phòng vào Vars.`
+    `Hoặc thêm GEMINI_API_KEY_3 dự phòng vào Vars.`
   );
 }
 
@@ -304,7 +343,8 @@ function getThemesForMonth(month: string): string {
 export async function generateMeetingMinutes(
   month: string,
   session: string,
-  keyContent: string
+  keyContent: string,
+  model?: string
 ): Promise<{
   success: boolean;
   data?: {
@@ -343,7 +383,7 @@ export async function generateMeetingMinutes(
 
     console.log("[v0] Calling Gemini API for meeting minutes...");
 
-    const text = await callGeminiWithRetry(prompt);
+    const text = await callGeminiWithRetry(prompt, model || "gemini-1.5-flash");
     console.log("[v0] Meeting minutes response received, length:", text.length);
 
     const data = parseGeminiJSON(text);
@@ -376,7 +416,9 @@ export async function generateLessonPlan(
   customInstructions?: string,
   tasks?: Array<{ name: string; description: string }>,
   month?: number,
-  activitySuggestions?: { shdc?: string; hdgd?: string; shl?: string }
+  activitySuggestions?: { shdc?: string; hdgd?: string; shl?: string },
+  model?: string,
+  image?: { mimeType: string; data: string }
 ): Promise<{
   success: boolean;
   data?: {
@@ -428,12 +470,22 @@ export async function generateLessonPlan(
       prompt += `\n\nYÊU CẦU BỔ SUNG TỪ GIÁO VIÊN:\n${customInstructions}\n\nLưu ý: Hãy tích hợp các yêu cầu trên vào nội dung một cách hợp lý và khoa học.`;
     }
 
+    if (image) {
+      prompt += `\n\nYÊU CẦU OCR & THIẾT KẾ GD:\nTôi đã gửi kèm hình ảnh nội dung bài học từ Sách giáo khoa (SGK). Hãy phân tích kỹ nội dung, hình ảnh, các câu hỏi và hoạt động trong trang sách này để trích xuất kiến thức trọng tâm và thiết kế các hoạt động giáo dục (Khởi động, Khám phá, Luyện tập, Vận dụng) một cách sát thực tế nhất. Đảm bảo giáo án 2 cột phản ánh đúng tinh thần của bài học trong SGK.`;
+    }
+
     console.log(
       "[v0] Calling Gemini API for lesson plan...",
-      fullPlan ? "(Full Plan)" : "(Integration Only)"
+      fullPlan ? "(Full Plan)" : "(Integration Only)",
+      image ? "(With Image/OCR)" : ""
     );
 
-    const text = await callGeminiWithRetry(prompt);
+    const text = await callGeminiWithRetry(
+      prompt,
+      model || "gemini-2.0-flash-exp",
+      2,
+      image ? [image] : undefined
+    );
     console.log("[v0] Lesson plan response received, length:", text.length);
 
     const data = parseGeminiJSON(text);
@@ -481,6 +533,92 @@ export async function generateLessonPlan(
       success: false,
       error: error?.message || "Lỗi khi tạo nội dung tích hợp",
     };
+  }
+}
+
+export async function generateLessonSection(
+  grade: string,
+  lessonTopic: string,
+  section: "setup" | "khởi động" | "khám phá" | "luyện tập" | "vận dụng" | "shdc_shl" | "final",
+  context?: any,
+  duration?: string,
+  customInstructions?: string,
+  tasks?: Array<{ name: string; description: string }>,
+  month?: number,
+  activitySuggestions?: { shdc?: string; hdgd?: string; shl?: string },
+  model?: string
+): Promise<{ success: boolean; data?: any; error?: string }> {
+  try {
+    const basePrompt = getKHDHPrompt(
+      grade,
+      lessonTopic,
+      duration || "2 tiết",
+      customInstructions,
+      tasks,
+      month,
+      activitySuggestions
+    );
+
+    let specificPrompt = "";
+    let outputFormat = "";
+
+    switch (section) {
+      case "setup":
+        specificPrompt = `NHIỆM VỤ: Hãy tạo phần MỤC TIÊU và CHUẨN BỊ cho bài học này.`;
+        outputFormat = `{
+          "ma_chu_de": "...",
+          "ten_bai": "...",
+          "muc_tieu_kien_thuc": "...",
+          "muc_tieu_nang_luc": "...",
+          "muc_tieu_pham_chat": "...",
+          "gv_chuan_bi": "...",
+          "hs_chuan_bi": "...",
+          "tich_hop_nls": "...",
+          "tich_hop_dao_duc": "..."
+        }`;
+        break;
+      case "khởi động":
+      case "khám phá":
+      case "luyện tập":
+      case "vận dụng":
+        const sectionKey = section === "khởi động" ? "hoat_dong_khoi_dong" :
+          section === "khám phá" ? "hoat_dong_kham_pha" :
+            section === "luyện tập" ? "hoat_dong_luyen_tap" : "hoat_dong_van_dung";
+
+        specificPrompt = `NHIỆM VỤ: Hãy thiết kế CHI TIẾT hoạt động [${section.toUpperCase()}].
+        Lưu ý: Dựa trên Mục tiêu bài học: ${context?.muc_tieu_kien_thuc || ""}.
+        Bắt buộc sử dụng định dạng [COT_1]...[/COT_1] và [COT_2]...[/COT_2].`;
+
+        outputFormat = `{
+          "${sectionKey}": "[COT_1]...[/COT_1]\\n\\n[COT_2]...[/COT_2]"
+        }`;
+        break;
+      case "shdc_shl":
+        specificPrompt = `NHIỆM VỤ: Hãy thiết kế phần SINH HOẠT DƯỚI CỜ (SHDC) và SINH HOẠT LỚP (SHL) chi tiết cho 4 tuần của chủ đề này.`;
+        outputFormat = `{
+          "shdc": "...",
+          "shl": "..."
+        }`;
+        break;
+      case "final":
+        specificPrompt = `NHIỆM VỤ: Hãy tạo phần HỒ SƠ DẠY HỌC (Phụ lục, Phiếu học tập, Rubric) và HƯỚNG DẪN VỀ NHÀ.`;
+        outputFormat = `{
+          "ho_so_day_hoc": "...",
+          "huong_dan_ve_nha": "..."
+        }`;
+        break;
+    }
+
+    const finalPrompt = `${basePrompt}\n\n============================================================\nYÊU CẦU RIÊNG CHO GIAI ĐOẠN NÀY:\n${specificPrompt}\n\nCHỈ TRẢ VỀ JSON THEO CẤU TRÚC SAU:\n${outputFormat}`;
+
+    console.log(`[v0] Generating lesson section: ${section}...`);
+    const text = await callGeminiWithRetry(finalPrompt, model || "gemini-2.0-flash-exp");
+    const data = parseGeminiJSON(text);
+
+    return { success: true, data };
+  } catch (error: any) {
+    console.error(`[v0] Error generating ${section}:`, error.message);
+    return { success: false, error: error.message };
   }
 }
 
@@ -635,15 +773,18 @@ export async function checkApiKeyStatus(): Promise<{
   configured: boolean;
   primaryKey: boolean;
   backupKey: boolean;
+  backupKey2: boolean;
   error?: string;
 }> {
   const primaryKey = process.env.GEMINI_API_KEY;
   const backupKey = process.env.GEMINI_API_KEY_2;
+  const backupKey3 = process.env.GEMINI_API_KEY_3;
 
   const hasPrimary = !!(primaryKey && primaryKey.trim() !== "");
   const hasBackup = !!(backupKey && backupKey.trim() !== "");
+  const hasBackup3 = !!(backupKey3 && backupKey3.trim() !== "");
 
-  if (!hasPrimary && !hasBackup) {
+  if (!hasPrimary && !hasBackup && !hasBackup3) {
     return {
       configured: false,
       primaryKey: false,
@@ -657,6 +798,7 @@ export async function checkApiKeyStatus(): Promise<{
     configured: true,
     primaryKey: hasPrimary,
     backupKey: hasBackup,
+    backupKey2: hasBackup3,
   };
 }
 
@@ -664,7 +806,8 @@ export async function generateAssessmentPlan(
   grade: string,
   term: string,
   productType: string,
-  topic: string
+  topic: string,
+  model?: string
 ): Promise<{
   success: boolean;
   data?: {
@@ -691,7 +834,7 @@ export async function generateAssessmentPlan(
     const prompt = getAssessmentPrompt(grade, term, productType, topic);
     console.log("[v0] Calling Gemini API for Assessment Plan...");
 
-    const text = await callGeminiWithRetry(prompt);
+    const text = await callGeminiWithRetry(prompt, model || "gemini-1.5-flash");
     console.log("[v0] Assessment Plan response received, length:", text.length);
 
     const data = parseGeminiJSON(text);
@@ -714,6 +857,62 @@ export async function generateAssessmentPlan(
     return {
       success: false,
       error: error?.message || "Lỗi khi tạo kế hoạch kiểm tra",
+    };
+  }
+}
+
+export async function generateNCBH(
+  grade: string,
+  topic: string,
+  customInstructions?: string,
+  model?: string
+): Promise<{
+  success: boolean;
+  data?: any;
+  error?: string;
+}> {
+  const apiKeys = getApiKeys();
+
+  if (apiKeys.length === 0) {
+    return {
+      success: false,
+      error: "API Key chưa được cấu hình",
+    };
+  }
+
+  try {
+    let prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nTHÔNG TIN ĐẦU VÀO:\n- Khối: ${grade}\n- Tên bài học nghiên cứu: ${topic}`;
+
+    if (customInstructions && customInstructions.trim()) {
+      prompt += `\n- Ghi chú/Tình huống quan sát thực tế: ${customInstructions}`;
+    }
+
+    console.log("[v0] Calling Gemini API for NCBH...");
+    const text = await callGeminiWithRetry(prompt, model || "gemini-2.0-flash-exp");
+    console.log("[v0] NCBH response received, length:", text.length);
+
+    const data = parseGeminiJSON(text);
+    console.log("[v0] NCBH JSON parsed successfully");
+
+    return {
+      success: true,
+      data: {
+        ten_bai: data.ten_bai || topic,
+        ly_do_chon: data.ly_do_chon || "",
+        muc_tieu: data.muc_tieu || "",
+        chuoi_hoat_dong: data.chuoi_hoat_dong || "",
+        phuong_an_ho_tro: data.phuong_an_ho_tro || "",
+        chia_se_nguoi_day: data.chia_se_nguoi_day || "",
+        nhan_xet_nguoi_du: data.nhan_xet_nguoi_du || "",
+        nguyen_nhan_giai_phap: data.nguyen_nhan_giai_phap || "",
+        bai_hoc_kinh_nghiem: data.bai_hoc_kinh_nghiem || "",
+      },
+    };
+  } catch (error: any) {
+    console.error("[v0] NCBH generation error:", error.message);
+    return {
+      success: false,
+      error: error?.message || "Lỗi khi tạo nội dung Nghiên cứu bài học",
     };
   }
 }

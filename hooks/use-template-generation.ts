@@ -2,14 +2,18 @@ import { useState } from "react";
 import {
   generateMeetingMinutes,
   generateLessonPlan,
+  generateLessonSection,
   generateEventScript,
   auditLessonPlan,
+  generateNCBH as generateNCBHAction,
+  generateAIContent,
 } from "@/lib/actions/gemini";
 import type {
   MeetingResult,
   LessonResult,
   EventResult,
   LessonTask,
+  NCBHResult,
 } from "@/lib/types";
 import type { PPCTItem } from "@/lib/template-storage";
 
@@ -21,38 +25,21 @@ export function useTemplateGeneration() {
     month: string,
     session: string,
     keyContent: string,
-    conclusion?: string
+    model?: string
   ) => {
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await generateMeetingMinutes(month, session, keyContent);
-
+      const result = await generateMeetingMinutes(month, session, keyContent, model);
       if (result.success && result.data) {
-        // Manually merging conclusion if needed, although gemini might not return it
-        // The original code passed 'meetingConclusion' to generateMeetingMinutes but
-        // looking at gemini.ts signature: generateMeetingMinutes(month, session, keyContent)
-        // It seems the original generic call might have been slightly different or I missed a parameter update.
-        // I will adhere to the gemini.ts signature I saw.
-        // Wait, looking at TemplateEngine.tsx line 400:
-        // generateMeetingMinutes(selectedMonth, selectedSession, meetingKeyContent, meetingConclusion)
-        // But gemini.ts signature was (month, session, keyContent).
-        // This suggests there might be a discrepancy or I misread gemini.ts.
-        // Let's assume the component wants to inject the conclusion into the result locally.
-
-        const enhancedData: MeetingResult = {
-          ...result.data,
-          ket_luan_cuoc_hop: conclusion || "",
-        };
-        return { success: true, data: enhancedData };
+        return { success: true, data: result.data as MeetingResult };
       } else {
-        setError(result.error || "Lỗi khi tạo biên bản");
+        setError(result.error || "Lỗi khi tạo biên bản họp");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
-      const msg = err.message || "Lỗi không xác định";
-      setError(msg);
-      return { success: false, error: msg };
+      setError(err.message || "Lỗi không xác định");
+      return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);
     }
@@ -68,7 +55,9 @@ export function useTemplateGeneration() {
     ppctData: PPCTItem[],
     distribution?: Record<string, number>,
     suggestions?: { shdc?: string; hdgd?: string; shl?: string },
-    chuDeInfo?: { shdc: number; hdgd: number; shl: number; tong_tiet: number; hoat_dong?: string[] } | null
+    chuDeInfo?: { shdc: number; hdgd: number; shl: number; tong_tiet: number; hoat_dong?: string[] } | null,
+    model?: string,
+    image?: { mimeType: string; data: string }
   ) => {
     setIsGenerating(true);
     setError(null);
@@ -77,7 +66,6 @@ export function useTemplateGeneration() {
     let fullInstructions = customInstructions || "";
     const selectedTasks = tasks.filter((t) => t.selected);
 
-    // Add period distribution info to instructions if available
     if (chuDeInfo && fullPlanMode) {
       fullInstructions += `\n\n=== PHÂN PHỐI TIẾT THEO PPCT ===
 Tổng số tiết của chủ đề: ${chuDeInfo.tong_tiet} tiết
@@ -85,7 +73,13 @@ Tổng số tiết của chủ đề: ${chuDeInfo.tong_tiet} tiết
 - Hoạt động giáo dục theo chủ đề (HĐGD): ${chuDeInfo.hdgd} tiết  
 - Sinh hoạt lớp (SHL): ${chuDeInfo.shl} tiết
 
-YÊU CẦU: Hãy thiết kế KHBD đầy đủ bao gồm cả 3 loại hoạt động trên với thời lượng tương ứng.`;
+YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT): 
+- Đây là Kế hoạch bài dạy chuyên sâu cấp quốc gia. Yêu cầu nội dung phải CỰC KỲ CHI TIẾT, HAY và SÁNG TẠO cho từng hoạt động.
+- Độ dài sản phẩm cuối cùng khi xuất ra Word phải đạt TỐI THIỂU 12 TRANG A4. 
+- Hãy mô tả kỹ lưỡng kịch bản dẫn dắt của giáo viên (GV), lời giảng chi tiết, các câu hỏi gợi mở "chạm" đến tư duy HS, các tình huống giả định thực tế và cách GV điều phối lớp học.
+- Mỗi bước trong chuỗi hoạt động 5512 (Chuyển giao, Thực hiện, Báo cáo, Kết luận) phải được viết đầy đủ, không bỏ sót bất kỳ chi tiết sư phạm nào.
+- Đảm bảo tính kết nối giữa 3 loại hoạt động: SHDC, HĐGD và SHL để tạo thành một chủ đề thống nhất, giàu tính giáo dục.
+`;
 
       if (chuDeInfo.hoat_dong && chuDeInfo.hoat_dong.length > 0) {
         fullInstructions += `\n\nCác hoạt động gợi ý từ SGK:\n${chuDeInfo.hoat_dong.map((h, i) => `${i + 1}. ${h}`).join('\n')}`;
@@ -100,37 +94,36 @@ YÊU CẦU: Hãy thiết kế KHBD đầy đủ bao gồm cả 3 loại hoạt �
         )
         .join("\n\n");
 
-      fullInstructions += `\n\n=== CÁC NHIỆM VỤ CẦN THIẾT KẾ ===\n${tasksPrompt}\n\nYÊU CẦU: Hãy thiết kế tiến trình dạy học RIÊNG CHO TỪNG NHIỆM VỤ. Mỗi nhiệm vụ cần có đầy đủ 4 bước (Chuyển giao - Thực hiện - Báo cáo - Kết luận). Trình bày theo cấu trúc:\n\nNHIỆM VỤ 1: [Tên]\n- Nội dung nhiệm vụ: [Chi tiết]\n- Tiến trình thực hiện:\n  + Bước 1: Chuyển giao nhiệm vụ...\n  + Bước 2: Thực hiện nhiệm vụ...\n  + Bước 3: Báo cáo, thảo luận...\n  + Bước 4: Kết luận, nhận định...\n\n(Tương tự cho các nhiệm vụ tiếp theo)`;
+      fullInstructions += `\n\n=== CÁC NHIỆM VỤ CẦN THIẾT KẾ ===\n${tasksPrompt}\n\nYÊU CẦU: Hãy thiết kế tiến trình dạy học RIÊNG CHO TỪNG NHIỆM VỤ. Mỗi nhiệm vụ cần có đầy đủ 4 bước (Chuyển giao - Thực hiện - Báo cáo - Kết luận).`;
     }
 
-    // Attempt to find month from PPCT data
+    // Attempt to find month
     let foundMonth: number | undefined = undefined;
     if (ppctData && ppctData.length > 0) {
-      const match = ppctData.find(
-        (item) =>
-          item.theme.toLowerCase().includes(topic.toLowerCase()) ||
-          topic.toLowerCase().includes(item.theme.toLowerCase())
+      const match = ppctData.find(item =>
+        item.theme.toLowerCase().includes(topic.toLowerCase()) ||
+        topic.toLowerCase().includes(item.theme.toLowerCase())
       );
-      if (match && match.month) {
-        foundMonth = Number.parseInt(match.month);
-      }
+      if (match && match.month) foundMonth = Number.parseInt(match.month);
     }
 
     try {
-      const simplifiedTasks = selectedTasks.map((t) => ({
+      const simplifiedTasks = selectedTasks.map(t => ({
         name: t.name,
-        description: `${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`,
+        description: `${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`
       }));
 
       const result = await generateLessonPlan(
         grade,
         topic,
         fullPlanMode,
-        fullPlanMode ? `${duration}` : undefined, // Keep exact duration format
+        duration,
         fullInstructions,
         simplifiedTasks,
         foundMonth,
-        suggestions
+        suggestions,
+        model,
+        image
       );
 
       if (result.success && result.data) {
@@ -149,30 +142,17 @@ YÊU CẦU: Hãy thiết kế KHBD đầy đủ bao gồm cả 3 loại hoạt �
 
   const generateEvent = async (
     grade: string,
-    month: string,
     theme: string,
-    instructions: string,
-    budget?: string,
-    checklist?: string,
-    evaluation?: string
+    customInstructions?: string
   ) => {
     setIsGenerating(true);
     setError(null);
-
     try {
-      const result = await generateEventScript(grade, theme, instructions);
-
+      const result = await generateEventScript(grade, theme, customInstructions);
       if (result.success && result.data) {
-        // Inject local data
-        const enhancedData: EventResult = {
-          ...result.data,
-          du_toan_kinh_phi: budget,
-          checklist_chuan_bi: checklist,
-          danh_gia_sau_hoat_dong: evaluation,
-        };
-        return { success: true, data: enhancedData };
+        return { success: true, data: result.data as EventResult };
       } else {
-        setError(result.error || "Lỗi khi tạo kịch bản");
+        setError(result.error || "Lỗi khi tạo kịch bản sự kiện");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
@@ -183,14 +163,47 @@ YÊU CẦU: Hãy thiết kế KHBD đầy đủ bao gồm cả 3 loại hoạt �
     }
   };
 
-  const auditLesson = async (lessonData: any, grade: string, topic: string) => {
+  const generateNCBH = async (
+    grade: string,
+    topic: string,
+    phase: number,
+    context?: any
+  ) => {
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await auditLessonPlan(lessonData, grade, topic);
-      return result;
+      const result = await generateNCBHAction(grade, topic, phase, context);
+      if (result.success && result.data) {
+        return { success: true, data: result.data as NCBHResult };
+      } else {
+        setError(result.error || "Lỗi khi tạo nội dung NCBH");
+        return { success: false, error: result.error };
+      }
     } catch (err: any) {
-      setError(err.message || "Lỗi kiểm định");
+      setError(err.message || "Lỗi không xác định");
+      return { success: false, error: err.message };
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const refineContent = async (
+    content: string,
+    instruction: string
+  ) => {
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const prompt = `Bạn là một biên tập viên giáo dục chuyên nghiệp. Hãy chỉnh sửa nội dung sau đây dựa trên yêu cầu.\n\nNỘI DUNG GỐC:\n${content}\n\nYÊU CẦU CHỈNH SỬA: ${instruction}\n\nLưu ý: Chỉ trả về nội dung đã chỉnh sửa, không kèm lời dẫn.`;
+      const result = await generateAIContent(prompt);
+      if (result.success && result.content) {
+        return { success: true, data: result.content };
+      } else {
+        setError(result.error || "Lỗi khi chỉnh sửa nội dung");
+        return { success: false, error: result.error };
+      }
+    } catch (err: any) {
+      setError(err.message || "Lỗi không xác định");
       return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);
@@ -200,10 +213,10 @@ YÊU CẦU: Hãy thiết kế KHBD đầy đủ bao gồm cả 3 loại hoạt �
   return {
     isGenerating,
     error,
-    setError,
     generateMeeting,
     generateLesson,
     generateEvent,
-    auditLesson,
+    generateNCBH,
+    refineContent,
   };
 }

@@ -27,6 +27,8 @@ import {
     X,
     ChevronUp,
     ChevronDown,
+    Zap,
+    Upload,
 } from "lucide-react";
 import type { LessonResult, LessonTask } from "@/lib/types";
 import type { PPCTChuDe } from "@/lib/data/ppct-database";
@@ -74,6 +76,11 @@ interface LessonTabProps {
     auditResult: string | null;
     setSuccess: (msg: string) => void;
     lessonTopic: string;
+    selectedModel: string;
+    setSelectedModel: (value: string) => void;
+    lessonImage: { mimeType: string; data: string } | null;
+    setLessonImage: (value: { mimeType: string; data: string } | null) => void;
+    onRefineSection: (content: string, instruction: string) => Promise<{ success: boolean; content?: string }>;
 }
 
 export function LessonTab({
@@ -118,7 +125,117 @@ export function LessonTab({
     auditResult,
     setSuccess,
     lessonTopic,
+    selectedModel,
+    setSelectedModel,
+    lessonImage,
+    setLessonImage,
+    onRefineSection,
 }: LessonTabProps) {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = (reader.result as string).split(',')[1];
+                setLessonImage({
+                    mimeType: file.type,
+                    data: base64String
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // AI Section Editor Component
+    const AISectionEditor = ({
+        label,
+        value,
+        onChange,
+        bgClass,
+        field
+    }: {
+        label: string;
+        value: string;
+        onChange: (value: string) => void;
+        bgClass: string;
+        field: string;
+    }) => {
+        const [isEditingWithAI, setIsEditingWithAI] = React.useState(false);
+
+        const handleAIAction = async (actionPrompt: string) => {
+            setIsEditingWithAI(true);
+            try {
+                setSuccess(`Đang tối ưu phần nội dung này...`);
+                const result = await onRefineSection(value, actionPrompt);
+                if (result.success && result.content) {
+                    onChange(result.content);
+                    setSuccess("Đã cập nhật nội dung thành công!");
+                }
+            } finally {
+                setIsEditingWithAI(false);
+            }
+        };
+
+        return (
+            <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <Label className="text-slate-700 font-medium">{label}</Label>
+                    <div className="flex gap-1">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Làm sôi nổi hơn"
+                            onClick={() => handleAIAction("Làm cho hoạt động này sinh động và sôi nổi hơn")}
+                            className="h-7 w-7 p-0 text-orange-500 hover:text-orange-600"
+                        >
+                            <Zap className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Thêm trò chơi"
+                            onClick={() => handleAIAction("Thêm một trò chơi nhỏ khởi động hoặc củng cố")}
+                            className="h-7 w-7 p-0 text-blue-500 hover:text-blue-600"
+                        >
+                            <Plus className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Tối ưu năng lực số"
+                            onClick={() => handleAIAction("Tối ưu hóa phần tích hợp năng lực số")}
+                            className="h-7 w-7 p-0 text-indigo-500 hover:text-indigo-600"
+                        >
+                            <Info className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(value)}
+                            className="h-7 w-7 p-0"
+                        >
+                            <Copy className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+                <div className="relative">
+                    <Textarea
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        className={`min-h-[100px] ${bgClass} ${isEditingWithAI ? 'opacity-50' : ''}`}
+                    />
+                    {isEditingWithAI && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-white/20 backdrop-blur-[1px]">
+                            <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
     // State for expand/collapse activity suggestion boxes
     const [expandedActivities, setExpandedActivities] = React.useState<Record<string, boolean>>({
         shdc: true,
@@ -275,28 +392,77 @@ export function LessonTab({
                     </div>
                 </div>
 
-                {/* Theme Input */}
+                {/* Title Selection */}
                 <div className="space-y-2">
-                    <Label>Tên Chủ Đề (Tự động điền)</Label>
+                    <Label>Tên Chủ Đề (Tự động điền theo lựa chọn phía trên)</Label>
                     <Input
                         value={lessonAutoFilledTheme}
                         onChange={(e) => setLessonAutoFilledTheme(e.target.value)}
-                        placeholder="Tên chủ đề sẽ tự động hiển thị..."
+                        placeholder="Tên chủ đề sẽ tự động hiển thị hoặc bạn có thể tự nhập..."
+                        className="bg-slate-50 border-slate-200"
                     />
                 </div>
 
-                {/* Full Plan Mode Toggle */}
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
-                    <div className="space-y-1">
-                        <Label className="text-base">Chế độ KHBD Đầy đủ</Label>
-                        <p className="text-sm text-muted-foreground">
-                            Tạo kế hoạch chi tiết bao gồm mục tiêu, thiết bị, SHDC, HĐGD, SHL...
-                        </p>
+                {/* OCR & Full Plan Options */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className={`p-4 rounded-lg border transition-all ${lessonImage ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                            <Label className="text-base flex items-center gap-2">
+                                <Upload className="h-4 w-4 text-indigo-600" />
+                                OCR: Quét ảnh SGK
+                            </Label>
+                            {lessonImage && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 text-red-500"
+                                    onClick={() => setLessonImage(null)}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                        />
+                        {lessonImage ? (
+                            <div className="flex items-center gap-2 bg-white p-2 rounded border border-indigo-100">
+                                <div className="h-10 w-10 rounded bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                    <BookOpen className="h-5 w-5" />
+                                </div>
+                                <div className="flex-1 overflow-hidden">
+                                    <p className="text-xs font-medium truncate">Đã tải ảnh SGK</p>
+                                    <p className="text-[10px] text-muted-foreground">Sử dụng để OCR bóc tách nội dung</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                className="w-full border-dashed bg-white"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <Plus className="h-4 w-4 mr-2" />
+                                Tải ảnh trang SGK
+                            </Button>
+                        )}
                     </div>
-                    <Switch
-                        checked={lessonFullPlanMode}
-                        onCheckedChange={setLessonFullPlanMode}
-                    />
+
+                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
+                        <div className="space-y-1">
+                            <Label className="text-base">Chế độ KHBD Đầy đủ</Label>
+                            <p className="text-sm text-muted-foreground">
+                                Đầy đủ mục tiêu, hoạt động...
+                            </p>
+                        </div>
+                        <Switch
+                            checked={lessonFullPlanMode}
+                            onCheckedChange={setLessonFullPlanMode}
+                        />
+                    </div>
                 </div>
 
                 {/* Period Distribution - Show when a chu de is selected */}
@@ -641,149 +807,56 @@ export function LessonTab({
                             </span>
                         </div>
 
-                        {/* Integration results - editable */}
+                        {/* Integration results - editable with AI Editor */}
                         {lessonResult.tich_hop_nls && (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-blue-700 font-medium">
-                                        Tích hợp Năng lực số (NLS):
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => copyToClipboard(lessonResult.tich_hop_nls)}
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                                <Textarea
-                                    value={lessonResult.tich_hop_nls}
-                                    onChange={(e) =>
-                                        setLessonResult({
-                                            ...lessonResult,
-                                            tich_hop_nls: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[120px] bg-blue-50"
-                                />
-                            </div>
+                            <AISectionEditor
+                                label="Tích hợp Năng lực số (NLS):"
+                                value={lessonResult.tich_hop_nls}
+                                onChange={(val) => setLessonResult({ ...lessonResult, tich_hop_nls: val })}
+                                bgClass="bg-blue-50"
+                                field="tich_hop_nls"
+                            />
                         )}
 
                         {lessonResult.tich_hop_dao_duc && (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-purple-700 font-medium">
-                                        Tích hợp Giáo dục đạo đức:
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            copyToClipboard(lessonResult.tich_hop_dao_duc)
-                                        }
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                                <Textarea
-                                    value={lessonResult.tich_hop_dao_duc}
-                                    onChange={(e) =>
-                                        setLessonResult({
-                                            ...lessonResult,
-                                            tich_hop_dao_duc: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[120px] bg-purple-50"
-                                />
-                            </div>
+                            <AISectionEditor
+                                label="Tích hợp Giáo dục đạo đức:"
+                                value={lessonResult.tich_hop_dao_duc}
+                                onChange={(val) => setLessonResult({ ...lessonResult, tich_hop_dao_duc: val })}
+                                bgClass="bg-purple-50"
+                                field="tich_hop_dao_duc"
+                            />
                         )}
 
-                        {/* Full plan results - editable */}
+                        {/* Full plan results - editable with AI Editor */}
                         {lessonFullPlanMode && lessonResult.muc_tieu_kien_thuc && (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-slate-700 font-medium">
-                                        Mục tiêu kiến thức:
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            copyToClipboard(lessonResult.muc_tieu_kien_thuc || "")
-                                        }
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                                <Textarea
-                                    value={lessonResult.muc_tieu_kien_thuc || ""}
-                                    onChange={(e) =>
-                                        setLessonResult({
-                                            ...lessonResult,
-                                            muc_tieu_kien_thuc: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[100px] bg-slate-50"
-                                />
-                            </div>
+                            <AISectionEditor
+                                label="Mục tiêu kiến thức:"
+                                value={lessonResult.muc_tieu_kien_thuc || ""}
+                                onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_kien_thuc: val })}
+                                bgClass="bg-slate-50"
+                                field="muc_tieu_kien_thuc"
+                            />
                         )}
 
                         {lessonFullPlanMode && lessonResult.muc_tieu_nang_luc && (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-slate-700 font-medium">
-                                        Mục tiêu năng lực:
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            copyToClipboard(lessonResult.muc_tieu_nang_luc || "")
-                                        }
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                                <Textarea
-                                    value={lessonResult.muc_tieu_nang_luc || ""}
-                                    onChange={(e) =>
-                                        setLessonResult({
-                                            ...lessonResult,
-                                            muc_tieu_nang_luc: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[100px] bg-slate-50"
-                                />
-                            </div>
+                            <AISectionEditor
+                                label="Mục tiêu năng lực:"
+                                value={lessonResult.muc_tieu_nang_luc || ""}
+                                onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_nang_luc: val })}
+                                bgClass="bg-slate-50"
+                                field="muc_tieu_nang_luc"
+                            />
                         )}
 
                         {lessonFullPlanMode && lessonResult.muc_tieu_pham_chat && (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-slate-700 font-medium">
-                                        Mục tiêu phẩm chất:
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            copyToClipboard(lessonResult.muc_tieu_pham_chat || "")
-                                        }
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                                <Textarea
-                                    value={lessonResult.muc_tieu_pham_chat || ""}
-                                    onChange={(e) =>
-                                        setLessonResult({
-                                            ...lessonResult,
-                                            muc_tieu_pham_chat: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[100px] bg-slate-50"
-                                />
-                            </div>
+                            <AISectionEditor
+                                label="Mục tiêu phẩm chất:"
+                                value={lessonResult.muc_tieu_pham_chat || ""}
+                                onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_pham_chat: val })}
+                                bgClass="bg-slate-50"
+                                field="muc_tieu_pham_chat"
+                            />
                         )}
 
                         {lessonFullPlanMode &&
@@ -914,6 +987,80 @@ export function LessonTab({
                         )}
 
 
+
+                        {lessonFullPlanMode && (
+                            <div className="space-y-6 pt-4 border-t border-dashed">
+                                <Label className="text-slate-800 font-bold block bg-slate-100 p-2 rounded">
+                                    IV. TIẾN TRÌNH DẠY HỌC (Bảng 2 cột chuẩn 5512)
+                                </Label>
+
+                                {lessonResult.hoat_dong_khoi_dong && (
+                                    <AISectionEditor
+                                        label="1. Hoạt động Khởi động:"
+                                        value={lessonResult.hoat_dong_khoi_dong}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, hoat_dong_khoi_dong: val })}
+                                        bgClass="bg-white border-indigo-100"
+                                        field="hoat_dong_khoi_dong"
+                                    />
+                                )}
+
+                                {lessonResult.hoat_dong_kham_pha && (
+                                    <AISectionEditor
+                                        label="2. Hoạt động Khám phá:"
+                                        value={lessonResult.hoat_dong_kham_pha}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, hoat_dong_kham_pha: val })}
+                                        bgClass="bg-white border-indigo-100"
+                                        field="hoat_dong_kham_pha"
+                                    />
+                                )}
+
+                                {lessonResult.hoat_dong_luyen_tap && (
+                                    <AISectionEditor
+                                        label="3. Hoạt động Luyện tập:"
+                                        value={lessonResult.hoat_dong_luyen_tap}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, hoat_dong_luyen_tap: val })}
+                                        bgClass="bg-white border-indigo-100"
+                                        field="hoat_dong_luyen_tap"
+                                    />
+                                )}
+
+                                {lessonResult.hoat_dong_van_dung && (
+                                    <AISectionEditor
+                                        label="4. Hoạt động Vận dụng:"
+                                        value={lessonResult.hoat_dong_van_dung}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, hoat_dong_van_dung: val })}
+                                        bgClass="bg-white border-indigo-100"
+                                        field="hoat_dong_van_dung"
+                                    />
+                                )}
+
+                                <div className="space-y-4 pt-4 border-t border-dashed">
+                                    <Label className="text-slate-800 font-bold block bg-slate-100 p-2 rounded">
+                                        V. PHỤ LỤC & TỔNG KẾT
+                                    </Label>
+
+                                    {lessonResult.ho_so_day_hoc && (
+                                        <AISectionEditor
+                                            label="Hồ sơ dạy học (Phiếu học tập, Rubric, Phụ lục):"
+                                            value={lessonResult.ho_so_day_hoc}
+                                            onChange={(val) => setLessonResult({ ...lessonResult, ho_so_day_hoc: val })}
+                                            bgClass="bg-green-50/30"
+                                            field="ho_so_day_hoc"
+                                        />
+                                    )}
+
+                                    {lessonResult.huong_dan_ve_nha && (
+                                        <AISectionEditor
+                                            label="Hướng dẫn về nhà:"
+                                            value={lessonResult.huong_dan_ve_nha}
+                                            onChange={(val) => setLessonResult({ ...lessonResult, huong_dan_ve_nha: val })}
+                                            bgClass="bg-orange-50/30"
+                                            field="huong_dan_ve_nha"
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
                         {lessonFullPlanMode && lessonResult.shl && (
                             <div className="space-y-2">

@@ -87,10 +87,10 @@ export const PPCT_KHOI_10: PPCTKhoi = {
     {
       chu_de_so: 4,
       ten: "Chủ động, tự tin trong học tập và giao tiếp",
-      tong_tiet: 12,
-      shdc: 4,
-      hdgd: 4,
-      shl: 4,
+      tong_tiet: 15,
+      shdc: 5,
+      hdgd: 5,
+      shl: 5,
       hoat_dong: [
         "Tìm hiểu biểu hiện của sự chủ động trong các môi trường",
         "Tìm hiểu sự tự tin và thân thiện trong giao tiếp",
@@ -101,7 +101,7 @@ export const PPCT_KHOI_10: PPCTKhoi = {
         "Rèn luyện tính chủ động, tự tin trong cuộc sống"
       ],
       tuan_bat_dau: 12,
-      tuan_ket_thuc: 15,
+      tuan_ket_thuc: 16,
     },
     {
       chu_de_so: 5,
@@ -117,9 +117,8 @@ export const PPCT_KHOI_10: PPCTKhoi = {
         "Đề xuất biện pháp phát triển kinh tế gia đình",
         "Thực hiện trách nhiệm với gia đình và đánh giá"
       ],
-      tuan_bat_dau: 18,
-      tuan_ket_thuc: 21,
-      ghi_chu: "Tuần 16-17: Kiểm tra HKI",
+      tuan_bat_dau: 17,
+      tuan_ket_thuc: 20,
     },
     {
       chu_de_so: 6,
@@ -136,8 +135,8 @@ export const PPCT_KHOI_10: PPCTKhoi = {
         "Thực hiện kế hoạch tuyên truyền văn hóa ứng xử",
         "Tham gia kết nối cộng đồng và đánh giá"
       ],
-      tuan_bat_dau: 22,
-      tuan_ket_thuc: 24,
+      tuan_bat_dau: 21,
+      tuan_ket_thuc: 23,
     },
     {
       chu_de_so: 7,
@@ -153,8 +152,8 @@ export const PPCT_KHOI_10: PPCTKhoi = {
         "Xây dựng và thực hiện kế hoạch tuyên truyền bảo vệ cảnh quan",
         "Tuyên truyền bảo vệ cảnh quan thiên nhiên và đánh giá"
       ],
-      tuan_bat_dau: 25,
-      tuan_ket_thuc: 28,
+      tuan_bat_dau: 24,
+      tuan_ket_thuc: 27,
     },
     {
       chu_de_so: 8,
@@ -169,8 +168,8 @@ export const PPCT_KHOI_10: PPCTKhoi = {
         "Thực hiện các giải pháp bảo vệ môi trường tự nhiên",
         "Thực hiện bảo vệ môi trường tự nhiên ở địa phương và đánh giá"
       ],
-      tuan_bat_dau: 29,
-      tuan_ket_thuc: 31,
+      tuan_bat_dau: 28,
+      tuan_ket_thuc: 30,
     },
     {
       chu_de_so: 9,
@@ -185,8 +184,8 @@ export const PPCT_KHOI_10: PPCTKhoi = {
         "Lập kế hoạch và thực hiện trải nghiệm nghề",
         "Rèn luyện bản thân theo yêu cầu của nghề em quan tâm"
       ],
-      tuan_bat_dau: 32,
-      tuan_ket_thuc: 32,
+      tuan_bat_dau: 31,
+      tuan_ket_thuc: 31,
     },
     {
       chu_de_so: 10,
@@ -202,16 +201,16 @@ export const PPCT_KHOI_10: PPCTKhoi = {
         "Xây dựng kế hoạch rèn luyện bản thân theo định hướng nghề nghiệp",
         "Rèn luyện năng lực, phẩm chất theo kế hoạch"
       ],
-      tuan_bat_dau: 33,
-      tuan_ket_thuc: 34,
+      tuan_bat_dau: 32,
+      tuan_ket_thuc: 33,
     },
     {
       chu_de_so: 11,
       ten: "Lập kế hoạch học tập, rèn luyện theo định hướng nghề nghiệp",
-      tong_tiet: 3,
-      shdc: 1,
-      hdgd: 1,
-      shl: 1,
+      tong_tiet: 6,
+      shdc: 2,
+      hdgd: 2,
+      shl: 2,
       hoat_dong: [
         "Tìm hiểu hệ thống trường đào tạo liên quan đến nghề định chọn",
         "Tìm hiểu về tham vấn chọn nghề và định hướng học tập",
@@ -221,7 +220,7 @@ export const PPCT_KHOI_10: PPCTKhoi = {
         "Xây dựng kế hoạch học tập, rèn luyện bản thân theo nghề",
         "Học tập, rèn luyện theo định hướng nghề nghiệp và đánh giá"
       ],
-      tuan_bat_dau: 35,
+      tuan_bat_dau: 34,
       tuan_ket_thuc: 35,
     },
   ],
@@ -462,16 +461,16 @@ export const PPCT_KHOI_12: PPCTKhoi = {
     {
       chu_de_so: 4,
       ten: "Trách nhiệm với gia đình",
-      tong_tiet: 12,
-      shdc: 4,
-      hdgd: 4,
-      shl: 4,
+      tong_tiet: 15,
+      shdc: 5,
+      hdgd: 5,
+      shl: 5,
       hoat_dong: [
         "Thực hiện trách nhiệm của người trưởng thành trong gia đình",
         "Chuẩn bị tâm lý và kỹ năng khi sinh sống xa nhà"
       ],
       tuan_bat_dau: 14,
-      tuan_ket_thuc: 17,
+      tuan_ket_thuc: 18,
     },
     {
       chu_de_so: 5,
@@ -550,10 +549,10 @@ export const PPCT_KHOI_12: PPCTKhoi = {
     {
       chu_de_so: 10,
       ten: "Chào đón tương lai (Bước vào thế giới nghề nghiệp)",
-      tong_tiet: 6,
-      shdc: 2,
-      hdgd: 2,
-      shl: 2,
+      tong_tiet: 3,
+      shdc: 1,
+      hdgd: 1,
+      shl: 1,
       hoat_dong: [
         "Chuẩn bị hồ sơ ứng tuyển (Portfolio/CV)",
         "Thực hành phỏng vấn thử (Phương pháp STAR)",
@@ -565,10 +564,10 @@ export const PPCT_KHOI_12: PPCTKhoi = {
     {
       chu_de_so: 11,
       ten: "Xây dựng giá trị gia đình",
-      tong_tiet: 6,
-      shdc: 2,
-      hdgd: 2,
-      shl: 2,
+      tong_tiet: 3,
+      shdc: 1,
+      hdgd: 1,
+      shl: 1,
       hoat_dong: [
         "Xây dựng gia đình bền vững",
         "Tổ chức cuộc sống gia đình hạnh phúc"

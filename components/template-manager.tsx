@@ -38,6 +38,7 @@ import {
   Sparkles,
   CheckCircle,
   HelpCircle,
+  Zap,
 } from "lucide-react";
 import {
   saveTemplate,
@@ -93,6 +94,8 @@ export function TemplateManager({
     useState<TemplateInfo | null>(null);
   const [defaultAssessmentTemplate, setDefaultAssessmentTemplate] =
     useState<TemplateInfo | null>(null);
+  const [defaultNcbhTemplate, setDefaultNcbhTemplate] =
+    useState<TemplateInfo | null>(null);
 
   // Session templates state
   const [sessionMeetingTemplate, setSessionMeetingTemplate] =
@@ -102,6 +105,8 @@ export function TemplateManager({
   const [sessionLessonTemplate, setSessionLessonTemplate] =
     useState<TemplateInfo | null>(null);
   const [sessionAssessmentTemplate, setSessionAssessmentTemplate] =
+    useState<TemplateInfo | null>(null);
+  const [sessionNcbhTemplate, setSessionNcbhTemplate] =
     useState<TemplateInfo | null>(null);
 
   // PPCT state
@@ -143,19 +148,21 @@ export function TemplateManager({
     setIsLoading(true);
     try {
       // Load default templates
-      const [defaultMeeting, defaultEvent, defaultLesson, defaultAssessment] = await Promise.all([
+      const [defaultMeeting, defaultEvent, defaultLesson, defaultAssessment, defaultNcbh] = await Promise.all([
         getTemplate("default_meeting"),
         getTemplate("default_event"),
         getTemplate("default_lesson"),
         getTemplate("default_assessment"),
+        getTemplate("default_ncbh"),
       ]);
 
       // Load session templates
-      const [sessionMeeting, sessionEvent, sessionLesson, sessionAssessment] = await Promise.all([
+      const [sessionMeeting, sessionEvent, sessionLesson, sessionAssessment, sessionNcbh] = await Promise.all([
         getTemplate("meeting"),
         getTemplate("event"),
         getTemplate("lesson"),
         getTemplate("assessment"),
+        getTemplate("ncbh"),
       ]);
 
       if (defaultMeeting)
@@ -186,6 +193,13 @@ export function TemplateManager({
         });
       else setDefaultAssessmentTemplate(null);
 
+      if (defaultNcbh)
+        setDefaultNcbhTemplate({
+          name: defaultNcbh.name,
+          data: defaultNcbh.data,
+        });
+      else setDefaultNcbhTemplate(null);
+
       if (sessionMeeting)
         setSessionMeetingTemplate({
           name: sessionMeeting.name,
@@ -213,6 +227,13 @@ export function TemplateManager({
           data: sessionAssessment.data,
         });
       else setSessionAssessmentTemplate(null);
+
+      if (sessionNcbh)
+        setSessionNcbhTemplate({
+          name: sessionNcbh.name,
+          data: sessionNcbh.data,
+        });
+      else setSessionNcbhTemplate(null);
 
       // Show setup guide if no default templates exist
       if (!defaultMeeting && !defaultEvent && !defaultLesson) {
@@ -257,11 +278,13 @@ export function TemplateManager({
       await saveTemplate(type, file.name, arrayBuffer);
       await loadTemplates();
 
-      const templateName = type.includes("meeting")
-        ? "Biên bản Họp"
-        : type.includes("event")
-          ? "Kế hoạch Ngoại khóa"
-          : "Kế hoạch Bài dạy";
+      let templateName = "tài liệu";
+      if (type.includes("meeting")) templateName = "Biên bản Họp";
+      else if (type.includes("event")) templateName = "Kế hoạch Ngoại khóa";
+      else if (type.includes("lesson")) templateName = "Kế hoạch Bài dạy";
+      else if (type.includes("ncbh")) templateName = "Nghiên cứu Bài học";
+      else if (type.includes("assessment")) templateName = "Kế hoạch Kiểm tra";
+
       const isDefault = type.startsWith("default_");
       showMessage(
         "success",
@@ -291,11 +314,13 @@ export function TemplateManager({
       await deleteTemplate(type);
       await loadTemplates();
 
-      const templateName = type.includes("meeting")
-        ? "Biên bản Họp"
-        : type.includes("event")
-          ? "Kế hoạch Ngoại khóa"
-          : "Kế hoạch Bài dạy";
+      let templateName = "tài liệu";
+      if (type.includes("meeting")) templateName = "Biên bản Họp";
+      else if (type.includes("event")) templateName = "Kế hoạch Ngoại khóa";
+      else if (type.includes("lesson")) templateName = "Kế hoạch Bài dạy";
+      else if (type.includes("ncbh")) templateName = "Nghiên cứu Bài học";
+      else if (type.includes("assessment")) templateName = "Kế hoạch Kiểm tra";
+
       const isDefault = type.startsWith("default_");
       showMessage(
         "success",
@@ -808,6 +833,29 @@ export function TemplateManager({
     }
   };
 
+  const downloadNCBHWordTemplate = async () => {
+    try {
+      const { createNCBHTemplate } = await import("@/lib/docx-templates");
+      const blob = await createNCBHTemplate();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Mau-Nghien-cuu-Bai-hoc.docx";
+      a.click();
+      URL.revokeObjectURL(url);
+
+      // Also save to IDB as default_ncbh
+      const arrayBuffer = await blob.arrayBuffer();
+      await saveTemplate("default_ncbh" as any, "Mau_Nghien_Cuu_Bai_Hoc.docx", arrayBuffer);
+      await loadTemplates();
+
+      showMessage("success", "Đã tải và lưu mẫu Nghiên cứu Bài học");
+    } catch (error) {
+      console.error("Error creating NCBH template:", error);
+      showMessage("error", "Không thể tạo mẫu Word");
+    }
+  };
+
   // End of Word template download functions
 
   return (
@@ -836,18 +884,22 @@ export function TemplateManager({
           )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
-            <TabsList className="grid grid-cols-5 w-full">
+            <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
               <TabsTrigger value="default" className="gap-1.5 text-xs">
                 <Star className="w-3.5 h-3.5" />
                 Mẫu
               </TabsTrigger>
               <TabsTrigger value="session" className="gap-1.5 text-xs">
                 <FileText className="w-3.5 h-3.5" />
-                Mẫu Phiên
+                Phiên
               </TabsTrigger>
               <TabsTrigger value="ppct" className="gap-1.5 text-xs">
                 <BookOpen className="w-3.5 h-3.5" />
                 PPCT
+              </TabsTrigger>
+              <TabsTrigger value="ncbh" className="gap-1.5 text-xs">
+                <Zap className="w-3.5 h-3.5" />
+                NCBH
               </TabsTrigger>
               <TabsTrigger value="khtt" className="gap-1.5 text-xs">
                 <CheckCircle className="w-3.5 h-3.5" />
@@ -929,11 +981,31 @@ export function TemplateManager({
                   />
                   <TemplateCard
                     type="default_lesson"
-                    title="Mẫu Kế Hoạch Bài Dạy"
-                    description="Template mặc định cho kế hoạch giáo dục chủ đề"
+                    title="Mẫu KHBD (Bảng 2 Cột)"
+                    description="Mẫu Kế hoạch bài dạy chuẩn 2 cột (Xu hướng 2024-2025)"
                     template={defaultLessonTemplate}
                     isDefault
                   />
+                  <TemplateCard
+                    type="default_ncbh"
+                    title="Mẫu Nghiên Cứu Bài Học"
+                    description="Template mặc định cho hồ sơ & biên bản NCBH"
+                    template={defaultNcbhTemplate}
+                    isDefault
+                  />
+                  {!defaultNcbhTemplate && (
+                    <div className="flex justify-end mt-1 mb-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 bg-red-50 hover:bg-red-100 h-8 text-xs"
+                        onClick={downloadNCBHWordTemplate}
+                      >
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Tạo mẫu NCBH chuẩn
+                      </Button>
+                    </div>
+                  )}
                   <div className="pt-4 border-t border-dashed">
                     <TemplateCard
                       type="default_assessment"
@@ -993,6 +1065,12 @@ export function TemplateManager({
                     title="Mẫu Kế Hoạch Bài Dạy"
                     description="Template cho KHBD (phiên này)"
                     template={sessionLessonTemplate}
+                  />
+                  <TemplateCard
+                    type="ncbh"
+                    title="Mẫu Nghiên Cứu Bài Học"
+                    description="Template cho NCBH (phiên này)"
+                    template={sessionNcbhTemplate}
                   />
                   <TemplateCard
                     type="assessment"
@@ -1246,6 +1324,65 @@ export function TemplateManager({
               </div>
             </TabsContent>
 
+            {/* NCBH Tab */}
+            <TabsContent value="ncbh" className="space-y-4 mt-4">
+              <div className="space-y-4">
+                <div className="p-4 bg-rose-50 rounded-xl border border-rose-200">
+                  <h3 className="font-semibold text-rose-900 text-sm mb-2 flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    Mẫu Nghiên Cứu Bài Học (NCBH)
+                  </h3>
+                  <p className="text-xs text-rose-700 mb-3">
+                    Hồ sơ NCBH kết hợp giữa Giai đoạn 1 (Thiết kế) và Giai đoạn 2 & 3 (Phân tích bài học).
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 gap-3">
+                  <Card className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-800">Mẫu NCBH mặc định (Code)</h4>
+                        <p className="text-xs text-gray-500 mt-1">
+                          File Word chuẩn 2024-2025 với đầy đủ biến placeholder.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={downloadNCBHWordTemplate}
+                        className="bg-rose-600 hover:bg-rose-700 text-white"
+                        size="sm"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Tải mẫu chuẩn
+                      </Button>
+                    </div>
+                  </Card>
+
+                  {defaultNcbhTemplate && (
+                    <Card className="p-4 bg-green-50 border-green-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-green-600" />
+                          <div>
+                            <h4 className="font-medium text-sm text-green-800">Đã kích hoạt mẫu mặc định</h4>
+                            <p className="text-xs text-green-600">{defaultNcbhTemplate.name}</p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete("default_ncbh" as any)}
+                          className="text-red-600 border-red-200 h-8 text-xs"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 mr-1" />
+                          Xóa
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
             {/* Word Template Guide Tab */}
             <TabsContent value="guide" className="space-y-4 mt-4">
               <div className="space-y-4">
@@ -1324,99 +1461,80 @@ export function TemplateManager({
                 </div>
 
                 {/* Variables for Lesson Plan */}
-                <div className="space-y-2">
-                  <h4 className="font-semibold text-sm text-gray-800 flex items-center gap-2">
-                    <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">
-                      Kế hoạch Bài dạy (KHBD)
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-sm text-gray-800 flex items-center gap-2">
+                      <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">
+                        Kế hoạch Bài dạy (KHBD 2 Cột)
+                      </span>
+                    </h4>
+                    <span className="text-[10px] text-amber-600 font-medium px-2 py-0.5 bg-amber-50 rounded border border-amber-100">
+                      Khuyên dùng 2024-2025
                     </span>
-                  </h4>
-                  <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono">
-                    <p>
-                      <span className="text-green-600">{"{{ten_truong}}"}</span>{" "}
-                      - Tên trường
-                    </p>
-                    <p>
-                      <span className="text-green-600">
-                        {"{{to_chuyen_mon}}"}
-                      </span>{" "}
-                      - Tên tổ chuyên môn
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{giao_vien}}"}</span>{" "}
-                      - Họ tên giáo viên
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{khoi_lop}}"}</span> -
-                      Khối lớp (10, 11, 12)
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{ten_chu_de}}"}</span>{" "}
-                      - Tên chủ đề
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{so_tiet}}"}</span> -
-                      Số tiết
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{thoi_gian}}"}</span>{" "}
-                      - Thời gian thực hiện
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{muc_tieu}}"}</span> -
-                      Mục tiêu (năng lực, phẩm chất)
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{thiet_bi}}"}</span> -
-                      Thiết bị dạy học
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{tien_trinh}}"}</span>{" "}
-                      - Tiến trình dạy học (AI tạo)
-                    </p>
-                    <p>
-                      <span className="text-green-600">
-                        {"{{hoat_dong_khoi_dong}}"}
-                      </span>{" "}
-                      - Hoạt động khởi động
-                    </p>
-                    <p>
-                      <span className="text-green-600">
-                        {"{{hoat_dong_kham_pha}}"}
-                      </span>{" "}
-                      - Hoạt động khám phá
-                    </p>
-                    <p>
-                      <span className="text-green-600">
-                        {"{{hoat_dong_luyen_tap}}"}
-                      </span>{" "}
-                      - Hoạt động luyện tập
-                    </p>
-                    <p>
-                      <span className="text-green-600">
-                        {"{{hoat_dong_van_dung}}"}
-                      </span>{" "}
-                      - Hoạt động vận dụng
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{shdc}}"}</span> - Nội
-                      dung Sinh hoạt dưới cờ
-                    </p>
-                    <p>
-                      <span className="text-green-600">{"{{shl}}"}</span> - Nội
-                      dung Sinh hoạt lớp
-                    </p>
-                    <p>
-                      <span className="text-green-600">
-                        {"{{tich_hop_nls}}"}
-                      </span>{" "}
-                      - Tích hợp Năng lực số
-                    </p>
-                    <p>
-                      <span className="text-green-600">
-                        {"{{tich_hop_dao_duc}}"}
-                      </span>{" "}
-                      - Tích hợp Đạo đức
-                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Thông tin chung</p>
+                      <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono border border-slate-100">
+                        <p><span className="text-green-600">{"{{ten_truong}}"}</span> - Tên trường</p>
+                        <p><span className="text-green-600">{"{{to_chuyen_mon}}"}</span> - Tổ chuyên môn</p>
+                        <p><span className="text-green-600">{"{{ten_giao_vien}}"}</span> - Họ tên giáo viên</p>
+                        <p><span className="text-green-600">{"{{ngay_soan}}"}</span> - Ngày soạn bài</p>
+                        <p><span className="text-green-600">{"{{chu_de}}"}</span> - Số thứ tự chủ đề</p>
+                        <p><span className="text-green-600">{"{{ten_chu_de}}"}</span> - Tên chủ đề học tập</p>
+                        <p><span className="text-green-600">{"{{lop}}"}</span> - Khối lớp (10/11/12)</p>
+                        <p><span className="text-green-600">{"{{so_tiet}}"}</span> - Tổng số tiết</p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mục tiêu & Chuẩn bị</p>
+                      <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono border border-slate-100">
+                        <p><span className="text-green-600">{"{{muc_tieu_kien_thuc}}"}</span> - Yêu cầu cần đạt</p>
+                        <p><span className="text-green-600">{"{{muc_tieu_nang_luc}}"}</span> - Năng lực</p>
+                        <p><span className="text-green-600">{"{{muc_tieu_pham_chat}}"}</span> - Phẩm chất</p>
+                        <p><span className="text-green-600">{"{{gv_chuan_bi}}"}</span> - Chuẩn bị của GV</p>
+                        <p><span className="text-green-600">{"{{hs_chuan_bi}}"}</span> - Chuẩn bị của HS</p>
+                        <p><span className="text-green-600">{"{{shdc}}"}</span> - Sinh hoạt dưới cờ</p>
+                        <p><span className="text-green-600">{"{{shl}}"}</span> - Sinh hoạt lớp</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tiến trình (Dành cho bảng 2 Cột)</p>
+                    <div className="bg-indigo-50/50 rounded-lg p-3 space-y-2 text-[11px] border border-indigo-100">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <p className="font-semibold text-indigo-900 border-b border-indigo-100 pb-1 mb-1">CỘT 1: Thông tin HĐ</p>
+                          <p className="font-mono text-indigo-600">{"{{hoat_dong_khoi_dong_cot_1}}"}</p>
+                          <p className="font-mono text-indigo-600">{"{{hoat_dong_kham_pha_cot_1}}"}</p>
+                          <p className="font-mono text-indigo-600">{"{{hoat_dong_luyen_tap_cot_1}}"}</p>
+                          <p className="font-mono text-indigo-600">{"{{hoat_dong_van_dung_cot_1}}"}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="font-semibold text-indigo-900 border-b border-indigo-100 pb-1 mb-1">CỘT 2: Tổ chức thực hiện</p>
+                          <p className="font-mono text-indigo-600">{"{{hoat_dong_khoi_dong_cot_2}}"}</p>
+                          <p className="font-mono text-indigo-600">{"{{hoat_dong_kham_pha_cot_2}}"}</p>
+                          <p className="font-mono text-indigo-600">{"{{hoat_dong_luyen_tap_cot_2}}"}</p>
+                          <p className="font-mono text-indigo-600">{"{{hoat_dong_van_dung_cot_2}}"}</p>
+                        </div>
+                      </div>
+                      <p className="text-indigo-700 italic mt-2 py-1 px-2 bg-white rounded border border-indigo-50">
+                        * Mẹo: Thiết kế bảng 2 cột trong Word, điền các biến tương ứng vào từng ô để nội dung tự động tách biệt.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Phụ lục & Khác</p>
+                    <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono border border-slate-100">
+                      <p><span className="text-green-600">{"{{ho_so_day_hoc}}"}</span> - Phụ lục / Phiếu học tập / Rubric</p>
+                      <p><span className="text-green-600">{"{{huong_dan_ve_nha}}"}</span> - Hướng dẫn về nhà</p>
+                      <p><span className="text-green-600">{"{{tich_hop_nls}}"}</span> - Bảng tổng hợp tích hợp NLS</p>
+                      <p><span className="text-green-600">{"{{tich_hop_dao_duc}}"}</span> - Bảng tổng hợp GD đạo đức</p>
+                    </div>
                   </div>
                 </div>
 
@@ -1515,6 +1633,29 @@ export function TemplateManager({
                   </div>
                 </div>
 
+                {/* Variables for NCBH */}
+                <div className="space-y-2">
+                  <h4 className="font-semibold text-sm text-gray-800 flex items-center gap-2">
+                    <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs">
+                      Nghiên cứu bài học (NCBH)
+                    </span>
+                  </h4>
+                  <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono">
+                    <p><span className="text-red-600">{"{{ten_truong}}"}</span> - Tên trường</p>
+                    <p><span className="text-red-600">{"{{to_chuyen_mon}}"}</span> - Tên tổ chuyên môn</p>
+                    <p><span className="text-red-600">{"{{ten_bai}}"}</span> - Tên bài học nghiên cứu</p>
+                    <p><span className="text-red-600">{"{{ngay_thuc_hien}}"}</span> - Ngày thực hiện/Ghi biên bản</p>
+                    <p><span className="text-red-600">{"{{ly_do_chon}}"}</span> - Lý do chọn bài học (Thiết kế)</p>
+                    <p><span className="text-red-600">{"{{muc_tieu}}"}</span> - Mục tiêu bài học (Thiết kế)</p>
+                    <p><span className="text-red-600">{"{{chuoi_hoat_dong}}"}</span> - Chuỗi hoạt động thống nhất (Thiết kế)</p>
+                    <p><span className="text-red-600">{"{{phuong_an_ho_tro}}"}</span> - Phương án hỗ trợ HS khó khăn (Thiết kế)</p>
+                    <p><span className="text-red-600">{"{{chia_se_nguoi_day}}"}</span> - Chia sẻ của giáo viên dạy minh họa (Phân tích)</p>
+                    <p><span className="text-red-600">{"{{nhan_xet_nguoi_du}}"}</span> - Minh chứng việc học của HS (Phân tích)</p>
+                    <p><span className="text-red-600">{"{{nguyen_nhan_giai_phap}}"}</span> - Nguyên nhân & Giải pháp điều chỉnh (Phân tích)</p>
+                    <p><span className="text-red-600">{"{{bai_hoc_kinh_nghiem}}"}</span> - Bài học kinh nghiệm rút ra (Phân tích)</p>
+                  </div>
+                </div>
+
                 {/* Instructions */}
                 <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
                   <h4 className="font-semibold text-amber-900 text-sm">
@@ -1583,12 +1724,21 @@ export function TemplateManager({
                       <Download className="w-3 h-3 mr-1" />
                       Mẫu Ngoại khóa
                     </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs bg-transparent"
+                      onClick={downloadNCBHWordTemplate}
+                    >
+                      <Download className="w-3 h-3 mr-1" />
+                      Mẫu NCBH
+                    </Button>
                   </div>
                 </div>
               </div>
             </TabsContent>
           </Tabs>
-        </DialogContent>
+        </DialogContent >
       </Dialog >
 
       {/* Add PPCT Item Dialog */}

@@ -5,6 +5,7 @@ import type {
   EventResult,
   LessonTask,
   TemplateData,
+  NCBHResult,
 } from "@/lib/types";
 import type { PPCTItem } from "@/lib/template-storage";
 
@@ -81,10 +82,29 @@ function formatForWord(text: unknown): string {
 
   // Now we know text is a string
   let formatted = text
+    // Remove Markdown Headers
+    .replace(/^#+\s+/gm, "")
+    // Remove Markdown Bold/Italic stars
+    .replace(/\*{1,3}/g, "")
     // Remove TAB characters
     .replace(/\t/g, "")
-    // Remove ** markdown bold (not supported in simple text tags)
-    .replace(/\*\*/g, "")
+    // Convert [COT_1] and [COT_2] markers to readable format for Word template
+    .replace(/\[COT_1\]/g, "📋 THÔNG TIN HOẠT ĐỘNG:\n")
+    .replace(/\[\/COT_1\]/g, "\n")
+    .replace(/\[COT_2\]/g, "📝 TỔ CHỨC THỰC HIỆN:\n")
+    .replace(/\[\/COT_2\]/g, "")
+    // Legacy: Convert old column marker format
+    .replace(/\[CỘT 1: THÔNG TIN\]/g, "📋 THÔNG TIN HOẠT ĐỘNG:\n")
+    .replace(/\[CỘT 2: TỔ CHỨC THỰC HIỆN\]/g, "\n📝 TỔ CHỨC THỰC HIỆN:\n")
+    .replace(/\[CỘT 1:[^\]]*\]/g, "")
+    .replace(/\[CỘT 2:[^\]]*\]/g, "")
+    // Convert markdown table format to readable text format
+    .replace(/\|\s*BƯỚC\s*\|\s*HOẠT ĐỘNG (CỦA )?GV\s*\|\s*HOẠT ĐỘNG (CỦA )?HS\s*\|\s*THỜI GIAN\s*\|/gi,
+      "BƯỚC | HOẠT ĐỘNG GV | HOẠT ĐỘNG HS | THỜI GIAN")
+    .replace(/\|[-]+\|[-]+\|[-]+\|[-]+\|/g, "─────────────────────────────────────────")
+    // Convert table rows: |B1|...|...|...|
+    .replace(/\|\s*B(\d+)[:\s]*([^|]*)\s*\|\s*([^|]*)\s*\|\s*([^|]*)\s*\|\s*([^|]*)\s*\|/g,
+      "B$1: $2\n  • GV: $3\n  • HS: $4\n  • Thời gian: $5")
     // Clean up lines
     .split("\n")
     .map((line) => line.trim())
@@ -107,7 +127,40 @@ function formatForWord(text: unknown): string {
   return "[[STYLE_FIX]]" + formatted.replace(/\n/g, "{{BR}}");
 }
 
-const vStylePara = `<w:pPr><w:ind w:firstLine="720"/><w:jc w:val="both"/><w:spacing w:line="360" w:lineRule="auto" w:after="0"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr><w:t>`;
+const extractColumn = (text: string | undefined, column: 1 | 2): string => {
+  if (!text) return "";
+  const markerStart = column === 1 ? "[COT_1]" : "[COT_2]";
+  const markerEnd = column === 1 ? "[/COT_1]" : "[/COT_2]";
+
+  let startIdx = text.indexOf(markerStart);
+  // Support legacy markers if new ones not found
+  if (startIdx === -1) {
+    const legacyMarker = column === 1 ? "[CỘT 1: THÔNG TIN]" : "[CỘT 2: TỔ CHỨC THỰC HIỆN]";
+    startIdx = text.indexOf(legacyMarker);
+    if (startIdx === -1) return "";
+
+    // For legacy, we just take until the next marker or end
+    const nextLegacyMarker = column === 1 ? "[CỘT 2:" : "[CỘT 1:";
+    const nextIdx = text.indexOf(nextLegacyMarker, startIdx + 1);
+    if (nextIdx !== -1) {
+      return text.substring(startIdx + legacyMarker.length, nextIdx).trim();
+    }
+    return text.substring(startIdx + legacyMarker.length).trim();
+  }
+
+  const endIdx = text.indexOf(markerEnd, startIdx + markerStart.length);
+  if (endIdx === -1) {
+    const nextStartIdx = text.indexOf(column === 1 ? "[COT_2]" : "[COT_1]", startIdx + markerStart.length);
+    if (nextStartIdx !== -1) {
+      return text.substring(startIdx + markerStart.length, nextStartIdx).trim();
+    }
+    return text.substring(startIdx + markerStart.length).trim();
+  }
+
+  return text.substring(startIdx + markerStart.length, endIdx).trim();
+};
+
+const vStylePara = `<w:pPr><w:ind w:firstLine="720"/><w:jc w:val="both"/><w:spacing w:line="300" w:lineRule="auto" w:after="0"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr><w:t>`;
 const vStyleBreak = `</w:t></w:r></w:p><w:p>${vStylePara}`;
 
 function getChuDeNumber(month: string): string {
@@ -178,6 +231,10 @@ async function processTemplate(
     paragraphLoop: true,
     linebreaks: false, // We handle them manually for better control
     nullGetter: () => "",
+    delimiters: {
+      start: "{",
+      end: "}",
+    },
   });
 
   try {
@@ -290,9 +347,26 @@ export const ExportService = {
     let data: Record<string, any> = {};
     let fileName = "";
 
+    const cleanRedundantTitles = (text: string | undefined) => {
+      if (!text) return "";
+      let cleaned = formatForWord(text);
+      // Remove common redundant patterns at the start (repeat up to 3 times for nested headers)
+      for (let i = 0; i < 3; i++) {
+        cleaned = cleaned
+          .replace(/^(I\.\s*MỤC\s*TIÊU|II\.\s*THIẾT\s*BỊ\s*DẠY\s*HỌC|III\.\s*TIẾN\s*TRÌNH\s*DẠY\s*HỌC|IV\.\s*HỒ\s*SƠ|V\.\s*HƯỚNG\s*DẪN\s*VỀ\s*NHÀ):?\s*/i, "")
+          .replace(/^(1\.\s*Yêu\s*cầu\s*cần\s*đạt|1\.\s*Kiến\s*thức|2\.\s*Năng\s*lực|3\.\s*Phẩm\s*chất|1\.\s*Đối\s*với\s*giáo\s*viên|2\.\s*Đối\s*với\s*học\s*sinh):?\s*/i, "")
+          .trim();
+      }
+      return cleaned;
+    };
+
     if (fullPlanMode) {
       const chuDeNumber = getChuDeNumber(month);
       data = {
+        ten_truong: DEPT_INFO.school,
+        to_chuyen_mon: DEPT_INFO.name,
+        ten_giao_vien: "....................................", // Để trống cho GV tự điền hoặc có thể lấy từ setting
+        giao_vien: "....................................",
         ngay_soan: new Date().toLocaleDateString("vi-VN"), // Simplified date
         chu_de: chuDeNumber,
         ten_chu_de: topic || autoFilledTheme,
@@ -301,21 +375,29 @@ export const ExportService = {
         khoi: grade,
         so_tiet: duration,
 
-        muc_tieu_kien_thuc: formatForWord(result.muc_tieu_kien_thuc || ""),
-        muc_tieu_nang_luc: formatForWord(result.muc_tieu_nang_luc || ""),
-        muc_tieu_pham_chat: formatForWord(result.muc_tieu_pham_chat || ""),
+        muc_tieu_kien_thuc: cleanRedundantTitles(result.muc_tieu_kien_thuc),
+        muc_tieu_nang_luc: cleanRedundantTitles(result.muc_tieu_nang_luc),
+        muc_tieu_pham_chat: cleanRedundantTitles(result.muc_tieu_pham_chat),
 
-        gv_chuan_bi: formatForWord(result.gv_chuan_bi || ""),
-        hs_chuan_bi: formatForWord(result.hs_chuan_bi || ""),
+        gv_chuan_bi: cleanRedundantTitles(result.gv_chuan_bi),
+        hs_chuan_bi: cleanRedundantTitles(result.hs_chuan_bi),
         thiet_bi_day_hoc: formatForWord(result.thiet_bi_day_hoc || ""),
 
         hoat_dong_duoi_co: formatForWord(result.hoat_dong_duoi_co || ""),
         shdc: formatForWord(result.shdc || ""),
         shl: formatForWord(result.shl || ""),
-        hoat_dong_khoi_dong: formatForWord(result.hoat_dong_khoi_dong || ""),
-        hoat_dong_kham_pha: formatForWord(result.hoat_dong_kham_pha || ""),
-        hoat_dong_luyen_tap: formatForWord(result.hoat_dong_luyen_tap || ""),
-        hoat_dong_van_dung: formatForWord(result.hoat_dong_van_dung || ""),
+        hoat_dong_khoi_dong_cot_1: formatForWord(extractColumn(result.hoat_dong_khoi_dong, 1)),
+        hoat_dong_khoi_dong_cot_2: formatForWord(extractColumn(result.hoat_dong_khoi_dong, 2)),
+
+        hoat_dong_kham_pha_cot_1: formatForWord(extractColumn(result.hoat_dong_kham_pha, 1)),
+        hoat_dong_kham_pha_cot_2: formatForWord(extractColumn(result.hoat_dong_kham_pha, 2)),
+
+        hoat_dong_luyen_tap_cot_1: formatForWord(extractColumn(result.hoat_dong_luyen_tap, 1)),
+        hoat_dong_luyen_tap_cot_2: formatForWord(extractColumn(result.hoat_dong_luyen_tap, 2)),
+
+        hoat_dong_van_dung_cot_1: formatForWord(extractColumn(result.hoat_dong_van_dung, 1)),
+        hoat_dong_van_dung_cot_2: formatForWord(extractColumn(result.hoat_dong_van_dung, 2)),
+
 
         ho_so_day_hoc: formatForWord(result.ho_so_day_hoc || ""),
         huong_dan_ve_nha: formatForWord(result.huong_dan_ve_nha || ""),
@@ -793,5 +875,42 @@ export const ExportService = {
     }
 
     return processTemplate(data, template.data, fileName);
+  },
+
+  async exportNCBH(
+    result: NCBHResult,
+    template: TemplateData | null,
+    options: {
+      grade: string;
+      month: string;
+      topic: string;
+    }
+  ) {
+    const { grade, month, topic } = options;
+
+    const data = {
+      ten_truong: DEPT_INFO.school,
+      to_chuyen_mon: DEPT_INFO.name,
+      ngay_thuc_hien: new Date().toLocaleDateString("vi-VN"),
+      lop: grade,
+      khoi: grade,
+      thang: month,
+      ten_bai: topic,
+
+      // Giai đoạn 1
+      ly_do_chon: formatForWord(result.ly_do_chon),
+      muc_tieu: formatForWord(result.muc_tieu),
+      chuoi_hoat_dong: formatForWord(result.chuoi_hoat_dong),
+      phuong_an_ho_tro: formatForWord(result.phuong_an_ho_tro),
+
+      // Giai đoạn 2 & 3
+      chia_se_nguoi_day: formatForWord(result.chia_se_nguoi_day),
+      nhan_xet_nguoi_du: formatForWord(result.nhan_xet_nguoi_du),
+      nguyen_nhan_giai_phap: formatForWord(result.nguyen_nhan_giai_phap),
+      bai_hoc_kinh_nghiem: formatForWord(result.bai_hoc_kinh_nghiem),
+    };
+
+    const fileName = `NCBH_${grade}_T${month}_${topic.substring(0, 20)}.docx`;
+    return processTemplate(data, template?.data || null, fileName);
   },
 };

@@ -45,6 +45,7 @@ import {
   ExternalLink,
   ListOrdered,
   Upload,
+  Zap,
 } from "lucide-react";
 import { checkApiKeyStatus, generateAssessmentPlan } from "@/lib/actions/gemini";
 import { ASSESSMENT_PRODUCT_TYPES } from "@/lib/prompts/assessment-prompts";
@@ -69,6 +70,7 @@ import type {
   EventResult,
   LessonTask,
   TemplateData,
+  NCBHResult,
 } from "@/lib/types";
 import {
   ACADEMIC_MONTHS,
@@ -95,6 +97,7 @@ import { MeetingTab } from "@/components/template-engine/MeetingTab";
 import { LessonTab } from "@/components/template-engine/LessonTab";
 import { EventTab } from "@/components/template-engine/EventTab";
 import { AssessmentTab } from "@/components/template-engine/AssessmentTab";
+import { NCBHTab } from "@/components/template-engine/NCBHTab";
 
 // Types imported from @/lib/types
 
@@ -157,8 +160,17 @@ const TemplateEngine = () => {
   const [auditResult, setAuditResult] = useState<string | null>(null);
 
   // Common state
-  const { isGenerating, error, setError, generateMeeting, generateLesson, generateEvent, auditLesson } =
-    useTemplateGeneration();
+  const {
+    isGenerating,
+    error,
+    setError,
+    generateMeeting,
+    generateLesson,
+    generateEvent,
+    auditLesson,
+    generateNCBH,
+    refineSection
+  } = useTemplateGeneration();
   const [isExporting, setIsExporting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(
@@ -178,6 +190,14 @@ const TemplateEngine = () => {
   const [assessmentTopic, setAssessmentTopic] = useState("");
   const [assessmentResult, setAssessmentResult] = useState<any>(null);
   const [assessmentTemplate, setAssessmentTemplate] = useState<TemplateData | null>(null);
+
+  // NCBH state
+  const [ncbhGrade, setNcbhGrade] = useState("10");
+  const [ncbhMonth, setNcbhMonth] = useState("9");
+  const [ncbhTopic, setNcbhTopic] = useState("");
+  const [ncbhCustomInstructions, setNcbhCustomInstructions] = useState("");
+  const [ncbhResult, setNcbhResult] = useState<NCBHResult | null>(null);
+  const [ncbhTemplate, setNcbhTemplate] = useState<TemplateData | null>(null);
 
   // PPCT state
   const [ppctData, setPpctData] = useState<PPCTItem[]>([]);
@@ -205,6 +225,10 @@ const TemplateEngine = () => {
   const [hasDefaultLessonTemplate, setHasDefaultLessonTemplate] =
     useState(false);
 
+  // Model & OCR state
+  const [selectedModel, setSelectedModel] = useState<string>("gemini-2.0-flash-exp");
+  const [lessonImage, setLessonImage] = useState<{ mimeType: string; data: string } | null>(null);
+
   useEffect(() => {
     const checkApiKey = async () => {
       const result = await checkApiKeyStatus();
@@ -219,19 +243,24 @@ const TemplateEngine = () => {
       const meeting = await getTemplate("meeting");
       const event = await getTemplate("event");
       const lesson = await getTemplate("lesson");
-      const assessment = await getTemplate("assessment"); // Load assessment session template
+      const assessment = await getTemplate("assessment");
+      const ncbh = await getTemplate("ncbh");
 
       const defaultMeeting = await getTemplate("default_meeting");
       const defaultEvent = await getTemplate("default_event");
       const defaultLesson = await getTemplate("default_lesson");
-      const defaultAssessment = await getTemplate("default_assessment"); // Load default assessment template
+      const defaultAssessment = await getTemplate("default_assessment");
+      const defaultNcbh = await getTemplate("default_ncbh");
 
       if (meeting)
         setMeetingTemplate({ name: meeting.name, data: meeting.data });
       if (event) setEventTemplate({ name: event.name, data: event.data });
       if (lesson) setLessonTemplate({ name: lesson.name, data: lesson.data });
       if (assessment) setAssessmentTemplate({ name: assessment.name, data: assessment.data });
-      else if (defaultAssessment) setAssessmentTemplate({ name: defaultAssessment.name, data: defaultAssessment.data }); // Fallback to default if no session template
+      else if (defaultAssessment) setAssessmentTemplate({ name: defaultAssessment.name, data: defaultAssessment.data });
+
+      if (ncbh) setNcbhTemplate({ name: ncbh.name, data: ncbh.data });
+      else if (defaultNcbh) setNcbhTemplate({ name: defaultNcbh.name, data: defaultNcbh.data });
 
       setHasDefaultMeetingTemplate(!!defaultMeeting);
       setHasDefaultEventTemplate(!!defaultEvent);
@@ -501,7 +530,8 @@ const TemplateEngine = () => {
       selectedMonth,
       selectedSession,
       meetingKeyContent,
-      meetingConclusion
+      meetingConclusion,
+      selectedModel
     );
 
     if (result.success && result.data) {
@@ -658,7 +688,9 @@ const TemplateEngine = () => {
       ppctData,
       taskTimeDistribution,
       { shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion },
-      selectedChuDe // Pass chu de info for period distribution
+      selectedChuDe,
+      selectedModel,
+      lessonImage || undefined
     );
 
     if (result.success && result.data) {
@@ -767,6 +799,43 @@ const TemplateEngine = () => {
       }
     } catch (e: any) {
       setError(e.message);
+    }
+  };
+
+  const handleGenerateNCBH = async () => {
+    if (!ncbhGrade) {
+      setError("Vui lòng chọn khối lớp");
+      return;
+    }
+    if (!ncbhTopic) {
+      setError("Vui lòng nhập tên bài học nghiên cứu");
+      return;
+    }
+
+    const result = await generateNCBH(
+      ncbhGrade,
+      ncbhTopic,
+      ncbhCustomInstructions,
+      selectedModel
+    );
+
+    if (result.success && result.data) {
+      setNcbhResult(result.data);
+      setSuccess("Đã tạo hồ sơ & biên bản NCBH thành công!");
+
+      // Auto-save to history
+      await saveProject({
+        id: `ncbh_${Date.now()}`,
+        type: "ncbh",
+        title: `Nghiên cứu bài học: ${result.data.ten_bai}`,
+        data: result.data,
+        grade: ncbhGrade,
+        month: ncbhMonth
+      });
+      loadProjects();
+      setTimeout(() => setSuccess(null), 3000);
+    } else {
+      setError(result.error || "Lỗi khi tạo nội dung NCBH");
     }
   };
 
@@ -906,7 +975,7 @@ const TemplateEngine = () => {
   };
 
   // Handle export to Word
-  const handleExport = async (type: "meeting" | "lesson" | "event") => {
+  const handleExport = async (type: "meeting" | "lesson" | "event" | "assessment" | "ncbh") => {
     setIsExporting(true);
     setError(null);
 
@@ -974,6 +1043,35 @@ const TemplateEngine = () => {
           budget: eventBudget,
           checklist: eventChecklist,
           autoFilledTheme: autoFilledTheme,
+        });
+      } else if (type === "ncbh") {
+        if (!ncbhResult) {
+          setError("Chưa có nội dung NCBH. Vui lòng tạo nội dung trước.");
+          setIsExporting(false);
+          return;
+        }
+
+        const templateToUse = await getEffectiveTemplate("ncbh");
+
+        result = await ExportService.exportNCBH(ncbhResult, templateToUse, {
+          grade: ncbhGrade,
+          month: selectedMonth,
+          topic: ncbhTopic,
+        });
+      } else if (type === "assessment") {
+        if (!assessmentResult) {
+          setError("Chưa có nội dung kế hoạch kiểm tra. Vui lòng tạo nội dung trước.");
+          setIsExporting(false);
+          return;
+        }
+
+        const templateToUse = await getEffectiveTemplate("assessment");
+
+        result = await ExportService.exportAssessmentPlan(assessmentResult, templateToUse, {
+          grade: assessmentGrade,
+          term: assessmentTerm,
+          productType: assessmentProductType,
+          topic: assessmentTopic,
         });
       }
 
@@ -1411,7 +1509,7 @@ const TemplateEngine = () => {
           className="space-y-6"
         >
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-4xl mx-auto">
-            <TabsList className="grid grid-cols-5 w-full bg-white shadow-md rounded-xl p-1">
+            <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full bg-white shadow-md rounded-xl p-1 h-auto">
               <TabsTrigger
                 value="meeting"
                 className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
@@ -1435,6 +1533,14 @@ const TemplateEngine = () => {
                 <Sparkles className="w-4 h-4" />
                 <span className="hidden sm:inline">Ngoại khóa</span>
                 <span className="sm:hidden">HĐNK</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="ncbh"
+                className="gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
+              >
+                <Zap className="w-4 h-4" />
+                <span className="hidden sm:inline">NC Bài học</span>
+                <span className="sm:hidden">NCBH</span>
               </TabsTrigger>
               <TabsTrigger
                 value="assessment"
@@ -1530,6 +1636,11 @@ const TemplateEngine = () => {
               auditResult={auditResult}
               setSuccess={setSuccess}
               lessonTopic={lessonTopic}
+              selectedModel={selectedModel}
+              setSelectedModel={setSelectedModel}
+              lessonImage={lessonImage}
+              setLessonImage={setLessonImage}
+              onRefineSection={(content, instruction) => refineSection(content, instruction, selectedModel)}
             />
           </TabsContent>
           <TabsContent value="event">
@@ -1553,6 +1664,26 @@ const TemplateEngine = () => {
               isExporting={isExporting}
               onExport={() => handleExport("event")}
               copyToClipboard={copyToClipboard}
+            />
+          </TabsContent>
+          <TabsContent value="ncbh">
+            <NCBHTab
+              selectedMonth={ncbhMonth}
+              setSelectedMonth={setNcbhMonth}
+              ncbhGrade={ncbhGrade}
+              setNcbhGrade={setNcbhGrade}
+              ncbhTopic={ncbhTopic}
+              setNcbhTopic={setNcbhTopic}
+              ncbhCustomInstructions={ncbhCustomInstructions}
+              setNcbhCustomInstructions={setNcbhCustomInstructions}
+              ncbhResult={ncbhResult}
+              setNcbhResult={setNcbhResult}
+              isGenerating={isGenerating}
+              onGenerate={handleGenerateNCBH}
+              isExporting={isExporting}
+              onExport={() => handleExport("ncbh")}
+              copyToClipboard={copyToClipboard}
+              ppctData={ppctData}
             />
           </TabsContent>
           <TabsContent value="assessment">

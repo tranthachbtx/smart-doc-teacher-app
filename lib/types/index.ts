@@ -72,6 +72,21 @@ export interface EventResult {
   danh_gia_sau_hoat_dong?: string;
 }
 
+export interface NCBHResult {
+  // Giai đoạn 1: Thiết kế bài dạy
+  ten_bai: string;
+  ly_do_chon: string;
+  muc_tieu: string;
+  chuoi_hoat_dong: string;
+  phuong_an_ho_tro: string;
+
+  // Giai đoạn 2 & 3: Quan sát & Phân tích (Biên bản)
+  chia_se_nguoi_day: string;
+  nhan_xet_nguoi_du: string;
+  nguyen_nhan_giai_phap: string;
+  bai_hoc_kinh_nghiem: string;
+}
+
 export type TemplateData = {
   name: string;
   data: ArrayBuffer;
