@@ -166,13 +166,13 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
   const generateNCBH = async (
     grade: string,
     topic: string,
-    phase: number,
-    context?: any
+    customInstructions?: string,
+    model?: string
   ) => {
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await generateNCBHAction(grade, topic, phase, context);
+      const result = await generateNCBHAction(grade, topic, customInstructions, model);
       if (result.success && result.data) {
         return { success: true, data: result.data as NCBHResult };
       } else {
@@ -187,7 +187,30 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     }
   };
 
-  const refineContent = async (
+  const auditLesson = async (
+    lessonData: any,
+    grade: string,
+    topic: string
+  ) => {
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const result = await auditLessonPlan(lessonData, grade, topic);
+      if (result.success && result.audit) {
+        return { success: true, audit: result.audit };
+      } else {
+        setError(result.error || "Lỗi khi kiểm định giáo án");
+        return { success: false, error: result.error };
+      }
+    } catch (err: any) {
+      setError(err.message || "Lỗi không xác định");
+      return { success: false, error: err.message };
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const refineSection = async (
     content: string,
     instruction: string
   ) => {
@@ -197,7 +220,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
       const prompt = `Bạn là một biên tập viên giáo dục chuyên nghiệp. Hãy chỉnh sửa nội dung sau đây dựa trên yêu cầu.\n\nNỘI DUNG GỐC:\n${content}\n\nYÊU CẦU CHỈNH SỬA: ${instruction}\n\nLưu ý: Chỉ trả về nội dung đã chỉnh sửa, không kèm lời dẫn.`;
       const result = await generateAIContent(prompt);
       if (result.success && result.content) {
-        return { success: true, data: result.content };
+        return { success: true, content: result.content };
       } else {
         setError(result.error || "Lỗi khi chỉnh sửa nội dung");
         return { success: false, error: result.error };
@@ -213,10 +236,12 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
   return {
     isGenerating,
     error,
+    setError,
     generateMeeting,
     generateLesson,
     generateEvent,
     generateNCBH,
-    refineContent,
+    auditLesson,
+    refineSection,
   };
 }
