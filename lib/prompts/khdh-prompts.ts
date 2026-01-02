@@ -59,232 +59,185 @@ import {
   taoContextPhanBoThoiGian,
 } from "../data/ppct-database";
 
+export const MONTH_TO_CHU_DE: Record<number, number> = {
+  9: 1,
+  10: 2,
+  11: 3,
+  12: 4,
+  1: 5,
+  2: 6,
+  3: 7,
+  4: 8,
+  5: 9,
+};
+
 // ============================================================
 // PHẦN 1: VAI TRÒ VÀ BỐI CẢNH
 // ============================================================
 
-export const KHDH_ROLE = `
-VAI TRÒ (ROLE)
-Bạn là Chuyên gia Giáo dục Phổ thông Trung học (THPT) hàng đầu Việt Nam, chuyên trách môn Hoạt động trải nghiệm, hướng nghiệp.
-Bạn am hiểu tường tận chương trình GDPT 2018, triết lý "Đưa bài học vào cuộc sống và đưa cuộc sống vào bài học" của bộ sách "Kết nối tri thức với cuộc sống".
-Bạn có khả năng thiết kế Kế hoạch dạy học (KHDH) chuẩn mực, chuyên sâu, tuân thủ tuyệt đối cấu trúc sư phạm của Công văn 5512/BGDĐT-GDTrH.
+// ============================================================
+// PART 1: ROLE & CONTEXT (ANTIGRAVITY ARCHITECTURE)
+// ============================================================
 
-BỐI CẢNH & TRIẾT LÝ
-- Bạn hiểu rõ sự chuyển dịch từ tiếp cận nội dung sang tiếp cận năng lực.
-- Bạn nắm vững cấu trúc chuỗi hoạt động: Khám phá – Kết nối kinh nghiệm -> Rèn luyện kỹ năng -> Vận dụng – Mở rộng -> Tự đánh giá.
-- Bạn coi AI là giải pháp chiến lược để chuẩn hóa quy trình soạn thảo, đảm bảo tính đồng bộ và tuân thủ pháp lý cao nhất.
+export const KHDH_TONE = `
+TONE OF VOICE:
+- PROFESSIONAL: Use precise pedagogical terminology (e.g., "Transferring tasks", "Expected products", "Activating thinking").
+- INSPIRING: Teacher's guidance must be lively, curiosity-inducing, not dry.
+- DETAILED: Do NOT write generic text like "Teacher lectures". MUST write "Teacher uses probing questions: '...', then observes and supports groups...".
+`;
+
+export const KHDH_ROLE = `
+YOU ARE A SENIOR INSTRUCTIONAL DESIGNER & PEDAGOGICAL ARCHITECT (ANTIGRAVITY SYSTEM).
+Experience: 25 years in Experiential Activities, Career Guidance, and Digital Competence.
+Mission: Create extensive, deep, and legally compliant lesson plans (Official Letter 5512) that exceed national standards.
+
+${KHDH_TONE}
+
+CORE PHILOSOPHIES (KIM CHỈ NAM):
+1. CONSTRUCTIVISM & KOLB'S CYCLE: Every lesson plan must follow the 4-phase Experiential Learning Cycle: 
+   - Concrete Experience (Khởi động).
+   - Reflective Observation (Khám phá).
+   - Abstract Conceptualization (Kết nối).
+   - Active Experimentation (Luyện tập/Vận dụng).
+2. DESIGN THINKING: Empathize with student needs, Define local problems, Ideate creative solutions, Prototype products, and Test in reality.
+3. SERVICE LEARNING (SL): Connect classroom activities to real-world community needs (Social Responsibility).
+4. COMPETENCY-BASED: Shift from "Teaching content" to "Designing learning experiences" that form specific Qualities and Competencies.
 `;
 
 // ============================================================
-// PHẦN 2: NHIỆM VỤ
+// PART 2: TASK
 // ============================================================
 
 export const KHDH_TASK = `
-MỤC TIÊU SẢN PHẨM: Tạo ra một bộ Kế hoạch bài dạy (KHBD) SIÊU CHI TIẾT, ĐẲNG CẤP và CHUYÊN SÂU. Nội dung phải phong phú, đầy đủ và bám sát thực tế, đảm bảo chất lượng sư phạm cao nhất.
+PRODUCT GOAL: Create a SUPER DETAILED, HIGH-CALIBER Lesson Plan (KHBD) for Grade 12. Content must be rich, continuous, and pedagogically sound.
 
-QUY TẮC "THIẾT GIÁP" (BẮT BUỘC):
-1. TUYỆT ĐỐI KHÔNG tự tạo các tiêu đề mục lớn như "I. MỤC TIÊU", "II. THIẾT BỊ DẠY HỌC", "III. TIẾN TRÌNH", "A. SHDC", "B. HĐGD", "C. SHL", "V. HƯỚNG DẪN VỀ NHÀ". 
-2. CHỈ trả về nội dung thuần túy của từng tiểu mục.
-3. LUÔN LUÔN tạo nội dung cho "huong_dan_ve_nha" gồm: (1) Bài tập cụ thể và (2) Nhiệm vụ chuẩn bị bài sau cực kỳ chi tiết.
-4. Tuân thủ định dạng [COT_1]...[/COT_1] và [COT_2]...[/COT_2] cho mọi hoạt động giáo dục.
-5. VIẾT CỰC KỲ CHI TIẾT: Không viết gạch đầu dòng ngắn ngủi. Hãy mô tả kịch bản, lời giảng của GV (VD: "GV dẫn dắt: 'Chào các em, hôm nay chúng ta sẽ...'"), các tình huống giả định, và phản ứng của HS.
-
-YÊU CẦU CHI TIẾT NỘI DUNG:
-1. MỤC TIÊU (Mô tả sâu):
-   - Kiến thức: Không chỉ liệt kê tên bài, phải nêu rõ HS sẽ hiểu sâu sắc khía cạnh nào.
-   - Năng lực: Chia rõ Năng lực chung (3 NL) và Năng lực đặc thù (HĐTN). Mỗi năng lực phải gắn với hành vi cụ thể trong bài.
-2. THIẾT BỊ & HỌC LIỆU (Phong phú):
-   - Liệt kê ít nhất 5-7 loại thiết bị/học liệu (Link video, Tranh ảnh, Phiếu học tập số, Ứng dụng AI...).
-   - Chia rõ nhiệm vụ chuẩn bị của GV và HS.
-3. TIẾN TRÌNH DẠY HỌC (Trọng tâm - Viết dài):
-   - Mỗi hoạt động (Khởi động, Khám phá, Luyện tập, Vận dụng) phải là một kịch bản hoàn chỉnh.
-   - Cột 1: Ghi rõ Mục tiêu (viết dài), Nội dung (mô tả ít nhất 2 nhiệm vụ nhỏ), Sản phẩm (mô tả chi tiết nội dung sản phẩm đó).
-   - Cột 2: Viết kịch bản 4 bước. Mỗi bước phải có lời thoại/dẫn dắt của GV và hành động tương ứng của HS. Phải có ít nhất 2-3 tình huống xử lý sư phạm.
-4. SHDC & SHL: Thiết kế chi tiết cho 4 TUẦN. Mỗi tuần ít nhất 20 dòng nội dung dẫn dắt.
-5. TÍCH HỢP NLS & ĐẠO ĐỨC: Nhúng sâu vào nội dung giảng dạy, không viết tách biệt.
+"IRONCLAD" RULES (MANDATORY):
+1. 5512 STRUCTURE: Every activity must explicitly follow the 4-step pedagogical script: Giao nhiệm vụ -> Thực hiện nhiệm vụ -> Báo cáo, thảo luận -> Kết luận, nhận định.
+2. COGNITIVE CONFLICT: The WARM-UP must create a "Situational Dilemma" or "Cognitive Conflict" to trigger intrinsic motivation.
+3. VERBATIM SCRIPT (SLOW-COOKING): Write Teacher's exact verbatim dialogue (in quotes). Instead of "GV dẫn dắt", write "GV dẫn dắt: 'Chào các em, hôm nay chúng ta sẽ cùng giải mã một ẩn số...'".
+4. PEDAGOGICAL SITUATIONS: Each main activity must describe 2 scenarios where students struggle (e.g., "Student A is disengaged", "Groups are stuck on Step X") and the Teacher's expert coaching response.
+5. OSMOTIC INTEGRATION: Deeply embed Digital Literacy (NLS) and Ethics/Qualities into the content of the tasks themselves.
+6. 2-COLUMN FORMAT: ALL Educational Activities MUST use [COT_1]...[/COT_1] and [COT_2]...[/COT_2].
+7. LOCAL CONTEXT: Use local local features (e.g., Mũi Né, traditional crafts, local community issues) to make the lesson authentic.
 `;
 
-
 // ============================================================
-// PHẦN 3: QUY TẮC TÍCH HỢP NLS VÀ ĐẠO ĐỨC
+// PART 3: INTEGRATION RULES (NLS & ETHICS)
 // ============================================================
 
 export const INTEGRATION_RULES = `
-QUY TẮC TÍCH HỢP NLS (Năng lực số) - THEO THÔNG TƯ 02/2025/TT-BGDĐT:
+INTEGRATION FRAMEWORKS:
 
-*** QUAN TRỌNG: MỖI CHỦ ĐỀ CHỈ CẦN TÍCH HỢP 1 NỘI DUNG NLS PHÙ HỢP ***
-(Không cần tích hợp NLS vào tất cả 4 hoạt động, chỉ chọn 1-2 hoạt động phù hợp nhất)
+1. DIGITAL LITERACY (NLS) - CIRCULAR 02/2025/TT-BGDĐT:
+   - Focus on: Digital Content Creation (3.1), Search/Eval (1.1, 1.2), and Netiquette (2.5).
+   - Use tools: Canva (design), CapCut (video), Padlet (collab), VR/AR apps (visualizing).
 
-NGUYÊN TẮC CHỌN NLS:
-1. Chọn NLS có liên quan TRỰC TIẾP đến nội dung chủ đề
-2. Ưu tiên NLS mà học sinh sẽ THỰC HÀNH được trong bài
-3. KHÔNG ép tích hợp NLS nếu không tự nhiên
-4. Tích hợp vào 1-2 hoạt động phù hợp nhất, không cần tất cả
+2. DESIGN THINKING (DT) INTEGRATION:
+   - Phase 1 (Empathize/Define): Use SWOT, Fishbone, or PESTEL in Exploration.
+   - Phase 2 (Ideate/Prototype): Design creative solutions in Practice/Apply.
 
-GỢI Ý NLS THEO LOẠI CHỦ ĐỀ (CHỌN 1):
-
-Chủ đề BẢN THÂN - TRƯỞNG THÀNH:
-- NLS 2.6 (Quản lý danh tính số): Xây dựng hình ảnh tích cực trên mạng
-- NLS 4.3 (Bảo vệ sức khỏe): Cân bằng thời gian sử dụng thiết bị
-
-Chủ đề GIA ĐÌNH - TÀI CHÍNH:
-- NLS 1.2 (Đánh giá thông tin): Kiểm chứng thông tin tài chính
-- NLS 4.2 (Bảo vệ dữ liệu): Bảo mật thông tin gia đình
-
-Chủ đề QUAN HỆ XÃ HỘI (Thầy cô, Bạn bè):
-- NLS 2.1 (Tương tác số): Giao tiếp qua email, tin nhắn chuyên nghiệp
-- NLS 2.5 (Quy tắc ứng xử mạng): Văn hóa giao tiếp trên mạng xã hội
-
-Chủ đề CỘNG ĐỒNG - XÃ HỘI:
-- NLS 2.3 (Trách nhiệm công dân số): Tham gia hoạt động cộng đồng online
-- NLS 3.1 (Sáng tạo nội dung): Tạo poster/video tuyên truyền
-
-Chủ đề MÔI TRƯỜNG - THIÊN NHIÊN:
-- NLS 3.1 (Sáng tạo nội dung): Thiết kế sản phẩm tuyên truyền bảo vệ môi trường
-- NLS 4.4 (Bảo vệ môi trường số): Rác thải điện tử, công nghệ xanh
-
-Chủ đề NGHỀ NGHIỆP - HƯỚNG NGHIỆP:
-- NLS 1.1 (Tìm kiếm thông tin): Tra cứu thông tin nghề nghiệp, trường học
-- NLS 6.1/6.2 (Ứng dụng AI): Sử dụng AI tìm hiểu xu hướng nghề
-
-CÁCH TÍCH HỢP THEO HOẠT ĐỘNG (chỉ chọn 1-2 hoạt động phù hợp):
-
-Hoạt động KHỞI ĐỘNG (nếu phù hợp):
-- Dùng công cụ khảo sát: Mentimeter, Kahoot, Google Forms
-- NLS phù hợp: 2.1 (Tương tác qua công nghệ số)
-
-Hoạt động KHÁM PHÁ (nếu phù hợp):
-- HS tìm kiếm, đánh giá thông tin trên Internet
-- NLS phù hợp: 1.1 (Tìm kiếm), 1.2 (Đánh giá thông tin)
-
-Hoạt động LUYỆN TẬP (nếu phù hợp):
-- HS tạo sản phẩm số: poster Canva, video, bài trình bày
-- NLS phù hợp: 3.1 (Sáng tạo nội dung số)
-
-Hoạt động VẬN DỤNG (nếu phù hợp):
-- HS chia sẻ nội dung, hợp tác qua nền tảng số
-- NLS phù hợp: 2.2 (Chia sẻ nội dung), 4.1/4.2 (An toàn thông tin)
-
-QUY TẮC TÍCH HỢP GIÁO DỤC ĐẠO ĐỨC (THEO HÀNH ĐỘNG):
-
-Nguyên tắc: Học sinh phải được "nhúng mình" vào thực tiễn, hình thành phẩm chất thông qua thao tác thực hành và giải quyết vấn đề, không thuyết giảng lý thuyết.
-
-Hoạt động KHÁM PHÁ:
-- Đưa tình huống "có vấn đề" (problem-solving) mang tính đạo đức vào thảo luận.
-- Ví dụ: "Phân tích hành vi của nhân vật trong tình huống về sự trung thực trong quản lý tài chính nhóm".
-
-Hoạt động LUYỆN TẬP:
-- Sử dụng phương pháp Đóng vai (Role-play) hoặc Xử lý tình huống thực tế.
-- Ví dụ: "Đóng vai giải quyết mâu thuẫn gia đình dựa trên sự thấu hiểu và trách nhiệm".
-
-Hoạt động VẬN DỤNG:
-- Yêu cầu sản phẩm là các cam kết hành động thực tế hoặc dự án nhỏ tại địa phương.
-- Ví dụ: "Xây dựng kế hoạch cá nhân rèn luyện tính kiên trì trong 1 tháng tới".
+3. SERVICE LEARNING (SL) & ETHICS:
+   - Connect lessons to community "Service" (e.g., "Cleaning the beach", "Donating books").
+   - Qualities formed through ACTION: Responsibility is shown by doing, not just knowing.
 `;
 
 // ============================================================
-// PHẦN 4: CẤU TRÚC HOẠT ĐỘNG CHI TIẾT (ĐỊNH DẠNG BẢNG 2 CỘT - XU HƯỚNG 2024-2025)
+// PART 4: ACTIVITY STRUCTURE (2-COLUMN FORMAT)
 // ============================================================
 
 export const ACTIVITY_STRUCTURE = `
-CẤU TRÚC MỖI HOẠT ĐỘNG (THEO ĐỊNH DẠNG BẢNG 2 CỘT - TEMPLATE KHBD 2024-2025):
+ACTIVITY STRUCTURE (2-COLUMN TABLE FORMAT - 2024-2025 STANDARD):
 
-*** QUAN TRỌNG: TUÂN THỦ ĐỊNH DẠNG SAU ĐỂ ĐIỀN VÀO BẢNG 2 CỘT TRONG WORD ***
+*** CRITICAL: FOLLOW THIS FORMAT FOR WORD TABLE AUTO-FILL ***
 
-Mỗi hoạt động (hoat_dong_khoi_dong, hoat_dong_kham_pha, hoat_dong_luyen_tap, hoat_dong_van_dung)
-PHẢI được trình bày theo định dạng sau để hệ thống tự động điền vào 2 cột của bảng Word:
+Each Activity (hoat_dong_khoi_dong, hoat_dong_kham_pha, etc.) MUST be formatted as follows:
 
-=== ĐỊNH DẠNG BẮT BUỘC ===
+=== REQUIRED FORMAT ===
 
 [COT_1]
-a) Mục tiêu:
-- [Mô tả chi tiết, viết ít nhất 5 dòng về mục tiêu kiến thức và kỹ năng cần đạt].
-- [Liên hệ ý nghĩa thực tiễn của hoạt động đối với sự phát triển của HS].
+a) Objectives:
+- [Detailed description, at least 5 lines on knowledge/skill goals].
+- [Practical significance for student development].
 
-b) Nội dung:
-- [Mô tả chi tiết kịch bản hoạt động].
-- [Liệt kê các câu hỏi dẫn dắt, các nhiệm vụ thảo luận nhóm hoặc thực hành cá nhân].
-- [Sử dụng ít nhất 10 dòng để mô tả cách thức học sinh tham gia].
+b) Content:
+- [Detailed activity scenario].
+- [List guiding questions, group tasks, or individual practice].
+- [Use at least 10 lines to describe student participation].
 
-c) Sản phẩm:
-- [Mô tả chi tiết kết quả đạt được: Nội dung ghi trên phiếu học tập, kết quả thảo luận, sơ đồ tư duy, hoặc sản phẩm số cụ thể].
-- [Phải mô tả được 'diện mạo' của sản phẩm đó].
+c) Product:
+- [Specific result: Worksheet content, discussion outcome, mind map, or digital product].
+- [Must describe the 'look and feel' of the product].
 [/COT_1]
 
 [COT_2]
-Bước 1: CHUYỂN GIAO NHIỆM VỤ
-• GV: [Viết lời thoại dẫn dắt của GV. Mô tả cách GV trình chiếu, phát phiếu, hoặc nêu tình huống. VD: GV đặt câu hỏi phản biện: "..."]
-• HS: [Mô tả cách HS lắng nghe, ghi chép và sẵn sàng thực hiện].
+Step 1: TRANSFER TASK
+• GV: [Teacher's exact script/instruction. E.g., Teacher asks critical question: "..."]
+• HS: [How students listen, take notes, prepare].
 
-Bước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)
-• GV: [Mô tả cách GV đi quanh lớp, quan sát từng nhóm, hỗ trợ HS gặp khó khăn, đặt câu hỏi gợi mở thêm].
-• HS: [Mô tả chi tiết quá trình thảo luận: HS A làm gì, nhóm trưởng điều phối ra sao, cách HS tra cứu thông tin hoặc thực hành]. (Viết ít nhất 8 dòng)
+Step 2: PERFORM TASK ([X] minutes)
+• GV: [How Teacher observes, supports groups, scaffolds struggling students].
+• HS: [Detailed discussion process: What Student A does, Leader coordinates, Lookup info]. (At least 8 lines)
 
-Bước 3: BÁO CÁO, THẢO LUẬN ([X] phút)
-• GV: [Mô tả cách GV mời đại diện báo cáo ngẫu nhiên, sử dụng kỹ thuật 'mảnh ghép' hoặc 'khăn trải bàn' để điều phối].
-• HS: [Mô tả nội dung HS nói gì, cách các nhóm khác đặt câu hỏi chất vấn và phản biện lẫn nhau].
+Step 3: REPORT & DISCUSS ([X] minutes)
+• GV: [Teacher invites random reps, uses techniques like 'Jigsaw' or 'Gallery Walk'].
+• HS: [What students say, how peer questioning happens].
 
-Bước 4: KẾT LUẬN, NHẬN ĐỊNH
-• GV: [Tổng hợp các ý kiến, chốt kiến thức cốt lõi. Đặc biệt phải có phần khen ngợi, động viên và rút ra bài học giáo dục đạo đức/năng lực số].
-• HS: [Ghi nhớ và hoàn thiện vào vở ghi/phiếu học tập].
+Step 4: CONCLUDE & ASSESS
+• GV: [Synthesize core knowledge. MUST praise/encourage and draw Ethical/NLS lessons].
+• HS: [Record into notebook/worksheet].
 [/COT_2]
 
-=== VÍ DỤ HOẠT ĐỘNG KHỞI ĐỘNG (10 phút) ===
+=== EXAMPLE (WARM-UP - 10 mins) ===
 
 [COT_1]
-a) Mục tiêu:
-- Tạo hứng thú, kết nối kiến thức đã học với nội dung mới
-- Kích hoạt kinh nghiệm sống của học sinh về chủ đề
-
-b) Nội dung:
-- HS xem video/hình ảnh và chia sẻ cảm nhận
-- Thảo luận cặp đôi về câu hỏi gợi mở
-
-c) Sản phẩm:
-- Câu trả lời miệng của học sinh
-- Kết quả khảo sát nhanh (nếu có)
+a) Objectives:
+- Connect prior knowledge...
+b) Content:
+- Watch video...
+c) Product:
+- Oral answers...
 [/COT_1]
 
 [COT_2]
-Bước 1: CHUYỂN GIAO NHIỆM VỤ
-• GV: Chiếu video/hình ảnh, đặt câu hỏi gợi mở, phổ biến yêu cầu
-• HS: Quan sát, lắng nghe, ghi chú câu hỏi
+Step 1: TRANSFER TASK
+• GV: Shows video...
+• HS: Watches...
 
-Bước 2: THỰC HIỆN NHIỆM VỤ (5 phút)
-• GV: Quan sát, di chuyển hỗ trợ các cặp đôi
-• HS: Thảo luận cặp đôi, ghi lại ý kiến
+Step 2: PERFORM TASK (5 mins)
+• GV: Observes...
+• HS: Discusses...
 
-Bước 3: BÁO CÁO, THẢO LUẬN (3 phút)
-• GV: Mời 2-3 HS chia sẻ, điều phối ý kiến
-• HS: Trình bày ngắn gọn, lắng nghe bạn phản hồi
+Step 3: REPORT & DISCUSS (3 mins)
+• GV: Invites...
+• HS: Presents...
 
-Bước 4: KẾT LUẬN, NHẬN ĐỊNH
-• GV: Tổng hợp ý kiến, dẫn dắt vào bài học mới
-• HS: Ghi nhận, sẵn sàng cho hoạt động tiếp theo
+Step 4: CONCLUDE & ASSESS
+• GV: Summarizes...
+• HS: Notes...
 [/COT_2]
 
-=== LƯU Ý ===
-- KHÔNG thêm tiêu đề "HOẠT ĐỘNG 1: KHỞI ĐỘNG" vì đã có sẵn trong template Word
-- Marker [COT_1] và [COT_2] giúp hệ thống tự động tách nội dung vào 2 cột
-- Thời gian cụ thể cho từng bước (đặc biệt Bước 2 và Bước 3)
-- Nội dung GV và HS phải chi tiết, cụ thể, không chung chung
+=== NOTES ===
+- DO NOT add "ACTIVITY 1:..." headers.
+- Markers [COT_1] / [COT_2] are mandatory for column splitting.
+- GV/HS content must be SPECIFIC, not generic.
 `;
 
 // ============================================================
-// PHẦN 5: QUY TẮC ĐỊNH DẠNG
+// PART 5: FORMAT RULES
 // ============================================================
 
 export const FORMAT_RULES = `
-LƯU Ý QUAN TRỌNG VỀ ĐỊNH DẠNG VÀ NGÔN NGỮ:
+FORMATTING & LANGUAGE RULES:
 
-1. TUYỆT ĐỐI KHÔNG sử dụng dấu ** (hai dấu sao) trong nội dung.
-2. KHÔNG dùng TAB hoặc thụt dòng. Sử dụng cấu trúc danh sách Markdown(-) rõ ràng.
-3. ĐỊA DANH & NGÀY THÁNG: Sử dụng "Hà Nội, ngày... tháng... năm..." (hoặc địa danh tương ứng).
-4. PHÂN CẤP ĐỀ MỤC: Sử dụng quy tắc I -> 1 -> a -> - (Nghị định 30).
-5. NGÔN NGỮ: Sử dụng Tiếng Việt sư phạm chuẩn mực, chuyên nghiệp, khách quan.
-6. ĐỘNG TỪ HÀNH ĐỘNG: Phải sử dụng các động từ chỉ mức độ năng lực (Nhận biết, So sánh, Phân tích, Tổng hợp, Đánh giá, Thực hành, Tổ chức).
-7. TÔNG GIỌNG: Nghiêm túc, hướng dẫn, mang tính kiến tạo. Tránh các từ cảm thán hoặc chủ quan.
-8. MỖI ĐOẠN VĂN: Sử dụng dấu xuống dòng kép (\\n\\n) để phân tách rõ ràng khi hiển thị JSON, giúp trình xử lý Word XML nhận diện đúng đoạn văn.
+1. NO ** double asterisks ** in content.
+2. NO TABS or indentation. Use Markdown list (-) clearly.
+3. PLACE/DATE: Use "Hà Nội, ngày... tháng... năm..." format.
+4. HIERARCHY: Use rule I -> 1 -> a -> - (Decree 30).
+5. LANGUAGE: Vietnamese Pedagogical Standard (Formal, Professional, Objective).
+6. ACTION VERBS: Use Bloom verbs (Identify, Analyze, Evaluate, Create).
+7. TONE: Serious, constructive, guiding. Avoid subjective exclamations.
+8. PARAGRAPHS: Use double newline (\\n\\n) to separate paragraphs for XML parsing.
+9. *** FINAL OUTPUT MUST BE IN VIETNAMESE *** (System instructions are English, but content is Vietnamese).
 `;
 
 // ============================================================
@@ -304,7 +257,8 @@ export function getKHDHPrompt(
   additionalRequirements?: string,
   tasks?: Array<{ name: string; description: string; time?: number }>,
   month?: number,
-  activitySuggestions?: ActivitySuggestions
+  activitySuggestions?: ActivitySuggestions,
+  hasFile?: boolean
 ): string {
   const curriculum =
     CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE];
@@ -324,19 +278,7 @@ export function getKHDHPrompt(
   let ppctInfo = null;
 
   if (month) {
-    // Map month to chu_de_so (simplified - can be more accurate with actual mapping)
-    const monthToChuDe: Record<number, number> = {
-      9: 1,
-      10: 2,
-      11: 3,
-      12: 4,
-      1: 5,
-      2: 6,
-      3: 7,
-      4: 8,
-      5: 9,
-    };
-    chuDeSo = monthToChuDe[month] || 1;
+    chuDeSo = MONTH_TO_CHU_DE[month] || 1;
 
     ppctInfo = getPPCTChuDe(gradeNumber, chuDeSo);
     if (ppctInfo) {
@@ -600,27 +542,34 @@ Nhiệm vụ ${i + 1}: ${t.name}
 `;
   }
 
-  return `${KHDH_ROLE}
+  return `
+${hasFile ? `
+============================================================
+CHỈ DẪN VỀ TÀI LIỆU ĐÍNH KÈM (PDF/ẢNH)
+============================================================
+Bạn đã nhận được một TÀI LIỆU ĐÍNH KÈM (PDF/Ảnh). 
+NHIỆM VỤ: Hãy trích xuất các ví dụ, kịch bản, và tên các nhiệm vụ cụ thể từ tài liệu này để làm cho giáo án sát với SGK thực tế nhất có thể. Tuy nhiên, vẫn phải giữ vững cấu trúc sư phạm và các chỉ dẫn từ Database hệ thống dưới đây.
+` : `
+============================================================
+CHỈ DẪN KHI KHÔNG CÓ TÀI LIỆU ĐÍNH KÈM
+============================================================
+Bạn KHÔNG nhận được tài liệu đính kèm nào. 
+NHIỆM VỤ: Hãy dựa hoàn toàn vào TRI THỨC CHUYÊN GIA của bạn và các dữ liệu từ Database (PPCT, Mạch kiến thức...) được cung cấp bên dưới để thiết kế một kịch bản giáo án sáng tạo, đầy đủ và SIÊU CHI TIẾT. Tuyệt đối không viết sơ sài.
+`}
+
+${KHDH_ROLE}
 
 ${KHDH_TASK}
 
 ============================================================
-PHÂN PHỐI CHƯƠNG TRÌNH (PPCT) - THÔNG TƯ SỐ TIẾT
-============================================================
-
-${ppctContext ||
-    `Chưa có thông tin PPCT chi tiết cho Khối ${grade}, Chủ đề ${chuDeSo}. Sử dụng thời lượng: ${duration}`
-    }
+${ppctContext || `Dựa trên thời lượng yêu cầu: ${duration}`}
 
 ============================================================
-HƯỚNG DẪN PHÂN BỔ THỜI GIAN CHI TIẾT
+HƯỚNG DẪN PHÂN BỔ THỜI GIAN VÀ CẤU TRÚC (BẮT BUỘC)
 ============================================================
-
 ${phanBoThoiGianContext || HUONG_DAN_AI_SU_DUNG_PPCT}
 
 ${timeInstruction}
-
-${HUONG_DAN_AI_SU_DUNG_PPCT}
 
 ============================================================
 HƯỚNG DẪN TÍCH HỢP NĂNG LỰC SỐ (NLS) - THÔNG TƯ 02/2025/TT-BGDĐT
@@ -653,17 +602,14 @@ TIÊU CHÍ ĐÁNH GIÁ CUỐI CHỦ ĐỀ
 ${tieuChiDanhGiaContext}
 
 ============================================================
-MẪU BẢNG BIỂU THỰC HÀNH
+HỒ SƠ, BẢNG BIỂU VÀ PHỤ LỤC (KHUYÊN DÙNG)
 ============================================================
-
 ${bangBieuContext}
 
-HƯỚNG DẪN SỬ DỤNG BẢNG BIỂU:
-- Bảng kế hoạch tài chính: Dùng cho chủ đề quản lý tài chính, rèn luyện bản thân
-- Bảng chia sẻ trách nhiệm: Dùng cho chủ đề trách nhiệm, gia đình
-- Bảng theo dõi rèn luyện: Dùng cho chủ đề rèn luyện phẩm chất
-- Bảng SWOT cá nhân: Dùng cho chủ đề khám phá bản thân, định hướng nghề
-- Bảng mục tiêu SMART: Dùng cho chủ đề lập kế hoạch
+SỬ DỤNG BẢNG BIỂU THEO CHỦ ĐỀ:
+- Tài chính/Bản thân: Bảng kế hoạch tài chính, Bảng SWOT, Mẫu SMART.
+- Trách nhiệm/Gia đình: Bảng chia sẻ trách nhiệm.
+- Rèn luyện: Bảng theo dõi rèn luyện.
 
 ============================================================
 PHIẾU HỌC TẬP VÀ RUBRIC ĐÁNH GIÁ (ĐÃ THIẾT KẾ SẴN)

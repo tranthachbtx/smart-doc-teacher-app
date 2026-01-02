@@ -129,10 +129,8 @@ export async function getEffectiveTemplate(type: "meeting" | "event" | "lesson" 
   }
 
   // Then try to load from public/templates (via default-templates.ts)
-  if (type !== 'ncbh') {
-    const builtInTemplate = await loadDefaultTemplate(type as any)
-    if (builtInTemplate) return builtInTemplate
-  }
+  const builtInTemplate = await loadDefaultTemplate(type as any)
+  if (builtInTemplate) return builtInTemplate
 
   // Finally, fallback to generating one programmatically
   let generatedBlob: Blob | null = null;

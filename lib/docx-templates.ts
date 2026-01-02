@@ -448,7 +448,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{muc_tieu_kien_thuc}", size: 24 }),
+                            new TextRun({ text: "{{muc_tieu_kien_thuc}}", size: 24 }),
                         ],
                     }),
                     new Paragraph({
@@ -458,7 +458,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{muc_tieu_nang_luc}", size: 24 }),
+                            new TextRun({ text: "{{muc_tieu_nang_luc}}", size: 24 }),
                         ],
                     }),
                     new Paragraph({
@@ -468,7 +468,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{muc_tieu_pham_chat}", size: 24 }),
+                            new TextRun({ text: "{{muc_tieu_pham_chat}}", size: 24 }),
                         ],
                     }),
                     new Paragraph({ text: "" }),
@@ -492,7 +492,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                         ],
                     }),
                     new Paragraph({
-                        children: [new TextRun({ text: "{gv_chuan_bi}", size: 24 })],
+                        children: [new TextRun({ text: "{{gv_chuan_bi}}", size: 24 })],
                     }),
                     new Paragraph({
                         children: [
@@ -504,7 +504,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                         ],
                     }),
                     new Paragraph({
-                        children: [new TextRun({ text: "{hs_chuan_bi}", size: 24 })],
+                        children: [new TextRun({ text: "{{hs_chuan_bi}}", size: 24 })],
                     }),
                     new Paragraph({ text: "" }),
                     // Section III - Hoạt động
@@ -529,13 +529,13 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{shdc}", size: 24 }),
+                            new TextRun({ text: "{{shdc}}", size: 24 }),
                         ],
                     }),
                     new Paragraph({ text: "" }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{shl}", size: 24 }),
+                            new TextRun({ text: "{{shl}}", size: 24 }),
                         ],
                     }),
                     new Paragraph({ text: "" }),
@@ -584,10 +584,10 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                                     new TableRow({
                                         children: [
                                             new TableCell({
-                                                children: [new Paragraph({ children: [new TextRun({ text: `{hoat_dong_${actKey}_cot_1}`, size: 24 })] })]
+                                                children: [new Paragraph({ children: [new TextRun({ text: `{{hoat_dong_${actKey}_cot_1}}`, size: 24 })] })]
                                             }),
                                             new TableCell({
-                                                children: [new Paragraph({ children: [new TextRun({ text: `{hoat_dong_${actKey}_cot_2}`, size: 24 })] })]
+                                                children: [new Paragraph({ children: [new TextRun({ text: `{{hoat_dong_${actKey}_cot_2}}`, size: 24 })] })]
                                             }),
                                         ]
                                     })
@@ -607,7 +607,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                         ],
                     }),
                     new Paragraph({
-                        children: [new TextRun({ text: "{ho_so_day_hoc}", size: 24 })],
+                        children: [new TextRun({ text: "{{ho_so_day_hoc}}", size: 24 })],
                     }),
                     new Paragraph({ text: "" }),
                     new Paragraph({
@@ -621,7 +621,7 @@ export const createLessonTemplate = async (): Promise<Blob> => {
                     }),
                     new Paragraph({
                         children: [
-                            new TextRun({ text: "{huong_dan_ve_nha}", size: 24 }),
+                            new TextRun({ text: "{{huong_dan_ve_nha}}", size: 24 }),
                         ],
                     }),
                 ],

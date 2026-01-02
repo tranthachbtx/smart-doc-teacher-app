@@ -10,7 +10,8 @@ import type {
 import type { PPCTItem } from "@/lib/template-storage";
 
 // Helper function to format text for Word
-function formatForWord(text: unknown): string {
+// Helper function to format text for Word with administrative styling
+const formatForWord = (text: unknown, alignLeft: boolean = false, noIndent: boolean = false): string => {
   // Handle null/undefined
   if (text === null || text === undefined) return "";
 
@@ -20,18 +21,14 @@ function formatForWord(text: unknown): string {
       text
         .map((item) => {
           if (typeof item === "object" && item !== null) {
-            // Format object items recursively
             return Object.entries(item)
-              .map(
-                ([key, value]) =>
-                  `${key}: ${typeof value === "string" ? value : JSON.stringify(value)
-                  }`
-              )
+              .map(([key, value]) => `${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`)
               .join("\n");
           }
           return String(item);
         })
-        .join("\n")
+        .join("\n"),
+      alignLeft
     );
   }
 
@@ -44,87 +41,58 @@ function formatForWord(text: unknown): string {
       if (obj.shdc && Array.isArray(obj.shdc)) {
         parts.push("SINH HOẠT DƯỚI CỜ:");
         obj.shdc.forEach((item: Record<string, unknown>, idx: number) => {
-          parts.push(
-            `Tuần ${idx + 1}: ${item.ten_hoat_dong || item.ten || ""}`
-          );
-          if (item.noi_dung_chinh)
-            parts.push(`Nội dung: ${item.noi_dung_chinh}`);
+          parts.push(`Tuần ${idx + 1}: ${item.ten_hoat_dong || item.ten || ""}`);
+          if (item.noi_dung_chinh) parts.push(`Nội dung: ${item.noi_dung_chinh}`);
         });
       }
       if (obj.shl && Array.isArray(obj.shl)) {
         parts.push("\nSINH HOẠT LỚP:");
         obj.shl.forEach((item: Record<string, unknown>, idx: number) => {
-          parts.push(
-            `Tuần ${idx + 1}: ${item.ten_hoat_dong || item.ten || ""}`
-          );
-          if (item.noi_dung_chinh)
-            parts.push(`Nội dung: ${item.noi_dung_chinh}`);
+          parts.push(`Tuần ${idx + 1}: ${item.ten_hoat_dong || item.ten || ""}`);
+          if (item.noi_dung_chinh) parts.push(`Nội dung: ${item.noi_dung_chinh}`);
         });
       }
-      return formatForWord(parts.join("\n"));
+      return formatForWord(parts.join("\n"), alignLeft);
     }
-    // Generic object handling
     return formatForWord(
       Object.entries(obj)
-        .map(
-          ([key, value]) =>
-            `${key}: ${typeof value === "string" ? value : JSON.stringify(value)
-            }`
-        )
-        .join("\n")
+        .map(([key, value]) => `${key}: ${typeof value === "string" ? value : JSON.stringify(value)}`)
+        .join("\n"),
+      alignLeft
     );
   }
 
   // Handle non-string primitives
   if (typeof text !== "string") {
-    return formatForWord(String(text));
+    return formatForWord(String(text), alignLeft);
   }
 
-  // Now we know text is a string
-  let formatted = text
-    // Remove Markdown Headers
-    .replace(/^#+\s+/gm, "")
-    // Remove Markdown Bold/Italic stars
-    .replace(/\*{1,3}/g, "")
-    // Remove TAB characters
-    .replace(/\t/g, "")
-    // Convert [COT_1] and [COT_2] markers to readable format for Word template
+  // --- Clean Markdown and format for Word ---
+  const formatted = text
+    .replace(/^#+\s+/gm, "") // Remove Markdown Headers
+    .replace(/\*{1,3}/g, "") // Remove Bold/Italic stars
+    .replace(/\t/g, "")      // Remove TABs
+    // Convert column markers to readable text for template fallback
     .replace(/\[COT_1\]/g, "📋 THÔNG TIN HOẠT ĐỘNG:\n")
     .replace(/\[\/COT_1\]/g, "\n")
     .replace(/\[COT_2\]/g, "📝 TỔ CHỨC THỰC HIỆN:\n")
     .replace(/\[\/COT_2\]/g, "")
-    // Legacy: Convert old column marker format
-    .replace(/\[CỘT 1: THÔNG TIN\]/g, "📋 THÔNG TIN HOẠT ĐỘNG:\n")
-    .replace(/\[CỘT 2: TỔ CHỨC THỰC HIỆN\]/g, "\n📝 TỔ CHỨC THỰC HIỆN:\n")
-    .replace(/\[CỘT 1:[^\]]*\]/g, "")
-    .replace(/\[CỘT 2:[^\]]*\]/g, "")
-    // Convert markdown table format to readable text format
+    // Table formatting clean-up
     .replace(/\|\s*BƯỚC\s*\|\s*HOẠT ĐỘNG (CỦA )?GV\s*\|\s*HOẠT ĐỘNG (CỦA )?HS\s*\|\s*THỜI GIAN\s*\|/gi,
       "BƯỚC | HOẠT ĐỘNG GV | HOẠT ĐỘNG HS | THỜI GIAN")
     .replace(/\|[-]+\|[-]+\|[-]+\|[-]+\|/g, "─────────────────────────────────────────")
-    // Convert table rows: |B1|...|...|...|
     .replace(/\|\s*B(\d+)[:\s]*([^|]*)\s*\|\s*([^|]*)\s*\|\s*([^|]*)\s*\|\s*([^|]*)\s*\|/g,
       "B$1: $2\n  • GV: $3\n  • HS: $4\n  • Thời gian: $5")
-    // Clean up lines
     .split("\n")
     .map((line) => line.trim())
-    // Collapse multiple empty lines into a single newline
     .filter((line, index, arr) => line !== "" || (index > 0 && arr[index - 1] !== ""))
     .join("\n")
     .trim()
-    // Convert multiple newlines to single newlines for paragraph separation
     .replace(/\n\s*\n/g, "\n");
 
-  if (!formatted) return "";
-
-  // Standardize administrative styling (Decree 30/2020/NĐ-CP):
-  // - Line spacing: 1.5 lines
-  // - First line indent: 1.27cm (720 twips)
-  // - Justified alignment
-  // - Font: Times New Roman, Size 13pt (26 half-points)
-
-  // Use a marker for line breaks and a special marker for the start
-  return "[[STYLE_FIX]]" + formatted.replace(/\n/g, "{{BR}}");
+  const brMarker = alignLeft ? "__BR_LEFT_MARKER__" : "__BR_MARKER__";
+  const prefix = alignLeft ? "[[ALIGN_LEFT]]" : (noIndent ? "[[STYLE_NO_INDENT]]" : "[[STYLE_FIX]]");
+  return prefix + formatted.replace(/\n/g, brMarker);
 }
 
 const extractColumn = (text: string | undefined, column: 1 | 2): string => {
@@ -187,17 +155,14 @@ async function processTemplate(
   fileName: string
 ) {
   // If no template, copy to clipboard
-  if (!templateData) {
-    const content = Object.entries(data)
-      .map(
-        ([key, value]) =>
-          `${key}:\n${(String(value) || "").replace(/\{\{BR\}\}/g, "\n")}`
-      )
-      .join("\n\n---\n\n");
-
-    await navigator.clipboard.writeText(content);
-    return { success: true, method: "clipboard" as const };
+  // Validate template data
+  if (!templateData || templateData.byteLength === 0) {
+    console.error("[ExportService] Template data is missing or empty.");
+    throw new Error("Không thể tìm thấy hoặc tạo mẫu báo cáo. Vui lòng thử lại hoặc chọn mẫu khác.");
   }
+
+  // NOTE: Clipboard fallback removed to prevent user confusion ("File not found").
+  // If we reach here, we MUST download a file.
 
   // Dynamic imports for docx processing with fallback for different module formats
   const PizZipModule = await import("pizzip");
@@ -206,36 +171,72 @@ async function processTemplate(
   const DocxtemplaterModule = await import("docxtemplater");
   const Docxtemplater = DocxtemplaterModule.default || DocxtemplaterModule;
 
-  let saveAs: (blob: Blob, filename: string) => void;
-
-  try {
-    const fileSaver = await import("file-saver");
-    saveAs = (fileSaver as any).saveAs || (fileSaver as any).default?.saveAs || (fileSaver as any).default;
-    if (typeof saveAs !== "function") throw new Error("FileSaver not found");
-  } catch (err) {
-    console.warn("FileSaver not available, using DOM fallback:", err);
-    saveAs = (blob: Blob, filename: string) => {
+  // Standard DOM-based download helper
+  const downloadBlob = (blob: Blob, filename: string) => {
+    try {
+      console.log(`[ExportService] Saving file: "${filename}" (${blob.size} bytes)`);
       const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    };
-  }
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename); // Force attribute
+      document.body.appendChild(link);
+      link.click();
+
+      // Cleanup with generous timeout
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+        URL.revokeObjectURL(url);
+      }, 2000);
+    } catch (e) {
+      console.error("[ExportService] Save failed:", e);
+      alert("Lỗi lưu file: " + (e instanceof Error ? e.message : String(e)));
+    }
+  };
+
+  const saveAs = downloadBlob;
 
   const zip = new PizZip(templateData);
-  const doc = new Docxtemplater(zip, {
-    paragraphLoop: true,
-    linebreaks: false, // We handle them manually for better control
-    nullGetter: () => "",
-    delimiters: {
-      start: "{",
-      end: "}",
-    },
-  });
+
+  // --- INTELLIGENT DELIMITER DETECTION ---
+  // We check if the template uses {{ }} or { } by looking at the XML content.
+  // This respects user-uploaded templates while allowing the new default to work.
+  let startDelim = "{{";
+  let endDelim = "}}";
+
+  const mainXml = zip.file("word/document.xml")?.asText() || "";
+  // If we find more double braces than single braces (as placeholders), or if we specifically find 
+  // known system tags with {{, we stick with {{. Otherwise, if we find { but no {{, we switch to {.
+  const hasDouble = mainXml.includes("{{") && mainXml.includes("}}");
+  const hasSingleOnly = mainXml.includes("{") && mainXml.includes("}") && !hasDouble;
+
+  if (hasSingleOnly) {
+    console.log("[ExportService] Detected single-brace delimiters in template.");
+    startDelim = "{";
+    endDelim = "}";
+  } else {
+    console.log("[ExportService] Using double-brace delimiters (Default/Detected).");
+  }
+
+  let doc;
+  try {
+    doc = new Docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: false,
+      nullGetter: () => "",
+      delimiters: {
+        start: startDelim,
+        end: endDelim
+      }
+    });
+  } catch (error: any) {
+    if (error.properties && error.properties.errors) {
+      const errorMessages = error.properties.errors.map((e: any) => e.message).join("\n");
+      throw new Error(`Template Error (Constructor): ${errorMessages}`);
+    }
+    throw error;
+  }
 
   try {
     doc.render(data);
@@ -255,30 +256,59 @@ async function processTemplate(
   if (documentXml) {
     let xmlContent = documentXml.asText();
 
-    // Administrative styles according to Decree 30/2020/NĐ-CP
-    // Font: Times New Roman, Size: 13pt (26 half-points), Spacing: 1.5 lines (360 twips)
-    const adminStylesPara = `<w:pPr><w:ind w:firstLine="720"/><w:jc w:val="both"/><w:spacing w:line="360" w:lineRule="auto" w:after="0"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr><w:t>`;
+    // Administrative styles according to Decree 30/2020/NĐ-CP & 5512
+    // Font: Times New Roman, Size: 13pt (26), Spacing: 1.25 lines (300 twips)
+    // Left/Right Indent: 120 twips (approx 2mm padding for table cells)
+    const adminStylesPara = `<w:pPr><w:ind w:firstLine="720" w:left="120" w:right="120"/><w:jc w:val="both"/><w:spacing w:line="300" w:lineRule="auto" w:after="0"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr><w:t>`;
+    const adminStylesLeftPara = `<w:pPr><w:ind w:left="120" w:right="120"/><w:jc w:val="left"/><w:spacing w:line="300" w:lineRule="auto" w:after="0"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr><w:t>`;
+
     const adminStylesBreak = `</w:t></w:r></w:p><w:p>${adminStylesPara}`;
+    const adminStylesLeftBreak = `</w:t></w:r></w:p><w:p>${adminStylesLeftPara}`;
 
-    // 1. Handle internal line breaks
-    xmlContent = xmlContent.replace(/\{\{BR\}\}/g, adminStylesBreak);
+    // 1. Handle internal line breaks (detecting if it belongs to a left-aligned block)
+    xmlContent = xmlContent
+      .replace(/__BR_MARKER__/g, adminStylesBreak)
+      .replace(/__BR_LEFT_MARKER__/g, adminStylesLeftBreak)
+      .replace(/\{\{BR\}\}/g, adminStylesBreak)
+      .replace(/\{BR\}/g, adminStylesBreak);
 
-    // 2. Handle first-line paragraph formatting using the [[STYLE_FIX]] marker
-    // We look for paragraphs containing the marker and inject the administrative style properties
-    // This fixed the common issue where the first line inherits a different style from the template
+    // 2. Handle block formatting and alignment using markers
+    // Standard RPr part to enforce 13pt font size
+    const rPr13pt = `<w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman" w:eastAsia="Times New Roman" w:cs="Times New Roman"/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr>`;
+
+    // Justified (Default)
     xmlContent = xmlContent.replace(/(<w:p(?: [^>]*)?>)(<w:pPr>.*?<\/w:pPr>)?(<w:r(?: [^>]*)?><w:rPr>.*?<\/w:rPr><w:t(?: [^>]*)?>.*?\[\[STYLE_FIX\]\])/g, (match, pOpen, pPr, rest) => {
-      // Replace existing pPr with administrative pPr or inject if missing
-      const newPPr = `<w:pPr><w:ind w:firstLine="720"/><w:jc w:val="both"/><w:spacing w:line="360" w:lineRule="auto" w:after="0"/></w:pPr>`;
-      return `${pOpen}${newPPr}${rest}`;
+      const newPPr = `<w:pPr><w:ind w:firstLine="720" w:left="120" w:right="120"/><w:jc w:val="both"/><w:spacing w:line="300" w:lineRule="auto" w:after="0"/></w:pPr>`;
+      const updatedRest = rest.replace(/<w:rPr>.*?<\/w:rPr>/, rPr13pt);
+      return `${pOpen}${newPPr}${updatedRest}`;
     });
 
+    // No Indent Justified
+    xmlContent = xmlContent.replace(/(<w:p(?: [^>]*)?>)(<w:pPr>.*?<\/w:pPr>)?(<w:r(?: [^>]*)?><w:rPr>.*?<\/w:rPr><w:t(?: [^>]*)?>.*?\[\[STYLE_NO_INDENT\]\])/g, (match, pOpen, pPr, rest) => {
+      const newPPr = `<w:pPr><w:ind w:left="120" w:right="120"/><w:jc w:val="both"/><w:spacing w:line="300" w:lineRule="auto" w:after="0"/></w:pPr>`;
+      const updatedRest = rest.replace(/<w:rPr>.*?<\/w:rPr>/, rPr13pt);
+      return `${pOpen}${newPPr}${updatedRest}`;
+    });
+
+    // Left Aligned (Worksheets/Assessment)
+    xmlContent = xmlContent.replace(/(<w:p(?: [^>]*)?>)(<w:pPr>.*?<\/w:pPr>)?(<w:r(?: [^>]*)?><w:rPr>.*?<\/w:rPr><w:t(?: [^>]*)?>.*?\[\[ALIGN_LEFT\]\])/g, (match, pOpen, pPr, rest) => {
+      const newPPr = `<w:pPr><w:ind w:left="120" w:right="120"/><w:jc w:val="left"/><w:spacing w:line="300" w:lineRule="auto" w:after="0"/></w:pPr>`;
+      const updatedRest = rest.replace(/<w:rPr>.*?<\/w:rPr>/, rPr13pt);
+      return `${pOpen}${newPPr}${updatedRest}`;
+    });
+
+    // Fix internal breaks for LEFT aligned sections specifically
+    // If a paragraph contains [[ALIGN_LEFT]], we need to ensure its subsequent sibling breaks also use Left styles
+    // (Simplified: we replace markers and relying on most content being single-block per tag)
+
     // 3. Remove markers
-    xmlContent = xmlContent.replace(/\[\[STYLE_FIX\]\]/g, "");
+    xmlContent = xmlContent
+      .replace(/\[\[STYLE_FIX\]\]/g, "")
+      .replace(/\[\[STYLE_NO_INDENT\]\]/g, "")
+      .replace(/\[\[ALIGN_LEFT\]\]/g, "");
 
     // Enforce Vietnamese Administrative Margins (Decree 30)
     xmlContent = xmlContent.replace(/<w:pgMar[^>]*\/>/g, '<w:pgMar w:top="1134" w:right="850" w:bottom="1134" w:left="1701" w:header="720" w:footer="720" w:gutter="0"/>');
-
-    processedZip.file("word/document.xml", xmlContent);
 
     processedZip.file("word/document.xml", xmlContent);
   }
@@ -286,10 +316,47 @@ async function processTemplate(
   const output = processedZip.generate({
     type: "blob",
     mimeType:
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/octet-stream", // Force binary stream to avoid browser preview/rename issues
   });
 
-  saveAs(output, fileName);
+  // Ensure filename has .docx extension and is safe
+  let safeName = fileName.replace(/[\n\r]/g, "").trim(); // Remove newlines
+  if (!safeName) safeName = "Document";
+
+  const finalFileName = safeName.toLowerCase().endsWith(".docx")
+    ? safeName
+    : `${safeName}.docx`;
+
+  // ALERT 1: Notify user that process reached the download stage
+  alert(`Hệ thống đang tải xuống tệp: ${finalFileName}\nVui lòng kiểm tra thư mục 'Downloads' của bạn.`);
+
+  try {
+    // Attempt 1: Use file-saver (most robust)
+    const { saveAs } = await import("file-saver");
+    const blob = output; // Already a blob
+    saveAs(blob, finalFileName);
+    console.log(`[ExportService] Saved using file-saver: ${finalFileName}`);
+  } catch (fsError) {
+    console.warn("[ExportService] file-saver failed, falling back to native anchor:", fsError);
+
+    // Attempt 2: Native Anchor Fallback (for weird contexts)
+    try {
+      const url = URL.createObjectURL(output);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", finalFileName);
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => {
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      }, 1000);
+    } catch (nativeError) {
+      alert("Lỗi không thể tải file. Vui lòng thử lại trên trình duyệt Chrome/Edge mới nhất.");
+      throw nativeError;
+    }
+  }
+
   return { success: true, method: "download" as const };
 }
 
@@ -347,9 +414,9 @@ export const ExportService = {
     let data: Record<string, any> = {};
     let fileName = "";
 
-    const cleanRedundantTitles = (text: string | undefined) => {
+    const cleanRedundantTitles = (text: string | undefined, alignLeft: boolean = false) => {
       if (!text) return "";
-      let cleaned = formatForWord(text);
+      let cleaned = formatForWord(text, alignLeft);
       // Remove common redundant patterns at the start (repeat up to 3 times for nested headers)
       for (let i = 0; i < 3; i++) {
         cleaned = cleaned
@@ -379,28 +446,29 @@ export const ExportService = {
         muc_tieu_nang_luc: cleanRedundantTitles(result.muc_tieu_nang_luc),
         muc_tieu_pham_chat: cleanRedundantTitles(result.muc_tieu_pham_chat),
 
-        gv_chuan_bi: cleanRedundantTitles(result.gv_chuan_bi),
-        hs_chuan_bi: cleanRedundantTitles(result.hs_chuan_bi),
-        thiet_bi_day_hoc: formatForWord(result.thiet_bi_day_hoc || ""),
+        gv_chuan_bi: cleanRedundantTitles(result.gv_chuan_bi, true),
+        hs_chuan_bi: cleanRedundantTitles(result.hs_chuan_bi, true),
+        thiet_bi_day_hoc: formatForWord(result.thiet_bi_day_hoc || "", true),
 
-        hoat_dong_duoi_co: formatForWord(result.hoat_dong_duoi_co || ""),
-        shdc: formatForWord(result.shdc || ""),
-        shl: formatForWord(result.shl || ""),
-        hoat_dong_khoi_dong_cot_1: formatForWord(extractColumn(result.hoat_dong_khoi_dong, 1)),
-        hoat_dong_khoi_dong_cot_2: formatForWord(extractColumn(result.hoat_dong_khoi_dong, 2)),
+        hoat_dong_duoi_co: cleanRedundantTitles(result.hoat_dong_duoi_co || ""),
+        shdc: cleanRedundantTitles(result.shdc || ""),
+        shl: cleanRedundantTitles(result.shl || ""),
+        hoat_dong_khoi_dong_cot_1: formatForWord(extractColumn(result.hoat_dong_khoi_dong, 1), false, true),
+        hoat_dong_khoi_dong_cot_2: formatForWord(extractColumn(result.hoat_dong_khoi_dong, 2), false, true),
 
-        hoat_dong_kham_pha_cot_1: formatForWord(extractColumn(result.hoat_dong_kham_pha, 1)),
-        hoat_dong_kham_pha_cot_2: formatForWord(extractColumn(result.hoat_dong_kham_pha, 2)),
+        hoat_dong_kham_pha_cot_1: formatForWord(extractColumn(result.hoat_dong_kham_pha, 1), false, true),
+        hoat_dong_kham_pha_cot_2: formatForWord(extractColumn(result.hoat_dong_kham_pha, 2), false, true),
 
-        hoat_dong_luyen_tap_cot_1: formatForWord(extractColumn(result.hoat_dong_luyen_tap, 1)),
-        hoat_dong_luyen_tap_cot_2: formatForWord(extractColumn(result.hoat_dong_luyen_tap, 2)),
+        hoat_dong_luyen_tap_cot_1: formatForWord(extractColumn(result.hoat_dong_luyen_tap, 1), false, true),
+        hoat_dong_luyen_tap_cot_2: formatForWord(extractColumn(result.hoat_dong_luyen_tap, 2), false, true),
 
-        hoat_dong_van_dung_cot_1: formatForWord(extractColumn(result.hoat_dong_van_dung, 1)),
-        hoat_dong_van_dung_cot_2: formatForWord(extractColumn(result.hoat_dong_van_dung, 2)),
+        hoat_dong_van_dung_cot_1: formatForWord(extractColumn(result.hoat_dong_van_dung, 1), false, true),
+        hoat_dong_van_dung_cot_2: formatForWord(extractColumn(result.hoat_dong_van_dung, 2), false, true),
 
 
-        ho_so_day_hoc: formatForWord(result.ho_so_day_hoc || ""),
-        huong_dan_ve_nha: formatForWord(result.huong_dan_ve_nha || ""),
+        ho_so_day_hoc: formatForWord(result.ho_so_day_hoc || "", true, true),
+        huong_dan_ve_nha: formatForWord(result.huong_dan_ve_nha || "", false, true),
+        noi_dung_chuan_bi: formatForWord(result.noi_dung_chuan_bi || "", false, true),
 
         tich_hop_nls: reviewPrefix + formatForWord(result.tich_hop_nls),
         tich_hop_dao_duc: reviewPrefix + formatForWord(result.tich_hop_dao_duc),
@@ -415,31 +483,42 @@ export const ExportService = {
         const taskNum = index + 1;
         data[`nhiem_vu_${taskNum}_ten`] = task.name || "";
         data[`nhiem_vu_${taskNum}_noi_dung`] = formatForWord(
-          task.content || ""
+          task.content || "",
+          true
         );
         data[`nhiem_vu_${taskNum}_ky_nang`] = formatForWord(
-          Array.isArray(task.kyNangCanDat)
+          (Array.isArray(task.kyNangCanDat)
             ? task.kyNangCanDat.join(", ")
-            : task.kyNangCanDat || ""
+            : task.kyNangCanDat || ""),
+          true
         );
         data[`nhiem_vu_${taskNum}_san_pham`] = formatForWord(
-          task.sanPhamDuKien || ""
+          task.sanPhamDuKien || "",
+          true
         );
         data[`nhiem_vu_${taskNum}_thoi_luong`] = task.thoiLuongDeXuat || "";
 
         const nhiemVuFromResult = result.nhiem_vu?.[index];
         if (nhiemVuFromResult?.to_chuc_thuc_hien) {
           data[`nhiem_vu_${taskNum}_chuyen_giao`] = formatForWord(
-            nhiemVuFromResult.to_chuc_thuc_hien.chuyen_giao || ""
+            nhiemVuFromResult.to_chuc_thuc_hien.chuyen_giao || "",
+            false,
+            true
           );
           data[`nhiem_vu_${taskNum}_thuc_hien`] = formatForWord(
-            nhiemVuFromResult.to_chuc_thuc_hien.thuc_hien || ""
+            nhiemVuFromResult.to_chuc_thuc_hien.thuc_hien || "",
+            false,
+            true
           );
           data[`nhiem_vu_${taskNum}_bao_cao`] = formatForWord(
-            nhiemVuFromResult.to_chuc_thuc_hien.bao_cao || ""
+            nhiemVuFromResult.to_chuc_thuc_hien.bao_cao || "",
+            false,
+            true
           );
           data[`nhiem_vu_${taskNum}_ket_luan`] = formatForWord(
-            nhiemVuFromResult.to_chuc_thuc_hien.ket_luan || ""
+            nhiemVuFromResult.to_chuc_thuc_hien.ket_luan || "",
+            false,
+            true
           );
         }
       });
@@ -471,8 +550,7 @@ export const ExportService = {
         }
       });
 
-      fileName = `KHBD_Lop${grade}_ChuDe${chuDeNumber}_${topic || autoFilledTheme
-        }.docx`.replace(/\s+/g, "_");
+      fileName = `KHBH_KHOI${grade}_CD${chuDeNumber}.docx`;
     } else {
       data = {
         ten_bai: topic || autoFilledTheme,
@@ -480,10 +558,12 @@ export const ExportService = {
         tich_hop_nls: reviewPrefix + formatForWord(result.tich_hop_nls),
         tich_hop_dao_duc: reviewPrefix + formatForWord(result.tich_hop_dao_duc),
       };
-      fileName = `KHBD_tich_hop_${topic || autoFilledTheme}.docx`.replace(
-        /\s+/g,
-        "_"
-      );
+      const safeTopic = (topic || autoFilledTheme || "")
+        .replace(/[:\\/|<>"?*]/g, "") // Remove illegal filename chars
+        .trim()
+        .replace(/\s+/g, "_");
+
+      fileName = `KHBD_tich_hop_${safeTopic}.docx`;
     }
 
     return processTemplate(data, template?.data || null, fileName);

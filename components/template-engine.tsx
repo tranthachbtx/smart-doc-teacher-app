@@ -132,7 +132,12 @@ const TemplateEngine = () => {
     null
   ); // Added missing state
   const [lessonCustomInstructions, setLessonCustomInstructions] =
-    useState<string>("");
+    useState<string>(`YÊU CẦU ĐẶC BIỆT (CHẾ ĐỘ SIÊU CHI TIẾT 50+ TRANG):
+1. CẤU TRÚC PHÂN TÁCH: Hãy chia nhỏ nội dung phần Khám phá và Luyện tập thành từng Tiết học/Buổi học riêng biệt (VD: Tiết 1, Tiết 2...). Mỗi tiết phải có đủ 4 bước: Mở đầu - Hình thành kiến thức - Luyện tập - Vận dụng nhanh.
+2. KỊCH BẢN SƯ PHẠM: Không viết tóm tắt. Phải viết KỊCH BẢN LỜI THOẠI chi tiết giữa GV và HS. GV đóng vai người "Coaching" (Huấn luyện viên), dùng câu hỏi gợi mở để HS tự chốt kiến thức.
+3. CHIẾN LƯỢC DẠY HỌC: Áp dụng triệt để "Lớp học đảo ngược" (Flipped Classroom) và "Dạy học dự án" (Project Based Learning). Mô tả kỹ cách học sinh hoạt động nhóm.
+4. TÍCH HỢP SÂU: Lồng ghép kỹ năng Công dân số (Digital Citizenship) và Bảo tồn văn hóa/Thiên nhiên vào từng hoạt động nhỏ.
+5. SẢN PHẨM CỤ THỂ: Mô tả chi tiết Rubric đánh giá, Phiếu học tập, và Sản phẩm dự kiến của học sinh ở mức độ cao nhất.`);
   const [lessonTasks, setLessonTasks] = useState<LessonTask[]>([]);
 
   const [curriculumTasks, setCurriculumTasks] = useState<LessonTask[]>([]);
@@ -166,6 +171,7 @@ const TemplateEngine = () => {
     setError,
     generateMeeting,
     generateLesson,
+    generateLessonSection,
     generateEvent,
     auditLesson,
     generateNCBH,
@@ -226,8 +232,8 @@ const TemplateEngine = () => {
     useState(false);
 
   // Model & OCR state
-  const [selectedModel, setSelectedModel] = useState<string>("gemini-2.0-flash-exp");
-  const [lessonImage, setLessonImage] = useState<{ mimeType: string; data: string } | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string>("gemini-1.5-flash");
+  const [lessonFile, setLessonFile] = useState<{ mimeType: string; data: string; name: string } | null>(null);
 
   useEffect(() => {
     const checkApiKey = async () => {
@@ -690,7 +696,7 @@ const TemplateEngine = () => {
       { shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion },
       selectedChuDe,
       selectedModel,
-      lessonImage || undefined
+      lessonFile || undefined
     );
 
     if (result.success && result.data) {
@@ -711,6 +717,32 @@ const TemplateEngine = () => {
     } else {
       setError(result.error || "Lỗi khi tạo nội dung");
     }
+  };
+
+  const handleGenerateLessonSection = async (section: any, context: any) => {
+    const effectiveTopic = lessonTopic || lessonAutoFilledTheme;
+    const result = await generateLessonSection(
+      lessonGrade,
+      effectiveTopic,
+      section,
+      context,
+      lessonDuration,
+      lessonCustomInstructions,
+      lessonTasks,
+      Number(lessonMonth),
+      { shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion },
+      selectedModel,
+      lessonFile || undefined
+    );
+
+    if (result.success && result.data) {
+      setLessonResult((prev: any) => ({
+        ...(prev || {}),
+        ...result.data
+      }));
+      return { success: true, data: result.data };
+    }
+    return { success: false, error: result.error };
   };
 
   // Handle event script generation
@@ -1635,12 +1667,14 @@ const TemplateEngine = () => {
               onAudit={handleAudit}
               auditResult={auditResult}
               setSuccess={setSuccess}
+              setError={setError}
               lessonTopic={lessonTopic}
               selectedModel={selectedModel}
               setSelectedModel={setSelectedModel}
-              lessonImage={lessonImage}
-              setLessonImage={setLessonImage}
+              lessonFile={lessonFile}
+              setLessonFile={setLessonFile}
               onRefineSection={(content, instruction) => refineSection(content, instruction, selectedModel)}
+              onGenerateSection={handleGenerateLessonSection}
             />
           </TabsContent>
           <TabsContent value="event">

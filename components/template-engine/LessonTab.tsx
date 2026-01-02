@@ -29,6 +29,7 @@ import {
     ChevronDown,
     Zap,
     Upload,
+    Trash2,
 } from "lucide-react";
 import type { LessonResult, LessonTask } from "@/lib/types";
 import type { PPCTChuDe } from "@/lib/data/ppct-database";
@@ -75,12 +76,14 @@ interface LessonTabProps {
     onAudit: () => void;
     auditResult: string | null;
     setSuccess: (msg: string) => void;
+    setError: (msg: string) => void;
     lessonTopic: string;
     selectedModel: string;
     setSelectedModel: (value: string) => void;
-    lessonImage: { mimeType: string; data: string } | null;
-    setLessonImage: (value: { mimeType: string; data: string } | null) => void;
+    lessonFile: { mimeType: string; data: string; name: string } | null;
+    setLessonFile: (value: { mimeType: string; data: string; name: string } | null) => void;
     onRefineSection: (content: string, instruction: string) => Promise<{ success: boolean; content?: string }>;
+    onGenerateSection?: (section: "setup" | "khởi động" | "khám phá" | "luyện tập" | "vận dụng" | "shdc_shl" | "final" | "preparation", context: any) => Promise<{ success: boolean; data?: any }>;
 }
 
 export function LessonTab({
@@ -95,8 +98,6 @@ export function LessonTab({
     selectedChuDe,
     setSelectedChuDe,
     setLessonMonth,
-    lessonFullPlanMode,
-    setLessonFullPlanMode,
     shdcSuggestion,
     setShdcSuggestion,
     hdgdSuggestion,
@@ -124,24 +125,183 @@ export function LessonTab({
     onAudit,
     auditResult,
     setSuccess,
+    setError,
     lessonTopic,
     selectedModel,
     setSelectedModel,
-    lessonImage,
-    setLessonImage,
+    lessonFile,
+    setLessonFile,
     onRefineSection,
+    onGenerateSection,
 }: LessonTabProps) {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [stepInProgress, setStepInProgress] = React.useState<string | null>(null);
 
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // --- ANTIGRAVITY: FILE-SYSTEM STATE SIMULATION (STEP 2) ---
+    // Load state from localStorage on mount (Resumability)
+    React.useEffect(() => {
+        const savedState = localStorage.getItem(`lesson_state_${lessonGrade}_${selectedChuDeSo}`);
+        if (savedState) {
+            try {
+                const parsed = JSON.parse(savedState);
+                console.log("Resuming saved lesson state:", parsed);
+                if (setLessonResult) setLessonResult(parsed); // Restore state
+            } catch (e) {
+                console.error("Failed to load saved state", e);
+            }
+        }
+    }, [lessonGrade, selectedChuDeSo]); // Re-load when switching topics
+
+    // Persist state on change
+    React.useEffect(() => {
+        if (lessonResult && lessonGrade && selectedChuDeSo) {
+            localStorage.setItem(`lesson_state_${lessonGrade}_${selectedChuDeSo}`, JSON.stringify(lessonResult));
+        }
+    }, [lessonResult, lessonGrade, selectedChuDeSo]);
+    const [isAutoRunning, setIsAutoRunning] = React.useState(false);
+
+    const designSteps = [
+        { id: 'blueprint', label: '0. Lập dàn ý (Architecture)', resultKey: 'blueprint', icon: '🏗️' },
+        { id: 'setup', label: '1. Mục tiêu & Chuẩn bị', resultKey: 'muc_tieu_kien_thuc', icon: '🎯' },
+        { id: 'shdc_shl', label: '2. Sinh hoạt dưới cờ & Lớp', resultKey: 'shdc', icon: '🏛️' },
+        { id: 'khởi động', label: '3. HĐGD: Khởi động', resultKey: 'hoat_dong_khoi_dong', icon: '⚡' },
+        { id: 'khám phá', label: '4. HĐGD: Khám phá', resultKey: 'hoat_dong_kham_pha', icon: '🔍' },
+        { id: 'luyện tập', label: '5. HĐGD: Luyện tập', resultKey: 'hoat_dong_luyen_tap', icon: '💪' },
+        { id: 'vận dụng', label: '6. HĐGD: Vận dụng', resultKey: 'hoat_dong_van_dung', icon: '🚀' },
+        { id: 'final', label: '7. Hồ sơ & Tổng kết', resultKey: 'ho_so_day_hoc', icon: '📋' },
+        { id: 'preparation', label: '8. Nội dung Chuẩn bị', resultKey: 'noi_dung_chuan_bi', icon: '🔜' },
+    ];
+
+    const handleStepGenerate = async (stepId: any, overrideContext?: any) => {
+        if (!onGenerateSection) return { success: false, error: "Action undefined" };
+        setStepInProgress(stepId);
+        try {
+            const context = overrideContext || lessonResult || {};
+            const result = await onGenerateSection(stepId, context);
+            if (result.success) {
+                setSuccess(`Đã thiết kế xong phần: ${designSteps.find(s => s.id === stepId)?.label}`);
+                return { success: true, data: result.data };
+            } else {
+                const msg = result.error || "Không thể tạo nội dung phần này. Vui lòng thử lại.";
+                setError(msg);
+                return { success: false, error: msg };
+            }
+        } catch (error: any) {
+            const msg = error.message || "Đã xảy ra lỗi không xác định.";
+            setError(msg);
+            return { success: false, error: msg };
+        } finally {
+            if (!isAutoRunning) {
+                setStepInProgress(null);
+            }
+        }
+    };
+
+    // --- ANTIGRAVITY: QUOTA MANAGER (STEP 4) ---
+    const [retryCountDown, setRetryCountDown] = React.useState<number | null>(null);
+
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+    const handleAutoGenerate = async () => {
+        if (!onGenerateSection) return;
+        setIsAutoRunning(true);
+        let currentContext = { ...lessonResult };
+        const MAX_RETRIES = 5; // Increased retries for stability
+
+        try {
+            for (let i = 0; i < designSteps.length; i++) {
+                const step = designSteps[i];
+
+                // Skip if already done
+                const isDone = !!(currentContext as any)?.[step.resultKey] || (step.id === 'shdc_shl' && !!currentContext?.shdc);
+                if (isDone) continue;
+
+                setStepInProgress(step.id);
+
+                // SLOW-COOKING STRATEGY: 5s delay between steps
+                await sleep(5000);
+
+                let attempts = 0;
+                let stepSuccess = false;
+
+                while (attempts < MAX_RETRIES && !stepSuccess) {
+                    const result = await handleStepGenerate(step.id, currentContext);
+
+                    if (result && result.success) {
+                        const newData = result.data;
+
+                        // --- ANTIGRAVITY: LOCAL RAG ACCUMULATOR ---
+                        // Accumulate extracted concepts into a Global Registry
+                        if (newData.extracted_concepts && Array.isArray(newData.extracted_concepts)) {
+                            const prevRegistry = (currentContext as any).concept_registry || [];
+                            const newRegistry = [...prevRegistry, ...newData.extracted_concepts];
+                            // Deduplicate
+                            const uniqueRegistry = Array.from(new Set(newRegistry));
+                            newData.concept_registry = uniqueRegistry;
+
+                            console.log(`[Antigravity] Updated Concept Registry: ${uniqueRegistry.length} concepts.`);
+                        }
+
+                        currentContext = { ...currentContext, ...newData };
+
+                        // Force update local React state to trigger Persistence (useEffect)
+                        if (setLessonResult) {
+                            setLessonResult(currentContext);
+                        }
+
+                        stepSuccess = true;
+                    } else {
+                        const errorMsg = result?.error || "Unknown Error";
+                        const isQuota = errorMsg.includes("429") || errorMsg.includes("quota") || errorMsg.includes("tạm nghỉ");
+                        const isJsonError = errorMsg.includes("JSON") || errorMsg.includes("parse") || errorMsg.includes("syntax");
+
+                        if (isQuota || isJsonError) {
+                            const waitTime = isQuota ? 40 : 5; // 40s for quota, 5s for JSON glitch
+                            console.warn(`[AutoGen] Lỗi tạm thời (Quota/JSON) ở bước ${step.label}. Thử lại sau ${waitTime}s...`);
+
+                            setSuccess(`Gặp lỗi "${isQuota ? 'Hạn mức' : 'Định dạng'}" - Đang tự động xử lý...`);
+
+                            for (let t = waitTime; t > 0; t--) {
+                                setRetryCountDown(t);
+                                await sleep(1000);
+                            }
+                            setRetryCountDown(null);
+                            attempts++;
+                        } else {
+                            // Fatal Error (e.g. 500, network offline) -> Stop immediately
+                            throw new Error(errorMsg);
+                        }
+                    }
+                }
+
+                if (!stepSuccess) {
+                    setError(`Quy trình dừng lại ở bước: ${step.label} sau ${MAX_RETRIES} lần thử.`);
+                    setIsAutoRunning(false);
+                    setStepInProgress(null);
+                    return;
+                }
+            }
+            setSuccess("Đã hoàn tất quy trình thiết kế tự động toàn bộ giáo án (Antigravity Flow)!");
+        } catch (e: any) {
+            console.error(e);
+            setError(`Lỗi không phục hồi được: ${e.message}`);
+        } finally {
+            setIsAutoRunning(false);
+            setStepInProgress(null);
+            setRetryCountDown(null);
+        }
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
                 const base64String = (reader.result as string).split(',')[1];
-                setLessonImage({
+                setLessonFile({
                     mimeType: file.type,
-                    data: base64String
+                    data: base64String,
+                    name: file.name
                 });
             };
             reader.readAsDataURL(file);
@@ -328,845 +488,529 @@ export function LessonTab({
     };
 
     return (
-        <Card>
-            <CardContent className="space-y-4">
-                {/* Grade and Topic selection */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label>Chọn Khối</Label>
-                        <Select
-                            value={lessonGrade}
-                            onValueChange={(value) => {
-                                setLessonGrade(value);
-                                setSelectedChuDeSo(""); // Reset chu de when grade changes
-                                setLessonAutoFilledTheme("");
-                            }}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Chọn khối..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="10">Khối 10</SelectItem>
-                                <SelectItem value="11">Khối 11</SelectItem>
-                                <SelectItem value="12">Khối 12</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pb-20">
+            {/* Left Column: Configuration & Inputs */}
+            <div className="lg:col-span-4 space-y-6">
+                <Card className="border-none shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shrink-0">
+                    <CardContent className="p-6 space-y-5">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+                                <BookOpen className="h-4 w-4" />
+                            </div>
+                            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100">Cấu hình bài dạy</h3>
+                        </div>
 
-                    <div className="space-y-2">
-                        <Label>Chọn Chủ Đề</Label>
-                        <Select
-                            value={selectedChuDeSo}
-                            onValueChange={(value) => {
-                                setSelectedChuDeSo(value);
-                                const chuDeList = getChuDeListByKhoi(lessonGrade);
-                                const chuDe = chuDeList.find(
-                                    (cd) => cd.chu_de_so === Number.parseInt(value)
-                                );
-                                if (chuDe) {
-                                    setLessonAutoFilledTheme(chuDe.ten);
-                                    setLessonDuration(chuDe.tong_tiet.toString());
-                                    setSelectedChuDe(chuDe);
-                                    // Map chu de to month for curriculum tasks
-                                    setLessonMonth(value);
-                                }
-                            }}
-                            disabled={!lessonGrade}
-                        >
-                            <SelectTrigger>
-                                <SelectValue
-                                    placeholder={
-                                        lessonGrade ? "Chọn chủ đề..." : "Chọn khối trước"
-                                    }
-                                />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {lessonGrade &&
-                                    getChuDeListByKhoi(lessonGrade).map((chuDe) => (
-                                        <SelectItem key={chuDe.chu_de_so} value={chuDe.chu_de_so.toString()}>
-                                            Chủ đề {chuDe.chu_de_so}: {chuDe.ten}
-                                        </SelectItem>
-                                    ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </div>
-
-                {/* Title Selection */}
-                <div className="space-y-2">
-                    <Label>Tên Chủ Đề (Tự động điền theo lựa chọn phía trên)</Label>
-                    <Input
-                        value={lessonAutoFilledTheme}
-                        onChange={(e) => setLessonAutoFilledTheme(e.target.value)}
-                        placeholder="Tên chủ đề sẽ tự động hiển thị hoặc bạn có thể tự nhập..."
-                        className="bg-slate-50 border-slate-200"
-                    />
-                </div>
-
-                {/* OCR & Full Plan Options */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className={`p-4 rounded-lg border transition-all ${lessonImage ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-200'}`}>
-                        <div className="flex items-center justify-between mb-2">
-                            <Label className="text-base flex items-center gap-2">
-                                <Upload className="h-4 w-4 text-indigo-600" />
-                                OCR: Quét ảnh SGK
-                            </Label>
-                            {lessonImage && (
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-6 w-6 p-0 text-red-500"
-                                    onClick={() => setLessonImage(null)}
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Khối lớp</Label>
+                                <Select
+                                    value={lessonGrade}
+                                    onValueChange={(value) => {
+                                        setLessonGrade(value);
+                                        setSelectedChuDeSo("");
+                                        setLessonAutoFilledTheme("");
+                                    }}
                                 >
-                                    <X className="h-4 w-4" />
+                                    <SelectTrigger className="h-11 rounded-xl bg-slate-50/50 border-slate-200">
+                                        <SelectValue placeholder="Chọn khối..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="10">Khối 10</SelectItem>
+                                        <SelectItem value="11">Khối 11</SelectItem>
+                                        <SelectItem value="12">Khối 12</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Chủ đề (theo PPCT)</Label>
+                                <Select
+                                    value={selectedChuDeSo}
+                                    onValueChange={(value) => {
+                                        setSelectedChuDeSo(value);
+                                        const chuDeList = getChuDeListByKhoi(lessonGrade);
+                                        const chuDe = chuDeList.find(
+                                            (cd) => cd.chu_de_so === Number.parseInt(value)
+                                        );
+                                        if (chuDe) {
+                                            setLessonAutoFilledTheme(chuDe.ten);
+                                            setLessonDuration(chuDe.tong_tiet.toString());
+                                            setSelectedChuDe(chuDe);
+                                            setLessonMonth(value);
+                                        }
+                                    }}
+                                    disabled={!lessonGrade}
+                                >
+                                    <SelectTrigger className="h-11 rounded-xl bg-slate-50/50 border-slate-200">
+                                        <SelectValue placeholder={lessonGrade ? "Chọn chủ đề..." : "Chọn khối trước"} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {lessonGrade &&
+                                            getChuDeListByKhoi(lessonGrade).map((chuDe) => (
+                                                <SelectItem key={chuDe.chu_de_so} value={chuDe.chu_de_so.toString()}>
+                                                    {chuDe.chu_de_so}. {chuDe.ten}
+                                                </SelectItem>
+                                            ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">Tên bài dạy chi tiết</Label>
+                                <Textarea
+                                    value={lessonAutoFilledTheme}
+                                    onChange={(e) => setLessonAutoFilledTheme(e.target.value)}
+                                    placeholder="Nhập tên bài học..."
+                                    className="min-h-[80px] rounded-xl bg-slate-50/50 border-slate-200 resize-none focus:ring-indigo-500 text-sm"
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">AI Model</Label>
+                                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                                    <SelectTrigger className="h-11 rounded-xl bg-indigo-50/30 border-indigo-100 text-indigo-700 font-medium">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="gemini-1.5-flash">🛡️ Gemini 1.5 Flash (Bản chuẩn Ổn định nhất)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className={`p-4 rounded-2xl border-2 border-dashed transition-all ${lessonFile ? 'bg-emerald-50/50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+                            <div className="flex items-center justify-between mb-3">
+                                <Label className="text-sm font-bold flex items-center gap-2">
+                                    <Upload className="h-4 w-4 text-indigo-600" />
+                                    Sách giáo khoa (PDF)
+                                </Label>
+                                {lessonFile && (
+                                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-slate-400 hover:text-red-500" onClick={() => setLessonFile(null)}>
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                )}
+                            </div>
+                            <input type="file" accept="application/pdf" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+
+                            {lessonFile ? (
+                                <div className="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-emerald-100 shadow-sm">
+                                    <div className="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                        <BookOpen className="h-4 w-4" />
+                                    </div>
+                                    <div className="flex-1 overflow-hidden">
+                                        <p className="text-[10px] font-bold text-emerald-700 truncate">{lessonFile.name}</p>
+                                        <p className="text-[9px] text-emerald-600/70">Đã nạp thành công</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <Button
+                                    variant="outline"
+                                    className="w-full h-20 rounded-xl border-dashed bg-white/50 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all flex flex-col gap-1"
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    <span className="text-[10px] font-bold">Nạp tệp PDF</span>
                                 </Button>
                             )}
                         </div>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            ref={fileInputRef}
-                            onChange={handleImageUpload}
-                        />
-                        {lessonImage ? (
-                            <div className="flex items-center gap-2 bg-white p-2 rounded border border-indigo-100">
-                                <div className="h-10 w-10 rounded bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                    <BookOpen className="h-5 w-5" />
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Right Column: Main Stage */}
+            <div className="lg:col-span-8 space-y-6">
+                <div className="space-y-6">
+
+                    <Card className="border-none shadow-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t-4 border-t-indigo-500 overflow-hidden">
+                        <CardContent className="p-6 md:p-8 space-y-8">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-1">
+                                    <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
+                                        <Zap className="h-6 w-6 text-amber-500 fill-amber-500" />
+                                        Phòng Lab Thiết kế Chuyên sâu
+                                    </h2>
+                                    <p className="text-slate-500 text-sm">Kiến tạo giáo án 5512 chi tiết với sự hỗ trợ của AI & PDF chuyên biệt</p>
                                 </div>
-                                <div className="flex-1 overflow-hidden">
-                                    <p className="text-xs font-medium truncate">Đã tải ảnh SGK</p>
-                                    <p className="text-[10px] text-muted-foreground">Sử dụng để OCR bóc tách nội dung</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <Button
-                                variant="outline"
-                                className="w-full border-dashed bg-white"
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                <Plus className="h-4 w-4 mr-2" />
-                                Tải ảnh trang SGK
-                            </Button>
-                        )}
-                    </div>
-
-                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border">
-                        <div className="space-y-1">
-                            <Label className="text-base">Chế độ KHBD Đầy đủ</Label>
-                            <p className="text-sm text-muted-foreground">
-                                Đầy đủ mục tiêu, hoạt động...
-                            </p>
-                        </div>
-                        <Switch
-                            checked={lessonFullPlanMode}
-                            onCheckedChange={setLessonFullPlanMode}
-                        />
-                    </div>
-                </div>
-
-                {/* Period Distribution - Show when a chu de is selected */}
-                {selectedChuDe && lessonFullPlanMode && (
-                    <div className="space-y-4 p-4 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950 rounded-lg border border-indigo-200 dark:border-indigo-800">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-indigo-600" />
-                                <Label className="text-indigo-800 dark:text-indigo-200 font-medium">
-                                    Phân phối tiết theo PPCT
-                                </Label>
-                            </div>
-                            <span className="text-sm text-indigo-600 font-medium">
-                                Tổng: {selectedChuDe.tong_tiet} tiết (Tuần {selectedChuDe.tuan_bat_dau || '?'} - {selectedChuDe.tuan_ket_thuc || '?'})
-                            </span>
-                        </div>
-
-                        {/* Period Distribution Grid */}
-                        <div className="grid grid-cols-3 gap-3">
-                            {/* SHDC */}
-                            <div className="bg-blue-100 dark:bg-blue-900 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">SHDC</span>
-                                    <div className="flex items-center gap-1">
-                                        <span className="text-lg font-bold text-blue-800 dark:text-blue-200">{selectedChuDe.shdc}</span>
-                                        <span className="text-xs text-blue-600">tiết</span>
-                                    </div>
-                                </div>
-                                <p className="text-[10px] text-blue-600 dark:text-blue-400">Sinh hoạt dưới cờ</p>
-                            </div>
-
-                            {/* HDGD */}
-                            <div className="bg-green-100 dark:bg-green-900 rounded-lg p-3 border border-green-200 dark:border-green-700">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-semibold text-green-700 dark:text-green-300">HĐGD</span>
-                                    <div className="flex items-center gap-1">
-                                        <span className="text-lg font-bold text-green-800 dark:text-green-200">{selectedChuDe.hdgd}</span>
-                                        <span className="text-xs text-green-600">tiết</span>
-                                    </div>
-                                </div>
-                                <p className="text-[10px] text-green-600 dark:text-green-400">Hoạt động giáo dục</p>
-                            </div>
-
-                            {/* SHL */}
-                            <div className="bg-orange-100 dark:bg-orange-900 rounded-lg p-3 border border-orange-200 dark:border-orange-700">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-semibold text-orange-700 dark:text-orange-300">SHL</span>
-                                    <div className="flex items-center gap-1">
-                                        <span className="text-lg font-bold text-orange-800 dark:text-orange-200">{selectedChuDe.shl}</span>
-                                        <span className="text-xs text-orange-600">tiết</span>
-                                    </div>
-                                </div>
-                                <p className="text-[10px] text-orange-600 dark:text-orange-400">Sinh hoạt lớp</p>
-                            </div>
-                        </div>
-
-                        {/* Suggested Activities from PPCT */}
-                        {selectedChuDe.hoat_dong && selectedChuDe.hoat_dong.length > 0 && (
-                            <div className="mt-3 p-3 bg-white/60 dark:bg-slate-800/60 rounded-lg border border-indigo-100 dark:border-indigo-800">
-                                <Label className="text-xs text-indigo-700 dark:text-indigo-300 font-medium">
-                                    Hoạt động gợi ý từ SGK:
-                                </Label>
-                                <ul className="mt-2 space-y-1.5">
-                                    {selectedChuDe.hoat_dong.map((activity, idx) => (
-                                        <li key={idx} className="text-xs text-indigo-600 dark:text-indigo-400 flex items-start gap-2">
-                                            <CheckCircle className="h-3 w-3 text-indigo-500 mt-0.5 flex-shrink-0" />
-                                            <span>{activity}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* Activity Suggestions with Editable Content */}
-                {lessonFullPlanMode && (
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                            <Info className="h-4 w-4 text-indigo-600" />
-                            <Label className="text-indigo-800 dark:text-indigo-200 font-medium">
-                                Gợi ý nội dung theo loại hoạt động
-                            </Label>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            Nhập gợi ý cụ thể để AI tạo nội dung chuyên sâu hơn cho từng loại hoạt động
-                        </p>
-
-                        {/* SHDC Suggestion with expand/collapse */}
-                        <ActivitySuggestionBox
-                            label="Sinh hoạt dưới cờ (SHDC)"
-                            value={shdcSuggestion}
-                            onChange={setShdcSuggestion}
-                            placeholder="VD: Tổ chức diễn đàn về ý nghĩa truyền thống nhà trường, mời cựu HS chia sẻ..."
-                            colorClass="blue"
-                            periodCount={selectedChuDe?.shdc || 0}
-                        />
-
-                        {/* HDGD Suggestion */}
-                        <ActivitySuggestionBox
-                            label="Hoạt động giáo dục (HĐGD)"
-                            value={hdgdSuggestion}
-                            onChange={setHdgdSuggestion}
-                            placeholder="VD: Thảo luận nhóm về các giá trị cốt lõi, đóng vai tình huống thực tế..."
-                            colorClass="green"
-                            periodCount={selectedChuDe?.hdgd || 0}
-                        />
-
-                        {/* SHL Suggestion */}
-                        <ActivitySuggestionBox
-                            label="Sinh hoạt lớp (SHL)"
-                            value={shlSuggestion}
-                            onChange={setShlSuggestion}
-                            placeholder="VD: Chia sẻ cảm nhận cá nhân, lập kế hoạch hành động, đánh giá lẫn nhau..."
-                            colorClass="orange"
-                            periodCount={selectedChuDe?.shl || 0}
-                        />
-                    </div>
-                )}
-
-                {curriculumTasks.length > 0 && (
-                    <div className="space-y-3 p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <BookOpen className="h-4 w-4 text-green-600" />
-                                <Label className="text-green-800 dark:text-green-200 font-medium">
-                                    Nhiệm vụ gợi ý từ SGK ({curriculumTasks.length} nhiệm vụ)
-                                </Label>
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setShowCurriculumTasks(!showCurriculumTasks)}
-                                className="text-green-700 hover:text-green-800"
-                            >
-                                {showCurriculumTasks ? "Ẩn" : "Hiện"}
-                            </Button>
-                        </div>
-
-                        {showCurriculumTasks && (
-                            <div className="space-y-3">
-                                {lessonTasks
-                                    .filter((t) => t.source !== "user")
-                                    .map((task) => (
-                                        <div
-                                            key={task.id}
-                                            className="p-3 bg-white dark:bg-green-900 rounded-md border border-green-300 dark:border-green-700"
-                                        >
-                                            <div className="flex items-start justify-between gap-2">
-                                                <div className="flex-1 space-y-2">
-                                                    <Input
-                                                        value={task.name}
-                                                        onChange={(e) =>
-                                                            updateLessonTask(task.id, "name", e.target.value)
-                                                        }
-                                                        className="h-7 text-sm font-medium text-green-800 dark:text-green-200 border-green-200 bg-transparent focus:ring-1 focus:ring-green-400"
-                                                    />
-                                                    <Textarea
-                                                        value={task.content}
-                                                        onChange={(e) =>
-                                                            updateLessonTask(task.id, "content", e.target.value)
-                                                        }
-                                                        className="text-sm text-gray-600 dark:text-gray-300 min-h-[60px] resize-y bg-transparent border-gray-200"
-                                                    />
-
-                                                    {task.thoiLuongDeXuat && (
-                                                        <p className="text-xs text-orange-600 italic">
-                                                            * Thời lượng đề xuất từ SGK: {task.thoiLuongDeXuat}
-                                                        </p>
-                                                    )}
-
-                                                    {/* Skills, products, duration */}
-                                                    <div className="flex flex-wrap gap-2 text-xs">
-                                                        {task.kyNangCanDat && task.kyNangCanDat.length > 0 && (
-                                                            <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                                                Kỹ năng: {task.kyNangCanDat.join(", ")}
-                                                            </span>
-                                                        )}
-                                                        {task.sanPhamDuKien && (
-                                                            <span className="bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                                                                Sản phẩm: {task.sanPhamDuKien}
-                                                            </span>
-                                                        )}
-                                                        {(task.time || task.thoiLuongDeXuat) && (
-                                                            <div className="flex items-center gap-1 bg-orange-100 text-orange-700 px-2 py-1 rounded">
-                                                                <Clock className="h-3 w-3" />
-                                                                <span className="text-xs font-medium">
-                                                                    {task.time || task.thoiLuongDeXuat} phút
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
+                                <div>
+                                    {!isAutoRunning ? (
+                                        <div className="flex gap-2">
+                                            <Button
+                                                variant="outline"
+                                                onClick={() => {
+                                                    if (confirm('Bạn có chắc chắn muốn xóa bản thảo hiện tại và làm mới từ đầu không?')) {
+                                                        localStorage.removeItem(`lesson_state_${lessonGrade}_${selectedChuDeSo}`);
+                                                        setLessonResult(null);
+                                                        setSuccess("Đã làm mới bản thảo thành công!");
+                                                    }
+                                                }}
+                                                className="border-red-200 text-red-600 hover:bg-red-50"
+                                                disabled={!lessonResult}
+                                            >
+                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                Làm mới
+                                            </Button>
+                                            <Button
+                                                onClick={handleAutoGenerate}
+                                                disabled={isGenerating || !lessonGrade || !lessonAutoFilledTheme}
+                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-xl shadow-indigo-200 border border-white/20"
+                                            >
+                                                <Zap className="h-4 w-4 mr-2 animate-pulse" />
+                                                Kích hoạt Tạo tự động (Step 1-8)
+                                            </Button>
                                         </div>
-                                    ))}
-
-                                <p className="text-xs text-green-600 italic">
-                                    * Các nhiệm vụ này được trích xuất từ cơ sở dữ liệu SGK "Kết nối Tri thức" và sẽ được AI sử dụng khi tạo KHBD. Bạn có thể chọn nhiệm vụ, chỉnh sửa thời gian hoặc thêm nhiệm vụ tùy chỉnh.
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                )}
-
-                {/* User-added tasks */}
-                {lessonTasks.filter((t) => t.source === "user").length > 0 && (
-                    <div className="space-y-3 p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                        <div className="flex items-center gap-2">
-                            <Plus className="h-4 w-4 text-yellow-600" />
-                            <Label className="text-yellow-800 dark:text-yellow-200 font-medium">
-                                Nhiệm vụ bạn thêm ({lessonTasks.filter((t) => t.source === "user").length})
-                            </Label>
-                        </div>
-                        <div className="space-y-2">
-                            {lessonTasks
-                                .filter((t) => t.source === "user")
-                                .map((task) => (
-                                    <div
-                                        key={task.id}
-                                        className="flex items-start gap-2 p-2 bg-white dark:bg-yellow-900 rounded border"
-                                    >
-                                        <div className="flex-1 space-y-2">
-                                            <div className="flex items-center gap-2">
-                                                <Switch
-                                                    checked={task.selected || false}
-                                                    onCheckedChange={(checked) =>
-                                                        updateLessonTask(task.id, "selected", checked)
-                                                    }
-                                                    className="data-[state=checked]:bg-yellow-500"
-                                                />
-                                                <Input
-                                                    value={task.name}
-                                                    onChange={(e) =>
-                                                        updateLessonTask(task.id, "name", e.target.value)
-                                                    }
-                                                    placeholder="Tên nhiệm vụ"
-                                                    className="text-sm font-medium"
-                                                />
-                                            </div>
-                                            <Textarea
-                                                value={task.content}
-                                                onChange={(e) =>
-                                                    updateLessonTask(task.id, "content", e.target.value)
-                                                }
-                                                placeholder="Mô tả nhiệm vụ"
-                                                rows={2}
-                                                className="text-sm bg-transparent"
-                                            />
-                                            <div className="flex items-center gap-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 px-2 py-1 rounded w-fit">
-                                                <Clock className="h-3 w-3" />
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    value={task.time || 0}
-                                                    onChange={(e) =>
-                                                        updateLessonTask(
-                                                            task.id,
-                                                            "time",
-                                                            Number.parseInt(e.target.value) || 0
-                                                        )
-                                                    }
-                                                    className="w-10 bg-transparent border-none text-center text-xs font-medium focus:outline-none"
-                                                />
-                                                <span className="text-[10px]">phút</span>
-                                            </div>
-                                        </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => removeLessonTask(task.id)}
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            <X className="h-4 w-4" />
+                                    ) : (
+                                        <Button disabled className="bg-slate-100 text-slate-400 border border-slate-200">
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin text-indigo-600" />
+                                            Đang thực hiện tuần tự...
                                         </Button>
-                                    </div>
-                                ))}
-                        </div>
-                    </div>
-                )}
+                                    )}
+                                </div>
+                            </div>
 
-                {/* Add task button */}
-                <Button
-                    variant="outline"
-                    onClick={addLessonTask}
-                    className="w-full border-dashed bg-transparent"
-                >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Thêm nhiệm vụ tùy chỉnh
-                </Button>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {designSteps.map((step, idx) => {
+                                    const isDone = !!(lessonResult as any)?.[step.resultKey] || (step.id === 'shdc_shl' && lessonResult?.shdc);
+                                    const currentLoading = stepInProgress === step.id;
 
-                {/* Custom instructions */}
-                <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
-                        <MessageSquare className="h-4 w-4" />
-                        Chỉ dẫn thêm cho AI (tùy chọn)
-                    </Label>
-                    <Textarea
-                        placeholder="VD: Tập trung vào kỹ năng giao tiếp, sử dụng nhiều hoạt động nhóm, tích hợp video minh họa..."
-                        value={lessonCustomInstructions}
-                        onChange={(e) => setLessonCustomInstructions(e.target.value)}
-                        rows={3}
-                    />
-                    <p className="text-xs text-slate-500">
-                        AI sẽ cập nhật nội dung dựa trên chỉ dẫn của bạn
-                    </p>
-                </div>
-
-                {/* Generate button */}
-                <Button
-                    className="w-full"
-                    onClick={onGenerate}
-                    disabled={
-                        isGenerating ||
-                        !lessonGrade ||
-                        !lessonAutoFilledTheme ||
-                        !selectedChuDeSo
-                    }
-                >
-                    {isGenerating ? (
-                        <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Đang tạo...
-                        </>
-                    ) : (
-                        <>
-                            <Sparkles className="mr-2 h-4 w-4" />
-                            {lessonFullPlanMode
-                                ? "Tạo KHBD đầy đủ"
-                                : "Tạo nội dung tích hợp"}
-                        </>
-                    )}
-                </Button>
-
-                {/* Results display */}
-                {lessonResult && (
-                    <div className="space-y-4 mt-4">
-                        <div className="flex items-center gap-2 text-green-600">
-                            <CheckCircle className="h-5 w-5" />
-                            <span className="font-medium">
-                                Kết quả tạo nội dung - Chỉnh sửa trước khi xuất file
-                            </span>
-                        </div>
-
-                        {/* Integration results - editable with AI Editor */}
-                        {lessonResult.tich_hop_nls && (
-                            <AISectionEditor
-                                label="Tích hợp Năng lực số (NLS):"
-                                value={lessonResult.tich_hop_nls}
-                                onChange={(val) => setLessonResult({ ...lessonResult, tich_hop_nls: val })}
-                                bgClass="bg-blue-50"
-                                field="tich_hop_nls"
-                            />
-                        )}
-
-                        {lessonResult.tich_hop_dao_duc && (
-                            <AISectionEditor
-                                label="Tích hợp Giáo dục đạo đức:"
-                                value={lessonResult.tich_hop_dao_duc}
-                                onChange={(val) => setLessonResult({ ...lessonResult, tich_hop_dao_duc: val })}
-                                bgClass="bg-purple-50"
-                                field="tich_hop_dao_duc"
-                            />
-                        )}
-
-                        {/* Full plan results - editable with AI Editor */}
-                        {lessonFullPlanMode && lessonResult.muc_tieu_kien_thuc && (
-                            <AISectionEditor
-                                label="Mục tiêu kiến thức:"
-                                value={lessonResult.muc_tieu_kien_thuc || ""}
-                                onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_kien_thuc: val })}
-                                bgClass="bg-slate-50"
-                                field="muc_tieu_kien_thuc"
-                            />
-                        )}
-
-                        {lessonFullPlanMode && lessonResult.muc_tieu_nang_luc && (
-                            <AISectionEditor
-                                label="Mục tiêu năng lực:"
-                                value={lessonResult.muc_tieu_nang_luc || ""}
-                                onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_nang_luc: val })}
-                                bgClass="bg-slate-50"
-                                field="muc_tieu_nang_luc"
-                            />
-                        )}
-
-                        {lessonFullPlanMode && lessonResult.muc_tieu_pham_chat && (
-                            <AISectionEditor
-                                label="Mục tiêu phẩm chất:"
-                                value={lessonResult.muc_tieu_pham_chat || ""}
-                                onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_pham_chat: val })}
-                                bgClass="bg-slate-50"
-                                field="muc_tieu_pham_chat"
-                            />
-                        )}
-
-                        {lessonFullPlanMode &&
-                            (lessonResult.gv_chuan_bi ||
-                                lessonResult.hs_chuan_bi ||
-                                lessonResult.thiet_bi_day_hoc) && (
-                                <div className="space-y-4">
-                                    <div className="p-3 bg-slate-100 rounded-lg">
-                                        <Label className="text-slate-800 font-bold block mb-2">
-                                            II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU
-                                        </Label>
-
-                                        {lessonResult.gv_chuan_bi && (
-                                            <div className="space-y-2 mb-4">
-                                                <div className="flex items-center justify-between">
-                                                    <Label className="text-indigo-700 font-medium italic">
-                                                        1. Đối với giáo viên (Tích hợp NLS & Đạo đức):
-                                                    </Label>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            copyToClipboard(lessonResult.gv_chuan_bi || "")
-                                                        }
-                                                    >
-                                                        <Copy className="w-4 h-4" />
-                                                    </Button>
+                                    return (
+                                        <div
+                                            key={step.id}
+                                            className={`group relative flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 ${isDone
+                                                ? 'bg-emerald-50/30 border-emerald-200/50 shadow-sm'
+                                                : 'bg-slate-50/50 border-slate-100 hover:border-indigo-200 hover:bg-white hover:shadow-xl'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-inner ${isDone ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200/50 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600'
+                                                    }`}>
+                                                    {isDone ? <CheckCircle className="h-6 w-6" /> : (step as any).icon}
                                                 </div>
-                                                <Textarea
-                                                    value={lessonResult.gv_chuan_bi || ""}
-                                                    onChange={(e) =>
-                                                        setLessonResult({
-                                                            ...lessonResult,
-                                                            gv_chuan_bi: e.target.value,
-                                                        })
-                                                    }
-                                                    className="min-h-[100px] bg-slate-50"
-                                                />
-                                            </div>
-                                        )}
-
-                                        {lessonResult.hs_chuan_bi && (
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between">
-                                                    <Label className="text-indigo-700 font-medium italic">
-                                                        2. Đối với học sinh và Hướng dẫn về nhà (Tích hợp NLS &
-                                                        Đạo đức):
-                                                    </Label>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            copyToClipboard(lessonResult.hs_chuan_bi || "")
-                                                        }
-                                                    >
-                                                        <Copy className="w-4 h-4" />
-                                                    </Button>
+                                                <div>
+                                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDone ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                                        Bước {idx + 1}
+                                                    </p>
+                                                    <h4 className={`text-sm font-bold ${isDone ? 'text-emerald-900' : 'text-slate-700'}`}>
+                                                        {step.label}
+                                                    </h4>
                                                 </div>
-                                                <Textarea
-                                                    value={lessonResult.hs_chuan_bi || ""}
-                                                    onChange={(e) =>
-                                                        setLessonResult({
-                                                            ...lessonResult,
-                                                            hs_chuan_bi: e.target.value,
-                                                        })
-                                                    }
-                                                    className="min-h-[100px] bg-slate-50"
-                                                />
                                             </div>
-                                        )}
-
-                                        {!lessonResult.gv_chuan_bi &&
-                                            !lessonResult.hs_chuan_bi &&
-                                            lessonResult.thiet_bi_day_hoc && (
-                                                <div className="space-y-2">
-                                                    <div className="flex items-center justify-between">
-                                                        <Label className="text-slate-700 font-medium italic">
-                                                            Thiết bị dạy học & Học liệu:
-                                                        </Label>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="sm"
-                                                            onClick={() =>
-                                                                copyToClipboard(lessonResult.thiet_bi_day_hoc || "")
-                                                            }
-                                                        >
-                                                            <Copy className="w-4 h-4" />
-                                                        </Button>
+                                            <Button
+                                                size="sm"
+                                                variant={isDone ? "ghost" : "default"}
+                                                className={`h-10 px-5 rounded-xl font-bold transition-all ${isDone
+                                                    ? 'text-emerald-600 hover:bg-emerald-100'
+                                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20'
+                                                    }`}
+                                                disabled={isGenerating || !lessonGrade || !lessonAutoFilledTheme}
+                                                onClick={() => handleStepGenerate(step.id)}
+                                            >
+                                                {retryCountDown && currentLoading ? (
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-[10px] opacity-80">Nghỉ ngơi...</span>
+                                                        <span>{retryCountDown}s</span>
                                                     </div>
-                                                    <Textarea
-                                                        value={lessonResult.thiet_bi_day_hoc || ""}
-                                                        onChange={(e) =>
-                                                            setLessonResult({
-                                                                ...lessonResult,
-                                                                thiet_bi_day_hoc: e.target.value,
-                                                            })
-                                                        }
-                                                        className="min-h-[80px] bg-slate-50"
-                                                    />
-                                                </div>
-                                            )}
-                                    </div>
-                                </div>
-                            )}
+                                                ) : currentLoading ? (
+                                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                                ) : isDone ? (
+                                                    "Làm lại"
+                                                ) : (
+                                                    <>
+                                                        <Sparkles className="h-4 w-4 mr-2" />
+                                                        Thiết kế
+                                                    </>
+                                                )}
+                                            </Button>
+                                        </div>
+                                    );
+                                })}
+                            </div>
 
-                        {lessonFullPlanMode && lessonResult.shdc && (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-indigo-700 font-medium">
-                                        Sinh hoạt dưới cờ (SHDC):
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => copyToClipboard(lessonResult.shdc || "")}
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                                <Textarea
-                                    value={lessonResult.shdc || ""}
-                                    onChange={(e) =>
-                                        setLessonResult({ ...lessonResult, shdc: e.target.value })
-                                    }
-                                    className="min-h-[150px] bg-indigo-50"
+                            <div className="flex items-center gap-4 p-4 bg-indigo-50/50 rounded-2xl border border-indigo-100/50 italic text-indigo-700 text-[10px]">
+                                <Info className="h-4 w-4 flex-shrink-0" />
+                                <p>AI sẽ tự động nghiên cứu tệp PDF bạn đã nạp để trích xuất nội dung chính xác. Hãy bắt đầu từ bước 1 để xác lập mục tiêu trọng tâm.</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Quick Settings & Suggestions */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 px-2">
+                                <MessageSquare className="h-5 w-5 text-indigo-600" />
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100">Gợi ý hoạt động</h3>
+                            </div>
+                            <div className="space-y-3">
+                                <ActivitySuggestionBox
+                                    label="Sinh hoạt dưới cờ"
+                                    value={shdcSuggestion}
+                                    onChange={setShdcSuggestion}
+                                    placeholder="Ý tưởng tổ chức..."
+                                    colorClass="blue"
+                                    periodCount={selectedChuDe?.shdc || 0}
+                                />
+                                <ActivitySuggestionBox
+                                    label="Hoạt động giáo dục"
+                                    value={hdgdSuggestion}
+                                    onChange={setHdgdSuggestion}
+                                    placeholder="Nội dung trọng tâm..."
+                                    colorClass="green"
+                                    periodCount={selectedChuDe?.hdgd || 0}
+                                />
+                                <ActivitySuggestionBox
+                                    label="Sinh hoạt lớp"
+                                    value={shlSuggestion}
+                                    onChange={setShlSuggestion}
+                                    placeholder="Yêu cầu sinh hoạt..."
+                                    colorClass="orange"
+                                    periodCount={selectedChuDe?.shl || 0}
                                 />
                             </div>
-                        )}
+                        </div>
 
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3 px-2">
+                                <Zap className="h-5 w-5 text-amber-500" />
+                                <h3 className="font-bold text-slate-800 dark:text-slate-100">Chỉ dẫn đặc biệt</h3>
+                            </div>
+                            <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all h-full">
+                                <Label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2 block">Yêu cầu bổ sung cho AI</Label>
+                                <Textarea
+                                    value={lessonCustomInstructions}
+                                    onChange={(e) => setLessonCustomInstructions(e.target.value)}
+                                    placeholder="VD: Sử dụng phương pháp thảo luận nhóm, tích hợp năng lực số..."
+                                    className="min-h-[120px] rounded-xl bg-slate-50/30 border-slate-100 focus:border-indigo-300 resize-none text-sm"
+                                />
+                            </div>
+                        </div>
+                    </div>
 
+                    {/* Results Display Area */}
+                    {lessonResult && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center text-emerald-600">
+                                        <CheckCircle className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-emerald-900 dark:text-emerald-100">Bản thảo Giáo án Đã sẵn sàng</h3>
+                                        <p className="text-xs text-emerald-700/70">Bạn có thể tinh chỉnh từng phần phía dưới</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-100"
+                                        onClick={onAudit}
+                                    >
+                                        <Sparkles className="h-4 w-4 mr-2" />
+                                        Kiểm định AI
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
+                                        onClick={onExport}
+                                    >
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Xuất Word
+                                    </Button>
+                                </div>
+                            </div>
 
-                        {lessonFullPlanMode && (
-                            <div className="space-y-6 pt-4 border-t border-dashed">
-                                <Label className="text-slate-800 font-bold block bg-slate-100 p-2 rounded">
-                                    IV. TIẾN TRÌNH DẠY HỌC (Bảng 2 cột chuẩn 5512)
-                                </Label>
+                            <div className="space-y-4">
+                                {/* Editable Sections */}
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Step 2 Inputs: Objectives */}
+                                        <AISectionEditor
+                                            label="Mục tiêu Kiến thức"
+                                            value={lessonResult.muc_tieu_kien_thuc || ""}
+                                            onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_kien_thuc: val })}
+                                            bgClass="bg-white border-slate-100"
+                                            field="muc_tieu_kien_thuc"
+                                        />
+                                        <AISectionEditor
+                                            label="Mục tiêu Năng lực"
+                                            value={lessonResult.muc_tieu_nang_luc || ""}
+                                            onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_nang_luc: val })}
+                                            bgClass="bg-white border-slate-100"
+                                            field="muc_tieu_nang_luc"
+                                        />
+                                        <AISectionEditor
+                                            label="Mục tiêu Phẩm chất"
+                                            value={lessonResult.muc_tieu_pham_chat || ""}
+                                            onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_pham_chat: val })}
+                                            bgClass="bg-white border-slate-100"
+                                            field="muc_tieu_pham_chat"
+                                        />
+                                    </div>
 
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <AISectionEditor
+                                            label="GV Chuẩn bị"
+                                            value={lessonResult.gv_chuan_bi || ""}
+                                            onChange={(val) => setLessonResult({ ...lessonResult, gv_chuan_bi: val })}
+                                            bgClass="bg-slate-50/50"
+                                            field="gv_chuan_bi"
+                                        />
+                                        <AISectionEditor
+                                            label="HS Chuẩn bị"
+                                            value={lessonResult.hs_chuan_bi || ""}
+                                            onChange={(val) => setLessonResult({ ...lessonResult, hs_chuan_bi: val })}
+                                            bgClass="bg-slate-50/50"
+                                            field="hs_chuan_bi"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="h-px bg-slate-100 my-4" /> {/* Separator */}
+
+                                {lessonResult.tich_hop_nls && (
+                                    <AISectionEditor
+                                        label="Tích hợp Năng lực số"
+                                        value={lessonResult.tich_hop_nls}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, tich_hop_nls: val })}
+                                        bgClass="bg-blue-50/30"
+                                        field="tich_hop_nls"
+                                    />
+                                )}
+                                {lessonResult.tich_hop_dao_duc && (
+                                    <AISectionEditor
+                                        label="Tích hợp Đạo đức"
+                                        value={lessonResult.tich_hop_dao_duc}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, tich_hop_dao_duc: val })}
+                                        bgClass="bg-purple-50/30"
+                                        field="tich_hop_dao_duc"
+                                    />
+                                )}
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <AISectionEditor
+                                        label="Sinh hoạt Dưới cờ"
+                                        value={lessonResult.shdc || ""}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, shdc: val })}
+                                        bgClass="bg-pink-50/30"
+                                        field="shdc"
+                                    />
+                                    <AISectionEditor
+                                        label="Sinh hoạt Lớp"
+                                        value={lessonResult.shl || ""}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, shl: val })}
+                                        bgClass="bg-pink-50/30"
+                                        field="shl"
+                                    />
+                                </div>
+
+                                <AISectionEditor
+                                    label="Hồ sơ Dạy học & Phụ lục"
+                                    value={lessonResult.ho_so_day_hoc || ""}
+                                    onChange={(val) => setLessonResult({ ...lessonResult, ho_so_day_hoc: val })}
+                                    bgClass="bg-slate-50 border-slate-200"
+                                    field="ho_so_day_hoc"
+                                />
                                 {lessonResult.hoat_dong_khoi_dong && (
                                     <AISectionEditor
-                                        label="1. Hoạt động Khởi động:"
+                                        label="Hoạt động Khởi động"
                                         value={lessonResult.hoat_dong_khoi_dong}
                                         onChange={(val) => setLessonResult({ ...lessonResult, hoat_dong_khoi_dong: val })}
-                                        bgClass="bg-white border-indigo-100"
+                                        bgClass="bg-white border-slate-100"
                                         field="hoat_dong_khoi_dong"
                                     />
                                 )}
-
                                 {lessonResult.hoat_dong_kham_pha && (
                                     <AISectionEditor
-                                        label="2. Hoạt động Khám phá:"
+                                        label="Hoạt động Khám phá"
                                         value={lessonResult.hoat_dong_kham_pha}
                                         onChange={(val) => setLessonResult({ ...lessonResult, hoat_dong_kham_pha: val })}
-                                        bgClass="bg-white border-indigo-100"
+                                        bgClass="bg-white border-slate-100"
                                         field="hoat_dong_kham_pha"
                                     />
                                 )}
-
                                 {lessonResult.hoat_dong_luyen_tap && (
                                     <AISectionEditor
-                                        label="3. Hoạt động Luyện tập:"
+                                        label="Hoạt động Luyện tập"
                                         value={lessonResult.hoat_dong_luyen_tap}
                                         onChange={(val) => setLessonResult({ ...lessonResult, hoat_dong_luyen_tap: val })}
-                                        bgClass="bg-white border-indigo-100"
+                                        bgClass="bg-white border-slate-100"
                                         field="hoat_dong_luyen_tap"
                                     />
                                 )}
-
                                 {lessonResult.hoat_dong_van_dung && (
                                     <AISectionEditor
-                                        label="4. Hoạt động Vận dụng:"
+                                        label="Hoạt động Vận dụng"
                                         value={lessonResult.hoat_dong_van_dung}
                                         onChange={(val) => setLessonResult({ ...lessonResult, hoat_dong_van_dung: val })}
-                                        bgClass="bg-white border-indigo-100"
+                                        bgClass="bg-white border-slate-100"
                                         field="hoat_dong_van_dung"
                                     />
                                 )}
-
-                                <div className="space-y-4 pt-4 border-t border-dashed">
-                                    <Label className="text-slate-800 font-bold block bg-slate-100 p-2 rounded">
-                                        V. PHỤ LỤC & TỔNG KẾT
-                                    </Label>
-
-                                    {lessonResult.ho_so_day_hoc && (
-                                        <AISectionEditor
-                                            label="Hồ sơ dạy học (Phiếu học tập, Rubric, Phụ lục):"
-                                            value={lessonResult.ho_so_day_hoc}
-                                            onChange={(val) => setLessonResult({ ...lessonResult, ho_so_day_hoc: val })}
-                                            bgClass="bg-green-50/30"
-                                            field="ho_so_day_hoc"
-                                        />
-                                    )}
-
-                                    {lessonResult.huong_dan_ve_nha && (
-                                        <AISectionEditor
-                                            label="Hướng dẫn về nhà:"
-                                            value={lessonResult.huong_dan_ve_nha}
-                                            onChange={(val) => setLessonResult({ ...lessonResult, huong_dan_ve_nha: val })}
-                                            bgClass="bg-orange-50/30"
-                                            field="huong_dan_ve_nha"
-                                        />
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {lessonFullPlanMode && lessonResult.shl && (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <Label className="text-indigo-700 font-medium">
-                                        Sinh hoạt lớp (SHL):
-                                    </Label>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            copyToClipboard(lessonResult.shl || "")
-                                        }
-                                    >
-                                        <Copy className="w-4 h-4" />
-                                    </Button>
-                                </div>
-                                <Textarea
-                                    value={lessonResult.shl || ""}
-                                    onChange={(e) =>
-                                        setLessonResult({
-                                            ...lessonResult,
-                                            shl: e.target.value,
-                                        })
-                                    }
-                                    className="min-h-[150px] bg-indigo-50"
-                                />
-                            </div>
-                        )}
-
-                        {/* Copy, Audit and Export buttons */}
-                        <div className="flex flex-wrap gap-2 pt-4 border-t">
-                            <Button
-                                variant="outline"
-                                className="bg-white border-slate-200 h-11 px-6 rounded-xl shadow-sm text-slate-600 hover:text-blue-600"
-                                onClick={() => {
-                                    const content = lessonFullPlanMode
-                                        ? `TÊN BÀI: ${lessonResult.ten_bai || lessonTopic
-                                        }\n\nMỤC TIÊU KIẾN THỨC:\n${lessonResult.muc_tieu_kien_thuc
-                                        }\n\nMỤC TIÊU NĂNG LỰC:\n${lessonResult.muc_tieu_nang_luc
-                                        }\n\nMỤC TIÊU PHẨM CHẤT:\n${lessonResult.muc_tieu_pham_chat
-                                        }\n\nTHIẾT BỊ DẠY HỌC & HỌC LIỆU:\n${lessonResult.thiet_bi_day_hoc
-                                        }\n\nSINH HOẠT DƯỚI CỜ:\n${lessonResult.shdc
-                                        }\n\nSINH HOẠT LỚP:\n${lessonResult.shl
-                                        }\n\nHOẠT ĐỘNG KHỞI ĐỘNG:\n${lessonResult.hoat_dong_khoi_dong
-                                        }\n\nHOẠT ĐỘNG KHÁM PHÁ:\n${lessonResult.hoat_dong_kham_pha
-                                        }\n\nHOẠT ĐỘNG LUYỆN TẬP:\n${lessonResult.hoat_dong_luyen_tap
-                                        }\n\nHOẠT ĐỘNG VẬN DỤNG:\n${lessonResult.hoat_dong_van_dung
-                                        }\n\nHƯỚNG DẪN VỀ NHÀ:\n${lessonResult.huong_dan_ve_nha
-                                        }\n\nTÍCH HỢP NLS:\n${lessonResult.tich_hop_nls
-                                        }\n\nTÍCH HỢP ĐẠO ĐỨC:\n${lessonResult.tich_hop_dao_duc
-                                        }`
-                                        : `TÍCH HỢP NLS:\n${lessonResult.tich_hop_nls}\n\nTÍCH HỢP ĐẠO ĐỨC:\n${lessonResult.tich_hop_dao_duc}`;
-                                    navigator.clipboard.writeText(content);
-                                    setSuccess("Đã copy vào clipboard!");
-                                }}
-                            >
-                                <Copy className="mr-2 h-4 w-4" />
-                                Copy nội dung
-                            </Button>
-
-                            <Button
-                                variant="ghost"
-                                className="bg-indigo-50 border-indigo-100 h-11 px-6 rounded-xl shadow-sm text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30"
-                                onClick={onAudit}
-                                disabled={isAuditing}
-                            >
-                                {isAuditing ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Sparkles className="mr-2 h-4 w-4" />
+                                {lessonResult.huong_dan_ve_nha && (
+                                    <AISectionEditor
+                                        label="Hướng dẫn về nhà"
+                                        value={lessonResult.huong_dan_ve_nha}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, huong_dan_ve_nha: val })}
+                                        bgClass="bg-white border-slate-100"
+                                        field="huong_dan_ve_nha"
+                                    />
                                 )}
-                                Kiểm định bài dạy (AI Check)
-                            </Button>
-
-                            <Button
-                                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-11 px-6 rounded-xl shadow-md gap-2 ml-auto"
-                                onClick={onExport}
-                                disabled={isExporting}
-                            >
-                                {isExporting ? (
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Download className="h-4 w-4" />
+                                {lessonResult.noi_dung_chuan_bi && (
+                                    <AISectionEditor
+                                        label="Nội dung Chuẩn bị (Bài sau)"
+                                        value={lessonResult.noi_dung_chuan_bi}
+                                        onChange={(val) => setLessonResult({ ...lessonResult, noi_dung_chuan_bi: val })}
+                                        bgClass="bg-amber-50/30 border-amber-100"
+                                        field="noi_dung_chuan_bi"
+                                    />
                                 )}
-                                Xuất file Word
-                            </Button>
-                        </div>
+                            </div>
 
-                        {/* Audit Result Display */}
-                        {auditResult && (
-                            <div className="mt-6 p-5 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950 dark:to-blue-950 rounded-2xl border border-indigo-100 dark:border-indigo-800 animate-in fade-in slide-in-from-top-4 duration-300">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300">
-                                        <Sparkles className="w-5 h-5" />
-                                        <h4 className="font-bold">Kết quả Kiểm định Sư phạm</h4>
+                            {/* Actions Area */}
+                            <div className="flex flex-wrap gap-3 pt-6 border-t border-slate-100">
+                                <Button
+                                    variant="outline"
+                                    className="h-11 rounded-xl border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:border-indigo-200"
+                                    onClick={() => {
+                                        const content = `TÊN BÀI: ${lessonResult.ten_bai || lessonTopic}
+                                            \n\nMỤC TIÊU KIẾN THỨC:\n${lessonResult.muc_tieu_kien_thuc || ""}
+                                            \n\nMỤC TIÊU NĂNG LỰC:\n${lessonResult.muc_tieu_nang_luc || ""}
+                                            \n\nMỤC TIÊU PHẨM CHẤT:\n${lessonResult.muc_tieu_pham_chat || ""}
+                                            \n\nTHIẾT BỊ DẠY HỌC & HỌC LIỆU:\n${lessonResult.thiet_bi_day_hoc || ""}
+                                            \n\nSINH HOẠT DƯỚI CỜ:\n${lessonResult.shdc || ""}
+                                            \n\nSINH HOẠT LỚP:\n${lessonResult.shl || ""}
+                                            \n\nHOẠT ĐỘNG KHỞI ĐỘNG:\n${lessonResult.hoat_dong_khoi_dong || ""}
+                                            \n\nHOẠT ĐỘNG KHÁM PHÁ:\n${lessonResult.hoat_dong_kham_pha || ""}
+                                            \n\nHOẠT ĐỘNG LUYỆN TẬP:\n${lessonResult.hoat_dong_luyen_tap || ""}
+                                            \n\nHOẠT ĐỘNG VẬN DỤNG:\n${lessonResult.hoat_dong_van_dung || ""}
+                                            \n\nHƯỚNG DẪN VỀ NHÀ:\n${lessonResult.huong_dan_ve_nha || ""}
+                                            \n\nTÍCH HỢP NLS:\n${lessonResult.tich_hop_nls || ""}
+                                            \n\nTÍCH HỢP ĐẠO ĐỨC:\n${lessonResult.tich_hop_dao_duc || ""}`;
+                                        navigator.clipboard.writeText(content);
+                                        setSuccess("Đã sao chép toàn bộ giáo án vào clipboard!");
+                                    }}
+                                >
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    Sao chép Toàn bộ
+                                </Button>
+                            </div>
+
+                            {/* Audit Result Display */}
+                            {auditResult && (
+                                <div className="p-6 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-3xl border border-amber-100 dark:border-amber-900/50 animate-in fade-in slide-in-from-top-4 duration-500">
+                                    <div className="flex items-center gap-3 mb-4 text-amber-700 dark:text-amber-400">
+                                        <Sparkles className="w-6 h-6" />
+                                        <h4 className="font-black text-lg">Phân tích & Kiểm định Sư phạm</h4>
+                                    </div>
+                                    <div className="prose dark:prose-invert max-w-none text-sm leading-relaxed text-slate-700 dark:text-slate-300 bg-white/60 dark:bg-black/20 p-5 rounded-2xl border border-amber-200/50">
+                                        <div className="whitespace-pre-wrap">{auditResult}</div>
                                     </div>
                                 </div>
-                                <div className="prose dark:prose-invert max-w-none text-sm bg-white/50 dark:bg-black/20 p-4 rounded-xl">
-                                    <div className="whitespace-pre-wrap">{auditResult}</div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+                            )}
+                        </div>
+
+                    )}
+                </div>
+            </div>
+        </div >
     );
 }

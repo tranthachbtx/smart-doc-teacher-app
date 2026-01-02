@@ -23,6 +23,10 @@ export interface LessonResult {
   tich_hop_nls: string;
   tich_hop_dao_duc: string;
   // Full plan fields
+  blueprint?: object; // New Antigravity Blueprint
+  blueprint_summary?: string;
+  _thinking?: string; // Chain of Thought Reasoning
+  concept_registry?: string[]; // Global Concept Registry
   ma_chu_de?: string;
   ten_bai?: string;
   muc_tieu_kien_thuc?: string;
@@ -38,6 +42,7 @@ export interface LessonResult {
   hoat_dong_kham_pha?: string;
   hoat_dong_luyen_tap?: string;
   hoat_dong_van_dung?: string;
+  noi_dung_chuan_bi?: string;
   ho_so_day_hoc?: string;
   huong_dan_ve_nha?: string;
   // Task details

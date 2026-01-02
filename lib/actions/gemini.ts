@@ -2,21 +2,24 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HDTN_CURRICULUM } from "@/lib/hdtn-curriculum";
+import { getPPCTChuDe } from "@/lib/data/ppct-database";
 import {
   getMeetingPrompt,
   getLessonIntegrationPrompt,
   getEventPrompt,
 } from "@/lib/prompts/ai-prompts";
 import { getAssessmentPrompt } from "@/lib/prompts/assessment-prompts";
-import { getKHDHPrompt } from "@/lib/prompts/khdh-prompts";
+import { getKHDHPrompt, MONTH_TO_CHU_DE } from "@/lib/prompts/khdh-prompts";
 import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
 
-const MODELS = [
-  "gemini-2.0-flash-exp",
-  "gemini-1.5-flash",
-  "gemini-1.5-flash-8b",
-  "gemini-1.5-pro",
-];
+// Quản lý trạng thái các Key bị chặn (Shadow Ban / Invalid)
+const suspendedKeys = new Set<string>();
+
+// BIẾN QUẢN LÝ THỜI GIAN (SLOW-COOKING)
+let lastRequestTimestamp = 0;
+const MIN_GAP_BETWEEN_REQUESTS = 30000; // Nghỉ 30 giây giữa các lần gọi thành công (Slow-Cooking)
+const KEY_SWITCH_GAP = 30000;          // Nghỉ 30 giây nếu Key bị lỗi trước khi đổi Key khác
+const BAN_SUSPENSION_TIME = 30 * 60000; // 30 phút cách ly nếu nghi ngờ Shadow Ban
 
 function getApiKeys(): string[] {
   const keys: string[] = [];
@@ -24,17 +27,54 @@ function getApiKeys(): string[] {
   const backupKey = process.env.GEMINI_API_KEY_2;
   const backupKey3 = process.env.GEMINI_API_KEY_3;
 
-  if (primaryKey && primaryKey.trim() !== "") {
-    keys.push(primaryKey);
-  }
-  if (backupKey && backupKey.trim() !== "") {
-    keys.push(backupKey);
-  }
-  if (backupKey3 && backupKey3.trim() !== "") {
-    keys.push(backupKey3);
-  }
+  if (primaryKey && primaryKey.trim() !== "") keys.push(primaryKey);
+  if (backupKey && backupKey.trim() !== "") keys.push(backupKey);
+  if (backupKey3 && backupKey3.trim() !== "") keys.push(backupKey3);
 
   return keys;
+}
+
+// KỸ THUẬT MINIFICATION (Tối ưu hóa token đầu vào)
+function minifyPrompt(text: string): string {
+  if (!text) return "";
+  return text
+    .replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1') // Loại bỏ comment // và /* */
+    .replace(/^\s*$(?:\r\n?|\n)/gm, '') // Loại bỏ dòng trống
+    .replace(/\s+/g, ' ') // Gộp khoảng trắng
+    .trim();
+}
+
+export async function checkApiKeyStatus(): Promise<{
+  configured: boolean;
+  primaryKey: boolean;
+  backupKey: boolean;
+  backupKey2: boolean;
+  error?: string;
+}> {
+  const primaryKey = process.env.GEMINI_API_KEY;
+  const backupKey = process.env.GEMINI_API_KEY_2;
+  const backupKey3 = process.env.GEMINI_API_KEY_3;
+
+  const hasPrimary = !!(primaryKey && primaryKey.trim() !== "");
+  const hasBackup = !!(backupKey && backupKey.trim() !== "");
+  const hasBackup3 = !!(backupKey3 && backupKey3.trim() !== "");
+
+  if (!hasPrimary && !hasBackup && !hasBackup3) {
+    return {
+      configured: false,
+      primaryKey: false,
+      backupKey: false,
+      backupKey2: false,
+      error: "Chưa cấu hình API Key nào. Vui lòng thêm GEMINI_API_KEY vào Vars.",
+    };
+  }
+
+  return {
+    configured: true,
+    primaryKey: hasPrimary,
+    backupKey: hasBackup,
+    backupKey2: hasBackup3,
+  };
 }
 
 async function callGeminiWithRetry(
@@ -43,13 +83,16 @@ async function callGeminiWithRetry(
   maxRetries = 2,
   images?: Array<{ mimeType: string; data: string }>
 ): Promise<string> {
-  // Get and shuffle API keys to distribute load during parallel calls
-  const apiKeys = getApiKeys().sort(() => Math.random() - 0.5);
+  // Chỉ lấy những key không nằm trong danh sách tạm đình chỉ (Suspended)
+  const apiKeys = getApiKeys()
+    .filter(k => !suspendedKeys.has(k))
+    .sort(() => Math.random() - 0.5);
 
   if (apiKeys.length === 0) {
-    throw new Error(
-      "Chưa cấu hình API Key. Vui lòng thêm GEMINI_API_KEY vào Vars."
-    );
+    if (suspendedKeys.size > 0) {
+      throw new Error("TẤT CẢ API KEY ĐÃ BỊ GOOGLE TẠM KHÓA (403/404). Hãy thử lại sau 15-30 phút để thoát khỏi Shadow Ban.");
+    }
+    throw new Error("Chưa cấu hình API Key. Vui lòng thêm GEMINI_API_KEY vào Vars.");
   }
 
   let lastError: Error | null = null;
@@ -57,132 +100,132 @@ async function callGeminiWithRetry(
     ? [preferredModel, ...MODELS.filter((m) => m !== preferredModel)]
     : MODELS;
 
-  // Try each API key
-  keyLoop: for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
-    const apiKey = apiKeys[keyIndex];
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const keyLabel = keyIndex === 0 ? "Primary" : "Backup";
+  // Chiến thuật: Thử từng Model -> Với mỗi Model thử từng Key -> Với mỗi Key thử đa phiên bản API (Negotiation)
+  for (const modelName of modelsToTry) {
+    KeyLoop:
+    for (let keyIndex = 0; keyIndex < apiKeys.length; keyIndex++) {
+      const apiKey = apiKeys[keyIndex];
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const keyLabel = `Key ${keyIndex + 1}`;
 
-    console.log(`[v0] Using ${keyLabel} API Key...`);
+      // SMART NEGOTIATION 6-LAYERS: Bao phủ mọi cấu hình API của Google
+      const variants = [
+        { model: modelName, apiVersion: undefined },
+        { model: `${modelName}-latest`, apiVersion: "v1beta" as any },
+        { model: modelName, apiVersion: "v1beta" as any },
+        { model: `models/${modelName}`, apiVersion: "v1" as any },
+        { model: `models/${modelName}`, apiVersion: "v1beta" as any },
+        { model: "gemini-pro", apiVersion: undefined }, // Cánh cửa cuối cùng
+      ];
 
-    // Try each model with current API key
-    for (const model of modelsToTry) {
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-          console.log(
-            `[v0] [${keyLabel}] Trying model: ${model}, attempt: ${attempt + 1}`
-          );
-
-          // Build contents array for multimodal support
-          const contents: any[] = [{ text: prompt }];
-          if (images && images.length > 0) {
-            images.forEach((img) => {
-              contents.push({
-                inlineData: {
-                  mimeType: img.mimeType,
-                  data: img.data,
-                },
-              });
-            });
-          }
-
-          const modelInstance = genAI.getGenerativeModel({ model });
-          const result = await modelInstance.generateContent({
-            contents: [{ role: "user", parts: contents }],
-            generationConfig: {
-              maxOutputTokens: 8192,
-              temperature: 0.7,
-            }
-          });
-          const response = await result.response;
-
-          // Extract text from response - SDK uses getter property
-          let text: string = "";
+      for (const variant of variants) {
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
           try {
-            const rawText = response.text;
-            text = typeof rawText === 'string' ? rawText : "";
-          } catch (e) {
-            console.log(`[v0] [${keyLabel}] Error extracting text:`, e);
-            text = "";
-          }
-
-          if (!text) {
-            throw new Error("Empty response from Gemini API");
-          }
-
-          console.log(`[v0] [${keyLabel}] Success with model: ${model}`);
-          return text;
-        } catch (error: any) {
-          lastError = error;
-          const errorMsg = error?.message || "";
-          const isQuotaError =
-            errorMsg.includes("429") ||
-            errorMsg.includes("quota") ||
-            errorMsg.includes("RESOURCE_EXHAUSTED") ||
-            error.status === 429;
-
-          const isModelNotFound =
-            errorMsg.includes("404") ||
-            errorMsg.includes("not found") ||
-            error.status === 404;
-
-          if (isModelNotFound) {
-            console.log(
-              `[v0] [${keyLabel}] Model ${model} not available on this key, trying next model...`
-            );
-            break;
-          }
-
-          if (isQuotaError) {
-            // If we have more keys to try, skip this key entirely for now
-            if (keyIndex < apiKeys.length - 1) {
-              console.log(`[v0] [${keyLabel}] Quota exhausted, switching to NEXT API KEY...`);
-              continue keyLoop;
+            // KIỂM TRA KHOẢNG CÁCH AN TOÀN (Slow-Cooking)
+            const timeSinceLast = Date.now() - lastRequestTimestamp;
+            if (timeSinceLast < MIN_GAP_BETWEEN_REQUESTS) {
+              const wait = MIN_GAP_BETWEEN_REQUESTS - timeSinceLast;
+              console.log(`[Slow-Cooking] Đang nghỉ ngơi dưỡng sức ${Math.round(wait / 1000)}s để bảo vệ Quota...`);
+              await new Promise(r => setTimeout(r, wait));
             }
 
-            const retryMatch = errorMsg.match(/retry in (\d+)/i);
-            const retryDelay = retryMatch
-              ? Number.parseInt(retryMatch[1]) * 1000
-              : (attempt + 1) * 5000;
+            console.log(`[Diagnostic] [${keyLabel}] Thử ${variant.model} (Ver: ${variant.apiVersion || 'default'}) - Lần ${attempt + 1}`);
 
-            if (attempt < maxRetries - 1) {
-              console.log(
-                `[v0] [${keyLabel}] Quota limit hit (last key), waiting ${retryDelay / 1000
-                }s before retry...`
-              );
-              await new Promise((resolve) => setTimeout(resolve, retryDelay));
-              continue;
-            } else {
-              console.log(
-                `[v0] [${keyLabel}] Model ${model} quota exhausted, trying next model...`
-              );
+            const modelInstance = genAI.getGenerativeModel(
+              { model: variant.model },
+              variant.apiVersion ? { apiVersion: variant.apiVersion } : undefined
+            );
+
+            const contents: any[] = [{ text: prompt }];
+            if (images && images.length > 0) {
+              images.forEach((img) => {
+                contents.push({ inlineData: { mimeType: img.mimeType, data: img.data } });
+              });
+            }
+
+            const result = await modelInstance.generateContent({
+              contents: [{ role: "user", parts: contents }],
+              generationConfig: { maxOutputTokens: 8192, temperature: 0.7 },
+            });
+
+            const response = await result.response;
+            const text = response.text();
+
+            if (!text) throw new Error("API phản hồi rỗng.");
+
+            // CẬP NHẬT THỜI GIAN GỌI THÀNH CÔNG ĐỂ ĐIỀU TIẾT NHỊP ĐỘ (Slow-Cooking)
+            lastRequestTimestamp = Date.now();
+
+            console.log(`[Slow-Cooking] [${keyLabel}] THÀNH CÔNG: ${variant.model}`);
+            return text;
+
+          } catch (error: any) {
+            lastError = error;
+            const errorMsg = error?.message || "";
+            const status = error?.status || 0;
+
+            // CHIẾN THUẬT: GIÃN CÁCH BIẾN THIÊN (Exponential Backoff + Jitter)
+            const baseWait = Math.min(60000, Math.pow(2, attempt) * 2000);
+            const jitter = Math.random() * 1500;
+            const waitTime = baseWait + jitter;
+
+            // Xử lý Lỗi 403/404: NGHI VẤN SHADOW BAN HOẶC KEY CHẾT
+            if (status === 403 || status === 404 || errorMsg.includes("403") || errorMsg.includes("404")) {
+              console.error(`[Autopilot] [${keyLabel}] Lỗi ${status} - Đang đình chỉ Key này ${BAN_SUSPENSION_TIME / 60000} phút.`);
+              suspendedKeys.add(apiKey);
+
+              setTimeout(() => suspendedKeys.delete(apiKey), BAN_SUSPENSION_TIME);
+
+              if (keyIndex < apiKeys.length - 1) {
+                console.log(`[Hệ thống Thở] Nghỉ ${KEY_SWITCH_GAP / 1000}s trước khi chuyển Key dự phòng...`);
+                await new Promise(r => setTimeout(r, KEY_SWITCH_GAP));
+                continue KeyLoop;
+              }
               break;
             }
-          }
 
-          // For other errors, try next model
-          console.log(
-            `[v0] [${keyLabel}] Error with model ${model}:`,
-            errorMsg.substring(0, 100)
-          );
-          break;
+            // Xử lý Lỗi 429: QUÁ TẢI (QUOTA EXHAUSTED)
+            if (status === 429 || errorMsg.includes("429") || errorMsg.includes("quota")) {
+              if (keyIndex < apiKeys.length - 1) {
+                console.warn(`[Autopilot] [${keyLabel}] Hết hạn mức. Đang chuyển Key...`);
+                continue KeyLoop;
+              }
+
+              console.log(`[Autopilot] [Hệ thống Đợi] Đang lùi bước ${Math.round(waitTime)}ms...`);
+              await new Promise(r => setTimeout(r, waitTime));
+              continue;
+            }
+
+            console.error(`[Autopilot] Lỗi khác:`, errorMsg.substring(0, 120));
+            await new Promise(r => setTimeout(r, 2000));
+            break;
+          }
         }
       }
     }
-
-    // All models failed with current key, try next key
-    if (keyIndex < apiKeys.length - 1) {
-      console.log(
-        `[v0] ${keyLabel} API Key exhausted all models, switching to next key...`
-      );
-    }
   }
+}
 
+// BÁO CÁO CHUYÊN GIA KHI THẤT BẠI TOÀN DIỆN
+const finalErrorMsg = lastError?.message || "";
+console.error(`[Autopilot] THẤT BẠI TOÀN DIỆN. Last Error: ${finalErrorMsg}`);
+
+if (finalErrorMsg.includes("403") || finalErrorMsg.includes("404")) {
   throw new Error(
-    `Đã hết quota API cho tất cả các key và model. ` +
-    `Vui lòng đợi 1-2 phút rồi thử lại. ` +
-    `Hoặc thêm GEMINI_API_KEY_3 dự phòng vào Vars.`
+    `CẢNH BÁO SHADOW BAN (404/403):\n` +
+    `Google đã tạm chặn dự án/IP của bạn do hành vi gọi AI quá dầy đặc.\n\n` +
+    `HỆ THỐNG ĐÃ TỰ ĐỘNG LÙI BƯỚC:\n` +
+    `- Đã thử 6 biến thể API (v1, v1beta, models/, latest).\n` +
+    `- Đã xoay vòng toàn bộ Key dự phòng.\n\n` +
+    `GIẢI PHÁP: Tạm dừng sử dụng 15-30 phút, hoặc đổi địa chỉ IP (dùng 4G/VPN) để thoát khỏi danh sách đen của Google Gateway.`
   );
+}
+
+if (finalErrorMsg.includes("429")) {
+  throw new Error(`QUÁ TẢI (429): Bạn đã vượt quá giới hạn yêu cầu/phút của Google. Hãy tạm nghỉ 1-2 phút.`);
+}
+
+throw new Error(`KẾT NỐI AI THẤT BẠI: ${finalErrorMsg.substring(0, 150)}`);
 }
 
 function removeMarkdownBold(text: string): string {
@@ -190,13 +233,211 @@ function removeMarkdownBold(text: string): string {
   return text.replace(/\*\*/g, "").replace(/\*/g, "");
 }
 
-function parseGeminiJSON(text: string): any {
+// BƯỚC 3: CONTEXT COMPRESSION (Nén ngữ cảnh để bảo vệ TPM)
+async function summarizeContent(text: string, maxWords = 300): Promise<string> {
+  if (!text || text.length < 1000) return text;
+
+  const prompt = `BẠN LÀ MỘT CHUYÊN GIA TÓM TẮT SƯ PHẠM. 
+  Hãy tóm tắt nội dung sau đây thành một bản súc tích khoảng ${maxWords} từ, 
+  nhưng phải giữ lại toàn bộ: Các khái niệm cốt lõi, Các bước thực hiện chính, và Kết quả đầu ra dự kiến.
+  
+  NỘI DUNG CẦN TÓM TẮT:
+  ${text.substring(0, 15000)} 
+  
+  CHỈ TRẢ VỀ VĂN BẢN TÓM TẮT, KHÔNG THÊM BẤT CỨ LỜI DẪN NÀO.`;
+
+  try {
+    // Dùng model mặc định để tóm tắt nhanh
+    return await callGeminiWithRetry(prompt, "gemini-1.5-flash-8b");
+  } catch (e) {
+    return text.substring(0, 1500); // Fallback nếu lỗi
+  }
+}
+
+// --- HYBRID PARSER (YAML-LIKE FRONTMATTER + MARKDOWN) ---
+// As recommended in the research, this is more robust for long-form content.
+function parseGeminiHybrid(text: string, expectedContentKey: string): any {
+  const result: any = {};
+
+  // 1. Try to extract YAML-like frontmatter (between --- or just at the top)
+  // Lenient match: find the first occurrence of --- block
+  const yamlMatch = text.match(/---\s*([\s\S]*?)\s*---/);
+  let content = text;
+  let metadataStr = "";
+
+  if (yamlMatch) {
+    metadataStr = yamlMatch[1];
+    const matchStart = text.indexOf(yamlMatch[0]);
+    content = (text.substring(0, matchStart) + text.substring(matchStart + yamlMatch[0].length)).trim();
+  } else {
+    // If no ---, try to look for key: value patterns at the very top before any headers
+    const lines = text.split("\n");
+    const metadataLines: string[] = [];
+    let contentStartIdx = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.match(/^[a-zA-Z0-9_]+:\s*.*$/)) {
+        metadataLines.push(line);
+        contentStartIdx = i + 1;
+      } else if (line === "") {
+        contentStartIdx = i + 1;
+        continue;
+      } else {
+        break;
+      }
+    }
+    if (metadataLines.length > 0) {
+      metadataStr = metadataLines.join("\n");
+      content = lines.slice(contentStartIdx).join("\n").trim();
+    }
+  }
+
+  // Parse simple YAML-like metadata (key: value or key: ["a", "b"])
+  if (metadataStr) {
+    const metaLines = metadataStr.split("\n");
+    let currentKey = "";
+
+    metaLines.forEach(line => {
+      const colonIdx = line.indexOf(":");
+      // If starts with whitespace, it might be a continuation of the previous key
+      if (line.startsWith(" ") && currentKey) {
+        result[currentKey] = (result[currentKey] || "") + "\n" + line.trim();
+        return;
+      }
+
+      if (colonIdx !== -1) {
+        const key = line.substring(0, colonIdx).trim();
+        if (key.match(/^[a-zA-Z0-9_]+$/)) {
+          currentKey = key;
+          let val: any = line.substring(colonIdx + 1).trim();
+
+          // Handle simple array and cleanup quotes
+          if (val.startsWith("[") && val.endsWith("]")) {
+            try {
+              val = JSON.parse(val.replace(/'/g, '"'));
+            } catch (e) {
+              val = val.substring(1, val.length - 1).split(",").map((s: string) => s.trim().replace(/^["']|["']$/g, ""));
+            }
+          } else {
+            // Remove wrapping quotes if AI adds them
+            val = val.replace(/^["']|["']$/g, "");
+          }
+          result[key] = val;
+          return;
+        }
+      }
+
+      // If no colon and not starting with space, reset currentKey
+      currentKey = "";
+    });
+  }
+
+  // 2. Put the remaining content into the expected key
+  // CRITICAL: Check if content is actually an "echo" of a large JSON (common hallucination)
+  let cleanedContent = removeMarkdownBold(content);
+
+  // If content starts with ```json and contains many keys, it might be an echo
+  if (cleanedContent.trim().startsWith("```json") || (cleanedContent.trim().startsWith("{") && cleanedContent.includes(`"${expectedContentKey}"`))) {
+    console.log("[v0] Hybrid content looks like a full JSON echo. Attempting to extract specifically...");
+    const jsonMatch = cleanedContent.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        const nested = JSON.parse(jsonMatch[0].replace(/```json|```/g, ""));
+        if (nested[expectedContentKey]) {
+          cleanedContent = nested[expectedContentKey];
+        }
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  result[expectedContentKey] = cleanedContent;
+  return result;
+}
+
+function parseGeminiJSON(text: string, expectedContentKey?: string): any {
   console.log("[v0] Raw response (first 500 chars):", (text || "").substring(0, 500));
 
   if (!text) {
     throw new Error("Không nhận được nội dung từ Gemini (Empty response)");
   }
+  // --- Pre-process: Remove [THINKING] blocks if present ---
+  // Improved: Remove EVERYTHING between [THINKING] and [/THINKING] or end of string if unclosed
+  if (text.includes("[THINKING]")) {
+    const startIdx = text.indexOf("[THINKING]");
+    const endIdx = text.indexOf("[/THINKING]");
+    if (endIdx !== -1) {
+      text = (text.substring(0, startIdx) + text.substring(endIdx + 11)).trim();
+    } else {
+      // Unclosed thinking block at the end (rare) or beginning
+      text = text.substring(0, startIdx).trim();
+    }
+  }
 
+  // Also handle any other tags like [PROMPT], [TASK] if AI hallucinate them
+  text = text.replace(/\[\/?(THINKING|PROMPT|TASK|STEP)\]/gi, "").trim();
+
+  // --- 0. Try Hybrid Parsing first with smarter detection ---
+  // Detect if text contains YAML markers (---) or common key: patterns within the first 500 chars
+  const hasYamlMarker = text.substring(0, 500).includes("---");
+  const hasKeyPattern = /^[a-z0-9_]+:\s/im.test(text.substring(0, 500));
+
+  if (expectedContentKey && (hasYamlMarker || hasKeyPattern)) {
+    try {
+      console.log("[v0] Attempting Hybrid Parsing for key:", expectedContentKey);
+      const hybrid = parseGeminiHybrid(text, expectedContentKey);
+      if (Object.keys(hybrid).length > 1 || (hybrid[expectedContentKey] && hybrid[expectedContentKey].length > 50)) {
+        return hybrid;
+      }
+    } catch (e) {
+      console.log("[v0] Hybrid parsing fallback triggered.");
+    }
+  }
+
+  // --- 1. Try extracting from Markdown Code Blocks ---
+  const codeBlockRegex = /```(?:json)?\s*([\s\S]*?)\s*```/gi;
+  const matches = [...text.matchAll(codeBlockRegex)];
+
+  let candidates: string[] = [];
+
+  if (matches.length > 0) {
+    // Prioritize the last block as it usually contains the final result
+    matches.forEach(m => candidates.push(m[1]));
+  } else {
+    // No code blocks, treat entire text as candidate
+    candidates.push(text);
+  }
+
+  // --- 2. Iterate candidates and try to find valid JSON ---
+  for (const candidate of candidates.reverse()) { // Try from end (most likely place)
+    // Extract from first '{' to last '}'
+    const startIdx = candidate.indexOf("{");
+    const endIdx = candidate.lastIndexOf("}");
+
+    if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+      const jsonStr = candidate.substring(startIdx, endIdx + 1);
+      try {
+        // Basic parse check
+        const result = JSON.parse(jsonStr);
+        // Safety check: ensure it has keys
+        if (Object.keys(result).length > 0) {
+          // Clean string values
+          for (const key of Object.keys(result)) {
+            if (typeof result[key] === "string") {
+              result[key] = removeMarkdownBold(result[key]);
+            }
+          }
+          return result;
+        }
+      } catch (e) {
+        // Continue to next candidate or try fixing
+        console.log("[v0] Candidate parse failed, trying fixes...", e);
+      }
+    }
+  }
+
+  // --- 3. Fallback: Aggressive Cleaning & Extraction on full text ---
+  // If we are here, no clean code block worked.
   const cleaned = text
     .replace(/```json\s*/gi, "")
     .replace(/```\s*/g, "")
@@ -206,14 +447,15 @@ function parseGeminiJSON(text: string): any {
   const endIdx = cleaned.lastIndexOf("}");
 
   if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
-    console.log("[v0] No valid JSON brackets found");
-    throw new Error("Không tìm thấy JSON trong response");
+    console.log("[v0] No valid JSON brackets found in response:", text.substring(0, 100));
+    throw new Error(`Không tìm thấy JSON trong response. Nội dung nhận được: ${text.substring(0, 50)}...`);
   }
 
   let jsonStr = cleaned.substring(startIdx, endIdx + 1);
 
   try {
     const result = JSON.parse(jsonStr);
+    // Post-process string values (standard path)
     for (const key of Object.keys(result)) {
       if (typeof result[key] === "string") {
         result[key] = removeMarkdownBold(result[key]);
@@ -221,23 +463,42 @@ function parseGeminiJSON(text: string): any {
     }
     return result;
   } catch (e) {
-    console.log("[v0] Direct parse failed, attempting fixes...");
+    console.log("[v0] Standard JSON parse failed, trying relaxed parsing...");
+
+    // RELAXED PARSING STRATEGY
+    // This handles:
+    // 1. Keys without quotes
+    // 2. Single quotes instead of double quotes
+    // 3. Trailing commas
+    try {
+      // We wrap the content in parentheses to make it an expression
+      // and use the Function constructor to safely evaluate it as a data object.
+      // This is safer than 'eval' but still powerful enough for relaxed JSON.
+      const relaxedParse = new Function("return (" + jsonStr + ")");
+      const result = relaxedParse();
+
+      // Verify it looks like an object
+      if (result && typeof result === 'object') {
+        // Post-process string values
+        for (const key of Object.keys(result)) {
+          if (typeof result[key] === "string") {
+            result[key] = removeMarkdownBold(result[key]);
+          }
+        }
+        return result;
+      }
+    } catch (relaxedErr) {
+      console.log("[v0] Relaxed parsing also failed:", relaxedErr);
+    }
   }
 
   // Common fix: Unescaped newlines in JSON strings
-  // This is a naive heuristic but often helps with LLM output
-  // We try to escape newlines that are NOT followed by a control character or key start
-  jsonStr = jsonStr.replace(/(?<!\\)\n/g, "\\n");
+  // REMOVED DESTRUCTIVE GLOBAL NEWLINE REPLACE HERE
+  // We only sanitize within quotes now using the block below
 
-  jsonStr = jsonStr.replace(/"([^"]*?)"/g, (match, content) => {
-    const fixed = content
-      .replace(/\\/g, "\\\\")
-      .replace(/\n/g, "\\n")
-      .replace(/\r/g, "\\r")
-      .replace(/\t/g, "\\t")
-      .replace(/"/g, '\\"');
-    return `"${fixed}"`;
-  });
+  // Dangerous regex loop removed.
+  // We rely on the model's ability to produce valid JSON or the first-pass parser.
+  // If parsing fails here, it falls through to the final catch.
 
   try {
     const result = JSON.parse(jsonStr);
@@ -304,7 +565,10 @@ function parseGeminiJSON(text: string): any {
       "hinh_thuc_to_chuc",
       "ma_tran_dac_ta",
       "bang_kiem_rubric",
-      "loi_khuyen"
+      "loi_khuyen",
+      "shdc",
+      "shl",
+      "noi_dung_chuan_bi"
     ];
 
     for (const key of keys) {
@@ -418,7 +682,7 @@ export async function generateLessonPlan(
   month?: number,
   activitySuggestions?: { shdc?: string; hdgd?: string; shl?: string },
   model?: string,
-  image?: { mimeType: string; data: string }
+  lessonFile?: { mimeType: string; data: string; name: string }
 ): Promise<{
   success: boolean;
   data?: {
@@ -462,7 +726,8 @@ export async function generateLessonPlan(
         customInstructions,
         tasks,
         month,
-        activitySuggestions
+        activitySuggestions,
+        !!lessonFile
       )
       : getLessonIntegrationPrompt(grade, lessonTopic);
 
@@ -470,21 +735,21 @@ export async function generateLessonPlan(
       prompt += `\n\nYÊU CẦU BỔ SUNG TỪ GIÁO VIÊN:\n${customInstructions}\n\nLưu ý: Hãy tích hợp các yêu cầu trên vào nội dung một cách hợp lý và khoa học.`;
     }
 
-    if (image) {
-      prompt += `\n\nYÊU CẦU OCR & THIẾT KẾ GD:\nTôi đã gửi kèm hình ảnh nội dung bài học từ Sách giáo khoa (SGK). Hãy phân tích kỹ nội dung, hình ảnh, các câu hỏi và hoạt động trong trang sách này để trích xuất kiến thức trọng tâm và thiết kế các hoạt động giáo dục (Khởi động, Khám phá, Luyện tập, Vận dụng) một cách sát thực tế nhất. Đảm bảo giáo án 2 cột phản ánh đúng tinh thần của bài học trong SGK.`;
+    if (lessonFile) {
+      prompt += `\n\nYÊU CẦU OCR & THIẾT KẾ GD:\nTôi đã gửi kèm tài liệu nội dung bài học (PDF/Ảnh). Hãy phân tích kỹ nội dung, hình ảnh, các câu hỏi và hoạt động trong tài liệu này để trích xuất kiến thức trọng tâm và thiết kế các hoạt động giáo dục (Khởi động, Khám phá, Luyện tập, Vận dụng) một cách sát thực tế nhất. Đảm bảo giáo án 2 cột phản ánh đúng tinh thần của tài liệu được cung cấp.`;
     }
 
     console.log(
       "[v0] Calling Gemini API for lesson plan...",
       fullPlan ? "(Full Plan)" : "(Integration Only)",
-      image ? "(With Image/OCR)" : ""
+      lessonFile ? "(With File/OCR)" : ""
     );
 
     const text = await callGeminiWithRetry(
       prompt,
-      model || "gemini-2.0-flash-exp",
+      model || "gemini-1.5-flash",
       2,
-      image ? [image] : undefined
+      lessonFile ? [lessonFile] : undefined
     );
     console.log("[v0] Lesson plan response received, length:", text.length);
 
@@ -539,16 +804,18 @@ export async function generateLessonPlan(
 export async function generateLessonSection(
   grade: string,
   lessonTopic: string,
-  section: "setup" | "khởi động" | "khám phá" | "luyện tập" | "vận dụng" | "shdc_shl" | "final",
+  section: "blueprint" | "setup" | "khởi động" | "khám phá" | "luyện tập" | "vận dụng" | "shdc_shl" | "final" | "preparation",
   context?: any,
   duration?: string,
   customInstructions?: string,
   tasks?: Array<{ name: string; description: string }>,
   month?: number,
   activitySuggestions?: { shdc?: string; hdgd?: string; shl?: string },
-  model?: string
+  model?: string,
+  lessonFile?: { mimeType: string; data: string; name: string }
 ): Promise<{ success: boolean; data?: any; error?: string }> {
   try {
+    // TỐI ƯU HÓA PROMPT: Chỉ lấy context cần thiết cho từng phần để tiết kiệm Token/Quota
     const basePrompt = getKHDHPrompt(
       grade,
       lessonTopic,
@@ -556,64 +823,262 @@ export async function generateLessonSection(
       customInstructions,
       tasks,
       month,
-      activitySuggestions
+      activitySuggestions,
+      !!lessonFile
     );
+
+    // Tinh chỉnh logic lọc để "sạch" hơn
+    const extractBlock = (full: string, startMarker: string, endMarker?: string) => {
+      const start = full.indexOf(startMarker);
+      if (start === -1) return "";
+      if (!endMarker) return full.substring(start);
+      const end = full.indexOf(endMarker, start);
+      return end === -1 ? full.substring(start) : full.substring(start, end);
+    };
+
+    let optimizedBasePrompt = basePrompt;
+
+    if (section === "setup") {
+      optimizedBasePrompt = extractBlock(basePrompt, "CHỈ DẪN", "HƯỚNG DẪN PHÂN BỔ THỜI GIAN") +
+        extractBlock(basePrompt, "DỮ LIỆU ĐẦU VÀO (USER INPUT)");
+    } else if (["khởi động", "khám phá", "luyện tập", "vận dụng"].includes(section)) {
+      optimizedBasePrompt = extractBlock(basePrompt, "CHỈ DẪN", "MẪU SINH HOẠT DƯỚI CỜ") +
+        extractBlock(basePrompt, "PHIẾU HỌC TẬP VÀ RUBRIC", "DỮ LIỆU ĐẦU VÀO") +
+        extractBlock(basePrompt, "DỮ LIỆU ĐẦU VÀO (USER INPUT)");
+    } else if (section === "shdc_shl") {
+      optimizedBasePrompt = extractBlock(basePrompt, "CHỈ DẪN", "HƯỚNG DẪN TÍCH HỢP NĂNG LỰC SỐ") +
+        extractBlock(basePrompt, "MẪU SINH HOẠT DƯỚI CỜ", "TIÊU CHÍ ĐÁNH GIÁ CUỐI CHỦ ĐỀ") +
+        extractBlock(basePrompt, "DỮ LIỆU ĐẦU VÀO (USER INPUT)");
+    } else if (section === "final" || section === "preparation") {
+      optimizedBasePrompt = extractBlock(basePrompt, "CHỈ DẪN", "HƯỚNG DẪN TÍCH HỢP NĂNG LỰC SỐ") +
+        extractBlock(basePrompt, "PHIẾU HỌC TẬP VÀ RUBRIC", "DỮ LIỆU ĐẦU VÀO") +
+        extractBlock(basePrompt, "DỮ LIỆU ĐẦU VÀO (USER INPUT)");
+    }
+
+    // Áp dụng Minification trước khi gửi
+    optimizedBasePrompt = minifyPrompt(optimizedBasePrompt);
+
+    // KỸ THUẬT SLIDING WINDOW: Nếu context quá lớn, hãy nén nó lại
+    if (context && JSON.stringify(context).length > 20000) {
+      console.log("[v0] Context quá lớn, đang thực hiện nén ngữ cảnh...");
+      if (context.hoat_dong_khoi_dong) context.hoat_dong_khoi_dong = await summarizeContent(context.hoat_dong_khoi_dong);
+      if (context.hoat_dong_kham_pha) context.hoat_dong_kham_pha = await summarizeContent(context.hoat_dong_kham_pha);
+    }
+
+    if (!optimizedBasePrompt || optimizedBasePrompt.trim().length < 100) {
+      console.warn(`[v0] Optimization block too small for ${section}, falling back to base prompt.`);
+      optimizedBasePrompt = basePrompt;
+    }
 
     let specificPrompt = "";
     let outputFormat = "";
+    let expectedContentKey = "";
 
     switch (section) {
-      case "setup":
-        specificPrompt = `NHIỆM VỤ: Hãy tạo phần MỤC TIÊU và CHUẨN BỊ cho bài học này.`;
-        outputFormat = `{
-          "ma_chu_de": "...",
-          "ten_bai": "...",
-          "muc_tieu_kien_thuc": "...",
-          "muc_tieu_nang_luc": "...",
-          "muc_tieu_pham_chat": "...",
-          "gv_chuan_bi": "...",
-          "hs_chuan_bi": "...",
-          "tich_hop_nls": "...",
-          "tich_hop_dao_duc": "..."
-        }`;
+      case "blueprint":
+        expectedContentKey = "blueprint";
+        specificPrompt = `TASK: You are the ARCHITECT (Phase 1).
+        Creates a high-level BLUEPRINT (Skeleton) for the entire lesson "${lessonTopic}".
+        
+        REQUIREMENTS:
+        1. Define the exact name of all 4 Education Activities (Start, Explore, Practice, Apply).
+        2. Set specific time allocation for each part (must sum up to ${duration || '90 mins'}).
+        3. Outline ONE core "Cognitive Conflict", "Problem Statement" or "Situational Dilemma" that binds all activities together.
+        4. Apply Kolb's Experiential Cycle logic (Experience -> Reflection -> Conceptualization -> Application).
+        
+        FORMAT (JSON preferred, but Hybrid OK):
+        \`\`\`json
+        {
+           "blueprint": {
+              "topic_name": "...",
+              "core_problem": "...",
+              "activities": [
+                 {"id": 1, "name": "Start...", "time": "..."},
+                 {"id": 2, "name": "Explore...", "time": "..."},
+                 {"id": 3, "name": "Practice...", "time": "..."},
+                 {"id": 4, "name": "Apply...", "time": "..."}
+              ]
+           }
+        }
+        \`\`\`
+        
+        OUTPUT LANGUAGE: VIETNAMESE`;
         break;
+
+      case "setup":
+        expectedContentKey = "muc_tieu_kien_thuc"; // Representative key
+        specificPrompt = `TASK: Create the OBJECTIVES and PREPARATION section for Grade ${grade}.
+        - Knowledge Objectives (muc_tieu_kien_thuc)
+        - Competencies (muc_tieu_nang_luc)
+        - Qualities (muc_tieu_pham_chat)
+        - Teacher Preparation (gv_chuan_bi)
+        - Student Preparation (hs_chuan_bi)
+        
+        FORMAT GUIDELINE (HYBRID):
+        1. Write metadata first (Frontmatter):
+        ma_chu_de: "..."
+        ten_bai: "..."
+        muc_tieu_nang_luc: "..."
+        muc_tieu_pham_chat: "..."
+        gv_chuan_bi: "..."
+        hs_chuan_bi: "..."
+        tich_hop_nls: "..."
+        tich_hop_dao_duc: "..."
+        
+        2. Then write the MAIN CONTENT (muc_tieu_kien_thuc) as pure Markdown.
+        
+        OUTPUT LANGUAGE: VIETNAMESE`;
+        break;
+
       case "khởi động":
       case "khám phá":
       case "luyện tập":
       case "vận dụng":
-        const sectionKey = section === "khởi động" ? "hoat_dong_khoi_dong" :
-          section === "khám phá" ? "hoat_dong_kham_pha" :
-            section === "luyện tập" ? "hoat_dong_luyen_tap" : "hoat_dong_van_dung";
+        const sectionMap = {
+          "khởi động": "hoat_dong_khoi_dong",
+          "khám phá": "hoat_dong_kham_pha",
+          "luyện tập": "hoat_dong_luyen_tap",
+          "vận dụng": "hoat_dong_van_dung"
+        };
+        const sectionKey = sectionMap[section];
+        expectedContentKey = sectionKey;
 
-        specificPrompt = `NHIỆM VỤ: Hãy thiết kế CHI TIẾT hoạt động [${section.toUpperCase()}].
-        Lưu ý: Dựa trên Mục tiêu bài học: ${context?.muc_tieu_kien_thuc || ""}.
-        Bắt buộc sử dụng định dạng [COT_1]...[/COT_1] và [COT_2]...[/COT_2].`;
+        // CHIẾN LƯỢC 4.2: CHAIN OF DENSITY & ATOMIC DECOMPOSITION
+        // Chia nhỏ thành 3-4 sub-tasks cho mỗi phần để đạt độ dài 60-80 trang
+        let subTasks: string[] = [];
+        if (section === "khám phá") {
+          subTasks = [
+            "GĐ 1: Dẫn dắt, đặt vấn đề & Khai phóng tư duy (Sincere Start)",
+            "GĐ 2: Phân tích kiến thức trọng tâm & Hình thành khái niệm (Deep Content)",
+            "GĐ 3: Mở rộng, liên hệ thực tế & Tích hợp liên môn (Expansion)",
+            "GĐ 4: Tổng kết & Chuyản giao nhiệm vụ (Closure)"
+          ];
+        } else if (section === "luyện tập") {
+          subTasks = [
+            "GĐ 1: Hệ thống câu hỏi trắc nghiệm & Tự luận củng cố",
+            "GĐ 2: Hướng dẫn giải chi tiết & Xử lý sai lầm thường gặp",
+            "GĐ 3: Phiếu học tập & Công cụ đánh giá (Rubric/Checklist)"
+          ];
+        } else {
+          subTasks = [`GĐ CHÍNH: ${section.toUpperCase()}`];
+        }
 
-        outputFormat = `{
-          "${sectionKey}": "[COT_1]...[/COT_1]\\n\\n[COT_2]...[/COT_2]"
-        }`;
-        break;
+        let combinedOutput = "";
+        let metaData: any = {};
+        const blueprint = context?.blueprint || "No blueprint";
+
+        for (const [index, taskTitle] of subTasks.entries()) {
+          console.log(`[ChainOfDensity] Step ${index + 1}/${subTasks.length}: ${taskTitle}`);
+
+          const prevContext = combinedOutput.length > 2000
+            ? `...${combinedOutput.substring(combinedOutput.length - 1500)}`
+            : combinedOutput;
+
+          const microPrompt = `BẠN LÀ CHUYÊN GIA SƯ PHẠM CAO CẤP. Hãy viết ${taskTitle}.
+          - NỀN TẢNG (Blueprint): ${JSON.stringify(blueprint)}
+          - TIẾP NỐI TỪ: ${prevContext}
+          
+          REQUIREMENTS: 
+          1. Viết cực kỳ chi tiết, từng lời nói của giáo viên (GV: "...") và hành động của học sinh.
+          2. Độ dài phần này phải đạt ít nhất 800-1000 từ.
+          3. Sử dụng cấu trúc [COT_1]...[/COT_1] và [COT_2]...[/COT_2].
+          
+          OUTPUT LANGUAGE: VIETNAMESE`;
+
+          const chunk = await callGeminiWithRetry(
+            `${optimizedBasePrompt}\n\n${microPrompt}`,
+            model || "gemini-1.5-flash-001"
+          );
+
+          combinedOutput += `\n<!-- Subtask: ${taskTitle} -->\n${chunk}`;
+
+          if (index === 0) {
+            try { metaData = parseGeminiJSON(chunk, sectionKey); } catch (e) { }
+          }
+        }
+
+        return {
+          success: true,
+          data: {
+            ...metaData,
+            [sectionKey]: combinedOutput
+          }
+        };
+
       case "shdc_shl":
-        specificPrompt = `NHIỆM VỤ: Hãy thiết kế phần SINH HOẠT DƯỚI CỜ (SHDC) và SINH HOẠT LỚP (SHL) chi tiết cho 4 tuần của chủ đề này.`;
-        outputFormat = `{
-          "shdc": "...",
-          "shl": "..."
-        }`;
+        expectedContentKey = "shdc_shl_combined";
+        let calculatorWeeks = 4;
+        try {
+          const safeGrade = Number.parseInt(grade) || 10;
+          const safeMonth = month || 9;
+          const safeChuDe = MONTH_TO_CHU_DE[safeMonth] || 1;
+          const ppctData = getPPCTChuDe(safeGrade as 10 | 11 | 12, safeChuDe);
+          if (ppctData && ppctData.tong_tiet) {
+            calculatorWeeks = Math.ceil(ppctData.tong_tiet / 3);
+          }
+        } catch (err) {
+          calculatorWeeks = 4;
+        }
+
+        specificPrompt = `TASK: Design EXTREMELY DETAILED activities for FLAG SALUTE (SHDC) and CLASS MEETING (SHL) for ${calculatorWeeks} WEEKS.
+        - **SHDC (Sinh hoạt dưới cờ):** Draft a complete 4-week program. Each week must have: 1. Specific Objectives, 2. Detailed Ceremony Script, 3. Educational Message (at least 300 words per week).
+        - **SHL (Sinh hoạt lớp):** Draft a complete 4-week program. Each week must follow 4 pedagogical steps: 1. Review, 2. Main Topic Activity (with Teacher Script & Student Actions), 3. Situational Coaching, 4. Planning for next week.
+        
+        FORMAT GUIDELINE (ROBUST):
+        I will parse this using markers [SHDC_DATA]...[/SHDC_DATA] and [SHL_DATA]...[/SHL_DATA].
+        
+        OUTPUT LANGUAGE: VIETNAMESE`;
         break;
+
+      case "preparation":
+        expectedContentKey = "noi_dung_chuan_bi";
+        specificPrompt = `TASK: Draft the PREPARATION CONTENT FOR THE NEXT TOPIC. 
+        Focus on: Homework, Research tasks, and Materials to prepare.`;
+        break;
+
       case "final":
-        specificPrompt = `NHIỆM VỤ: Hãy tạo phần HỒ SƠ DẠY HỌC (Phụ lục, Phiếu học tập, Rubric) và HƯỚNG DẪN VỀ NHÀ.`;
-        outputFormat = `{
-          "ho_so_day_hoc": "...",
-          "huong_dan_ve_nha": "..."
-        }`;
+        expectedContentKey = "ho_so_day_hoc";
+        // BƯỚC 7: MAP-REDUCE SUMMARIZATION
+        console.log("[v0] Triển khai Map-Reduce cho Bước 7...");
+        const summaries = [];
+        if (context.hoat_dong_khoi_dong) summaries.push("Khởi động: " + await summarizeContent(context.hoat_dong_khoi_dong, 100));
+        if (context.hoat_dong_kham_pha) summaries.push("Khám phá: " + await summarizeContent(context.hoat_dong_kham_pha, 150));
+        if (context.hoat_dong_luyen_tap) summaries.push("Luyện tập: " + await summarizeContent(context.hoat_dong_luyen_tap, 150));
+
+        specificPrompt = `TASK: Dựa trên tóm tắt bài dạy:
+        ${summaries.join("\n")}
+        
+        Hãy tạo:
+        1. Hồ sơ dạy học (ho_so_day_hoc): Danh mục tài liệu, link tham khảo, slide...
+        2. Hướng dẫn về nhà (huong_dan_ve_nha): Nhiệm vụ cụ thể, linh hoạt.
+        
+        FORMAT: JSON {"ho_so_day_hoc": "...", "huong_dan_ve_nha": "..."}`;
         break;
     }
 
-    const finalPrompt = `${basePrompt}\n\n============================================================\nYÊU CẦU RIÊNG CHO GIAI ĐOẠN NÀY:\n${specificPrompt}\n\nCHỈ TRẢ VỀ JSON THEO CẤU TRÚC SAU:\n${outputFormat}`;
+    const finalPrompt = `${optimizedBasePrompt}\n\n============================================================\n${specificPrompt}\n\nOUTPUT LANGUAGE: VIETNAMESE`;
 
     console.log(`[v0] Generating lesson section: ${section}...`);
-    const text = await callGeminiWithRetry(finalPrompt, model || "gemini-2.0-flash-exp");
-    const data = parseGeminiJSON(text);
+    const text = await callGeminiWithRetry(
+      finalPrompt,
+      model || "gemini-1.5-flash", // Dùng 1.5-flash mặc định để đảm bảo ổn định
+      2,
+      lessonFile ? [lessonFile] : undefined
+    );
+
+    let data = parseGeminiJSON(text, expectedContentKey);
+
+    // Special handling for shdc_shl split logic
+    if (section === "shdc_shl") {
+      const combined = text;
+      const shdcMatch = combined.match(/\[SHDC_DATA\]([\s\S]*?)\[\/SHDC_DATA\]/);
+      const shlMatch = combined.match(/\[SHL_DATA\]([\s\S]*?)\[\/SHL_DATA\]/);
+
+      data = {
+        shdc: shdcMatch ? removeMarkdownBold(shdcMatch[1].trim()) : (data.shdc || ""),
+        shl: shlMatch ? removeMarkdownBold(shlMatch[1].trim()) : (data.shl || "")
+      };
+    }
 
     return { success: true, data };
   } catch (error: any) {
@@ -769,38 +1234,6 @@ Lưu ý: Viết bằng ngôn ngữ chuyên môn, khích lệ nhưng khắt khe v
   }
 }
 
-export async function checkApiKeyStatus(): Promise<{
-  configured: boolean;
-  primaryKey: boolean;
-  backupKey: boolean;
-  backupKey2: boolean;
-  error?: string;
-}> {
-  const primaryKey = process.env.GEMINI_API_KEY;
-  const backupKey = process.env.GEMINI_API_KEY_2;
-  const backupKey3 = process.env.GEMINI_API_KEY_3;
-
-  const hasPrimary = !!(primaryKey && primaryKey.trim() !== "");
-  const hasBackup = !!(backupKey && backupKey.trim() !== "");
-  const hasBackup3 = !!(backupKey3 && backupKey3.trim() !== "");
-
-  if (!hasPrimary && !hasBackup && !hasBackup3) {
-    return {
-      configured: false,
-      primaryKey: false,
-      backupKey: false,
-      error:
-        "Chưa cấu hình API Key nào. Vui lòng thêm GEMINI_API_KEY vào Vars.",
-    };
-  }
-
-  return {
-    configured: true,
-    primaryKey: hasPrimary,
-    backupKey: hasBackup,
-    backupKey2: hasBackup3,
-  };
-}
 
 export async function generateAssessmentPlan(
   grade: string,
@@ -888,7 +1321,7 @@ export async function generateNCBH(
     }
 
     console.log("[v0] Calling Gemini API for NCBH...");
-    const text = await callGeminiWithRetry(prompt, model || "gemini-2.0-flash-exp");
+    const text = await callGeminiWithRetry(prompt, model || "gemini-1.5-flash");
     console.log("[v0] NCBH response received, length:", text.length);
 
     const data = parseGeminiJSON(text);

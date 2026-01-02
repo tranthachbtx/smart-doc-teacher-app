@@ -57,7 +57,7 @@ export function useTemplateGeneration() {
     suggestions?: { shdc?: string; hdgd?: string; shl?: string },
     chuDeInfo?: { shdc: number; hdgd: number; shl: number; tong_tiet: number; hoat_dong?: string[] } | null,
     model?: string,
-    image?: { mimeType: string; data: string }
+    lessonFile?: { mimeType: string; data: string; name: string }
   ) => {
     setIsGenerating(true);
     setError(null);
@@ -123,7 +123,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
         foundMonth,
         suggestions,
         model,
-        image
+        lessonFile
       );
 
       if (result.success && result.data) {
@@ -233,12 +233,62 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     }
   };
 
+  const generateLessonSectionStage = async (
+    grade: string,
+    topic: string,
+    section: "setup" | "khởi động" | "khám phá" | "luyện tập" | "vận dụng" | "shdc_shl" | "final",
+    context?: any,
+    duration?: string,
+    customInstructions?: string,
+    tasks?: LessonTask[],
+    month?: number,
+    activitySuggestions?: { shdc?: string; hdgd?: string; shl?: string },
+    model?: string,
+    lessonFile?: { mimeType: string; data: string; name: string }
+  ) => {
+    setIsGenerating(true);
+    setError(null);
+    try {
+      const simplifiedTasks = tasks?.map(t => ({
+        name: t.name,
+        description: `${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`
+      }));
+
+      const result = await generateLessonSection(
+        grade,
+        topic,
+        section,
+        context,
+        duration,
+        customInstructions,
+        simplifiedTasks,
+        month,
+        activitySuggestions,
+        model,
+        lessonFile
+      );
+
+      if (result.success && result.data) {
+        return { success: true, data: result.data };
+      } else {
+        setError(result.error || `Lỗi khi tạo phần ${section}`);
+        return { success: false, error: result.error };
+      }
+    } catch (err: any) {
+      setError(err.message || "Lỗi không xác định");
+      return { success: false, error: err.message };
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return {
     isGenerating,
     error,
     setError,
     generateMeeting,
     generateLesson,
+    generateLessonSection: generateLessonSectionStage,
     generateEvent,
     generateNCBH,
     auditLesson,
