@@ -146,6 +146,8 @@ export function LessonTab({
 }: LessonTabProps) {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [stepInProgress, setStepInProgress] = React.useState<string | null>(null);
+    const [expandedStep, setExpandedStep] = React.useState<string | null>(null);
+    const [stepInstructions, setStepInstructions] = React.useState<Record<string, string>>({});
 
     // --- ANTIGRAVITY: FILE-SYSTEM STATE SIMULATION (STEP 2) ---
     // Load state from localStorage on mount (Resumability)
@@ -219,10 +221,6 @@ export function LessonTab({
     const handleStepGenerate = (stepId: string) => {
         setSuccess(`Vui lòng sử dụng hệ thống "Saga Slow-Cooking" bên dưới để tạo phần "${stepId}". Chế độ thủ công đã bị tạm dừng để tránh lỗi Vercel Timeout.`);
     };
-
-    const expandedStep = null; // Legacy placeholder
-    const setExpandedStep = (val: any) => { };
-    const stepInstructions: Record<string, string> = {};
 
     const workflowPlan = [
         {
