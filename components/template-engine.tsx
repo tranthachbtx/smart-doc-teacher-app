@@ -719,7 +719,7 @@ const TemplateEngine = () => {
     }
   };
 
-  const handleGenerateLessonSection = async (section: any, context: any) => {
+  const handleGenerateLessonSection = async (section: any, context: any, stepInstruction?: string) => {
     const effectiveTopic = lessonTopic || lessonAutoFilledTheme;
     const result = await generateLessonSection(
       lessonGrade,
@@ -732,7 +732,8 @@ const TemplateEngine = () => {
       Number(lessonMonth),
       { shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion },
       selectedModel,
-      lessonFile || undefined
+      lessonFile || undefined,
+      stepInstruction
     );
 
     if (result.success && result.data) {
@@ -1668,6 +1669,8 @@ const TemplateEngine = () => {
               auditResult={auditResult}
               setSuccess={setSuccess}
               setError={setError}
+              success={success}
+              error={error}
               lessonTopic={lessonTopic}
               selectedModel={selectedModel}
               setSelectedModel={setSelectedModel}

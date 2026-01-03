@@ -1,12 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
+  reactStrictMode: false,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
-  images: {
-    unoptimized: true,
+  staticPageGenerationTimeout: 300,
+  async rewrites() {
+    return [
+      {
+        source: '/api/gemini-tunnel/:path*',
+        destination: 'https://generativelanguage.googleapis.com/:path*',
+      },
+    ];
   },
- 
-}
+};
 
-export default nextConfig
+export default nextConfig;

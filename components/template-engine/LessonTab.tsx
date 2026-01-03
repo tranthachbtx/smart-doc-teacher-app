@@ -24,6 +24,7 @@ import {
     Minus,
     MessageSquare,
     CheckCircle,
+    AlertCircle,
     X,
     ChevronUp,
     ChevronDown,
@@ -75,15 +76,17 @@ interface LessonTabProps {
     isAuditing: boolean;
     onAudit: () => void;
     auditResult: string | null;
-    setSuccess: (msg: string) => void;
-    setError: (msg: string) => void;
+    setSuccess: (msg: string | null) => void;
+    setError: (msg: string | null) => void;
+    success: string | null;
+    error: string | null;
     lessonTopic: string;
     selectedModel: string;
     setSelectedModel: (value: string) => void;
     lessonFile: { mimeType: string; data: string; name: string } | null;
     setLessonFile: (value: { mimeType: string; data: string; name: string } | null) => void;
     onRefineSection: (content: string, instruction: string) => Promise<{ success: boolean; content?: string }>;
-    onGenerateSection?: (section: "setup" | "khởi động" | "khám phá" | "luyện tập" | "vận dụng" | "shdc_shl" | "final" | "preparation", context: any) => Promise<{ success: boolean; data?: any }>;
+    onGenerateSection?: (section: any, context: any, stepInstruction?: string) => Promise<{ success: boolean; data?: any }>;
 }
 
 export function LessonTab({
@@ -126,6 +129,8 @@ export function LessonTab({
     auditResult,
     setSuccess,
     setError,
+    success,
+    error,
     lessonTopic,
     selectedModel,
     setSelectedModel,
@@ -158,26 +163,62 @@ export function LessonTab({
             localStorage.setItem(`lesson_state_${lessonGrade}_${selectedChuDeSo}`, JSON.stringify(lessonResult));
         }
     }, [lessonResult, lessonGrade, selectedChuDeSo]);
+    // --- ANTIGRAVITY v4.5: INDUSTRIAL HIERARCHICAL WORKFLOW ---
     const [isAutoRunning, setIsAutoRunning] = React.useState(false);
+    const [stepInstructions, setStepInstructions] = React.useState<Record<string, string>>({});
+    const [expandedStep, setExpandedStep] = React.useState<string | null>(null);
 
-    const designSteps = [
-        { id: 'blueprint', label: '0. Lập dàn ý (Architecture)', resultKey: 'blueprint', icon: '🏗️' },
-        { id: 'setup', label: '1. Mục tiêu & Chuẩn bị', resultKey: 'muc_tieu_kien_thuc', icon: '🎯' },
-        { id: 'shdc_shl', label: '2. Sinh hoạt dưới cờ & Lớp', resultKey: 'shdc', icon: '🏛️' },
-        { id: 'khởi động', label: '3. HĐGD: Khởi động', resultKey: 'hoat_dong_khoi_dong', icon: '⚡' },
-        { id: 'khám phá', label: '4. HĐGD: Khám phá', resultKey: 'hoat_dong_kham_pha', icon: '🔍' },
-        { id: 'luyện tập', label: '5. HĐGD: Luyện tập', resultKey: 'hoat_dong_luyen_tap', icon: '💪' },
-        { id: 'vận dụng', label: '6. HĐGD: Vận dụng', resultKey: 'hoat_dong_van_dung', icon: '🚀' },
-        { id: 'final', label: '7. Hồ sơ & Tổng kết', resultKey: 'ho_so_day_hoc', icon: '📋' },
-        { id: 'preparation', label: '8. Nội dung Chuẩn bị', resultKey: 'noi_dung_chuan_bi', icon: '🔜' },
+    const workflowPlan = [
+        {
+            stage: "PHASE 0: ARCHITECTURE",
+            tasks: [
+                { id: 'blueprint', label: '0. Lập dàn ý (Blueprint)', resultKey: 'blueprint', icon: '🏗️' },
+                { id: 'setup', label: '1. Mục tiêu & Chuẩn bị', resultKey: 'muc_tieu_kien_thuc', icon: '🎯' },
+            ]
+        },
+        {
+            stage: "PHASE 1: FOUNDATION",
+            tasks: [
+                { id: 'shdc_shl', label: '2. Sinh hoạt dưới cờ & Lớp', resultKey: 'shdc_shl_combined', icon: '🏛️' },
+                { id: 'khởi động', label: '3. HĐGD: Khởi động', resultKey: 'hoat_dong_khoi_dong', icon: '⚡' },
+            ]
+        },
+        {
+            stage: "PHASE 2: KNOWLEDGE FORMATION (Standard Density)",
+            tasks: [
+                { id: 'khám_phá_1', label: '4.1 Dẫn dắt & Khám phá', resultKey: 'hoat_dong_kham_pha_1', icon: '🔍', isSub: true },
+                { id: 'khám_phá_2', label: '4.2 Kiến thức & Hình thành', resultKey: 'hoat_dong_kham_pha_2', icon: '📖', isSub: true },
+                { id: 'khám_phá_3', label: '4.3 Mở rộng & Liên hệ', resultKey: 'hoat_dong_kham_pha_3', icon: '🌐', isSub: true },
+                { id: 'khám_phá_4', label: '4.4 Tổng kết & Ghi nhớ', resultKey: 'hoat_dong_kham_pha_4', icon: '🏁', isSub: true },
+            ]
+        },
+        {
+            stage: "PHASE 3: PRACTICE & APPLICATION",
+            tasks: [
+                { id: 'luyện_tập_1', label: '5.1 Luyện tập: Bài tập', resultKey: 'hoat_dong_luyen_tap_1', icon: '💪', isSub: true },
+                { id: 'luyện_tập_2', label: '5.2 Luyện tập: Chi tiết', resultKey: 'hoat_dong_luyen_tap_2', icon: '🛠️', isSub: true },
+                { id: 'luyện_tập_3', label: '5.3 Luyện tập: Đánh giá', resultKey: 'hoat_dong_luyen_tap_3', icon: '📝', isSub: true },
+                { id: 'vận dụng', label: '6. HĐGD: Vận dụng', resultKey: 'hoat_dong_van_dung', icon: '🚀' },
+            ]
+        },
+        {
+            stage: "PHASE 4: FINALIZATION",
+            tasks: [
+                { id: 'final', label: '7. Hồ sơ & Tổng kết', resultKey: 'ho_so_day_hoc', icon: '📋' },
+                { id: 'preparation', label: '8. Nội dung Chuẩn bị', resultKey: 'noi_dung_chuan_bi', icon: '🔜' },
+            ]
+        }
     ];
+
+    const designSteps = workflowPlan.flatMap(p => p.tasks);
 
     const handleStepGenerate = async (stepId: any, overrideContext?: any) => {
         if (!onGenerateSection) return { success: false, error: "Action undefined" };
         setStepInProgress(stepId);
         try {
             const context = overrideContext || lessonResult || {};
-            const result = await onGenerateSection(stepId, context);
+            const stepInstruction = stepInstructions[stepId] || "";
+            const result = await onGenerateSection(stepId, context, stepInstruction);
             if (result.success) {
                 setSuccess(`Đã thiết kế xong phần: ${designSteps.find(s => s.id === stepId)?.label}`);
                 return { success: true, data: result.data };
@@ -205,86 +246,76 @@ export function LessonTab({
     const handleAutoGenerate = async () => {
         if (!onGenerateSection) return;
         setIsAutoRunning(true);
+        setSuccess("Đang kích hoạt Hệ thống Điều phối Antigravity v4.5 (Industrial Saga)...");
+
         let currentContext = { ...lessonResult };
-        const MAX_RETRIES = 5; // Increased retries for stability
+        const MAX_RETRIES = 5;
 
         try {
-            for (let i = 0; i < designSteps.length; i++) {
-                const step = designSteps[i];
+            for (const stageBlock of workflowPlan) {
+                console.log(`[Saga] Entering Phase: ${stageBlock.stage}`);
 
-                // Skip if already done
-                const isDone = !!(currentContext as any)?.[step.resultKey] || (step.id === 'shdc_shl' && !!currentContext?.shdc);
-                if (isDone) continue;
+                for (const step of stageBlock.tasks) {
+                    // Check if already exist in state (Local Resumption)
+                    const isDone = !!(currentContext as any)?.[step.resultKey];
+                    if (isDone) {
+                        console.log(`[Saga] Skipping done step: ${step.label}`);
+                        continue;
+                    }
 
-                setStepInProgress(step.id);
+                    setStepInProgress(step.id);
+                    // Standard slow-cooking gap between steps
+                    await sleep(5000);
 
-                // SLOW-COOKING STRATEGY: 5s delay between steps
-                await sleep(5000);
+                    let attempts = 0;
+                    let stepSuccess = false;
 
-                let attempts = 0;
-                let stepSuccess = false;
+                    while (attempts < MAX_RETRIES && !stepSuccess) {
+                        const result = await handleStepGenerate(step.id, currentContext);
 
-                while (attempts < MAX_RETRIES && !stepSuccess) {
-                    const result = await handleStepGenerate(step.id, currentContext);
+                        if (result && result.success) {
+                            const newData = result.data;
 
-                    if (result && result.success) {
-                        const newData = result.data;
+                            // UPDATE CONTEXT & STATE (Chained dependency)
+                            currentContext = { ...currentContext, ...newData };
 
-                        // --- ANTIGRAVITY: LOCAL RAG ACCUMULATOR ---
-                        // Accumulate extracted concepts into a Global Registry
-                        if (newData.extracted_concepts && Array.isArray(newData.extracted_concepts)) {
-                            const prevRegistry = (currentContext as any).concept_registry || [];
-                            const newRegistry = [...prevRegistry, ...newData.extracted_concepts];
-                            // Deduplicate
-                            const uniqueRegistry = Array.from(new Set(newRegistry));
-                            newData.concept_registry = uniqueRegistry;
-
-                            console.log(`[Antigravity] Updated Concept Registry: ${uniqueRegistry.length} concepts.`);
-                        }
-
-                        currentContext = { ...currentContext, ...newData };
-
-                        // Force update local React state to trigger Persistence (useEffect)
-                        if (setLessonResult) {
-                            setLessonResult(currentContext);
-                        }
-
-                        stepSuccess = true;
-                    } else {
-                        const errorMsg = result?.error || "Unknown Error";
-                        const isQuota = errorMsg.includes("429") || errorMsg.includes("quota") || errorMsg.includes("tạm nghỉ");
-                        const isJsonError = errorMsg.includes("JSON") || errorMsg.includes("parse") || errorMsg.includes("syntax");
-
-                        if (isQuota || isJsonError) {
-                            const waitTime = isQuota ? 40 : 5; // 40s for quota, 5s for JSON glitch
-                            console.warn(`[AutoGen] Lỗi tạm thời (Quota/JSON) ở bước ${step.label}. Thử lại sau ${waitTime}s...`);
-
-                            setSuccess(`Gặp lỗi "${isQuota ? 'Hạn mức' : 'Định dạng'}" - Đang tự động xử lý...`);
-
-                            for (let t = waitTime; t > 0; t--) {
-                                setRetryCountDown(t);
-                                await sleep(1000);
+                            if (setLessonResult) {
+                                setLessonResult(currentContext);
                             }
-                            setRetryCountDown(null);
-                            attempts++;
+                            stepSuccess = true;
                         } else {
-                            // Fatal Error (e.g. 500, network offline) -> Stop immediately
-                            throw new Error(errorMsg);
+                            const errorMsg = result?.error || "Unknown Error";
+                            const isFatal = errorMsg.includes("SHADOW BAN") || errorMsg.includes("403") || errorMsg.includes("404");
+
+                            if (isFatal) {
+                                setError(`[FATAL] Hạ tầng bị chặn (Shadow Ban). Vui lòng đổi IP và chờ 65s...`);
+                                for (let t = 65; t > 0; t--) {
+                                    setRetryCountDown(t);
+                                    await sleep(1000);
+                                }
+                                setRetryCountDown(null);
+                                attempts++;
+                            } else if (errorMsg.includes("429")) {
+                                setSuccess("Hệ thống quá tải (429). Đang hạ hỏa 15s...");
+                                await sleep(15000);
+                                attempts++;
+                            } else {
+                                throw new Error(errorMsg);
+                            }
                         }
                     }
-                }
 
-                if (!stepSuccess) {
-                    setError(`Quy trình dừng lại ở bước: ${step.label} sau ${MAX_RETRIES} lần thử.`);
-                    setIsAutoRunning(false);
-                    setStepInProgress(null);
-                    return;
+                    if (!stepSuccess) {
+                        setError(`Quy trình bị ngắt quãng tại: ${step.label}. Vui lòng can thiệp thủ công.`);
+                        setIsAutoRunning(false);
+                        return;
+                    }
                 }
             }
-            setSuccess("Đã hoàn tất quy trình thiết kế tự động toàn bộ giáo án (Antigravity Flow)!");
+            setSuccess("Saga Complete. Toàn bộ giáo án 30-50 trang đã được thiết kế thành công!");
         } catch (e: any) {
             console.error(e);
-            setError(`Lỗi không phục hồi được: ${e.message}`);
+            setError(`Saga Error: ${e.message}`);
         } finally {
             setIsAutoRunning(false);
             setStepInProgress(null);
@@ -576,6 +607,46 @@ export function LessonTab({
                                     </SelectContent>
                                 </Select>
                             </div>
+
+                            {/* HIỂN THỊ THÔNG TIN PPCT CHI TIẾT */}
+                            {selectedChuDe && (
+                                <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/40 border border-indigo-100 dark:border-indigo-900 space-y-3 animate-in fade-in zoom-in duration-300">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <Clock className="h-4 w-4 text-indigo-600" />
+                                        <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase">Phân bổ tiết dạy (PPCT)</span>
+                                    </div>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        <div className="bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl border border-white/40 text-center shadow-sm">
+                                            <p className="text-[10px] text-slate-500 font-medium">SHDC</p>
+                                            <p className="text-sm font-black text-indigo-600">{selectedChuDe.shdc} tiết</p>
+                                        </div>
+                                        <div className="bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl border border-white/40 text-center shadow-sm">
+                                            <p className="text-[10px] text-slate-500 font-medium">HĐGD</p>
+                                            <p className="text-sm font-black text-emerald-600">{selectedChuDe.hdgd} tiết</p>
+                                        </div>
+                                        <div className="bg-white/60 dark:bg-slate-800/60 p-2 rounded-xl border border-white/40 text-center shadow-sm">
+                                            <p className="text-[10px] text-slate-500 font-medium">SHL</p>
+                                            <p className="text-sm font-black text-orange-600">{selectedChuDe.shl} tiết</p>
+                                        </div>
+                                    </div>
+
+                                    {selectedChuDe.hoat_dong && selectedChuDe.hoat_dong.length > 0 && (
+                                        <div className="mt-2 space-y-1.5">
+                                            <div className="flex items-center gap-2">
+                                                <Zap className="h-3 w-3 text-amber-500" />
+                                                <span className="text-[10px] font-bold text-slate-600 uppercase">Nội dung trọng tâm (DB)</span>
+                                            </div>
+                                            <ul className="space-y-1">
+                                                {selectedChuDe.hoat_dong.map((hd, i) => (
+                                                    <li key={i} className="text-[10px] leading-relaxed text-slate-600 dark:text-slate-400 bg-white/40 dark:bg-slate-800/40 p-1.5 rounded-lg border border-white/20">
+                                                        • {hd}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className={`p-4 rounded-2xl border-2 border-dashed transition-all ${lessonFile ? 'bg-emerald-50/50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
@@ -620,6 +691,55 @@ export function LessonTab({
             {/* Right Column: Main Stage */}
             <div className="lg:col-span-8 space-y-6">
                 <div className="space-y-6">
+                    {/* KHỐI THÔNG BÁO TÁC VỤ (DI CHUYỂN LÊN TRÊN THEO YÊU CẦU) */}
+                    <div className="space-y-4">
+                        {success && (
+                            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-100 dark:border-emerald-900 rounded-2xl flex items-center gap-3 text-emerald-800 dark:text-emerald-300 animate-in fade-in slide-in-from-top-4 duration-300">
+                                <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                                <span className="text-sm font-medium">{success}</span>
+                            </div>
+                        )}
+                        {error && (
+                            <div className="p-4 bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900 rounded-2xl flex items-center gap-3 text-red-800 dark:text-red-300 animate-in fade-in slide-in-from-top-4 duration-300">
+                                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                <span className="text-sm font-medium">{error}</span>
+                            </div>
+                        )}
+
+                        {/* Banner trạng thái bản thảo (Move up from bottom) */}
+                        {lessonResult && (
+                            <div className="flex items-center justify-between bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900 shadow-sm animate-in fade-in slide-in-from-top-4 duration-500">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center text-emerald-600">
+                                        <CheckCircle className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-emerald-900 dark:text-emerald-100">Bản thảo Giáo án Đã sẵn sàng</h3>
+                                        <p className="text-xs text-emerald-700/70 italic">Bạn có thể tinh chỉnh các phần chi tiết ở bên dưới</p>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-100 h-10 px-4"
+                                        onClick={onAudit}
+                                    >
+                                        <Sparkles className="h-4 w-4 mr-2" />
+                                        Kiểm định AI
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 dark:shadow-none h-10 px-4 font-bold"
+                                        onClick={onExport}
+                                    >
+                                        <Download className="h-4 w-4 mr-2" />
+                                        Xuất Word
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
                     <Card className="border-none shadow-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-t-4 border-t-indigo-500 overflow-hidden">
                         <CardContent className="p-6 md:p-8 space-y-8">
@@ -669,57 +789,94 @@ export function LessonTab({
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {designSteps.map((step, idx) => {
-                                    const isDone = !!(lessonResult as any)?.[step.resultKey] || (step.id === 'shdc_shl' && lessonResult?.shdc);
+                                    const isDone = !!(lessonResult as any)?.[step.resultKey] || (step.id === 'shdc_shl' && !!lessonResult?.shdc);
                                     const currentLoading = stepInProgress === step.id;
 
                                     return (
-                                        <div
-                                            key={step.id}
-                                            className={`group relative flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 ${isDone
-                                                ? 'bg-emerald-50/30 border-emerald-200/50 shadow-sm'
-                                                : 'bg-slate-50/50 border-slate-100 hover:border-indigo-200 hover:bg-white hover:shadow-xl'
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-inner ${isDone ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200/50 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600'
-                                                    }`}>
-                                                    {isDone ? <CheckCircle className="h-6 w-6" /> : (step as any).icon}
+                                        <div key={step.id} className="space-y-4">
+                                            {/* Stage Header If First Task In Stage */}
+                                            {workflowPlan.find(p => p.tasks[0].id === step.id) && (
+                                                <div className="col-span-full pt-4 border-b border-indigo-100 dark:border-indigo-900 pb-2 mb-2">
+                                                    <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+                                                        {workflowPlan.find(p => p.tasks[0].id === step.id)?.stage}
+                                                    </span>
                                                 </div>
-                                                <div>
-                                                    <p className={`text-[10px] font-bold uppercase tracking-widest ${isDone ? 'text-emerald-600' : 'text-slate-400'}`}>
-                                                        Bước {idx + 1}
-                                                    </p>
-                                                    <h4 className={`text-sm font-bold ${isDone ? 'text-emerald-900' : 'text-slate-700'}`}>
-                                                        {step.label}
-                                                    </h4>
+                                            )}
+
+                                            <div
+                                                className={`group relative flex items-center justify-between p-4 rounded-2xl border-2 transition-all duration-300 ${isDone
+                                                    ? 'bg-emerald-50/30 border-emerald-200/50 shadow-sm'
+                                                    : 'bg-slate-50/50 border-slate-100 hover:border-indigo-200 hover:bg-white hover:shadow-xl'
+                                                    } ${step.isSub ? 'ml-6 scale-[0.98]' : ''}`}
+                                            >
+                                                <div className="flex items-center gap-4 flex-1 cursor-pointer" onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}>
+                                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-inner ${isDone ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200/50 text-slate-400 group-hover:bg-indigo-100 group-hover:text-indigo-600'
+                                                        }`}>
+                                                        {isDone ? <CheckCircle className="h-6 w-6" /> : (step as any).icon}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <p className={`text-[10px] font-bold uppercase tracking-widest ${isDone ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                                            {step.isSub ? 'TASK NODE' : 'MILESTONE'}
+                                                        </p>
+                                                        <h4 className={`text-sm font-bold flex items-center gap-2 ${isDone ? 'text-emerald-900' : 'text-slate-700'}`}>
+                                                            {step.label}
+                                                            {stepInstructions[step.id] && <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />}
+                                                        </h4>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className={`h-8 w-8 p-0 rounded-lg ${expandedStep === step.id ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400'}`}
+                                                        onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}
+                                                    >
+                                                        <MessageSquare className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant={isDone ? "ghost" : "default"}
+                                                        className={`h-10 px-5 rounded-xl font-bold transition-all ${isDone
+                                                            ? 'text-emerald-600 hover:bg-emerald-100'
+                                                            : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20'
+                                                            }`}
+                                                        disabled={isGenerating || !lessonGrade || !lessonAutoFilledTheme}
+                                                        onClick={() => handleStepGenerate(step.id)}
+                                                    >
+                                                        {retryCountDown && currentLoading ? (
+                                                            <div className="flex flex-col items-center">
+                                                                <span className="text-[10px] opacity-80">Nghỉ ngơi...</span>
+                                                                <span>{retryCountDown}s</span>
+                                                            </div>
+                                                        ) : currentLoading ? (
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                        ) : isDone ? (
+                                                            "Làm lại"
+                                                        ) : (
+                                                            <>
+                                                                <Sparkles className="h-4 w-4 mr-2" />
+                                                                Thiết kế
+                                                            </>
+                                                        )}
+                                                    </Button>
                                                 </div>
                                             </div>
-                                            <Button
-                                                size="sm"
-                                                variant={isDone ? "ghost" : "default"}
-                                                className={`h-10 px-5 rounded-xl font-bold transition-all ${isDone
-                                                    ? 'text-emerald-600 hover:bg-emerald-100'
-                                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20'
-                                                    }`}
-                                                disabled={isGenerating || !lessonGrade || !lessonAutoFilledTheme}
-                                                onClick={() => handleStepGenerate(step.id)}
-                                            >
-                                                {retryCountDown && currentLoading ? (
-                                                    <div className="flex flex-col items-center">
-                                                        <span className="text-[10px] opacity-80">Nghỉ ngơi...</span>
-                                                        <span>{retryCountDown}s</span>
-                                                    </div>
-                                                ) : currentLoading ? (
-                                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                                ) : isDone ? (
-                                                    "Làm lại"
-                                                ) : (
-                                                    <>
-                                                        <Sparkles className="h-4 w-4 mr-2" />
-                                                        Thiết kế
-                                                    </>
-                                                )}
-                                            </Button>
+
+                                            {/* Step-specific suggestion textbox */}
+                                            {expandedStep === step.id && (
+                                                <div className="ml-6 mr-2 p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 shadow-inner animate-in slide-in-from-top-2 duration-200">
+                                                    <Label className="text-[10px] font-bold text-indigo-600 flex items-center gap-1.5 mb-2">
+                                                        <Sparkles className="h-3 w-3" />
+                                                        CHỈ DẪN RIÊNG CHO {step.label.toUpperCase()}
+                                                    </Label>
+                                                    <Textarea
+                                                        value={stepInstructions[step.id] || ""}
+                                                        onChange={(e) => setStepInstructions({ ...stepInstructions, [step.id]: e.target.value })}
+                                                        placeholder="VD: Sử dụng trò chơi đóng vai, tập trung vào tình huống thực tế..."
+                                                        className="min-h-[80px] text-xs bg-slate-50/50 border-none focus:ring-1 focus:ring-indigo-100 rounded-lg"
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -787,36 +944,6 @@ export function LessonTab({
                     {/* Results Display Area */}
                     {lessonResult && (
                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                            <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-900">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center text-emerald-600">
-                                        <CheckCircle className="h-6 w-6" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-bold text-emerald-900 dark:text-emerald-100">Bản thảo Giáo án Đã sẵn sàng</h3>
-                                        <p className="text-xs text-emerald-700/70">Bạn có thể tinh chỉnh từng phần phía dưới</p>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="rounded-xl border-emerald-200 text-emerald-700 hover:bg-emerald-100"
-                                        onClick={onAudit}
-                                    >
-                                        <Sparkles className="h-4 w-4 mr-2" />
-                                        Kiểm định AI
-                                    </Button>
-                                    <Button
-                                        size="sm"
-                                        className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white"
-                                        onClick={onExport}
-                                    >
-                                        <Download className="h-4 w-4 mr-2" />
-                                        Xuất Word
-                                    </Button>
-                                </div>
-                            </div>
 
                             <div className="space-y-4">
                                 {/* Editable Sections */}
