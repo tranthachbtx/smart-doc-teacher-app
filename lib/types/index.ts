@@ -66,6 +66,7 @@ export interface LessonResult {
 }
 
 export interface EventResult {
+  ten_ke_hoach: string; // Alias for ten_chu_de in display logic
   ten_chu_de: string;
   nang_luc: string;
   pham_chat: string;
