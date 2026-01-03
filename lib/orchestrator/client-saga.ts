@@ -80,6 +80,10 @@ export async function listJobs(): Promise<SagaJob[]> {
  * TOKEN BUCKET RATE LIMITER
  */
 class TokenBucket {
+    private tokens = 15;
+    private lastRefill = Date.now();
+    private readonly capacity = 15;
+
     private getRefillRate(): number {
         const hour = new Date().getHours();
         // Giờ thấp điểm (đêm): nạp 5 thẻ/phút. Giờ cao điểm (ngày): 1 thẻ/phút.
@@ -359,7 +363,5 @@ export class ClientSagaOrchestrator {
             failTasks[taskIdx] = { ...task, status: 'failed', error: e.message };
             await this.update({ tasks: failTasks });
         }
-    }
-}
     }
 }
