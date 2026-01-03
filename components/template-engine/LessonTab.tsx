@@ -646,11 +646,11 @@ export function LessonTab({
                             )}
                         </div>
 
-                        <div className={`p-4 rounded-2xl border-2 border-dashed transition-all ${lessonFile ? 'bg-emerald-50/50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
+                        <div className={`p-4 rounded-2xl border-2 border-2 border-dashed transition-all ${lessonFile ? 'bg-emerald-50/50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
                             <div className="flex items-center justify-between mb-3">
                                 <Label className="text-sm font-bold flex items-center gap-2">
                                     <Upload className="h-4 w-4 text-indigo-600" />
-                                    Sách giáo khoa (PDF)
+                                    Giáo án cũ / Tham khảo (PDF)
                                 </Label>
                                 {lessonFile && (
                                     <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-slate-400 hover:text-red-500" onClick={() => setLessonFile(null)}>
@@ -663,11 +663,11 @@ export function LessonTab({
                             {lessonFile ? (
                                 <div className="flex items-center gap-3 bg-white dark:bg-slate-800 p-3 rounded-xl border border-emerald-100 shadow-sm">
                                     <div className="h-10 w-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                        <BookOpen className="h-4 w-4" />
+                                        <Copy className="h-4 w-4" />
                                     </div>
                                     <div className="flex-1 overflow-hidden">
                                         <p className="text-[10px] font-bold text-emerald-700 truncate">{lessonFile.name}</p>
-                                        <p className="text-[9px] text-emerald-600/70">Đã nạp thành công</p>
+                                        <p className="text-[9px] text-emerald-600/70">Đã nạp bản gốc để tối ưu</p>
                                     </div>
                                 </div>
                             ) : (
@@ -677,7 +677,7 @@ export function LessonTab({
                                     onClick={() => fileInputRef.current?.click()}
                                 >
                                     <Plus className="h-4 w-4" />
-                                    <span className="text-[10px] font-bold">Nạp tệp PDF</span>
+                                    <span className="text-[10px] font-bold">Nạp Giáo án cũ để nâng cấp</span>
                                 </Button>
                             )}
                         </div>

@@ -266,7 +266,7 @@ async function physical_gap() {
 
 // --- 3. CORE ENGINE (TUNNEL-FETCH MODE v5.2) ---
 
-async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b"): Promise<string> {
+async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: { mimeType: string, data: string }): Promise<string> {
   const allKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3]
     .filter((k): k is string => !!k)
     .map(k => k.trim().replace(/^["']|["']$/g, ""));
@@ -278,7 +278,8 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b"): Promis
   }
 
   const system = `ROLE: Expert Curriculum Developer (K12 Vietnam).
-  TASK: Generate high-density lesson plans compliant with MOET 5512.
+  TASK: Generate high-density lesson plans compliant with MOET 5512. 
+  CONTEXT: If a file is attached, it is an OLD LESSON PLAN for optimization.
   LANGUAGE CONSTRAINT: System instructions are English. OUTPUT CONTENT MUST BE VIETNAMESE (Tiếng Việt).
   FORMAT: Clean Markdown (No JSON blocks).
   METHOD: Recursive Chain-of-Density (Pack details, examples, dialogues).`;
@@ -305,25 +306,32 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b"): Promis
         // 2. Physical Gap & Circuit Breaker Check
         await physical_gap();
 
-        console.log(`[AI-TUNNEL] [${new Date().toLocaleTimeString()}] Key: ${key.slice(0, 8)}... | ${modelName} | Attempt ${attempt + 1}`);
+        console.log(`[AI-TUNNEL] [${new Date().toLocaleTimeString()}] Key: ${key.slice(0, 8)}... | ${modelName} | File: ${!!file}`);
 
         // 3. NATIVE FETCH via TUNNEL (Bypass SDK Fingerprint)
-        // If GEMINI_PROXY_URL is set, we route through a proxy (e.g., Cloudflare Worker)
         const proxyUrl = process.env.GEMINI_PROXY_URL;
         const endpoint = proxyUrl
           ? `${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent?key=${key}`
           : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
 
+        const parts: any[] = [{ text: `${system}\n\nPROMPT:\n${prompt}` }];
+        if (file && file.data) {
+          parts.push({
+            inlineData: {
+              mimeType: file.mimeType || "application/pdf",
+              data: file.data
+            }
+          });
+        }
+
         const response = await fetch(endpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-antigravity-proxy": "v5.2", // Trace tag
+            "x-antigravity-proxy": "v5.2",
           },
           body: JSON.stringify({
-            contents: [{
-              parts: [{ text: `${system}\n\nPROMPT:\n${prompt}` }]
-            }]
+            contents: [{ parts }]
           })
         });
 
@@ -483,7 +491,7 @@ export async function generateLessonSection(grade: string, topic: string, sectio
 
     const complexPrompt = `${context_injection}\n\n${base}\n\nCORE_TASK: ${specializedPrompt}\n${stepInstr || ""}\n${qualityRules}`;
 
-    const text = await callAI(complexPrompt, model);
+    const text = await callAI(complexPrompt, model, file);
     const data = parseResilient(text, section);
 
     checkpoint_save(pName, ckptId, data);
@@ -505,7 +513,7 @@ export async function generateMeetingMinutes(m: string, s: string, c: string, co
 export async function generateLessonPlan(g: string, t: string, f = false, d?: string, c?: string, tasks?: any[], m?: number, s?: any, model?: string, file?: any): Promise<ActionResult<LessonResult>> {
   try {
     const p = f ? getKHDHPrompt(g, t, d || "2 tiết", c, tasks, m, s, !!file) : getLessonIntegrationPrompt(g, t);
-    const text = await callAI(p, model);
+    const text = await callAI(p, model, file);
     return { success: true, data: parseResilient(text) as LessonResult };
   } catch (e: any) { return { success: false, error: e.message }; }
 }

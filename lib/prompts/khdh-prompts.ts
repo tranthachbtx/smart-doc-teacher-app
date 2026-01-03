@@ -109,16 +109,22 @@ CORE PHILOSOPHIES (KIM CHỈ NAM):
 // ============================================================
 
 export const KHDH_TASK = `
-MỤC TIÊU SẢN PHẨM: Tạo Kế hoạch bài dạy (KHBD) SIÊU CHI TIẾT, ĐẲNG CẤP CHUYÊN GIA cho Khối 12. 
-TRIẾT LÝ: "KHBD LÀ LA BÀN" - Không viết văn xuôi rườm rà. Giáo viên chỉ cần nhìn vào là biết: Cần làm gì? Hỏi gì? Học sinh trả lời gì? Xử lý tình huống thế nào?
+MỤC TIÊU SẢN PHẨM: NÂNG CẤP & TỐI ƯU HÓA Giáo án cũ thành KHBD SIÊU CHI TIẾT (30-50 trang) theo chuẩn "LA BÀN".
 
-CÁC QUY TẮC "SẮT ĐÁ" (BẮT BUỘC):
-1. CẤU TRÚC 5512: Mỗi hoạt động phải tuân thủ nghiêm ngặt 4 bước: Giao nhiệm vụ -> Thực hiện nhiệm vụ -> Báo cáo, thảo luận -> Kết luận, nhận định.
-2. TÍNH HÀNH ĐỘNG (ACTIONABLE): Thay vì viết "GV dẫn dắt", hãy viết "GV thực hiện: [Bước cụ thể]". Thay vì viết "GV hỏi", hãy viết "HỆ THỐNG CÂU HỎI CHỦ CHỐT: [Câu 1], [Câu 2]".
-3. KỊCH BẢN ĐỐI THOẠI (GỢI Ý): Cung cấp các câu trả lời mong đợi từ học sinh (Gợi ý HS trả lời: "...") để GV chủ động điều phối.
-4. XỬ LÝ TÌNH HUỐNG SƯ PHẠM: Mỗi hoạt động chính phải mô tả ít nhất 1 tình huống HS gặp khó khăn và cách GV "gỡ rối" (Scaffolding).
-5. TÍCH HỢP NLS & ĐẠO ĐỨC: Lồng ghép sâu vào chính nội dung nhiệm vụ, không viết tách rời hời hợt.
-6. ĐỊNH DẠNG 2 CỘT: Tất cả hoạt động giáo dục BẮT BUỘC sử dụng marker [COT_1]...[/COT_1] và [COT_2]...[/COT_2].
+QUY TRÌNH XỬ LÝ (ƯU TIÊN):
+1. ĐỌC & PHÂN TÍCH: Sử dụng nội dung từ "Giáo án cũ/Tham khảo" (tệp đính kèm) làm khung sườn cơ bản.
+2. KIỂM ĐỊNH 5512: Nếu giáo án cũ thiếu bất kỳ bước nào trong 4 bước (Giao nhiệm vụ -> Thực hiện -> Báo cáo -> Kết luận), BẮT BUỘC phải bổ sung đầy đủ và chi tiết.
+3. INJECT NĂNG LỰC SỐ & ĐẠO ĐỨC: Chắc chắn các giáo án cũ sẽ thiếu phần này. Bạn phải lồng ghép sâu vào các hoạt động thực tế (Ví dụ: HS dùng AI tìm kiếm thông tin, thảo luận về đạo đức mạng...).
+4. CHI TIẾT HÓA (DENSITY): Biến các ý tóm tắt của giáo án cũ thành kịch bản đối thoại chi tiết giữa GV và HS.
+
+TRIẾT LÝ: "KHBD LÀ LA BÀN" - Giáo viên nhìn vào là biết: Cần làm gì? Hỏi gì? Học sinh trả lời gì? Xử lý tình huống thế nào?
+
+CÁC QUY TẮC "SẮT ĐÁ":
+1. CẤU TRÚC 5512: Mỗi hoạt động phải tuân thủ nghiêm ngặt 4 bước.
+2. TÍNH HÀNH ĐỘNG (ACTIONABLE): GV thực hiện: [Thao tác cụ thể], HỆ THỐNG CÂU HỎI CHỦ CHỐT: [Câu 1].
+3. KỊCH BẢN ĐỐI THOẠI: Gợi ý HS trả lời: "...".
+4. XỬ LÝ TÌNH HUỐNG: Scaffolding cho HS gặp khó khăn.
+5. ĐỊNH DẠNG 2 CỘT: Marker [COT_1]...[/COT_1] và [COT_2]...[/COT_2].
 `;
 
 // ============================================================
