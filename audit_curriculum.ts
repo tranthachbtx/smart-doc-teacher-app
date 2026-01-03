@@ -3,7 +3,7 @@ import { CHUONG_TRINH_LOP_10, CHUONG_TRINH_LOP_11, CHUONG_TRINH_LOP_12 } from '.
 
 function auditGrade(gradeNum: number, ppctData: any, curriculumData: any) {
     console.log(`\n=== KIỂM TOÁN KHỐI ${gradeNum} ===`);
-    const results = [];
+    const results: any[] = [];
 
     ppctData.chu_de.forEach((ppctCd: any) => {
         const ma = `${gradeNum}.${ppctCd.chu_de_so}`;
