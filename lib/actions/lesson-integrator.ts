@@ -54,8 +54,8 @@ export async function processLessonPlanWithSmartInjection(
   logs?: string[]
   error?: string
   generatedContent?: {
-    tich_hop_nls: string
-    tich_hop_dao_duc: string
+    tich_hop_nls?: string
+    tich_hop_dao_duc?: string
   }
 }> {
   const apiKey = process.env.GEMINI_API_KEY
@@ -223,16 +223,17 @@ Trả về CHÍNH XÁC JSON sau (KHÔNG thêm text khác):
       }
     }
 
-    const outputBuffer = doc.getZip().generate({
-      type: "nodebuffer",
-      compression: "DEFLATE",
-    })
+    // Convert Node Buffer to a clean ArrayBuffer for the frontend
+    const finalArrayBuffer = outputBuffer.buffer.slice(
+      outputBuffer.byteOffset,
+      outputBuffer.byteOffset + outputBuffer.byteLength
+    );
 
-    logs.push("Hoàn thành xử lý file!")
+    logs.push("Hoàn thành xử lý file!");
 
     return {
       success: true,
-      data: outputBuffer.buffer,
+      data: finalArrayBuffer,
       logs,
       generatedContent: {
         tich_hop_nls: nlsContent,
