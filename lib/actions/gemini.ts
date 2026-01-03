@@ -487,9 +487,9 @@ export async function generateLessonSection(grade: string, topic: string, sectio
 }
 
 // RESTORE ALL OTHER EXPORTS FOR SYSTEM INTEGRITY
-export async function generateMeetingMinutes(m: string, s: string, c: string, model?: string) {
+export async function generateMeetingMinutes(m: string, s: string, c: string, conc: string, model?: string) {
   try {
-    const t = await callAI(getMeetingPrompt(m, s, c, "", "", ""), model);
+    const t = await callAI(getMeetingPrompt(m, s, c, conc, "", ""), model);
     return { success: true, data: parseResilient(t) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }

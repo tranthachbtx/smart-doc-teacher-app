@@ -25,12 +25,13 @@ export function useTemplateGeneration() {
     month: string,
     session: string,
     keyContent: string,
+    conclusion: string,
     model?: string
   ) => {
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await generateMeetingMinutes(month, session, keyContent, model);
+      const result = await generateMeetingMinutes(month, session, keyContent, conclusion, model);
       if (result.success && result.data) {
         return { success: true, data: result.data as MeetingResult };
       } else {
