@@ -719,7 +719,7 @@ const TemplateEngine = () => {
     }
   };
 
-  const handleGenerateLessonSection = async (section: any, context: any, stepInstruction?: string) => {
+  const handleGenerateLessonSection = async (section: any, context: any, stepInstruction?: string): Promise<ActionResult> => {
     const effectiveTopic = lessonTopic || lessonAutoFilledTheme;
     const result = await generateLessonSection(
       lessonGrade,
@@ -755,12 +755,12 @@ const TemplateEngine = () => {
 
     const result = await generateEvent(
       selectedGradeEvent,
-      selectedEventMonth,
       autoFilledTheme,
       eventCustomInstructions,
       eventBudget,
       eventChecklist,
-      eventEvaluation
+      eventEvaluation,
+      selectedModel
     );
 
     if (result.success && result.data) {

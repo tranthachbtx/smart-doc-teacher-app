@@ -32,7 +32,7 @@ import {
     Upload,
     Trash2,
 } from "lucide-react";
-import type { LessonResult, LessonTask } from "@/lib/types";
+import type { LessonResult, LessonTask, ActionResult } from "@/lib/types";
 import type { PPCTChuDe } from "@/lib/data/ppct-database";
 import { getChuDeListByKhoi } from "@/lib/data/ppct-database";
 
@@ -85,8 +85,8 @@ interface LessonTabProps {
     setSelectedModel: (value: string) => void;
     lessonFile: { mimeType: string; data: string; name: string } | null;
     setLessonFile: (value: { mimeType: string; data: string; name: string } | null) => void;
-    onRefineSection: (content: string, instruction: string, model?: string) => Promise<{ success: boolean; content?: string }>;
-    onGenerateSection?: (section: any, context: any, stepInstruction?: string) => Promise<{ success: boolean; data?: any }>;
+    onRefineSection: (content: string, instruction: string, model?: string) => Promise<ActionResult>;
+    onGenerateSection?: (section: any, context: any, stepInstruction?: string) => Promise<ActionResult>;
 }
 
 export function LessonTab({

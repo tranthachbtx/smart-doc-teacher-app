@@ -10,6 +10,14 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HDTN_CURRICULUM } from "@/lib/hdtn-curriculum";
 import { getPPCTChuDe } from "@/lib/data/ppct-database";
 import {
+  ActionResult,
+  MeetingResult,
+  LessonResult,
+  EventResult,
+  NCBHResult,
+  AssessmentResult,
+} from "@/lib/types";
+import {
   getMeetingPrompt,
   getLessonIntegrationPrompt,
   getEventPrompt,
@@ -71,7 +79,7 @@ function getSagaStore(pName: string): any {
 }
 
 // --- SAGA ORCHESTRATOR (THE ARCHITECT) ---
-export async function createSagaJob(grade: string, topic: string) {
+export async function createSagaJob(grade: string, topic: string): Promise<ActionResult> {
   const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
   // 1. Initialize Job
@@ -124,7 +132,7 @@ export async function createSagaJob(grade: string, topic: string) {
     }
 
     global.sagaState.jobs[jobId].status = 'processing';
-    return { success: true, jobId, blueprint };
+    return { success: true, data: { jobId, blueprint } };
 
   } catch (e: any) {
     global.sagaState.jobs[jobId].status = 'failed';
@@ -133,7 +141,7 @@ export async function createSagaJob(grade: string, topic: string) {
 }
 
 // --- SAGA WORKER (THE BUILDER) ---
-export async function processSagaStep(jobId: string, stepId: string) {
+export async function processSagaStep(jobId: string, stepId: string): Promise<ActionResult> {
   const job = global.sagaState.jobs[jobId];
   if (!job) return { success: false, error: "Job not found" };
 
@@ -162,7 +170,7 @@ export async function processSagaStep(jobId: string, stepId: string) {
     if (result.success) {
       step.status = 'completed';
       step.output_ref = `stored_in_checkpoint_${stepId}`; // Data is already in pName store via generateLessonSection
-      return { success: true, stepId, status: 'completed' };
+      return { success: true, data: { stepId, status: 'completed' } };
     } else {
       throw new Error(result.error);
     }
@@ -384,7 +392,7 @@ function parseResilient(text: string, key?: string) {
   return key ? { [key]: text } : { content: text };
 }
 
-export async function generateLessonSection(grade: string, topic: string, section: any, context?: any, duration?: string, custInstr?: string, tasks?: any[], month?: number, suggest?: any, model?: string, file?: any, stepInstr?: string) {
+export async function generateLessonSection(grade: string, topic: string, section: any, context?: any, duration?: string, custInstr?: string, tasks?: any[], month?: number, suggest?: any, model?: string, file?: any, stepInstr?: string): Promise<ActionResult> {
   const pName = `${grade}_${topic}`;
   const ckptId = `section_${section}`;
 
@@ -487,51 +495,51 @@ export async function generateLessonSection(grade: string, topic: string, sectio
 }
 
 // RESTORE ALL OTHER EXPORTS FOR SYSTEM INTEGRITY
-export async function generateMeetingMinutes(m: string, s: string, c: string, conc: string, model?: string) {
+export async function generateMeetingMinutes(m: string, s: string, c: string, conc: string, model?: string): Promise<ActionResult<MeetingResult>> {
   try {
     const t = await callAI(getMeetingPrompt(m, s, c, conc, "", ""), model);
-    return { success: true, data: parseResilient(t) };
+    return { success: true, data: parseResilient(t) as MeetingResult };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateLessonPlan(g: string, t: string, f = false, d?: string, c?: string, tasks?: any[], m?: number, s?: any, model?: string, file?: any) {
+export async function generateLessonPlan(g: string, t: string, f = false, d?: string, c?: string, tasks?: any[], m?: number, s?: any, model?: string, file?: any): Promise<ActionResult<LessonResult>> {
   try {
     const p = f ? getKHDHPrompt(g, t, d || "2 tiết", c, tasks, m, s, !!file) : getLessonIntegrationPrompt(g, t);
     const text = await callAI(p, model);
-    return { success: true, data: parseResilient(text) };
+    return { success: true, data: parseResilient(text) as LessonResult };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateEventScript(g: string, t: string, i?: string, budget?: string, checklist?: string, evaluation?: string, model?: string) {
+export async function generateEventScript(g: string, t: string, i?: string, budget?: string, checklist?: string, evaluation?: string, model?: string): Promise<ActionResult<EventResult>> {
   try {
     const extra = `\n\nNGÂN SÁCH: ${budget || "Tối ưu hóa"}\nDANH MỤC CẦN CHUẨN BỊ: ${checklist || "Tự đề xuất"}\nTIÊU CHÍ ĐÁNH GIÁ: ${evaluation || "Tự đề xuất"}`;
     const text = await callAI(getEventPrompt(g, t) + (i || "") + extra, model);
-    return { success: true, data: parseResilient(text) };
+    return { success: true, data: parseResilient(text) as EventResult };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function auditLessonPlan(d: any, g: string, t: string) {
+export async function auditLessonPlan(d: any, g: string, t: string): Promise<ActionResult> {
   try {
     const text = await callAI(`Pedagogical Audit for ${t}: ${JSON.stringify(d)}`);
     return { success: true, audit: text.replace(/\*/g, "") };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateNCBH(g: string, t: string, i?: string, m?: string) {
+export async function generateNCBH(g: string, t: string, i?: string, m?: string): Promise<ActionResult<NCBHResult>> {
   try {
     const text = await callAI(`${NCBH_ROLE}\n${NCBH_TASK}\n${g}, ${t}, ${i || ""}`, m);
-    return { success: true, data: parseResilient(text) };
+    return { success: true, data: parseResilient(text) as NCBHResult };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateAssessmentPlan(g: string, tr: string, ty: string, to: string, model?: string) {
+export async function generateAssessmentPlan(g: string, tr: string, ty: string, to: string, model?: string): Promise<ActionResult<AssessmentResult>> {
   try {
     const text = await callAI(getAssessmentPrompt(g, tr, ty, to), model);
-    return { success: true, data: parseResilient(text) };
+    return { success: true, data: parseResilient(text) as AssessmentResult };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateAIContent(p: string, model?: string) {
+export async function generateAIContent(p: string, model?: string): Promise<ActionResult> {
   try {
     const text = await callAI(p, model);
     return { success: true, content: text.replace(/\*/g, "") };

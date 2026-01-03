@@ -1,3 +1,11 @@
+export interface ActionResult<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  audit?: string; // For audit results
+  content?: string; // For refined content
+}
+
 export interface MeetingResult {
   noi_dung_chinh: string;
   uu_diem: string;

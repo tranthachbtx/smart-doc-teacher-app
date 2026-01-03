@@ -9,6 +9,7 @@ import {
   generateAIContent,
 } from "@/lib/actions/gemini";
 import type {
+  ActionResult,
   MeetingResult,
   LessonResult,
   EventResult,
@@ -27,7 +28,7 @@ export function useTemplateGeneration() {
     keyContent: string,
     conclusion: string,
     model?: string
-  ) => {
+  ): Promise<ActionResult<MeetingResult>> => {
     setIsGenerating(true);
     setError(null);
     try {
@@ -59,7 +60,7 @@ export function useTemplateGeneration() {
     chuDeInfo?: { shdc: number; hdgd: number; shl: number; tong_tiet: number; hoat_dong?: string[] } | null,
     model?: string,
     lessonFile?: { mimeType: string; data: string; name: string }
-  ) => {
+  ): Promise<ActionResult<LessonResult>> => {
     setIsGenerating(true);
     setError(null);
 
@@ -149,7 +150,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     checklist?: string,
     evaluation?: string,
     model?: string
-  ) => {
+  ): Promise<ActionResult<EventResult>> => {
     setIsGenerating(true);
     setError(null);
     try {
@@ -173,7 +174,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     topic: string,
     customInstructions?: string,
     model?: string
-  ) => {
+  ): Promise<ActionResult<NCBHResult>> => {
     setIsGenerating(true);
     setError(null);
     try {
@@ -196,7 +197,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     lessonData: any,
     grade: string,
     topic: string
-  ) => {
+  ): Promise<ActionResult> => {
     setIsGenerating(true);
     setError(null);
     try {
@@ -219,7 +220,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     content: string,
     instruction: string,
     model?: string
-  ) => {
+  ): Promise<ActionResult> => {
     setIsGenerating(true);
     setError(null);
     try {
@@ -252,7 +253,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     model?: string,
     lessonFile?: { mimeType: string; data: string; name: string },
     stepInstruction?: string
-  ) => {
+  ): Promise<ActionResult> => {
     setIsGenerating(true);
     setError(null);
     try {
