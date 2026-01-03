@@ -85,7 +85,7 @@ interface LessonTabProps {
     setSelectedModel: (value: string) => void;
     lessonFile: { mimeType: string; data: string; name: string } | null;
     setLessonFile: (value: { mimeType: string; data: string; name: string } | null) => void;
-    onRefineSection: (content: string, instruction: string) => Promise<{ success: boolean; content?: string }>;
+    onRefineSection: (content: string, instruction: string, model?: string) => Promise<{ success: boolean; content?: string }>;
     onGenerateSection?: (section: any, context: any, stepInstruction?: string) => Promise<{ success: boolean; data?: any }>;
 }
 
@@ -359,7 +359,7 @@ export function LessonTab({
             setIsEditingWithAI(true);
             try {
                 setSuccess(`Đang tối ưu phần nội dung này...`);
-                const result = await onRefineSection(value, actionPrompt);
+                const result = await onRefineSection(value, actionPrompt, selectedModel);
                 if (result.success && result.content) {
                     onChange(result.content);
                     setSuccess("Đã cập nhật nội dung thành công!");

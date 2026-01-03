@@ -25,7 +25,7 @@ import {
     Info,
     Upload,
 } from "lucide-react";
-import type { TemplateData } from "@/lib/types";
+import type { TemplateData, AssessmentResult } from "@/lib/types";
 import { ASSESSMENT_PRODUCT_TYPES } from "@/lib/prompts/assessment-prompts";
 
 interface AssessmentTabProps {
@@ -39,7 +39,7 @@ interface AssessmentTabProps {
     setAssessmentTopic: (value: string) => void;
     assessmentTemplate: TemplateData | null;
     onTemplateUpload: (file: File) => void;
-    assessmentResult: any;
+    assessmentResult: AssessmentResult | null;
     isGenerating: boolean;
     onGenerate: () => void;
     isExporting: boolean;
