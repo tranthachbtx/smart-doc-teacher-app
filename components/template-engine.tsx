@@ -71,6 +71,8 @@ import type {
   LessonTask,
   TemplateData,
   NCBHResult,
+  ActionResult,
+  AssessmentResult,
 } from "@/lib/types";
 import {
   ACADEMIC_MONTHS,
@@ -194,7 +196,7 @@ const TemplateEngine = () => {
   const [assessmentTerm, setAssessmentTerm] = useState("Giữa kì 1");
   const [assessmentProductType, setAssessmentProductType] = useState("");
   const [assessmentTopic, setAssessmentTopic] = useState("");
-  const [assessmentResult, setAssessmentResult] = useState<any>(null);
+  const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
   const [assessmentTemplate, setAssessmentTemplate] = useState<TemplateData | null>(null);
 
   // NCBH state
