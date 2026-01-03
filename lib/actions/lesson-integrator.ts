@@ -228,11 +228,9 @@ Trả về CHÍNH XÁC JSON sau (KHÔNG thêm text khác):
       compression: "DEFLATE",
     });
 
-    // Convert Node Buffer to a clean ArrayBuffer for the frontend
-    const finalArrayBuffer = outputBuffer.buffer.slice(
-      outputBuffer.byteOffset,
-      outputBuffer.byteOffset + outputBuffer.byteLength
-    );
+    // Definitively convert Node Buffer to a clean, standard ArrayBuffer
+    // We use Uint8Array to copy the data, ensuring it's not a SharedArrayBuffer
+    const finalArrayBuffer = new Uint8Array(outputBuffer).buffer as ArrayBuffer;
 
     logs.push("Hoàn thành xử lý file!");
 
