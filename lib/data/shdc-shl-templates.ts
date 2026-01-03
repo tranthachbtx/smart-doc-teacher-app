@@ -371,7 +371,12 @@ export function getTroChoiTheoLoaiChuDe(loaiChuDe: string): TroChoiKhoiDong[] {
 }
 
 export function getGoiYSHDC_SHL(loaiChuDe: string) {
-  return GOI_Y_SHDC_SHL_THEO_LOAI_CHU_DE_BO_SUNG[loaiChuDe] || null
+  const loaiMap: Record<string, keyof typeof GOI_Y_SHDC_SHL_THEO_LOAI_CHU_DE_BO_SUNG> = {
+    truong_thanh: "truong_thanh_kham_pha_ban_than",
+    ban_than: "truong_thanh_kham_pha_ban_than",
+  }
+  const key = loaiMap[loaiChuDe] || "truong_thanh_kham_pha_ban_than"
+  return GOI_Y_SHDC_SHL_THEO_LOAI_CHU_DE_BO_SUNG[key] || null
 }
 
 export function getKyThuatDayHocTheoLoai(loai: "nhom" | "ca_nhan") {
