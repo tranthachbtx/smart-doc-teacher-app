@@ -306,19 +306,17 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b"): Promis
         console.log(`[AI-TUNNEL] [${new Date().toLocaleTimeString()}] Key: ${key.slice(0, 8)}... | ${modelName} | Attempt ${attempt + 1}`);
 
         // 3. NATIVE FETCH via TUNNEL (Bypass SDK Fingerprint)
-        // We use the Next.js Rewrite Tunnel: /api/gemini-tunnel -> https://generativelanguage.googleapis.com
-        // This makes Google see the request coming from the Server, stripped of some browser headers if we config rights.
-        // Actually, since this is server-side fetch, it originates from Node.js process.
-        // To truly mask it, we need header scrubbing.
-
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
+        // If GEMINI_PROXY_URL is set, we route through a proxy (e.g., Cloudflare Worker)
+        const proxyUrl = process.env.GEMINI_PROXY_URL;
+        const endpoint = proxyUrl
+          ? `${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent?key=${key}`
+          : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
 
         const response = await fetch(endpoint, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // "User-Agent": "Mozilla/5.0 (compatible; Google-Gemini-Proxy/1.0)", // Fake UA
-            // "Referer": "https://aistudio.google.com", // Mask Origin
+            "x-antigravity-proxy": "v5.2", // Trace tag
           },
           body: JSON.stringify({
             contents: [{

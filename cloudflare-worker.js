@@ -1,76 +1,76 @@
+// CLOUDFLARE WORKER STEALTH PROXY FOR ANTIGRAVITY (v5.2)
+// Mục đích: Vượt Shadow Ban của Vercel bằng cách định tuyến qua IP của Cloudflare
 
-// CLOUDFLARE WORKER PROXY FOR ANTIGRAVITY (v5.0)
-// Deploy this to Cloudflare Workers to bypass IP blocking & sanitize headers.
-
-// 1. CONFIGURATION
 const API_KEYS = [
-    // Paster your Gemini API Keys here
-    "KEY_1_HERE",
-    "KEY_2_HERE",
-    "KEY_3_HERE"
+    "AIzaSyBIEEsEFN6brz4YF_J2CVUz3iHN0zspYtU",
+    "AIzaSyCYsZZ9fL5K3FLTc0-ANq_RkCGbxHMrwg4",
+    "AIzaSyAAnWX4b9_lxdZer45KZ_smyY4EWnLvR-A"
 ];
 
 const USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0"
 ];
-
-// 2. STATE MANAGEMENT (Simple In-Memory for Round Robin)
-let currentKeyIndex = 0;
 
 export default {
     async fetch(request, env, ctx) {
-        // Only allow POST
+        if (request.method === "OPTIONS") {
+            return new Response(null, {
+                headers: {
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "POST, OPTIONS",
+                    "Access-Control-Allow-Headers": "Content-Type, x-goog-api-key",
+                }
+            });
+        }
+
         if (request.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
 
         const url = new URL(request.url);
-        // Target Gemini API
-        const targetUrl = `https://generativelanguage.googleapis.com${url.pathname}${url.search}`;
+        const modelPath = url.pathname; // e.g. /v1beta/models/gemini-1.5-flash:generateContent
 
-        // 3. KEY ROTATION (Round Robin)
-        const selectedKey = API_KEYS[currentKeyIndex];
-        currentKeyIndex = (currentKeyIndex + 1) % API_KEYS.length;
+        // Lấy key từ URL hoặc xoay vòng ngẫu nhiên nếu không có
+        const urlKey = url.searchParams.get("key");
+        const selectedKey = urlKey || API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
 
-        // 4. HEADER SANITIZATION & INJECTION
+        const targetUrl = `https://generativelanguage.googleapis.com${modelPath}?key=${selectedKey}`;
+
         const newHeaders = new Headers();
         newHeaders.set("Content-Type", "application/json");
-        newHeaders.set("x-goog-api-key", selectedKey); // Inject Key securely at Edge
 
-        // Rotate User-Agent to look like real browser
-        const randomUA = USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
-        newHeaders.set("User-Agent", randomUA);
+        // Xoay vòng User-Agent
+        newHeaders.set("User-Agent", USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)]);
 
-        // Inject Client Hints to bypass fingerprinting
-        newHeaders.set("sec-ch-ua", '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"');
-        newHeaders.set("sec-ch-ua-mobile", "?0");
-        newHeaders.set("sec-ch-ua-platform", '"Windows"');
-        newHeaders.set("Referer", "https://aistudio.google.com/"); // Mask origin
-        newHeaders.set("Origin", "https://aistudio.google.com");
+        // Xóa các vết tích từ Vercel/Client
+        const headersToOmit = ["x-forwarded-for", "x-real-ip", "cf-connecting-ip", "forwarded"];
+        request.headers.forEach((value, key) => {
+            if (!headersToOmit.includes(key.toLowerCase())) {
+                newHeaders.set(key, value);
+            }
+        });
 
         try {
+            const body = await request.text();
             const response = await fetch(targetUrl, {
                 method: "POST",
                 headers: newHeaders,
-                body: request.body
+                body: body
             });
 
-            // 5. RESPONSE HANDLING
-            // If Rate Limited (429), the client (Antigravity) will handle the backoff/jitter.
-            // We just pass the response back cleanly.
+            const responseHeaders = new Headers(response.headers);
+            responseHeaders.set("Access-Control-Allow-Origin", "*");
 
-            const responseBody = await response.text();
-            const cleanResponseHeaders = new Headers();
-            cleanResponseHeaders.set("Content-Type", "application/json");
-            cleanResponseHeaders.set("Access-Control-Allow-Origin", "*"); // Allow CORS for local dev
-
-            return new Response(responseBody, {
+            return new Response(response.body, {
                 status: response.status,
-                headers: cleanResponseHeaders
+                statusText: response.statusText,
+                headers: responseHeaders
             });
-
         } catch (e) {
-            return new Response(JSON.stringify({ error: "Proxy Error", details: e.message }), { status: 502 });
+            return new Response(JSON.stringify({ error: "Saga Proxy Breach", detail: e.message }), {
+                status: 502,
+                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+            });
         }
     }
 };
