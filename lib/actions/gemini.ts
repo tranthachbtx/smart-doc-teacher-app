@@ -1,8 +1,12 @@
 "use server";
 
+// --- VERCEL EDGE RUNTIME CONFIGURATION ---
+// Critical to bypass 10s Serverless Timeout on Hobby Plan
+export const runtime = 'edge';
+
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from "fs";
-import path from "path";
+// import fs from "fs"; // REMOVED FOR EDGE RUNTIME
+// import path from "path"; // REMOVED FOR EDGE RUNTIME
 import { HDTN_CURRICULUM } from "@/lib/hdtn-curriculum";
 import { getPPCTChuDe } from "@/lib/data/ppct-database";
 import {
@@ -19,85 +23,203 @@ import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
  * Triển khai theo phác đồ Saga + CoD + FSAG.
  */
 
-// --- 1. PERSISTENT STORAGE (FSAG - Advanced v4.4) ---
-const ROOT_STATE = path.join(process.cwd(), ".antigravity_data");
-if (!fs.existsSync(ROOT_STATE)) fs.mkdirSync(ROOT_STATE, { recursive: true });
+// --- 1. SAGA PERSISTENCE (SERVERLESS ADAPTATION) ---
+// Using In-Memory Map simulating Redis for Vercel/Saga Pattern.
 
-function slugify(text: string) {
-  return text
-    .toString()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "") // Remove accents
-    .replace(/[^\w\s-]/g, "") // Remove special chars
-    .replace(/\s+/g, "_")
-    .replace(/--+/g, "_")
-    .trim()
-    .slice(0, 50);
+declare global {
+  var sagaState: {
+    jobs: Record<string, SagaJob>; // New: Job Registry
+    // Legacy support
+    [key: string]: any;
+  };
 }
 
-function getSagaStore(projectName: string) {
-  const slug = slugify(projectName);
-  const pDir = path.join(ROOT_STATE, slug);
-  if (!fs.existsSync(pDir)) fs.mkdirSync(pDir, { recursive: true });
-  return pDir;
+// SAGA DATA MODEL (Strict JSON Structure)
+interface SagaJob {
+  jobId: string;
+  grade: string;
+  topic: string;
+  status: 'planning' | 'processing' | 'completed' | 'failed';
+  blueprint?: any; // The Architect's Design
+  steps: Record<string, {
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    retry_count: number;
+    error?: string;
+    output_ref?: string; // Content is stored in checkpoints, this is just a ref
+  }>;
+  created_at: string;
+}
+
+if (!global.sagaState) {
+  global.sagaState = { jobs: {} };
+}
+
+function getSagaStore(pName: string): any {
+  // Legacy adapter for specific project lookups
+  if (!global.sagaState[pName]) {
+    global.sagaState[pName] = {
+      path: pName,
+      history: [],
+      concepts: [],
+      summaries: {},
+      gists: {},
+      constitution: null,
+      checkpoints: {}
+    };
+  }
+  return global.sagaState[pName];
+}
+
+// --- SAGA ORCHESTRATOR (THE ARCHITECT) ---
+export async function createSagaJob(grade: string, topic: string) {
+  const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+  // 1. Initialize Job
+  global.sagaState.jobs[jobId] = {
+    jobId,
+    grade,
+    topic,
+    status: 'planning',
+    steps: {},
+    created_at: new Date().toISOString()
+  };
+
+  try {
+    // 2. The Architect Phase (Generate Blueprint)
+    console.log(`[Saga] Architecting Blueprint for ${grade} - ${topic}...`);
+    const blueprintPrompt = `
+    ROLE: Lead Curriculum Architect.
+    TASK: Decompose the lesson plan for 'Grade ${grade} - ${topic}' into MICRO-TASKS.
+    standard: "MOET 5512 (60-80 pages scale)".
+    
+    OUTPUT: JSON ONLY used for queueing system.
+    Structure:
+    {
+      "sections": [
+        { "id": "1_muctieu", "title": "I. Mục tiêu", "estimated_tokens": 800 },
+        { "id": "2_kienthuc", "title": "II. Kiến thức trọng tâm", "estimated_tokens": 1000 },
+        { "id": "3_hoatdong_1", "title": "III.1 Hoạt động Khởi động", "estimated_tokens": 1500 },
+        { "id": "3_hoatdong_2", "title": "III.2 Hoạt động Khám phá (Lý thuyết)", "estimated_tokens": 2000 },
+        { "id": "3_hoatdong_3", "title": "III.3 Hoạt động Khám phá (Thực hành)", "estimated_tokens": 2000 },
+        { "id": "4_luyentap", "title": "IV. Luyện tập", "estimated_tokens": 1500 },
+        { "id": "5_vandung", "title": "V. Vận dụng", "estimated_tokens": 1000 },
+        { "id": "6_tongket", "title": "VI. Tổng kết & Rubric", "estimated_tokens": 1000 }
+      ]
+    }`;
+
+    // Use a fast model for planning
+    const blueprintJson = await callAI(blueprintPrompt, "gemini-1.5-flash-8b");
+    const blueprint = parseResilient(blueprintJson);
+
+    // 3. Hydrate Job with Micro-tasks
+    global.sagaState.jobs[jobId].blueprint = blueprint;
+
+    if (blueprint.sections && Array.isArray(blueprint.sections)) {
+      blueprint.sections.forEach((sec: any) => {
+        global.sagaState.jobs[jobId].steps[sec.id] = {
+          status: 'pending',
+          retry_count: 0
+        };
+      });
+    }
+
+    global.sagaState.jobs[jobId].status = 'processing';
+    return { success: true, jobId, blueprint };
+
+  } catch (e: any) {
+    global.sagaState.jobs[jobId].status = 'failed';
+    return { success: false, error: e.message };
+  }
+}
+
+// --- SAGA WORKER (THE BUILDER) ---
+export async function processSagaStep(jobId: string, stepId: string) {
+  const job = global.sagaState.jobs[jobId];
+  if (!job) return { success: false, error: "Job not found" };
+
+  const step = job.steps[stepId];
+  if (!step) return { success: false, error: "Step not found" };
+
+  try {
+    step.status = 'processing';
+
+    // 1. Retrieve Context (Dependencies)
+    // In a real Saga, we pull summaries from previous steps (Linear Dependency)
+    // For now, we simulate context by pulling the Global Blueprint
+    const context = `BLUEPRINT: ${JSON.stringify(job.blueprint)}`;
+
+    // 2. Execute Generation (Reuse existing logic)
+    // We map stepId to our content generation logic
+    const sectionTitle = job.blueprint.sections.find((s: any) => s.id === stepId)?.title || stepId;
+
+    const result = await generateLessonSection(
+      job.grade,
+      job.topic,
+      sectionTitle,
+      context
+    );
+
+    if (result.success) {
+      step.status = 'completed';
+      step.output_ref = `stored_in_checkpoint_${stepId}`; // Data is already in pName store via generateLessonSection
+      return { success: true, stepId, status: 'completed' };
+    } else {
+      throw new Error(result.error);
+    }
+
+  } catch (e: any) {
+    step.status = 'failed';
+    step.retry_count++;
+    step.error = e.message;
+    return { success: false, error: e.message };
+  }
 }
 
 function checkpoint_save(pName: string, id: string, data: any) {
   const store = getSagaStore(pName);
-  const p = path.join(store, `${id}.json`);
-  const payload = {
+
+  // Save Full Data Payload
+  store.checkpoints[id] = {
     metadata: {
       timestamp: new Date().toISOString(),
       section: id,
-      version: "4.4-Standard-Density"
+      version: "5.2-Lite-Serverless"
     },
     data
   };
-  fs.writeFileSync(p, JSON.stringify(payload, null, 2));
 
-  // Dynamic Registry Update
+  // Dynamic Registry Update (Brain)
   if (data && typeof data === 'object') {
-    const registryPath = path.join(store, "workflow_state.json");
-    let registry = fs.existsSync(registryPath) ? JSON.parse(fs.readFileSync(registryPath, "utf-8")) : { concepts: [], summaries: {} };
-
     const contentStr = JSON.stringify(data);
-    const concepts = contentStr.match(/khái niệm|định nghĩa|quy tắc|công thức:?\s*"([^"]+)"/gi);
-    if (concepts) registry.concepts = Array.from(new Set([...registry.concepts, ...concepts]));
 
-    // GIST EXTRACTION (v5.0 Lite Strategy)
-    // Extract Student Gist for Context Compression
+    // 1. Concept Extraction
+    const concepts = contentStr.match(/khái niệm|định nghĩa|quy tắc|công thức:?\s*"([^"]+)"/gi);
+    if (concepts) store.concepts = Array.from(new Set([...store.concepts, ...concepts]));
+
+    // 2. GIST EXTRACTION
     const gistMatch = contentStr.match(/STUDENT_GIST:?\s*([\s\S]*?)$/i) || contentStr.match(/TÓM TẮT CỐT LÕI:?\s*([\s\S]*?)$/i);
     const gist = gistMatch ? gistMatch[1].trim().slice(0, 800) : contentStr.slice(0, 500) + "...";
 
-    registry.gists = registry.gists || {};
-    registry.gists[id] = gist;
-
-    // Legacy support for map-reduce
-    registry.summaries[id] = gist;
-
-    fs.writeFileSync(registryPath, JSON.stringify(registry, null, 2));
+    store.gists[id] = gist;
+    store.summaries[id] = gist; // Legacy compat
   }
 }
 
 function checkpoint_load(pName: string, id: string) {
   const store = getSagaStore(pName);
-  const p = path.join(store, `${id}.json`);
-  if (!fs.existsSync(p)) return null;
-  const raw = JSON.parse(fs.readFileSync(p, "utf-8"));
-  return raw.data || raw; // Handle both old and new formats
+  const ckpt = store.checkpoints[id];
+  if (!ckpt) return null;
+  return ckpt.data || ckpt;
 }
 
 function get_constitution(pName: string) {
   const store = getSagaStore(pName);
-  const p = path.join(store, "project_config.json");
-  return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, "utf-8")) : null;
+  return store.constitution;
 }
 
 function save_constitution(pName: string, data: any) {
   const store = getSagaStore(pName);
-  const p = path.join(store, "project_config.json");
-  fs.writeFileSync(p, JSON.stringify(data, null, 2));
+  store.constitution = data;
 }
 
 // --- 2. RESILIENCE & CIRCUIT BREAKER (v4.6 Industrial) ---
@@ -145,10 +267,11 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b"): Promis
     throw new Error("SHADOW_BAN_CRITICAL: All keys exhausted. Please change IP.");
   }
 
-  const system = `TASK: EXPERT EDUCATIONAL CONTENT GENERATOR. 
-  METHOD: CHAIN-OF-DENSITY (3-PASS EXPANSION). 
-  OUTPUT: VIETNAMESE, MARKDOWN, PROFESSIONAL PEDAGOGY.
-  COMPLIANCE: MOET DECREE 5512.`;
+  const system = `ROLE: Expert Curriculum Developer (K12 Vietnam).
+  TASK: Generate high-density lesson plans compliant with MOET 5512.
+  LANGUAGE CONSTRAINT: System instructions are English. OUTPUT CONTENT MUST BE VIETNAMESE (Tiếng Việt).
+  FORMAT: Clean Markdown (No JSON blocks).
+  METHOD: Recursive Chain-of-Density (Pack details, examples, dialogues).`;
 
   let lastError = "";
 
@@ -329,23 +452,27 @@ export async function generateLessonSection(grade: string, topic: string, sectio
       default:
         // STRATEGY: TEACHER Q & STUDENT GIST (Abstractive Q&A)
         specializedPrompt = `
-        TASK: GENERATE CONTENT FOR '${section}'.
+        TASK: GENERATE CONTENT FOR SECTION '${section}'.
         STRATEGY: TEACHER Q & STUDENT GIST (Abstractive Generative QA).
         
         STRUCTURE:
         1. TEACHER_Q: A thought-provoking question or activity setup provided by the teacher (Max 200 words).
-        2. ACTIVITY_DENSITY: Detailed pedagogical steps, student actions, and knowledge formation (Max 1000 words). Use "Chain of Density" to pack information.
-        3. STUDENT_GIST: A concise summary (100 words) of what the student learned. This will be passed to the next stage.
+        2. ACTIVITY_DENSITY: Expand using 'Chain of Density'. DO NOT just lengthen. Layer in:
+           - Specific pedagogical techniques (e.g., Think-Pair-Share).
+           - Concrete real-world examples.
+           - Socratic dialogue scripts between Teacher/Student.
+           - Deep knowledge formation (Max 1000 words).
+        3. STUDENT_GIST: A concise summary (100 words) of learned concepts.
         
-        NO FLUFF. NO GENERIC DIALOGUE. FOCUS ON KNOWLEDGE.`;
+        CONSTRAINT: Output strictly in Vietnamese. No filler.`;
     }
 
     const base = getKHDHPrompt(grade, topic, duration || "2 tiết", custInstr, tasks, month, suggest, !!file);
     const qualityRules = `
-    RULES (Antigravity Lite v5.0):
-    1. Output Target: High-Density Pedagogical Content.
-    2. Format: Clear Markdown (Headers, Lists).
-    3. MANDATORY: End output with "STUDENT_GIST: <summary>" so the system can memorize it.`;
+    RULES (Antigravity Lite v5.2):
+    1. Output Target: High-Density Pedagogical Content (Markdown).
+    2. Format: Use ## Headers, - Bullet points. NO JSON.
+    3. MANDATORY: End output with "STUDENT_GIST: <summary>" for memory retention.`;
 
     const complexPrompt = `${context_injection}\n\n${base}\n\nCORE_TASK: ${specializedPrompt}\n${stepInstr || ""}\n${qualityRules}`;
 
