@@ -80,30 +80,34 @@ export async function listJobs(): Promise<SagaJob[]> {
  * TOKEN BUCKET RATE LIMITER
  */
 class TokenBucket {
-    private tokens: number;
-    private lastCheck: number;
-    private readonly capacity: number = 15;
-    private readonly refillRate: number = 15; // 15 tokens per minute (Standard API limit)
-
-    constructor() {
-        this.tokens = 15;
-        this.lastCheck = Date.now();
+    private getRefillRate(): number {
+        const hour = new Date().getHours();
+        // Giờ thấp điểm (đêm): nạp 5 thẻ/phút. Giờ cao điểm (ngày): 1 thẻ/phút.
+        if (hour >= 22 || hour <= 6) return 5;
+        return 1;
     }
 
     async waitForToken() {
-        while (true) {
-            const now = Date.now();
-            const elapsed = now - this.lastCheck;
-            this.tokens = Math.min(this.capacity, this.tokens + (elapsed * this.refillRate) / 60000);
-            this.lastCheck = now;
+        const now = Date.now();
+        const elapsed = now - this.lastRefill;
 
-            if (this.tokens >= 1) {
-                this.tokens -= 1;
-                return;
-            }
-            // Wait 4 seconds (Traffic Smoothing)
-            await new Promise(r => setTimeout(r, 4000));
+        const rate = this.getRefillRate();
+        const refillAmount = (elapsed * rate) / 60000;
+
+        if (refillAmount >= 1) {
+            this.tokens = Math.min(this.capacity, this.tokens + Math.floor(refillAmount));
+            this.lastRefill = now;
         }
+
+        if (this.tokens < 1) {
+            const waitTime = 60000 - (now - this.lastRefill);
+            console.log(`[AdaptiveRate] Bucket empty. Current rate: ${rate} tpm. Cooling down for ${Math.round(waitTime / 1000)}s...`);
+            await new Promise(r => setTimeout(r, Math.max(0, waitTime)));
+            this.tokens = 1;
+            this.lastRefill = Date.now();
+        }
+
+        this.tokens--;
     }
 }
 
@@ -128,7 +132,11 @@ async function backoff(attempt: number, currentSleep: number): Promise<number> {
 async function callAIProxy(prompt: string, model = "gemini-1.5-flash", file?: { mimeType: string, data: string }) {
     await bucket.waitForToken();
 
-    const proxyUrl = process.env.NEXT_PUBLIC_GEMINI_PROXY_URL || "https://your-worker-name.workers.dev";
+    const proxyUrl = process.env.NEXT_PUBLIC_GEMINI_PROXY_URL || "";
+
+    if (!proxyUrl || proxyUrl.includes("your-worker-name")) {
+        throw new Error("CHƯA CẤU HÌNH PROXY: Vui lòng thay đổi NEXT_PUBLIC_GEMINI_PROXY_URL trong file .env.local thành địa chỉ Cloudflare Worker của bạn.");
+    }
 
     const system = `VAI TRÒ: Chuyên gia Sư phạm Cao cấp (MOET 5512).
 CHIẾN LƯỢC: 'Review & Upgrade' (Đánh giá và Nâng cấp).
@@ -218,30 +226,31 @@ export class ClientSagaOrchestrator {
             let dynamicBlueprint = null;
 
             if (file) {
-                console.log("[Saga] Analyzing PDF Context for Custom Architecture...");
-                const architectPrompt = `
-                VAI TRÒ: Chuyên gia Phân tích Sư phạm & Kiến trúc sư Giáo án.
-                NHIỆM VỤ: Phân tích tệp PDF đính kèm (là giáo án cũ) và thiết kế một Dàn ý tối ưu hóa theo CV 5512.
-                
-                YÊU CẦU:
-                1. Xác định các lỗ hổng sư phạm so với chuẩn CV 5512 (30-50 trang).
-                2. Thiết kế 8-10 Milestone (Nhiệm vụ) để lấp đầy các lỗ hổng đó.
-                
-                ĐỊNH DẠNG TRẢ VỀ JSON:
-                {
-                  "tasks": [
-                    { "id": "blueprint", "title": "0. Phân tích & Lập cấu trúc (Context Analysis)", "instruction": "Phân tích sâu dựa trên tệp PDF đã cung cấp" },
-                    { "id": "muc_tieu_kien_thuc", "title": "1. Mục tiêu & Chuẩn bị (Deep Analysis)", "instruction": "Xác định Kiến thức, Năng lực, Phẩm chất và Thiết bị" },
-                    ... (Tiếp tục các bước như hoat_dong_khoi_dong, hoat_dong_kham_pha_1,2,3, hoat_dong_luyen_tap_1,2, hoat_dong_van_dung, ho_so_day_hoc)
-                  ]
-                }`;
-
-                const response = await callAIProxy(architectPrompt, "gemini-1.5-flash", file);
                 try {
+                    console.log("[Saga] Analyzing PDF Context for Custom Architecture...");
+                    const architectPrompt = `
+                    VAI TRÒ: Chuyên gia Phân tích Sư phạm & Kiến trúc sư Giáo án.
+                    NHIỆM VỤ: Phân tích tệp PDF đính kèm (là giáo án cũ) và thiết kế một Dàn ý tối ưu hóa theo CV 5512.
+                    
+                    YÊU CẦU:
+                    1. Xác định các lỗ hổng sư phạm so với chuẩn CV 5512 (30-50 trang).
+                    2. Thiết kế 8-10 Milestone (Nhiệm vụ) để lấp đầy các lỗ hổng đó.
+                    
+                    ĐỊNH DẠNG TRẢ VỀ JSON:
+                    {
+                      "tasks": [
+                        { "id": "blueprint", "title": "0. Phân tích & Lập cấu trúc (Context Analysis)", "instruction": "Phân tích sâu dựa trên tệp PDF đã cung cấp" },
+                        { "id": "muc_tieu_kien_thuc", "title": "1. Mục tiêu & Chuẩn bị (Deep Analysis)", "instruction": "Xác định Kiến thức, Năng lực, Phẩm chất và Thiết bị" },
+                        ... (Tiếp tục các bước như hoat_dong_khoi_dong, hoat_dong_kham_pha_1,2,3, hoat_dong_luyen_tap_1,2, hoat_dong_van_dung, ho_so_day_hoc)
+                      ]
+                    }`;
+
+                    const response = await callAIProxy(architectPrompt, "gemini-1.5-flash", file);
                     const parsed = JSON.parse(response.match(/\{[\s\S]*\}/)?.[0] || "");
                     if (parsed.tasks) dynamicBlueprint = parsed.tasks;
                 } catch (e) {
-                    console.error("Failed to parse dynamic blueprint", e);
+                    console.warn("[Saga] PDF Analysis failed, falling back to standard plan:", e);
+                    // We don't throw here, just swallow and use fallback
                 }
             }
 
@@ -271,66 +280,86 @@ export class ClientSagaOrchestrator {
     }
 
     private async expansionPhase() {
-        // Current file context
         const file = (this.job as any).lessonFile;
+        const maxConcurrency = 3; // Nâng cấp: Chạy song song tối đa 3 nhiệm vụ
 
-        for (let i = 0; i < this.job.tasks.length; i++) {
-            const task = this.job.tasks[i];
-            if (task.status === 'completed') continue;
+        while (this.job.tasks.some(t => t.status !== 'completed' && t.status !== 'failed')) {
+            const pendingTasks = this.job.tasks.filter(t => t.status === 'pending');
+            const processingTasks = this.job.tasks.filter(t => t.status === 'processing');
 
-            try {
-                const updatedTasks = [...this.job.tasks];
-                updatedTasks[i] = { ...task, status: 'processing' };
-                await this.update({ tasks: updatedTasks });
+            if (processingTasks.length < maxConcurrency && pendingTasks.length > 0) {
+                const taskToStart = pendingTasks[0];
+                const taskIdx = this.job.tasks.findIndex(t => t.id === taskToStart.id);
 
-                // Context Injection: previous completed tasks' gists
-                const gistsContext = this.job.tasks
-                    .filter(t => t.status === 'completed')
-                    .map(t => `[${t.title}]: ${t.gist || t.output?.slice(0, 400)}`)
-                    .join('\n');
+                // Floating promise: Không dùng await ở đây để chạy song song
+                this.executeTask(taskIdx, file);
 
-                const expansionPrompt = `
-        ${file ? "SỬ DỤNG CHIẾN LƯỢC 'REVIEW & UPGRADE': Hãy lấy nội dung tương ứng trong PDF đính kèm, đối chiếu và NÂNG CẤP nó.\n" : ""}
-        
-        BỐI CẢNH CÁC PHẦN ĐÃ LÀM:
-        ${gistsContext}
-        
-        NHIỆM VỤ HIỆN TẠI: Thực hiện 'Sectional Rewrite' cho phần "${task.title}".
-        CHỈ DẪN KỸ THUẬT: ${(task as any).instruction || "Phát triển chuyên sâu, chuẩn hóa CV 5512"}.
-        
-        YÊU CẦU NÂNG CẤP:
-        1. Tăng mật độ sư phạm (Pedagogical Density): Thêm kịch bản chi tiết, ví dụ thực tế.
-        2. Tối ưu hóa Output: Chỉ tập trung viết nội dung chất lượng cao cho riêng phần này (~1000-1500 từ).
-        3. Sử dụng kỹ thuật "Chain of Density" để nén thông tin hữu ích vào văn bản.
-        
-        KẾT THÚC BẰM:
-        STUDENT_GIST: <tóm tắt ngắn gọn năng lực học sinh đạt được sau phần này trong 100 chữ>
-        `;
-
-                const output = await callAIProxy(expansionPrompt, "gemini-1.5-flash", file);
-
-                // Extract Gist
-                const gistMatch = output.match(/STUDENT_GIST:\s*([\s\S]*?)$/i) || output.match(/TÓM TẮT:\s*([\s\S]*?)$/i);
-                const gist = gistMatch ? gistMatch[1].trim() : "";
-
-                updatedTasks[i] = { ...task, status: 'completed', output, gist };
-                await this.update({ tasks: updatedTasks });
-
-                // Slow cooking delay (Gap between tasks to stay in green zone)
-                if (i < this.job.tasks.length - 1) {
-                    console.log("Slow Cooking Cooling: 45s gap...");
-                    await new Promise(r => setTimeout(r, 45000));
-                }
-
-            } catch (e: any) {
-                console.error(`Task ${task.id} failed:`, e);
-                const updatedTasks = [...this.job.tasks];
-                updatedTasks[i] = { ...task, status: 'failed', error: e.message, retryCount: task.retryCount + 1 };
-                await this.update({ tasks: updatedTasks, status: 'failed' });
-                return; // Halt on error to allow user to Resume or Retry
+                // Khoảng nghỉ ngắn 2s giữa các lần bắt đầu task song song để tránh burst đột ngột
+                await new Promise(r => setTimeout(r, 2000));
+            } else {
+                // Đợi một chút trước khi kiểm tra lại trạng thái các task
+                await new Promise(r => setTimeout(r, 5000));
             }
         }
 
-        await this.update({ status: 'completed' });
+        if (this.job.status === 'processing' && this.job.tasks.every(t => t.status === 'completed')) {
+            await this.update({ status: 'completed' });
+        }
+    }
+
+    private async executeTask(taskIdx: number, file: any) {
+        const task = this.job.tasks[taskIdx];
+        try {
+            const updatedTasks = [...this.job.tasks];
+            updatedTasks[taskIdx] = { ...task, status: 'processing' };
+            await this.update({ tasks: updatedTasks });
+
+            const gistsContext = this.job.tasks
+                .filter(t => t.status === 'completed')
+                .map(t => `[${t.title}]: ${t.gist || t.output?.slice(0, 300)}`)
+                .join('\n');
+
+            const expansionPrompt = `
+    BỐI CẢNH BÀI DẠY: ${this.job.topic} (Khối ${this.job.grade})
+    BỐI CẢNH CÁC PHẦN ĐÃ LÀM: ${gistsContext}
+    
+    NHIỆM VỤ: NÂNG CẤP PHẦN "${task.title}".
+    
+    CHIẾN LƯỢC TIẾT KIỆM TOKEN (TEMPLATE-BASED):
+    1. KHÔNG viết mới từ đầu. 
+    2. Nếu có file PDF cũ, hãy chọn lọc 3-5 ý tưởng hay nhất để nâng cấp.
+    3. Sử dụng cấu trúc chuẩn MOET 5512.
+    
+    MẪU GỢI Ý (Tham khảo):
+    - Lý do: "Đặc thù môn học, khái niệm khó..."
+    - Mục tiêu: "Sử dụng thang Bloom..."
+    - Hoạt động: "Chuyển giao -> Thực hiện -> Báo cáo -> Kết luận."
+    
+    YÊU CẦU ĐẦU RA: Markdown, tối ưu hóa (1000 từ chất lượng).
+    KẾT THÚC BẰNG:
+    STUDENT_GIST: <tóm tắt ngắn gọn 100 chữ>
+    `;
+
+            const output = await callAIProxy(expansionPrompt, "gemini-1.5-flash", file);
+            const gistMatch = output.match(/STUDENT_GIST:\s*([\s\S]*?)$/i) || output.match(/TÓM TẮT:\s*([\s\S]*?)$/i);
+            const gist = gistMatch ? gistMatch[1].trim() : "";
+
+            const finalTasks = [...this.job.tasks];
+            finalTasks[taskIdx] = {
+                ...task,
+                status: 'completed',
+                output,
+                gist
+            };
+            await this.update({ tasks: finalTasks });
+
+        } catch (e: any) {
+            console.error(`Task ${task.id} failed`, e);
+            const failTasks = [...this.job.tasks];
+            failTasks[taskIdx] = { ...task, status: 'failed', error: e.message };
+            await this.update({ tasks: failTasks });
+        }
+    }
+}
     }
 }
