@@ -144,12 +144,16 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
   const generateEvent = async (
     grade: string,
     theme: string,
-    customInstructions?: string
+    customInstructions?: string,
+    budget?: string,
+    checklist?: string,
+    evaluation?: string,
+    model?: string
   ) => {
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await generateEventScript(grade, theme, customInstructions);
+      const result = await generateEventScript(grade, theme, customInstructions, budget, checklist, evaluation, model);
       if (result.success && result.data) {
         return { success: true, data: result.data as EventResult };
       } else {

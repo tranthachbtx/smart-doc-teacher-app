@@ -502,9 +502,10 @@ export async function generateLessonPlan(g: string, t: string, f = false, d?: st
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateEventScript(g: string, t: string, i?: string) {
+export async function generateEventScript(g: string, t: string, i?: string, budget?: string, checklist?: string, evaluation?: string, model?: string) {
   try {
-    const text = await callAI(getEventPrompt(g, t) + (i || ""));
+    const extra = `\n\nNGÂN SÁCH: ${budget || "Tối ưu hóa"}\nDANH MỤC CẦN CHUẨN BỊ: ${checklist || "Tự đề xuất"}\nTIÊU CHÍ ĐÁNH GIÁ: ${evaluation || "Tự đề xuất"}`;
+    const text = await callAI(getEventPrompt(g, t) + (i || "") + extra, model);
     return { success: true, data: parseResilient(text) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
