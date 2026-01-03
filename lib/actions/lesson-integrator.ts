@@ -152,8 +152,8 @@ Trả về CHÍNH XÁC JSON sau (KHÔNG thêm text khác):
       aiData = JSON.parse(jsonStr)
     } catch {
       // Manual extraction fallback
-      const nlsMatch = text.match(/tich_hop_nls["\s:]+["']([^"']+)["']/s)
-      const ddMatch = text.match(/tich_hop_dao_duc["\s:]+["']([^"']+)["']/s)
+      const nlsMatch = text.match(/tich_hop_nls["\s:]+["']([\s\S]+?)["']/)
+      const ddMatch = text.match(/tich_hop_dao_duc["\s:]+["']([\s\S]+?)["']/)
       aiData = {
         tich_hop_nls: nlsMatch?.[1] || "Chưa có nội dung",
         tich_hop_dao_duc: ddMatch?.[1] || "Chưa có nội dung",
