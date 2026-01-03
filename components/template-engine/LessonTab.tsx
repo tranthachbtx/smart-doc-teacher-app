@@ -35,6 +35,9 @@ import {
 import type { LessonResult, LessonTask, ActionResult } from "@/lib/types";
 import type { PPCTChuDe } from "@/lib/data/ppct-database";
 import { getChuDeListByKhoi } from "@/lib/data/ppct-database";
+import { useSlowOrchestrator } from "@/hooks/use-slow-orchestrator";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 interface LessonTabProps {
     lessonGrade: string;
@@ -164,161 +167,103 @@ export function LessonTab({
         }
     }, [lessonResult, lessonGrade, selectedChuDeSo]);
     // --- ANTIGRAVITY v4.5: INDUSTRIAL HIERARCHICAL WORKFLOW ---
-    const [isAutoRunning, setIsAutoRunning] = React.useState(false);
-    const [stepInstructions, setStepInstructions] = React.useState<Record<string, string>>({});
-    const [expandedStep, setExpandedStep] = React.useState<string | null>(null);
+    // --- ANTIGRAVITY v6.0: DECOMMISSIONED OLD LOGIC ---
+    // (Old handleAutoGenerate and manual states were triggering timeouts)
+    // --- ANTIGRAVITY v6.0: CLIENT-SIDE SAGA INTEGRATION ---
+    const {
+        currentJob,
+        isGenerating: isSagaGenerating,
+        startJob: startSagaJob,
+        resumeJob: resumeSagaJob
+    } = useSlowOrchestrator();
+
+    const handleSagaGenerate = async () => {
+        if (!lessonGrade || !lessonAutoFilledTheme) return;
+
+        // Prepare file context if exists
+        const sagaContext = {
+            lessonFile: lessonFile || undefined,
+            grade: lessonGrade,
+            topic: lessonAutoFilledTheme,
+        };
+
+        setSuccess("🔥 Kích hoạt hệ thống Client-Side Saga (v6.0). Quy trình 'Nấu chậm' 45-60 phút đang bắt đầu tại trình duyệt của bạn...");
+
+        // Start the job (which internally handles task distribution and slow cooking)
+        await startSagaJob(lessonGrade, lessonAutoFilledTheme);
+    };
+
+    // Effect to sync Saga completed tasks to lessonResult
+    React.useEffect(() => {
+        if (currentJob && currentJob.tasks.length > 0) {
+            const completedTasks = currentJob.tasks.filter(t => t.status === 'completed');
+            if (completedTasks.length > 0) {
+                const newResult: any = { ...lessonResult };
+                let hashChanged = false;
+                completedTasks.forEach(task => {
+                    if (task.output && !newResult[task.id]) {
+                        newResult[task.id] = task.output;
+                        hashChanged = true;
+                    }
+                });
+                if (hashChanged && setLessonResult) {
+                    setLessonResult(newResult);
+                }
+            }
+        }
+    }, [currentJob, lessonResult, setLessonResult]);
+
+    // --- REDIRECTING MANUAL CLICKS TO SAGA ---
+    const handleStepGenerate = (stepId: string) => {
+        setSuccess(`Vui lòng sử dụng hệ thống "Saga Slow-Cooking" bên dưới để tạo phần "${stepId}". Chế độ thủ công đã bị tạm dừng để tránh lỗi Vercel Timeout.`);
+    };
+
+    const expandedStep = null; // Legacy placeholder
+    const setExpandedStep = (val: any) => { };
+    const stepInstructions: Record<string, string> = {};
 
     const workflowPlan = [
         {
             stage: "PHASE 0: ARCHITECTURE",
             tasks: [
                 { id: 'blueprint', label: '0. Lập dàn ý (Architecture)', resultKey: 'blueprint', icon: '🏗️' },
-                { id: 'setup', label: '1. Mục tiêu & Chuẩn bị (Deep Analysis)', resultKey: 'muc_tieu_kien_thuc', icon: '🎯' },
+                { id: 'muc_tieu_kien_thuc', label: '1. Mục tiêu & Chuẩn bị (Deep Analysis)', resultKey: 'muc_tieu_kien_thuc', icon: '🎯' },
             ]
         },
         {
             stage: "PHASE 1: FOUNDATION & WARM-UP",
             tasks: [
-                { id: 'khởi động', label: '2. HĐ: Khởi động - Tạo mâu thuẫn', resultKey: 'hoat_dong_khoi_dong', icon: '⚡' },
-                { id: 'shdc_shl', label: '3. Sinh hoạt dưới cờ & Lớp', resultKey: 'shdc', icon: '🏛️' },
+                { id: 'hoat_dong_khoi_dong', label: '2. HĐ: Khởi động - Tạo mâu thuẫn', resultKey: 'hoat_dong_khoi_dong', icon: '⚡' },
+                { id: 'shdc', label: '3. Sinh hoạt dưới cờ & Lớp', resultKey: 'shdc', icon: '🏛️' },
             ]
         },
         {
             stage: "PHASE 2: KNOWLEDGE EXPLORATION (Compass Scripting)",
             tasks: [
-                { id: '3_khampha_1', label: '4.1 Khám phá 1: Hình thành kiến thức', resultKey: 'hoat_dong_kham_pha_1', icon: '🔍', isSub: true },
-                { id: '3_khampha_2', label: '4.2 Khám phá 2: Phân tích & Phản biện', resultKey: 'hoat_dong_kham_pha_2', icon: '📖', isSub: true },
-                { id: '3_khampha_3', label: '4.3 Khám phá 3: Tích hợp NLS & Đạo đức', resultKey: 'hoat_dong_kham_pha_3', icon: '🌐', isSub: true },
+                { id: 'hoat_dong_kham_pha_1', label: '4.1 Khám phá 1: Hình thành kiến thức', resultKey: 'hoat_dong_kham_pha_1', icon: '🔍', isSub: true },
+                { id: 'hoat_dong_kham_pha_2', label: '4.2 Khám phá 2: Phân tích & Phản biện', resultKey: 'hoat_dong_kham_pha_2', icon: '📖', isSub: true },
+                { id: 'hoat_dong_kham_pha_3', label: '4.3 Khám phá 3: Tích hợp NLS & Đạo đức', resultKey: 'hoat_dong_kham_pha_3', icon: '🌐', isSub: true },
             ]
         },
         {
             stage: "PHASE 3: PRACTICE & APPLICATION",
             tasks: [
-                { id: '4_luyentap_1', label: '5.1 Luyện tập 1: Củng cố cơ bản', resultKey: 'hoat_dong_luyen_tap_1', icon: '💪', isSub: true },
-                { id: '4_luyentap_2', label: '5.2 Luyện tập 2: Sáng tạo & Giải quyết', resultKey: 'hoat_dong_luyen_tap_2', icon: '🛠️', isSub: true },
-                { id: '5_vandung', label: '6. Vận dụng: Dự án thực tế', resultKey: 'hoat_dong_van_dung', icon: '🚀' },
+                { id: 'hoat_dong_luyen_tap_1', label: '5.1 Luyện tập 1: Củng cố cơ bản', resultKey: 'hoat_dong_luyen_tap_1', icon: '💪', isSub: true },
+                { id: 'hoat_dong_luyen_tap_2', label: '5.2 Luyện tập 2: Sáng tạo & Giải quyết', resultKey: 'hoat_dong_luyen_tap_2', icon: '🛠️', isSub: true },
+                { id: 'hoat_dong_van_dung', label: '6. Vận dụng: Dự án thực tế', resultKey: 'hoat_dong_van_dung', icon: '🚀' },
             ]
         },
         {
             stage: "PHASE 4: FINALIZATION",
             tasks: [
-                { id: 'final', label: '7. Hồ sơ: Phiếu & Rubric', resultKey: 'ho_so_day_hoc', icon: '📋' },
+                { id: 'ho_so_day_hoc', label: '7. Hồ sơ: Phiếu & Rubric', resultKey: 'ho_so_day_hoc', icon: '📋' },
                 { id: 'preparation', label: '8. Hướng dẫn về nhà', resultKey: 'huong_dan_ve_nha', icon: '🔜' },
             ]
         }
     ];
-
     const designSteps = workflowPlan.flatMap(p => p.tasks);
-
-    const handleStepGenerate = async (stepId: any, overrideContext?: any) => {
-        if (!onGenerateSection) return { success: false, error: "Action undefined" };
-        setStepInProgress(stepId);
-        try {
-            const context = overrideContext || lessonResult || {};
-            const stepInstruction = stepInstructions[stepId] || "";
-            const result = await onGenerateSection(stepId, context, stepInstruction);
-            if (result.success) {
-                setSuccess(`Đã thiết kế xong phần: ${designSteps.find(s => s.id === stepId)?.label}`);
-                return { success: true, data: result.data };
-            } else {
-                const msg = result.error || "Không thể tạo nội dung phần này. Vui lòng thử lại.";
-                setError(msg);
-                return { success: false, error: msg };
-            }
-        } catch (error: any) {
-            const msg = error.message || "Đã xảy ra lỗi không xác định.";
-            setError(msg);
-            return { success: false, error: msg };
-        } finally {
-            if (!isAutoRunning) {
-                setStepInProgress(null);
-            }
-        }
-    };
-
-    // --- ANTIGRAVITY: QUOTA MANAGER (STEP 4) ---
-    const [retryCountDown, setRetryCountDown] = React.useState<number | null>(null);
-
-    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-    const handleAutoGenerate = async () => {
-        if (!onGenerateSection) return;
-        setIsAutoRunning(true);
-        setSuccess("Kích hoạt chế độ 'Nấu chậm' (Slow-Cooking): Hệ thống sẽ tạo 50 trang trong 45-60 phút để đảm bảo chất lượng cao nhất và tránh bị chặn API...");
-
-        let currentContext: LessonResult = { ...(lessonResult || {}) };
-        const MAX_RETRIES = 5;
-
-        try {
-            for (const stageBlock of workflowPlan) {
-                console.log(`[Saga] Entering Phase: ${stageBlock.stage}`);
-
-                for (const step of stageBlock.tasks) {
-                    const isDone = !!(currentContext as any)?.[step.resultKey];
-                    if (isDone) {
-                        console.log(`[Saga] Skipping done step: ${step.label}`);
-                        continue;
-                    }
-
-                    setStepInProgress(step.id);
-
-                    // --- RELAXED JITTER (Bypass pattern detection) ---
-                    // Wait between 30-90 seconds extra to feel more "human"
-                    const jitter = Math.floor(Math.random() * 60000) + 30000;
-                    await sleep(jitter);
-
-                    let attempts = 0;
-                    let stepSuccess = false;
-
-                    while (attempts < MAX_RETRIES && !stepSuccess) {
-                        const result = await handleStepGenerate(step.id, currentContext);
-
-                        if (result && result.success) {
-                            const newData = result.data;
-                            currentContext = { ...currentContext, ...newData };
-
-                            if (setLessonResult) {
-                                setLessonResult(currentContext);
-                            }
-                            stepSuccess = true;
-                            // Success gap - cool down after a successful generation
-                            await sleep(15000);
-                        } else {
-                            const errorMsg = result?.error || "Unknown Error";
-                            const isFatal = errorMsg.includes("SHADOW BAN") || errorMsg.includes("403") || errorMsg.includes("404");
-
-                            if (isFatal) {
-                                setError(`Hạ tầng bị quá tải. Đang tự động chuyển IP và chờ 120s...`);
-                                for (let t = 120; t > 0; t--) {
-                                    setRetryCountDown(t);
-                                    await sleep(1000);
-                                }
-                                setRetryCountDown(null);
-                                attempts++;
-                            } else {
-                                await sleep(10000);
-                                attempts++;
-                            }
-                        }
-                    }
-
-                    if (!stepSuccess) {
-                        setError(`Quy trình tạm nghỉ tại: ${step.label}. Hãy nhấn 'Tiếp tục' sau 5 phút.`);
-                        setIsAutoRunning(false);
-                        return;
-                    }
-                }
-            }
-            setSuccess("Saga Complete. Toàn bộ giáo án siêu chi tiết đã được hoàn thành sau 45 phút!");
-        } catch (e: any) {
-            console.error(e);
-            setError(`Saga Error: ${e.message}`);
-        } finally {
-            setIsAutoRunning(false);
-            setStepInProgress(null);
-            setRetryCountDown(null);
-        }
-    };
+    const retryCountDown = null;
+    const isAutoRunning = false;
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -767,22 +712,91 @@ export function LessonTab({
                                                 Làm mới
                                             </Button>
                                             <Button
-                                                onClick={handleAutoGenerate}
-                                                disabled={isGenerating || !lessonGrade || !lessonAutoFilledTheme}
-                                                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-xl shadow-indigo-200 border border-white/20"
+                                                onClick={handleSagaGenerate}
+                                                disabled={isSagaGenerating || !lessonGrade || !lessonAutoFilledTheme}
+                                                className="bg-gradient-to-r from-emerald-600 to-indigo-600 hover:from-emerald-700 hover:to-indigo-700 text-white shadow-xl shadow-indigo-200 border border-white/20"
                                             >
                                                 <Zap className="h-4 w-4 mr-2 animate-pulse" />
-                                                Kích hoạt Tạo tự động (Step 1-8)
+                                                Saga Slow-Cooking (45-60 min)
                                             </Button>
                                         </div>
                                     ) : (
                                         <Button disabled className="bg-slate-100 text-slate-400 border border-slate-200">
-                                            <Loader2 className="h-4 w-4 mr-2 animate-spin text-indigo-600" />
-                                            Đang thực hiện tuần tự...
+                                            <Loader2 className="h-4 w-4 mr-2 animate-spin text-emerald-600" />
+                                            Saga đang 'nấu chậm'... (Vui lòng không đóng Tab)
                                         </Button>
                                     )}
                                 </div>
                             </div>
+
+                            {/* SAGA PROGRESS DASHBOARD (v6.0) */}
+                            {currentJob && (
+                                <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 space-y-4 animate-in fade-in zoom-in duration-500">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-600">
+                                                <Zap className="h-5 w-5" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-slate-800 dark:text-slate-100">Tiến trình Saga Client-Side</h4>
+                                                <p className="text-xs text-slate-500">Nấu chậm 1000-1500 từ/phần • Vượt rào API</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {currentJob.status === 'processing' && (
+                                                <div className="flex items-center gap-2 mr-2">
+                                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                                                    <span className="text-[10px] font-bold text-emerald-600 uppercase">Live Engine</span>
+                                                </div>
+                                            )}
+                                            <Badge variant={currentJob.status === 'completed' ? 'default' : 'outline'} className={currentJob.status === 'completed' ? 'bg-emerald-500' : ''}>
+                                                {currentJob.status.toUpperCase()}
+                                            </Badge>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between text-xs font-bold">
+                                            <span className="text-slate-500">Hoàn thành: {currentJob.tasks.filter(t => t.status === 'completed').length}/{currentJob.tasks.length}</span>
+                                            <span className="text-emerald-600">{Math.round((currentJob.tasks.filter(t => t.status === 'completed').length / (currentJob.tasks.length || 1)) * 100)}%</span>
+                                        </div>
+                                        <Progress value={(currentJob.tasks.filter(t => t.status === 'completed').length / (currentJob.tasks.length || 1)) * 100} className="h-2 rounded-full" />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+                                        {currentJob.tasks.map((task) => (
+                                            <div key={task.id} className={`p-3 rounded-2xl border transition-all ${task.status === 'completed' ? 'bg-emerald-50/50 border-emerald-100' :
+                                                task.status === 'processing' ? 'bg-indigo-50/50 border-indigo-100 shadow-lg shadow-indigo-100/50' :
+                                                    task.status === 'failed' ? 'bg-red-50 border-red-100' :
+                                                        'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 opacity-60'
+                                                }`}>
+                                                <div className="flex items-center gap-2">
+                                                    {task.status === 'completed' ? <CheckCircle className="h-4 w-4 text-emerald-500" /> :
+                                                        task.status === 'processing' ? <Loader2 className="h-4 w-4 text-indigo-500 animate-spin" /> :
+                                                            task.status === 'failed' ? <AlertCircle className="h-4 w-4 text-red-500" /> :
+                                                                <Clock className="h-4 w-4 text-slate-300" />}
+                                                    <span className={`text-[10px] font-bold truncate flex-1 ${task.status === 'completed' ? 'text-emerald-700' :
+                                                        task.status === 'processing' ? 'text-indigo-700' : 'text-slate-400'
+                                                        }`}>
+                                                        {task.title}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {currentJob.status === 'failed' && (
+                                        <div className="flex gap-2">
+                                            <Button onClick={() => resumeSagaJob(currentJob.jobId)} className="flex-1 bg-orange-500 hover:bg-orange-600 text-white">
+                                                Tiếp tục (Resume)
+                                            </Button>
+                                            <Button variant="outline" onClick={() => startSagaJob(lessonGrade, lessonAutoFilledTheme)} className="flex-1 border-slate-200">
+                                                Làm lại (Restart)
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {designSteps.map((step, idx) => {
