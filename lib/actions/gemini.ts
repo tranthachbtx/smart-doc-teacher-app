@@ -531,9 +531,9 @@ export async function generateAssessmentPlan(g: string, tr: string, ty: string, 
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateAIContent(p: string) {
+export async function generateAIContent(p: string, model?: string) {
   try {
-    const text = await callAI(p);
+    const text = await callAI(p, model);
     return { success: true, content: text.replace(/\*/g, "") };
   } catch (e: any) { return { success: false, error: e.message }; }
 }

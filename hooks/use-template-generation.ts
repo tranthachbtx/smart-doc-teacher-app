@@ -217,13 +217,14 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
 
   const refineSection = async (
     content: string,
-    instruction: string
+    instruction: string,
+    model?: string
   ) => {
     setIsGenerating(true);
     setError(null);
     try {
       const prompt = `Bạn là một biên tập viên giáo dục chuyên nghiệp. Hãy chỉnh sửa nội dung sau đây dựa trên yêu cầu.\n\nNỘI DUNG GỐC:\n${content}\n\nYÊU CẦU CHỈNH SỬA: ${instruction}\n\nLưu ý: Chỉ trả về nội dung đã chỉnh sửa, không kèm lời dẫn.`;
-      const result = await generateAIContent(prompt);
+      const result = await generateAIContent(prompt, model);
       if (result.success && result.content) {
         return { success: true, content: result.content };
       } else {
