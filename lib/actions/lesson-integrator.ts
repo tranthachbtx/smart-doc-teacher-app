@@ -2,7 +2,7 @@
 
 import { GoogleGenAI } from "@google/genai"
 
-const PRIMARY_MODEL = "gemini-2.5-flash"
+const PRIMARY_MODEL = "gemini-1.5-flash"
 const FALLBACK_MODEL = "gemini-1.5-pro"
 
 async function callGeminiWithRetry(genAI: GoogleGenAI, prompt: string, maxRetries = 2): Promise<string> {
@@ -222,6 +222,11 @@ Trả về CHÍNH XÁC JSON sau (KHÔNG thêm text khác):
         },
       }
     }
+
+    const outputBuffer = doc.getZip().generate({
+      type: "nodebuffer",
+      compression: "DEFLATE",
+    });
 
     // Convert Node Buffer to a clean ArrayBuffer for the frontend
     const finalArrayBuffer = outputBuffer.buffer.slice(
