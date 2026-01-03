@@ -191,10 +191,10 @@ export function LessonTab({
             topic: lessonAutoFilledTheme,
         };
 
-        setSuccess("🔥 Kích hoạt hệ thống Client-Side Saga (v6.0). Quy trình 'Nấu chậm' 45-60 phút đang bắt đầu tại trình duyệt của bạn...");
+        setSuccess("🔥 Kích hoạt hệ thống Client-Side Saga (v6.0). Hệ thống đang nghiên cứu tệp PDF cũ để thiết kế lộ trình tối ưu...");
 
         // Start the job (which internally handles task distribution and slow cooking)
-        await startSagaJob(lessonGrade, lessonAutoFilledTheme);
+        await startSagaJob(lessonGrade, lessonAutoFilledTheme, lessonFile || undefined);
     };
 
     // Effect to sync Saga completed tasks to lessonResult

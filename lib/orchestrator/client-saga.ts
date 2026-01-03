@@ -23,6 +23,7 @@ export interface SagaJob {
     status: 'idle' | 'architecting' | 'processing' | 'completed' | 'failed';
     startTime?: number;
     lastUpdateTime?: number;
+    lessonFile?: { mimeType: string; data: string; name: string };
 }
 
 const DB_NAME = 'AntigravitySagaDB';
@@ -100,8 +101,8 @@ class TokenBucket {
                 this.tokens -= 1;
                 return;
             }
-            // Wait 5 seconds before checking again
-            await new Promise(r => setTimeout(r, 5000));
+            // Wait 4 seconds (Traffic Smoothing)
+            await new Promise(r => setTimeout(r, 4000));
         }
     }
 }
@@ -109,19 +110,31 @@ class TokenBucket {
 const bucket = new TokenBucket();
 
 /**
+ * DECORRELATED JITTER BACKOFF
+ * Formula: sleep = min(cap, random(base, sleep * 3))
+ */
+async function backoff(attempt: number, currentSleep: number): Promise<number> {
+    const base = 5000; // 5s
+    const cap = 60000; // 60s
+    const nextSleep = Math.min(cap, Math.floor(Math.random() * (currentSleep * 3 - base + 1)) + base);
+    console.log(`[Resilience] Backing off for ${Math.round(nextSleep / 1000)}s (Attempt ${attempt})...`);
+    await new Promise(r => setTimeout(r, nextSleep));
+    return nextSleep;
+}
+
+/**
  * CALL AI VIA PROXY (Client-Side)
  */
 async function callAIProxy(prompt: string, model = "gemini-1.5-flash", file?: { mimeType: string, data: string }) {
     await bucket.waitForToken();
 
-    // Use NEXT_PUBLIC prefix for client-side access in Next.js
     const proxyUrl = process.env.NEXT_PUBLIC_GEMINI_PROXY_URL || "https://your-worker-name.workers.dev";
 
-    const system = `ROLE: Expert Curriculum Developer (K12 Vietnam). 
-TASK: Generate high-density MOET 5512 content.
-CONTEXT: If a file is attached, it is an OLD LESSON PLAN for optimization. Keep its essence but expand it significantly.
-OUTPUT: VIETNAMESE ONLY (Tiếng Việt).
-QUALITY: Professional, pedagogical, creative. No fluff.`;
+    const system = `VAI TRÒ: Chuyên gia Sư phạm Cao cấp (MOET 5512).
+CHIẾN LƯỢC: 'Review & Upgrade' (Đánh giá và Nâng cấp).
+NHIỆM VỤ: KHÔNG viết mới hoàn toàn. Hãy đọc giáo án cũ trong PDF đính kèm, giữ nguyên ý tưởng cốt lõi và NÂNG CẤP cấu trúc, ngôn ngữ, phương pháp (Bloom, Năng lực số, Đạo đức) để đạt độ dài 50 trang.
+ĐỊNH DẠNG: Markdown thuần túy. KHÔNG dùng khối JSON.
+NGÔN NGỮ: Tiếng Việt.`;
 
     const parts: any[] = [{ text: `${system}\n\nPROMPT:\n${prompt}` }];
     if (file && file.data) {
@@ -133,28 +146,44 @@ QUALITY: Professional, pedagogical, creative. No fluff.`;
         });
     }
 
-    // Ensure absolute URL
     const targetUrl = proxyUrl.startsWith('http') ? proxyUrl : `https://${proxyUrl}`;
     const endpoint = `${targetUrl.replace(/\/$/, '')}/v1beta/models/${model}:generateContent`;
 
-    const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-Antigravity-Source": "Client-Saga-v6.0"
-        },
-        body: JSON.stringify({ contents: [{ parts }] })
-    });
+    let attempt = 0;
+    let sleepTime = 5000;
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Proxy Error (${response.status}): ${errorText}`);
+    while (attempt < 3) {
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Antigravity-Source": "Client-Saga-v6.2",
+                    "X-Antigravity-Strategy": "Review-Upgrade"
+                },
+                body: JSON.stringify({ contents: [{ parts }] })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                if (response.status === 429 || response.status >= 500) {
+                    attempt++;
+                    sleepTime = await backoff(attempt, sleepTime);
+                    continue;
+                }
+                throw new Error(`Proxy Error (${response.status}): ${errorText}`);
+            }
+
+            const json = await response.json();
+            const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) throw new Error("Empty AI response");
+            return text;
+        } catch (e: any) {
+            if (attempt >= 2) throw e;
+            attempt++;
+            sleepTime = await backoff(attempt, sleepTime);
+        }
     }
-
-    const json = await response.json();
-    const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error("Empty AI response");
-    return text;
 }
 
 export class ClientSagaOrchestrator {
@@ -185,8 +214,39 @@ export class ClientSagaOrchestrator {
     private async architectPhase() {
         await this.update({ status: 'architecting' });
         try {
-            // The Plan as defined in the report and existing UI (Using resultKeys as IDs)
-            const tasks: SagaTask[] = [
+            const file = this.job.lessonFile;
+            let dynamicBlueprint = null;
+
+            if (file) {
+                console.log("[Saga] Analyzing PDF Context for Custom Architecture...");
+                const architectPrompt = `
+                VAI TRÒ: Chuyên gia Phân tích Sư phạm & Kiến trúc sư Giáo án.
+                NHIỆM VỤ: Phân tích tệp PDF đính kèm (là giáo án cũ) và thiết kế một Dàn ý tối ưu hóa theo CV 5512.
+                
+                YÊU CẦU:
+                1. Xác định các lỗ hổng sư phạm so với chuẩn CV 5512 (30-50 trang).
+                2. Thiết kế 8-10 Milestone (Nhiệm vụ) để lấp đầy các lỗ hổng đó.
+                
+                ĐỊNH DẠNG TRẢ VỀ JSON:
+                {
+                  "tasks": [
+                    { "id": "blueprint", "title": "0. Phân tích & Lập cấu trúc (Context Analysis)", "instruction": "Phân tích sâu dựa trên tệp PDF đã cung cấp" },
+                    { "id": "muc_tieu_kien_thuc", "title": "1. Mục tiêu & Chuẩn bị (Deep Analysis)", "instruction": "Xác định Kiến thức, Năng lực, Phẩm chất và Thiết bị" },
+                    ... (Tiếp tục các bước như hoat_dong_khoi_dong, hoat_dong_kham_pha_1,2,3, hoat_dong_luyen_tap_1,2, hoat_dong_van_dung, ho_so_day_hoc)
+                  ]
+                }`;
+
+                const response = await callAIProxy(architectPrompt, "gemini-1.5-flash", file);
+                try {
+                    const parsed = JSON.parse(response.match(/\{[\s\S]*\}/)?.[0] || "");
+                    if (parsed.tasks) dynamicBlueprint = parsed.tasks;
+                } catch (e) {
+                    console.error("Failed to parse dynamic blueprint", e);
+                }
+            }
+
+            // Fallback to standard 5512 architecture if AI fails or no file
+            const tasks: SagaTask[] = dynamicBlueprint || [
                 { id: 'blueprint', title: '0. Lập dàn ý (Architecture)', status: 'pending', retryCount: 0, instruction: 'Thiết kế cấu trúc tổng thể cho 50 trang theo CV 5512' } as any,
                 { id: 'muc_tieu_kien_thuc', title: '1. Mục tiêu & Chuẩn bị (Deep Analysis)', status: 'pending', retryCount: 0, instruction: 'Xác định Kiến thức, Năng lực, Phẩm chất và Thiết bị dạy học' } as any,
                 { id: 'hoat_dong_khoi_dong', title: '2. HĐ: Khởi động - Tạo mâu thuẫn', status: 'pending', retryCount: 0, instruction: 'Thiết kế kịch bản dẫn dắt, trò chơi hoặc tình huống gây hứng thú' } as any,
@@ -200,7 +260,10 @@ export class ClientSagaOrchestrator {
                 { id: 'ho_so_day_hoc', title: '7. Hồ sơ: Phiếu & Rubric', status: 'pending', retryCount: 0, instruction: 'Tổng hợp và thiết kế các phụ lục, thang chấm điểm chi tiết' } as any,
             ];
 
-            await this.update({ tasks, status: 'processing' });
+            // Normalize task status (ensure they are all 'pending' for state machine)
+            const normalizedTasks = tasks.map(t => ({ ...t, status: 'pending' as any, retryCount: 0 }));
+
+            await this.update({ tasks: normalizedTasks, status: 'processing' });
         } catch (e: any) {
             console.error("Architect Phase Failed", e);
             await this.update({ status: 'failed' });
@@ -227,19 +290,18 @@ export class ClientSagaOrchestrator {
                     .join('\n');
 
                 const expansionPrompt = `
-        ${file ? "SỬ DỤNG GIÁO ÁN GỐC ĐỂ TỐI ƯU HÓA: Hãy lấy kiến trúc và ý tưởng từ tệp PDF cũ đính kèm và nâng cấp nó lên tầm cao mới chuyên sâu hơn.\n" : ""}
+        ${file ? "SỬ DỤNG CHIẾN LƯỢC 'REVIEW & UPGRADE': Hãy lấy nội dung tương ứng trong PDF đính kèm, đối chiếu và NÂNG CẤP nó.\n" : ""}
         
         BỐI CẢNH CÁC PHẦN ĐÃ LÀM:
         ${gistsContext}
         
-        NHIỆM VỤ HIỆN TẠI: Soạn thảo nội dung chi tiết cho phần "${task.title}".
-        CHỈ DẪN KỸ THUẬT: ${(task as any).instruction || "Phát triển sư phạm chiều sâu theo CV 5512"}.
+        NHIỆM VỤ HIỆN TẠI: Thực hiện 'Sectional Rewrite' cho phần "${task.title}".
+        CHỈ DẪN KỸ THUẬT: ${(task as any).instruction || "Phát triển chuyên sâu, chuẩn hóa CV 5512"}.
         
-        YÊU CẦU CHẤT LƯỢNG:
-        1. Tạo ra khoảng 1000-1500 từ cho phần này.
-        2. Mô tả kịch bản đối thoại GV-HS cực kỳ chi tiết.
-        3. Sử dụng kỹ thuật "Chain of Density" (Nén thông tin - Không viết lan man nhưng cực giàu chi tiết).
-        4. Đảm bảo tính nhất quán với các phần đã hoàn thành trước đó.
+        YÊU CẦU NÂNG CẤP:
+        1. Tăng mật độ sư phạm (Pedagogical Density): Thêm kịch bản chi tiết, ví dụ thực tế.
+        2. Tối ưu hóa Output: Chỉ tập trung viết nội dung chất lượng cao cho riêng phần này (~1000-1500 từ).
+        3. Sử dụng kỹ thuật "Chain of Density" để nén thông tin hữu ích vào văn bản.
         
         KẾT THÚC BẰM:
         STUDENT_GIST: <tóm tắt ngắn gọn năng lực học sinh đạt được sau phần này trong 100 chữ>
