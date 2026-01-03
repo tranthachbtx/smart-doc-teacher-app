@@ -1213,7 +1213,6 @@ export const createNCBHTemplate = async (): Promise<Blob> => {
         WidthType,
         AlignmentType,
         BorderStyle,
-        SpacingMode,
     } = await import("docx");
 
     const doc = new Document({
