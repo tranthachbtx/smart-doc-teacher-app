@@ -245,7 +245,8 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     month?: number,
     activitySuggestions?: { shdc?: string; hdgd?: string; shl?: string },
     model?: string,
-    lessonFile?: { mimeType: string; data: string; name: string }
+    lessonFile?: { mimeType: string; data: string; name: string },
+    stepInstruction?: string
   ) => {
     setIsGenerating(true);
     setError(null);
@@ -266,7 +267,8 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
         month,
         activitySuggestions,
         model,
-        lessonFile
+        lessonFile,
+        stepInstruction
       );
 
       if (result.success && result.data) {
