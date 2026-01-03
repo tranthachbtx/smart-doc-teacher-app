@@ -453,14 +453,29 @@ export const ExportService = {
         hoat_dong_duoi_co: cleanRedundantTitles(result.hoat_dong_duoi_co || ""),
         shdc: cleanRedundantTitles(result.shdc || ""),
         shl: cleanRedundantTitles(result.shl || ""),
+
         hoat_dong_khoi_dong_cot_1: formatForWord(extractColumn(result.hoat_dong_khoi_dong, 1), false, true),
         hoat_dong_khoi_dong_cot_2: formatForWord(extractColumn(result.hoat_dong_khoi_dong, 2), false, true),
 
-        hoat_dong_kham_pha_cot_1: formatForWord(extractColumn(result.hoat_dong_kham_pha, 1), false, true),
-        hoat_dong_kham_pha_cot_2: formatForWord(extractColumn(result.hoat_dong_kham_pha, 2), false, true),
+        // Aggregate multi-part Exploration (Kham pha)
+        hoat_dong_kham_pha_cot_1: formatForWord(
+          extractColumn(result.hoat_dong_kham_pha || [result.hoat_dong_kham_pha_1, result.hoat_dong_kham_pha_2, result.hoat_dong_kham_pha_3, result.hoat_dong_kham_pha_4].filter(Boolean).join("\n\n"), 1),
+          false, true
+        ),
+        hoat_dong_kham_pha_cot_2: formatForWord(
+          extractColumn(result.hoat_dong_kham_pha || [result.hoat_dong_kham_pha_1, result.hoat_dong_kham_pha_2, result.hoat_dong_kham_pha_3, result.hoat_dong_kham_pha_4].filter(Boolean).join("\n\n"), 2),
+          false, true
+        ),
 
-        hoat_dong_luyen_tap_cot_1: formatForWord(extractColumn(result.hoat_dong_luyen_tap, 1), false, true),
-        hoat_dong_luyen_tap_cot_2: formatForWord(extractColumn(result.hoat_dong_luyen_tap, 2), false, true),
+        // Aggregate multi-part Practice (Luyen tap)
+        hoat_dong_luyen_tap_cot_1: formatForWord(
+          extractColumn(result.hoat_dong_luyen_tap || [result.hoat_dong_luyen_tap_1, result.hoat_dong_luyen_tap_2, result.hoat_dong_luyen_tap_3].filter(Boolean).join("\n\n"), 1),
+          false, true
+        ),
+        hoat_dong_luyen_tap_cot_2: formatForWord(
+          extractColumn(result.hoat_dong_luyen_tap || [result.hoat_dong_luyen_tap_1, result.hoat_dong_luyen_tap_2, result.hoat_dong_luyen_tap_3].filter(Boolean).join("\n\n"), 2),
+          false, true
+        ),
 
         hoat_dong_van_dung_cot_1: formatForWord(extractColumn(result.hoat_dong_van_dung, 1), false, true),
         hoat_dong_van_dung_cot_2: formatForWord(extractColumn(result.hoat_dong_van_dung, 2), false, true),

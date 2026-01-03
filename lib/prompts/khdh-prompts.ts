@@ -109,16 +109,16 @@ CORE PHILOSOPHIES (KIM CHỈ NAM):
 // ============================================================
 
 export const KHDH_TASK = `
-PRODUCT GOAL: Create a SUPER DETAILED, HIGH-CALIBER Lesson Plan (KHBD) for Grade 12. Content must be rich, continuous, and pedagogically sound.
+MỤC TIÊU SẢN PHẨM: Tạo Kế hoạch bài dạy (KHBD) SIÊU CHI TIẾT, ĐẲNG CẤP CHUYÊN GIA cho Khối 12. 
+TRIẾT LÝ: "KHBD LÀ LA BÀN" - Không viết văn xuôi rườm rà. Giáo viên chỉ cần nhìn vào là biết: Cần làm gì? Hỏi gì? Học sinh trả lời gì? Xử lý tình huống thế nào?
 
-"IRONCLAD" RULES (MANDATORY):
-1. 5512 STRUCTURE: Every activity must explicitly follow the 4-step pedagogical script: Giao nhiệm vụ -> Thực hiện nhiệm vụ -> Báo cáo, thảo luận -> Kết luận, nhận định.
-2. COGNITIVE CONFLICT: The WARM-UP must create a "Situational Dilemma" or "Cognitive Conflict" to trigger intrinsic motivation.
-3. VERBATIM SCRIPT (SLOW-COOKING): Write Teacher's exact verbatim dialogue (in quotes). Instead of "GV dẫn dắt", write "GV dẫn dắt: 'Chào các em, hôm nay chúng ta sẽ cùng giải mã một ẩn số...'".
-4. PEDAGOGICAL SITUATIONS: Each main activity must describe 2 scenarios where students struggle (e.g., "Student A is disengaged", "Groups are stuck on Step X") and the Teacher's expert coaching response.
-5. OSMOTIC INTEGRATION: Deeply embed Digital Literacy (NLS) and Ethics/Qualities into the content of the tasks themselves.
-6. 2-COLUMN FORMAT: ALL Educational Activities MUST use [COT_1]...[/COT_1] and [COT_2]...[/COT_2].
-7. LOCAL CONTEXT: Use local local features (e.g., Mũi Né, traditional crafts, local community issues) to make the lesson authentic.
+CÁC QUY TẮC "SẮT ĐÁ" (BẮT BUỘC):
+1. CẤU TRÚC 5512: Mỗi hoạt động phải tuân thủ nghiêm ngặt 4 bước: Giao nhiệm vụ -> Thực hiện nhiệm vụ -> Báo cáo, thảo luận -> Kết luận, nhận định.
+2. TÍNH HÀNH ĐỘNG (ACTIONABLE): Thay vì viết "GV dẫn dắt", hãy viết "GV thực hiện: [Bước cụ thể]". Thay vì viết "GV hỏi", hãy viết "HỆ THỐNG CÂU HỎI CHỦ CHỐT: [Câu 1], [Câu 2]".
+3. KỊCH BẢN ĐỐI THOẠI (GỢI Ý): Cung cấp các câu trả lời mong đợi từ học sinh (Gợi ý HS trả lời: "...") để GV chủ động điều phối.
+4. XỬ LÝ TÌNH HUỐNG SƯ PHẠM: Mỗi hoạt động chính phải mô tả ít nhất 1 tình huống HS gặp khó khăn và cách GV "gỡ rối" (Scaffolding).
+5. TÍCH HỢP NLS & ĐẠO ĐỨC: Lồng ghép sâu vào chính nội dung nhiệm vụ, không viết tách rời hời hợt.
+6. ĐỊNH DẠNG 2 CỘT: Tất cả hoạt động giáo dục BẮT BUỘC sử dụng marker [COT_1]...[/COT_1] và [COT_2]...[/COT_2].
 `;
 
 // ============================================================
@@ -146,80 +146,53 @@ INTEGRATION FRAMEWORKS:
 // ============================================================
 
 export const ACTIVITY_STRUCTURE = `
-ACTIVITY STRUCTURE (2-COLUMN TABLE FORMAT - 2024-2025 STANDARD):
+CẤU TRÚC HOẠT ĐỘNG (ĐỊNH DẠNG BẢNG 2 CỘT - CHUẨN MÔN HĐTN, HN):
 
-*** CRITICAL: FOLLOW THIS FORMAT FOR WORD TABLE AUTO-FILL ***
+*** QUAN TRỌNG: TUÂN THỦ ĐÚNG FORMAT ĐỂ HỆ THỐNG TỰ ĐỘNG ĐIỀN VÀO FILE WORD ***
 
-Each Activity (hoat_dong_khoi_dong, hoat_dong_kham_pha, etc.) MUST be formatted as follows:
-
-=== REQUIRED FORMAT ===
+Mỗi hoạt động (hoat_dong_khoi_dong, hoat_dong_kham_pha,...) PHẢI được định dạng như sau:
 
 [COT_1]
-a) Objectives:
-- [Detailed description, at least 5 lines on knowledge/skill goals].
-- [Practical significance for student development].
+a) Mục tiêu:
+- [Ghi rõ Yêu cầu cần đạt về kiến thức/kỹ năng, tối thiểu 3 ý].
+- [Ý nghĩa thực tiễn đối với học sinh].
 
-b) Content:
-- [Detailed activity scenario].
-- [List guiding questions, group tasks, or individual practice].
-- [Use at least 10 lines to describe student participation].
+b) Nội dung (Kịch bản thực hiện):
+- [Mô tả ngắn gọn nhiệm vụ trọng tâm].
+- [Danh sách học liệu/thiết bị cần dùng].
 
-c) Product:
-- [Specific result: Worksheet content, discussion outcome, mind map, or digital product].
-- [Must describe the 'look and feel' of the product].
+c) Sản phẩm:
+- [Kết quả cụ thể: Nội dung phiếu học tập, kết quả thảo luận, hoặc sản phẩm số].
+- [Mô tả tiêu chí đạt được của sản phẩm].
 [/COT_1]
 
 [COT_2]
-Step 1: TRANSFER TASK
-• GV: [Teacher's exact script/instruction. E.g., Teacher asks critical question: "..."]
-• HS: [How students listen, take notes, prepare].
+Bước 1: CHUYỂN GIAO NHIỆM VỤ
+• GV thực hiện: [Thao tác cụ thể: Chiếu video, phát phiếu, chia nhóm...].
+• Hệ thống câu hỏi chủ chốt: 
+  + Câu 1: [Câu hỏi kích thích tư duy].
+  + Câu 2: [Câu hỏi đào sâu].
 
-Step 2: PERFORM TASK ([X] minutes)
-• GV: [How Teacher observes, supports groups, scaffolds struggling students].
-• HS: [Detailed discussion process: What Student A does, Leader coordinates, Lookup info]. (At least 8 lines)
+Bước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)
+• HS thực hiện: [Mô tả chi tiết HS làm gì: Đọc tài liệu, thảo luận nhóm, tìm kiếm thông tin...].
+• Gợi ý HS trả lời/xử lý: 
+  + Ý 1: ["..." - Nội dung chuẩn kiến thức cần đạt].
+  + Ý 2: ["..."].
+• Hỗ trợ (Scaffolding): [Nếu HS bị "tắc" ở bước nào, GV sẽ gợi ý ra sao?].
 
-Step 3: REPORT & DISCUSS ([X] minutes)
-• GV: [Teacher invites random reps, uses techniques like 'Jigsaw' or 'Gallery Walk'].
-• HS: [What students say, how peer questioning happens].
+Bước 3: BÁO CÁO, THẢO LUẬN ([X] phút)
+• GV điều phối: [Sử dụng kỹ thuật: khăn trải bàn, các mảnh ghép, hoặc phòng tranh...].
+• HS báo cáo: [Cách thức báo cáo và phản biện giữa các nhóm].
 
-Step 4: CONCLUDE & ASSESS
-• GV: [Synthesize core knowledge. MUST praise/encourage and draw Ethical/NLS lessons].
-• HS: [Record into notebook/worksheet].
+Bước 4: KẾT LUẬN, NHẬN ĐỊNH
+• GV chốt kiến thức: [Tóm tắt ngắn gọn, cốt lõi nhất].
+• Giáo dục tích hợp: [Bài học về Đạo đức/Năng lực số rút ra từ hoạt động này].
 [/COT_2]
 
-=== EXAMPLE (WARM-UP - 10 mins) ===
-
-[COT_1]
-a) Objectives:
-- Connect prior knowledge...
-b) Content:
-- Watch video...
-c) Product:
-- Oral answers...
-[/COT_1]
-
-[COT_2]
-Step 1: TRANSFER TASK
-• GV: Shows video...
-• HS: Watches...
-
-Step 2: PERFORM TASK (5 mins)
-• GV: Observes...
-• HS: Discusses...
-
-Step 3: REPORT & DISCUSS (3 mins)
-• GV: Invites...
-• HS: Presents...
-
-Step 4: CONCLUDE & ASSESS
-• GV: Summarizes...
-• HS: Notes...
-[/COT_2]
-
-=== NOTES ===
-- DO NOT add "ACTIVITY 1:..." headers.
-- Markers [COT_1] / [COT_2] are mandatory for column splitting.
-- GV/HS content must be SPECIFIC, not generic.
+=== LƯU Ý ===
+- KHÔNG thêm tiêu đề "HOẠT ĐỘNG 1:...".
+- BẮT BUỘC giữ marker [COT_1] / [COT_2].
+- Nội dung GV/HS phải CỤ THỂ, TRỰC QUAN, không viết chung chung.
 `;
 
 // ============================================================

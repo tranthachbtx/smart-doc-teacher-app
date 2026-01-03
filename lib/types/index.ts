@@ -28,13 +28,6 @@ export interface LessonTask {
 }
 
 export interface LessonResult {
-  tich_hop_nls?: string;
-  tich_hop_dao_duc?: string;
-  // Full plan fields
-  blueprint?: object; // New Antigravity Blueprint
-  blueprint_summary?: string;
-  _thinking?: string; // Chain of Thought Reasoning
-  concept_registry?: string[]; // Global Concept Registry
   ma_chu_de?: string;
   ten_bai?: string;
   muc_tieu_kien_thuc?: string;
@@ -42,8 +35,6 @@ export interface LessonResult {
   muc_tieu_pham_chat?: string;
   gv_chuan_bi?: string;
   hs_chuan_bi?: string;
-  thiet_bi_day_hoc?: string;
-  hoat_dong_duoi_co?: string;
   shdc?: string;
   shl?: string;
   hoat_dong_khoi_dong?: string;
@@ -57,10 +48,19 @@ export interface LessonResult {
   hoat_dong_luyen_tap_2?: string;
   hoat_dong_luyen_tap_3?: string;
   hoat_dong_van_dung?: string;
+  ho_so_day_hoc?: string;
+  tich_hop_nls?: string;
+  tich_hop_dao_duc?: string;
+  ky_thuat_day_hoc?: string;
+  tich_hop_dao_duc_va_bai_hat?: string;
+  huong_dan_ve_nha?: string;
   shdc_shl_combined?: string;
   noi_dung_chuan_bi?: string;
-  ho_so_day_hoc?: string;
-  huong_dan_ve_nha?: string;
+  thiet_bi_day_hoc?: string;
+  shdc_gợi_ý?: string;
+  hdgd_gợi_ý?: string;
+  shl_gợi_ý?: string;
+  hoat_dong_duoi_co?: string;
   // Task details
   nhiem_vu?: Array<{
     ten: string;
@@ -75,10 +75,19 @@ export interface LessonResult {
       ket_luan: string;
     };
   }>;
-  // Suggestions
-  shdc_gợi_ý?: string;
-  hdgd_gợi_ý?: string;
-  shl_gợi_ý?: string;
+  // Saga specific fields
+  is_partial?: boolean;
+  sections?: Record<string, string>;
+  blueprint?: any;
+}
+
+export interface SagaStatus {
+  jobId: string;
+  status: "planning" | "processing" | "completed" | "failed";
+  progress: number;
+  currentStep?: string;
+  sections: string[];
+  completedSteps: string[];
 }
 
 export interface EventResult {
@@ -102,14 +111,11 @@ export interface EventResult {
 }
 
 export interface NCBHResult {
-  // Giai đoạn 1: Thiết kế bài dạy
   ten_bai?: string;
   ly_do_chon?: string;
   muc_tieu?: string;
   chuoi_hoat_dong?: string;
   phuong_an_ho_tro?: string;
-
-  // Giai đoạn 2 & 3: Quan sát & Phân tích (Biên bản)
   chia_se_nguoi_day?: string;
   nhan_xet_nguoi_du?: string;
   nguyen_nhan_giai_phap?: string;

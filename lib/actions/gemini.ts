@@ -94,24 +94,26 @@ export async function createSagaJob(grade: string, topic: string): Promise<Actio
 
   try {
     // 2. The Architect Phase (Generate Blueprint)
-    console.log(`[Saga] Architecting Blueprint for ${grade} - ${topic}...`);
+    console.log(`[Saga] Architecting 50-page "COMPASS" Blueprint for ${grade} - ${topic}...`);
     const blueprintPrompt = `
-    ROLE: Lead Curriculum Architect.
-    TASK: Decompose the lesson plan for 'Grade ${grade} - ${topic}' into MICRO-TASKS.
-    standard: "MOET 5512 (60-80 pages scale)".
+    ROLE: Lead Curriculum Architect & Pedagogical Engineer.
+    TASK: Decompose the lesson plan for 'Grade ${grade} - ${topic}' into a HIGH-DENSITY "COMPASS" (LA BÀN) ARCHITECTURE.
+    Standard: "MOET 5512 (30-50 pages target)".
+    Philosophy: "Less fluff, more action".
     
     OUTPUT: JSON ONLY used for queueing system.
     Structure:
     {
       "sections": [
-        { "id": "1_muctieu", "title": "I. Mục tiêu", "estimated_tokens": 800 },
-        { "id": "2_kienthuc", "title": "II. Kiến thức trọng tâm", "estimated_tokens": 1000 },
-        { "id": "3_hoatdong_1", "title": "III.1 Hoạt động Khởi động", "estimated_tokens": 1500 },
-        { "id": "3_hoatdong_2", "title": "III.2 Hoạt động Khám phá (Lý thuyết)", "estimated_tokens": 2000 },
-        { "id": "3_hoatdong_3", "title": "III.3 Hoạt động Khám phá (Thực hành)", "estimated_tokens": 2000 },
-        { "id": "4_luyentap", "title": "IV. Luyện tập", "estimated_tokens": 1500 },
-        { "id": "5_vandung", "title": "V. Vận dụng", "estimated_tokens": 1000 },
-        { "id": "6_tongket", "title": "VI. Tổng kết & Rubric", "estimated_tokens": 1000 }
+        { "id": "1_setup", "title": "I. Mục tiêu & Chuẩn bị (Deep Analysis)", "estimated_tokens": 1200 },
+        { "id": "2_khoidong", "title": "II. Hoạt động Khởi động - Tạo mâu thuẫn nhận thức", "estimated_tokens": 1000 },
+        { "id": "3_khampha_1", "title": "III.1 Khám phá 1: Hình thành kiến thức cốt lõi", "estimated_tokens": 2000 },
+        { "id": "3_khampha_2", "title": "III.2 Khám phá 2: Phân tích sâu & Tư duy phản biện", "estimated_tokens": 2000 },
+        { "id": "3_khampha_3", "title": "III.3 Khám phá 3: Tích hợp Năng lực số & Đạo đức", "estimated_tokens": 2000 },
+        { "id": "4_luyentap_1", "title": "IV.1 Luyện tập 1: Củng cố kỹ năng cơ bản", "estimated_tokens": 1500 },
+        { "id": "4_luyentap_2", "title": "IV.2 Luyện tập 2: Sáng tạo & Giải quyết vấn đề", "estimated_tokens": 1500 },
+        { "id": "5_vandung", "title": "V. Vận dụng: Dự án thực tiễn & Cam kết hành động", "estimated_tokens": 1500 },
+        { "id": "6_phuluu", "title": "VI. Hồ sơ dạy học: Phiếu học tập & Rubric chi tiết", "estimated_tokens": 1500 }
       ]
     }`;
 
@@ -230,11 +232,11 @@ function save_constitution(pName: string, data: any) {
   store.constitution = data;
 }
 
-// --- 2. RESILIENCE & CIRCUIT BREAKER (v4.6 Industrial) ---
+// --- 2. RESILIENCE & CIRCUIT BREAKER (v4.7 Slow-Cooking Mode) ---
 const blacklist = new Set<string>();
 let lastSuccess = Date.now();
-const GAP_MIN = 30000;
-const GAP_MAX = 65000;
+const GAP_MIN = 60000;  // Tăng lên 1 phút tối thiểu
+const GAP_MAX = 180000; // Tăng lên 3 phút tối đa
 
 // Token Bucket State
 let tokens = 15;

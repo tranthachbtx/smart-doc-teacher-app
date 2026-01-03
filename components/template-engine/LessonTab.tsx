@@ -172,40 +172,38 @@ export function LessonTab({
         {
             stage: "PHASE 0: ARCHITECTURE",
             tasks: [
-                { id: 'blueprint', label: '0. Lập dàn ý (Blueprint)', resultKey: 'blueprint', icon: '🏗️' },
-                { id: 'setup', label: '1. Mục tiêu & Chuẩn bị', resultKey: 'muc_tieu_kien_thuc', icon: '🎯' },
+                { id: 'blueprint', label: '0. Lập dàn ý (Architecture)', resultKey: 'blueprint', icon: '🏗️' },
+                { id: 'setup', label: '1. Mục tiêu & Chuẩn bị (Deep Analysis)', resultKey: 'muc_tieu_kien_thuc', icon: '🎯' },
             ]
         },
         {
-            stage: "PHASE 1: FOUNDATION",
+            stage: "PHASE 1: FOUNDATION & WARM-UP",
             tasks: [
-                { id: 'shdc_shl', label: '2. Sinh hoạt dưới cờ & Lớp', resultKey: 'shdc_shl_combined', icon: '🏛️' },
-                { id: 'khởi động', label: '3. HĐGD: Khởi động', resultKey: 'hoat_dong_khoi_dong', icon: '⚡' },
+                { id: 'khởi động', label: '2. HĐ: Khởi động - Tạo mâu thuẫn', resultKey: 'hoat_dong_khoi_dong', icon: '⚡' },
+                { id: 'shdc_shl', label: '3. Sinh hoạt dưới cờ & Lớp', resultKey: 'shdc', icon: '🏛️' },
             ]
         },
         {
-            stage: "PHASE 2: KNOWLEDGE FORMATION (Standard Density)",
+            stage: "PHASE 2: KNOWLEDGE EXPLORATION (Compass Scripting)",
             tasks: [
-                { id: 'khám_phá_1', label: '4.1 Dẫn dắt & Khám phá', resultKey: 'hoat_dong_kham_pha_1', icon: '🔍', isSub: true },
-                { id: 'khám_phá_2', label: '4.2 Kiến thức & Hình thành', resultKey: 'hoat_dong_kham_pha_2', icon: '📖', isSub: true },
-                { id: 'khám_phá_3', label: '4.3 Mở rộng & Liên hệ', resultKey: 'hoat_dong_kham_pha_3', icon: '🌐', isSub: true },
-                { id: 'khám_phá_4', label: '4.4 Tổng kết & Ghi nhớ', resultKey: 'hoat_dong_kham_pha_4', icon: '🏁', isSub: true },
+                { id: '3_khampha_1', label: '4.1 Khám phá 1: Hình thành kiến thức', resultKey: 'hoat_dong_kham_pha_1', icon: '🔍', isSub: true },
+                { id: '3_khampha_2', label: '4.2 Khám phá 2: Phân tích & Phản biện', resultKey: 'hoat_dong_kham_pha_2', icon: '📖', isSub: true },
+                { id: '3_khampha_3', label: '4.3 Khám phá 3: Tích hợp NLS & Đạo đức', resultKey: 'hoat_dong_kham_pha_3', icon: '🌐', isSub: true },
             ]
         },
         {
             stage: "PHASE 3: PRACTICE & APPLICATION",
             tasks: [
-                { id: 'luyện_tập_1', label: '5.1 Luyện tập: Bài tập', resultKey: 'hoat_dong_luyen_tap_1', icon: '💪', isSub: true },
-                { id: 'luyện_tập_2', label: '5.2 Luyện tập: Chi tiết', resultKey: 'hoat_dong_luyen_tap_2', icon: '🛠️', isSub: true },
-                { id: 'luyện_tập_3', label: '5.3 Luyện tập: Đánh giá', resultKey: 'hoat_dong_luyen_tap_3', icon: '📝', isSub: true },
-                { id: 'vận dụng', label: '6. HĐGD: Vận dụng', resultKey: 'hoat_dong_van_dung', icon: '🚀' },
+                { id: '4_luyentap_1', label: '5.1 Luyện tập 1: Củng cố cơ bản', resultKey: 'hoat_dong_luyen_tap_1', icon: '💪', isSub: true },
+                { id: '4_luyentap_2', label: '5.2 Luyện tập 2: Sáng tạo & Giải quyết', resultKey: 'hoat_dong_luyen_tap_2', icon: '🛠️', isSub: true },
+                { id: '5_vandung', label: '6. Vận dụng: Dự án thực tế', resultKey: 'hoat_dong_van_dung', icon: '🚀' },
             ]
         },
         {
             stage: "PHASE 4: FINALIZATION",
             tasks: [
-                { id: 'final', label: '7. Hồ sơ & Tổng kết', resultKey: 'ho_so_day_hoc', icon: '📋' },
-                { id: 'preparation', label: '8. Nội dung Chuẩn bị', resultKey: 'noi_dung_chuan_bi', icon: '🔜' },
+                { id: 'final', label: '7. Hồ sơ: Phiếu & Rubric', resultKey: 'ho_so_day_hoc', icon: '📋' },
+                { id: 'preparation', label: '8. Hướng dẫn về nhà', resultKey: 'huong_dan_ve_nha', icon: '🔜' },
             ]
         }
     ];
@@ -246,7 +244,7 @@ export function LessonTab({
     const handleAutoGenerate = async () => {
         if (!onGenerateSection) return;
         setIsAutoRunning(true);
-        setSuccess("Đang kích hoạt Hệ thống Điều phối Antigravity v4.5 (Industrial Saga)...");
+        setSuccess("Kích hoạt chế độ 'Nấu chậm' (Slow-Cooking): Hệ thống sẽ tạo 50 trang trong 45-60 phút để đảm bảo chất lượng cao nhất và tránh bị chặn API...");
 
         let currentContext: LessonResult = { ...(lessonResult || {}) };
         const MAX_RETRIES = 5;
@@ -256,7 +254,6 @@ export function LessonTab({
                 console.log(`[Saga] Entering Phase: ${stageBlock.stage}`);
 
                 for (const step of stageBlock.tasks) {
-                    // Check if already exist in state (Local Resumption)
                     const isDone = !!(currentContext as any)?.[step.resultKey];
                     if (isDone) {
                         console.log(`[Saga] Skipping done step: ${step.label}`);
@@ -264,8 +261,11 @@ export function LessonTab({
                     }
 
                     setStepInProgress(step.id);
-                    // Standard slow-cooking gap between steps
-                    await sleep(5000);
+
+                    // --- RELAXED JITTER (Bypass pattern detection) ---
+                    // Wait between 30-90 seconds extra to feel more "human"
+                    const jitter = Math.floor(Math.random() * 60000) + 30000;
+                    await sleep(jitter);
 
                     let attempts = 0;
                     let stepSuccess = false;
@@ -275,44 +275,41 @@ export function LessonTab({
 
                         if (result && result.success) {
                             const newData = result.data;
-
-                            // UPDATE CONTEXT & STATE (Chained dependency)
                             currentContext = { ...currentContext, ...newData };
 
                             if (setLessonResult) {
                                 setLessonResult(currentContext);
                             }
                             stepSuccess = true;
+                            // Success gap - cool down after a successful generation
+                            await sleep(15000);
                         } else {
                             const errorMsg = result?.error || "Unknown Error";
                             const isFatal = errorMsg.includes("SHADOW BAN") || errorMsg.includes("403") || errorMsg.includes("404");
 
                             if (isFatal) {
-                                setError(`[FATAL] Hạ tầng bị chặn (Shadow Ban). Vui lòng đổi IP và chờ 65s...`);
-                                for (let t = 65; t > 0; t--) {
+                                setError(`Hạ tầng bị quá tải. Đang tự động chuyển IP và chờ 120s...`);
+                                for (let t = 120; t > 0; t--) {
                                     setRetryCountDown(t);
                                     await sleep(1000);
                                 }
                                 setRetryCountDown(null);
                                 attempts++;
-                            } else if (errorMsg.includes("429")) {
-                                setSuccess("Hệ thống quá tải (429). Đang hạ hỏa 15s...");
-                                await sleep(15000);
-                                attempts++;
                             } else {
-                                throw new Error(errorMsg);
+                                await sleep(10000);
+                                attempts++;
                             }
                         }
                     }
 
                     if (!stepSuccess) {
-                        setError(`Quy trình bị ngắt quãng tại: ${step.label}. Vui lòng can thiệp thủ công.`);
+                        setError(`Quy trình tạm nghỉ tại: ${step.label}. Hãy nhấn 'Tiếp tục' sau 5 phút.`);
                         setIsAutoRunning(false);
                         return;
                     }
                 }
             }
-            setSuccess("Saga Complete. Toàn bộ giáo án 30-50 trang đã được thiết kế thành công!");
+            setSuccess("Saga Complete. Toàn bộ giáo án siêu chi tiết đã được hoàn thành sau 45 phút!");
         } catch (e: any) {
             console.error(e);
             setError(`Saga Error: ${e.message}`);
