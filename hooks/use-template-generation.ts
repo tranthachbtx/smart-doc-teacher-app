@@ -149,12 +149,13 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     budget?: string,
     checklist?: string,
     evaluation?: string,
-    model?: string
+    model?: string,
+    month?: number
   ): Promise<ActionResult<EventResult>> => {
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await generateEventScript(grade, theme, customInstructions, budget, checklist, evaluation, model);
+      const result = await generateEventScript(grade, theme, customInstructions, budget, checklist, evaluation, model, month);
       if (result.success && result.data) {
         return { success: true, data: result.data as EventResult };
       } else {

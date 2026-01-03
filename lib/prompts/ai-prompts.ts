@@ -331,18 +331,19 @@ export function getEventPrompt(
   if (month) {
     const chuDe = getChuDeTheoThang(gradeNumber as 10 | 11 | 12, month);
     if (chuDe) {
-      chuDeContext = taoContextNgoaiKhoa(chuDe);
+      chuDeContext = taoContextNgoaiKhoa(gradeNumber, chuDe.ten);
     }
 
     // Lấy danh sách hoạt động chi tiết
-    const chuDeInfo = getChuDeTheoThangFromActivities(
+    const chuDeInfoList = getChuDeTheoThangFromActivities(
       gradeNumber as 10 | 11 | 12,
       month
     );
-    if (chuDeInfo) {
+    if (chuDeInfoList && chuDeInfoList.length > 0) {
+      const chuDeInfo = chuDeInfoList[0];
       const hoatDongList = getHoatDongTheoChuDe(
         gradeNumber as 10 | 11 | 12,
-        chuDeInfo.so_chu_de
+        chuDeInfo.stt
       );
       if (hoatDongList.length > 0) {
         hoatDongContext = `

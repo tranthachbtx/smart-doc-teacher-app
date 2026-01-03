@@ -755,6 +755,13 @@ const TemplateEngine = () => {
       return;
     }
 
+    // Map chu_de_so to academic month (1->9, 2->10, ..., 5->1, ...)
+    const chuDeSo = Number.parseInt(selectedEventMonth);
+    const monthMap: Record<number, number> = {
+      1: 9, 2: 10, 3: 11, 4: 12, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 5, 11: 5
+    };
+    const monthNum = monthMap[chuDeSo] || 9;
+
     const result = await generateEvent(
       selectedGradeEvent,
       autoFilledTheme,
@@ -762,7 +769,8 @@ const TemplateEngine = () => {
       eventBudget,
       eventChecklist,
       eventEvaluation,
-      selectedModel
+      selectedModel,
+      monthNum
     );
 
     if (result.success && result.data) {

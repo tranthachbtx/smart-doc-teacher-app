@@ -169,37 +169,34 @@ export function getMeetingMinutesPrompt(
   chuDeThangNayContext = `
 THÔNG TIN CHỦ ĐỀ THÁNG ${month} TỪ SGK (để đánh giá):
 ${grades
-  .map((g) => {
-    const chuDe = getChuDeTheoThang(g, monthNumber);
-    if (chuDe) {
-      return `- Khối ${g}: ${chuDe.ten} (${chuDe.ma}) - Mục tiêu: ${
-        chuDe.muc_tieu ? chuDe.muc_tieu.slice(0, 2).join("; ") : ""
-      }`;
-    }
-    return `- Khối ${g}: Theo kế hoạch`;
-  })
-  .join("\n")}
+      .map((g) => {
+        const chuDe = getChuDeTheoThang(g, monthNumber);
+        if (chuDe) {
+          return `- Khối ${g}: ${chuDe.ten} (${chuDe.ma}) - Mục tiêu: ${chuDe.muc_tieu ? chuDe.muc_tieu.slice(0, 2).join("; ") : ""
+            }`;
+        }
+        return `- Khối ${g}: Theo kế hoạch`;
+      })
+      .join("\n")}
 `;
 
   chuDeThangSauContext = `
 THÔNG TIN CHỦ ĐỀ THÁNG ${nextMonth} TỪ SGK (để lập kế hoạch):
 ${grades
-  .map((g) => {
-    const chuDe = getChuDeTheoThang(g, nextMonthNumber);
-    if (chuDe) {
-      const hoatDongInfo = getChuDeTheoThangFromActivities(g, nextMonthNumber);
-      const soHoatDong = hoatDongInfo
-        ? getHoatDongTheoChuDe(g, hoatDongInfo.so_chu_de).length
-        : 0;
-      return `- Khối ${g}: ${
-        chuDe.ten
-      } (${soHoatDong} hoạt động) - Trọng tâm: ${
-        chuDe.muc_tieu ? chuDe.muc_tieu[0] : ""
-      }`;
-    }
-    return `- Khối ${g}: Theo kế hoạch`;
-  })
-  .join("\n")}
+      .map((g) => {
+        const chuDe = getChuDeTheoThang(g, nextMonthNumber);
+        if (chuDe) {
+          const hoatDongInfoList = getChuDeTheoThangFromActivities(g, nextMonthNumber);
+          const soHoatDong = (hoatDongInfoList && hoatDongInfoList.length > 0)
+            ? getHoatDongTheoChuDe(g, hoatDongInfoList[0].stt).length
+            : 0;
+          return `- Khối ${g}: ${chuDe.ten
+            } (${soHoatDong} hoạt động) - Trọng tâm: ${chuDe.muc_tieu ? chuDe.muc_tieu[0] : ""
+            }`;
+        }
+        return `- Khối ${g}: Theo kế hoạch`;
+      })
+      .join("\n")}
 `;
 
   return `${MEETING_ROLE}
@@ -218,14 +215,12 @@ ${chuDeThangSauContext}
 
 HƯỚNG DẪN SƯ PHẠM (Tham khảo khi viết đánh giá và kế hoạch):
 - Triết lý: ${HUONG_DAN_SU_PHAM.triet_ly.muc_tieu_cot_loi}
-- Cấu trúc thời lượng: ${
-    HUONG_DAN_SU_PHAM.cau_truc_thoi_luong.tong_tiet_nam
-  } tiết/năm
-- Phương pháp khuyến khích: ${
-    HUONG_DAN_SU_PHAM.phuong_phap?.nguyen_tac
+- Cấu trúc thời lượng: ${HUONG_DAN_SU_PHAM.cau_truc_thoi_luong.tong_tiet_nam
+    } tiết/năm
+- Phương pháp khuyến khích: ${HUONG_DAN_SU_PHAM.phuong_phap?.nguyen_tac
       ? HUONG_DAN_SU_PHAM.phuong_phap.nguyen_tac.slice(0, 3).join(", ")
       : ""
-  }
+    }
 
 ============================================================
 THÔNG TIN CUỘC HỌP
@@ -267,11 +262,9 @@ YÊU CẦU XUẤT RA - MỖI PHẦN PHẢI:
   "noi_dung_chinh": "- Đoạn 1: [Mô tả tổng quan hoạt động tháng qua, gắn với chủ đề SGK].\\n- Đoạn 2: [Chi tiết các hoạt động đã thực hiện].\\n- Đoạn 3: [Đánh giá chung và nhận định].",
   "uu_diem": "- [Ưu điểm 1 cụ thể, có dẫn chứng].\\n- [Ưu điểm 2 cụ thể].\\n- [Ưu điểm 3 cụ thể].",
   "han_che": "- [Hạn chế 1]: [Mô tả]. Giải pháp: [Cách khắc phục cụ thể].\\n- [Hạn chế 2]: [Mô tả]. Giải pháp: [Cách khắc phục cụ thể].",
-  "y_kien_dong_gop": "- Thầy/Cô ${
-    selectedMembers[0] || "A"
-  }: [Ý kiến về tháng qua và đề xuất tháng tới].\\n- Thầy/Cô ${
-    selectedMembers[1] || "B"
-  }: [Ý kiến và đề xuất].\\n- Đa số thành viên nhất trí với đánh giá và kế hoạch. Tổ trưởng ghi nhận các ý kiến và thống nhất triển khai.",
+  "y_kien_dong_gop": "- Thầy/Cô ${selectedMembers[0] || "A"
+    }: [Ý kiến về tháng qua và đề xuất tháng tới].\\n- Thầy/Cô ${selectedMembers[1] || "B"
+    }: [Ý kiến và đề xuất].\\n- Đa số thành viên nhất trí với đánh giá và kế hoạch. Tổ trưởng ghi nhận các ý kiến và thống nhất triển khai.",
   "ke_hoach_thang_toi": "- Tiếp tục [hoạt động cụ thể].\\n- Triển khai chủ đề tháng ${nextMonth}: [Nội dung từ SGK].\\n- Hoàn thành [nhiệm vụ] trước ngày [deadline].\\n- Phân công: [Tên] phụ trách [nhiệm vụ].\\n- Đẩy mạnh [hoạt động cải tiến]."
 }`;
 }
