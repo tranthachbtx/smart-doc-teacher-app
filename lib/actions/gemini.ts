@@ -2,7 +2,7 @@
 
 // --- VERCEL EDGE RUNTIME CONFIGURATION ---
 // Critical to bypass 10s Serverless Timeout on Hobby Plan
-export const runtime = 'edge';
+// MEMO: To enable Edge Runtime, add "export const runtime = 'edge';" to app/page.tsx instead.
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 // import fs from "fs"; // REMOVED FOR EDGE RUNTIME
@@ -402,38 +402,37 @@ export async function generateLessonSection(grade: string, topic: string, sectio
 
     // CONTEXT INJECTION: GIST-BASED (vv5.0 Lite)
     let context_injection = "";
-    const registryPath = path.join(getSagaStore(pName), "workflow_state.json");
-    if (fs.existsSync(registryPath)) {
-      const reg = JSON.parse(fs.readFileSync(registryPath, "utf-8"));
 
-      // Inject Blueprint
-      if (reg.summaries && reg.summaries['section_blueprint']) {
-        context_injection += `GLOBAL_BLUEPRINT: ${reg.summaries['section_blueprint']}\n`;
-      }
+    // In-Memory Lookup (No fs/path)
+    const store = getSagaStore(pName);
 
-      // Inject Gists (The Memory Stream)
-      if (reg.gists) {
-        context_injection += "PREVIOUS_LEARNING_GISTS:\n";
-        // Only take the last 3 gists to save input tokens (Rolling Window)
-        const recentGists = Object.entries(reg.gists).slice(-3);
-        recentGists.forEach(([sId, g]) => {
-          context_injection += `[${sId.replace('section_', '')}]: ${g}\n`;
-        });
-      }
-
-      // Final Stage: Map-Reduce
-      if (section === 'final' && reg.gists) {
-        context_injection += "FULL_LEARNING_JOURNEY (All Gists):\n";
-        Object.entries(reg.gists).forEach(([sId, g]) => {
-          context_injection += `- ${sId.replace('section_', '')}: ${g}\n`;
-        });
-      }
-
-      // Concept Registry (The Brain)
-      if (reg.concepts && reg.concepts.length > 0) {
-        context_injection += `VERIFIED_CONCEPTS: ${reg.concepts.slice(-15).join(", ")}\n`;
-      }
+    // Inject Blueprint
+    if (store.summaries && store.summaries['section_blueprint']) {
+      context_injection += `GLOBAL_BLUEPRINT: ${store.summaries['section_blueprint']}\n`;
     }
+
+    // Inject Gists
+    if (store.gists) {
+      context_injection += "PREVIOUS_LEARNING_GISTS:\n";
+      const recentGists = Object.entries(store.gists as Record<string, string>).slice(-3);
+      recentGists.forEach(([sId, g]) => {
+        context_injection += `[${sId.replace('section_', '')}]: ${g}\n`;
+      });
+    }
+
+    // Final Stage: Map-Reduce
+    if (section === 'final' && store.gists) {
+      context_injection += "FULL_LEARNING_JOURNEY (All Gists):\n";
+      Object.entries(store.gists as Record<string, string>).forEach(([sId, g]) => {
+        context_injection += `- ${sId.replace('section_', '')}: ${g}\n`;
+      });
+    }
+
+    // Concept Registry (The Brain)
+    if (store.concepts && store.concepts.length > 0) {
+      context_injection += `VERIFIED_CONCEPTS: ${store.concepts.slice(-15).join(", ")}\n`;
+    }
+
 
     let specializedPrompt = "";
     switch (section) {
