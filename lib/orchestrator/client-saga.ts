@@ -83,7 +83,7 @@ class TokenBucket {
     private tokens: number;
     private lastCheck: number;
     private readonly capacity: number = 15;
-    private readonly refillRate: number = 4; // tokens per minute (smoothed)
+    private readonly refillRate: number = 15; // 15 tokens per minute (Standard API limit)
 
     constructor() {
         this.tokens = 15;

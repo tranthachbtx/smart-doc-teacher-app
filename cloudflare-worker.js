@@ -20,7 +20,7 @@ export default {
                 headers: {
                     "Access-Control-Allow-Origin": "*",
                     "Access-Control-Allow-Methods": "POST, OPTIONS",
-                    "Access-Control-Allow-Headers": "Content-Type, x-goog-api-key",
+                    "Access-Control-Allow-Headers": "Content-Type, x-goog-api-key, x-antigravity-source, x-antigravity-strategy",
                 }
             });
         }
@@ -28,49 +28,67 @@ export default {
         if (request.method !== "POST") return new Response("Method Not Allowed", { status: 405 });
 
         const url = new URL(request.url);
-        const modelPath = url.pathname; // e.g. /v1beta/models/gemini-1.5-flash:generateContent
+        const modelPath = url.pathname;
 
-        // Lấy key từ URL hoặc xoay vòng ngẫu nhiên nếu không có
-        const urlKey = url.searchParams.get("key");
-        const selectedKey = urlKey || API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
-
-        const targetUrl = `https://generativelanguage.googleapis.com${modelPath}?key=${selectedKey}`;
-
+        // 1. SANITIZE HEADERS (Stealth Mode)
         const newHeaders = new Headers();
         newHeaders.set("Content-Type", "application/json");
-
-        // Xoay vòng User-Agent
         newHeaders.set("User-Agent", USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)]);
 
-        // Xóa các vết tích từ Vercel/Client
-        const headersToOmit = ["x-forwarded-for", "x-real-ip", "cf-connecting-ip", "forwarded"];
+        const headersToOmit = [
+            "x-forwarded-for", "x-real-ip", "cf-connecting-ip",
+            "forwarded", "via", "x-vercel-id", "x-vercel-proxy-signature"
+        ];
         request.headers.forEach((value, key) => {
             if (!headersToOmit.includes(key.toLowerCase())) {
                 newHeaders.set(key, value);
             }
         });
 
-        try {
-            const body = await request.text();
-            const response = await fetch(targetUrl, {
-                method: "POST",
-                headers: newHeaders,
-                body: body
-            });
+        // 2. INTERNAL RETRY LOOP (Key Rotation)
+        let attempts = 0;
+        const maxAttempts = 3;
+        let lastError = null;
 
-            const responseHeaders = new Headers(response.headers);
-            responseHeaders.set("Access-Control-Allow-Origin", "*");
+        while (attempts < maxAttempts) {
+            const selectedKey = API_KEYS[Math.floor(Math.random() * API_KEYS.length)];
+            const targetUrl = `https://generativelanguage.googleapis.com${modelPath}?key=${selectedKey}`;
 
-            return new Response(response.body, {
-                status: response.status,
-                statusText: response.statusText,
-                headers: responseHeaders
-            });
-        } catch (e) {
-            return new Response(JSON.stringify({ error: "Saga Proxy Breach", detail: e.message }), {
-                status: 502,
-                headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-            });
+            try {
+                const body = await request.clone().text(); // Clone for multiple attempts
+                const response = await fetch(targetUrl, {
+                    method: "POST",
+                    headers: newHeaders,
+                    body: body
+                });
+
+                // If success or permanent error, return immediately
+                if (response.ok || (response.status !== 429 && response.status < 500)) {
+                    const responseHeaders = new Headers(response.headers);
+                    responseHeaders.set("Access-Control-Allow-Origin", "*");
+                    return new Response(response.body, {
+                        status: response.status,
+                        statusText: response.statusText,
+                        headers: responseHeaders
+                    });
+                }
+
+                // If 429 or 500, retry with another key
+                lastError = `Status ${response.status}`;
+            } catch (e) {
+                lastError = e.message;
+            }
+
+            attempts++;
+            if (attempts < maxAttempts) {
+                // Short wait between internal retries (e.g. 500ms)
+                await new Promise(r => setTimeout(r, 500));
+            }
         }
+
+        return new Response(JSON.stringify({ error: "Saga Proxy Exhausted", detail: lastError }), {
+            status: 502,
+            headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
+        });
     }
 };
