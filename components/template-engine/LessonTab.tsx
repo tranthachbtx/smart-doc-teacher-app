@@ -248,7 +248,7 @@ export function LessonTab({
         setIsAutoRunning(true);
         setSuccess("Đang kích hoạt Hệ thống Điều phối Antigravity v4.5 (Industrial Saga)...");
 
-        let currentContext = { ...lessonResult };
+        let currentContext: LessonResult = { ...(lessonResult || {}) };
         const MAX_RETRIES = 5;
 
         try {

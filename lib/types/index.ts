@@ -28,8 +28,8 @@ export interface LessonTask {
 }
 
 export interface LessonResult {
-  tich_hop_nls: string;
-  tich_hop_dao_duc: string;
+  tich_hop_nls?: string;
+  tich_hop_dao_duc?: string;
   // Full plan fields
   blueprint?: object; // New Antigravity Blueprint
   blueprint_summary?: string;
@@ -82,8 +82,8 @@ export interface LessonResult {
 }
 
 export interface EventResult {
-  ten_ke_hoach: string; // Alias for ten_chu_de in display logic
-  ten_chu_de: string;
+  ten_ke_hoach?: string; // Alias for ten_chu_de in display logic
+  ten_chu_de?: string;
   thoi_gian?: string;
   dia_diem?: string;
   doi_tuong?: string;
@@ -91,11 +91,11 @@ export interface EventResult {
   muc_tieu?: string | any;
   noi_dung?: string | string[];
   tien_trinh?: Array<{ thoi_gian: string; hoat_dong: string }>;
-  nang_luc: string;
-  pham_chat: string;
-  muc_dich_yeu_cau: string;
-  kich_ban_chi_tiet: string;
-  thong_diep_ket_thuc: string;
+  nang_luc?: string;
+  pham_chat?: string;
+  muc_dich_yeu_cau?: string;
+  kich_ban_chi_tiet?: string;
+  thong_diep_ket_thuc?: string;
   du_toan_kinh_phi?: string[];
   checklist_chuan_bi?: string[];
   danh_gia_sau_hoat_dong?: string;
@@ -103,17 +103,17 @@ export interface EventResult {
 
 export interface NCBHResult {
   // Giai đoạn 1: Thiết kế bài dạy
-  ten_bai: string;
-  ly_do_chon: string;
-  muc_tieu: string;
-  chuoi_hoat_dong: string;
-  phuong_an_ho_tro: string;
+  ten_bai?: string;
+  ly_do_chon?: string;
+  muc_tieu?: string;
+  chuoi_hoat_dong?: string;
+  phuong_an_ho_tro?: string;
 
   // Giai đoạn 2 & 3: Quan sát & Phân tích (Biên bản)
-  chia_se_nguoi_day: string;
-  nhan_xet_nguoi_du: string;
-  nguyen_nhan_giai_phap: string;
-  bai_hoc_kinh_nghiem: string;
+  chia_se_nguoi_day?: string;
+  nhan_xet_nguoi_du?: string;
+  nguyen_nhan_giai_phap?: string;
+  bai_hoc_kinh_nghiem?: string;
 }
 
 export interface AssessmentResult {

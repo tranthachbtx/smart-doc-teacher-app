@@ -739,10 +739,10 @@ const TemplateEngine = () => {
     );
 
     if (result.success && result.data) {
-      setLessonResult((prev: any) => ({
+      setLessonResult((prev: LessonResult | null) => ({
         ...(prev || {}),
         ...result.data
-      }));
+      }) as LessonResult);
       return { success: true, data: result.data };
     }
     return { success: false, error: result.error };
