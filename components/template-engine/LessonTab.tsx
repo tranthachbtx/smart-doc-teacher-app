@@ -21,10 +21,8 @@ import {
     Copy,
     Info,
     BookOpen,
-    Clock,
     Plus,
     Minus,
-    MessageSquare,
     CheckCircle,
     AlertCircle,
     X,
@@ -33,16 +31,17 @@ import {
     Zap,
     Upload,
     Trash2,
-    ShieldCheck,
-    Lightbulb,
 } from "lucide-react";
 import type { LessonResult, LessonTask, ActionResult } from "@/lib/types";
 import type { PPCTChuDe } from "@/lib/data/ppct-database";
 import { getChuDeListByKhoi } from "@/lib/data/ppct-database";
-import { useSlowOrchestrator } from "@/hooks/use-slow-orchestrator";
+import { useAIContentParser } from "@/hooks/use-ai-content-parser";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { ExpertBrainInjection } from "./ExpertBrainInjection";
+import { SmartPromptBuilder } from "./SmartPromptBuilder";
+import { ConfigPanel } from "./lesson/ConfigPanel";
+import { SectionEditorGrid } from "./lesson/SectionEditorGrid";
 
 interface LessonTabProps {
     lessonGrade: string;
@@ -92,8 +91,6 @@ interface LessonTabProps {
     lessonTopic: string;
     selectedModel: string;
     setSelectedModel: (value: string) => void;
-    lessonFile: { mimeType: string; data: string; name: string } | null;
-    setLessonFile: (value: { mimeType: string; data: string; name: string } | null) => void;
     onRefineSection: (content: string, instruction: string, model?: string) => Promise<ActionResult>;
     onGenerateSection?: (section: any, context: any, stepInstruction?: string) => Promise<ActionResult>;
 }
@@ -146,28 +143,108 @@ export function LessonTab({
     lessonTopic,
     selectedModel,
     setSelectedModel,
-    lessonFile,
-    setLessonFile,
     onRefineSection,
     onGenerateSection,
 }: LessonTabProps) {
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [stepInProgress, setStepInProgress] = React.useState<string | null>(null);
-    const [expandedStep, setExpandedStep] = React.useState<string | null>(null);
-    const [stepInstructions, setStepInstructions] = React.useState<Record<string, string>>({});
     const [expertGuidance, setExpertGuidance] = React.useState<string>("");
     const [isMerging, setIsMerging] = React.useState(false);
+    const { parseContent, isParsing } = useAIContentParser();
 
     const handleApplyExpertBrain = async () => {
-        if (!lessonResult || !expertGuidance) return;
+        if (!expertGuidance) {
+            setError("Vui lòng dán nội dung từ Gemini Pro vào textbox");
+            return;
+        }
+
         setIsMerging(true);
+        setSuccess("🧠 Đang xử lý nội dung từ Gemini Pro...");
+
         try {
-            const { KHBHMerger } = await import("@/lib/integration/khbh-merger");
-            const merged = KHBHMerger.merge(lessonResult, expertGuidance);
-            if (setLessonResult) setLessonResult(merged);
-            setSuccess("Đã phẫu thuật và trộn trí tuệ Gemini Pro vào giáo án!");
+            let parsedData: any = null;
+
+            // Step 1: Try to parse as JSON directly first
+            try {
+                // Remove markdown code blocks if present
+                const cleanJson = expertGuidance.replace(/```json\n?|```/g, "").trim();
+                parsedData = JSON.parse(cleanJson);
+                console.log("Direct JSON Parse Success:", parsedData);
+            } catch (jsonErr) {
+                console.log("Direct JSON Parse Failed, falling back to AI Parser:", jsonErr);
+                // Step 2: Fallback to AI Parser
+                const parseResult = await parseContent(expertGuidance, "lesson_plan");
+                if (parseResult.success && parseResult.data) {
+                    parsedData = parseResult.data;
+                } else {
+                    throw new Error(parseResult.error || "Không thể phân tích nội dung. Vui lòng kiểm tra định dạng JSON.");
+                }
+            }
+
+            // Step 3: Map to LessonResult
+            const newLessonResult: LessonResult = {
+                ten_bai: parsedData.ten_bai || parsedData.title || lessonAutoFilledTheme || "Bài học mới",
+
+                // Objectives
+                muc_tieu_kien_thuc: parsedData.context?.objetives || (Array.isArray(parsedData.objectives) ? parsedData.objectives.join('\n') : parsedData.objectives) || "",
+                muc_tieu_nang_luc: parsedData.context?.competencies || "",
+                muc_tieu_pham_chat: parsedData.context?.qualities || "",
+
+                // Preparation
+                gv_chuan_bi: Array.isArray(parsedData.preparation)
+                    ? parsedData.preparation.filter((p: string) => p.toLowerCase().includes("gv") || p.toLowerCase().includes("giáo viên")).join('\n')
+                    : (parsedData.preparation?.gv || parsedData.gv_chuan_bi || ""),
+                hs_chuan_bi: Array.isArray(parsedData.preparation)
+                    ? parsedData.preparation.filter((p: string) => p.toLowerCase().includes("hs") || p.toLowerCase().includes("học sinh")).join('\n')
+                    : (parsedData.preparation?.hs || parsedData.hs_chuan_bi || ""),
+
+                // Activities
+                hoat_dong_khoi_dong: parsedData.activities?.find((a: any) => a.name.includes("Khởi động"))?.content || parsedData.activities?.[0]?.content || "",
+                hoat_dong_kham_pha_1: parsedData.activities?.find((a: any) => a.name.includes("Khám phá"))?.content || parsedData.activities?.[1]?.content || "",
+                hoat_dong_luyen_tap_1: parsedData.activities?.find((a: any) => a.name.includes("Luyện tập"))?.content || parsedData.activities?.[2]?.content || "",
+                hoat_dong_van_dung: parsedData.activities?.find((a: any) => a.name.includes("Vận dụng"))?.content || parsedData.activities?.[3]?.content || "",
+
+                shdc: parsedData.shdc?.kich_ban || "",
+                shl: parsedData.shl?.noi_dung || "",
+
+                // Assessment & Homework
+                huong_dan_ve_nha: parsedData.homework || "",
+                ho_so_day_hoc: parsedData.assessment?.worksheets || "",
+                ky_thuat_day_hoc: parsedData.assessment?.rubric || "",
+
+                expertGuidance: parsedData.notes || "Nội dung đã được cập nhật thành công!",
+
+                // Integrated contents
+                tich_hop_nls: parsedData.integrations?.nls || parsedData.digital_competency || parsedData.nls_integration || parsedData.tich_hop_nls || "",
+                tich_hop_dao_duc: parsedData.integrations?.ethics || parsedData.moral_education || parsedData.ethics_integration || parsedData.tich_hop_dao_duc || "",
+
+                // Reset/Optional others
+                ma_chu_de: "",
+                hoat_dong_kham_pha_2: "",
+                hoat_dong_kham_pha_3: "",
+                hoat_dong_kham_pha_4: "",
+                hoat_dong_luyen_tap_2: "",
+                hoat_dong_luyen_tap_3: "",
+                tich_hop_dao_duc_va_bai_hat: "",
+                shdc_shl_combined: "",
+                noi_dung_chuan_bi: "",
+                thiet_bi_day_hoc: "",
+                shdc_gợi_ý: "",
+                hdgd_gợi_ý: "",
+                shl_gợi_ý: "",
+                hoat_dong_duoi_co: "",
+                hoat_dong_kham_pha: "",
+                hoat_dong_luyen_tap: "",
+            };
+
+            if (setLessonResult) {
+                setLessonResult(newLessonResult);
+                setSuccess("✅ Đã áp dụng kết quả từ Gemini Pro thành công!");
+                // Clear guidance after success
+                setExpertGuidance("");
+            }
+
         } catch (e) {
-            setError("Lỗi khi trộn nội dung: " + (e instanceof Error ? e.message : String(e)));
+            console.error("Apply Expert Brain Error:", e);
+            setError("Lỗi: " + (e instanceof Error ? e.message : String(e)));
         } finally {
             setIsMerging(false);
         }
@@ -194,126 +271,8 @@ export function LessonTab({
             localStorage.setItem(`lesson_state_${lessonGrade}_${selectedChuDeSo}`, JSON.stringify(lessonResult));
         }
     }, [lessonResult, lessonGrade, selectedChuDeSo]);
-    // --- ANTIGRAVITY v4.5: INDUSTRIAL HIERARCHICAL WORKFLOW ---
-    // --- ANTIGRAVITY v6.0: DECOMMISSIONED OLD LOGIC ---
-    // (Old handleAutoGenerate and manual states were triggering timeouts)
-    // --- ANTIGRAVITY v6.2: DIAGNOSTIC & SYNC ---
-    const {
-        currentJob,
-        isGenerating: isSagaGenerating,
-        startJob: startSagaJob,
-        resumeJob: resumeSagaJob
-    } = useSlowOrchestrator();
 
-    React.useEffect(() => {
-        if (currentJob) {
-            console.log(`[Diagnostic] Saga State: ${currentJob.status}. Tasks Completed: ${currentJob.tasks.filter((t: any) => t.status === 'completed').length}`);
-            // Check if any task failed with ENV_ERROR
-            const envError = currentJob.tasks.find((t: any) => t.error?.includes("ENV_ERROR"));
-            if (envError) {
-                console.error("[Crit] Environment Variable Sync Error detected in Saga:", envError.error);
-            }
-        }
-    }, [currentJob]);
 
-    // Effect to sync Saga completed tasks to lessonResult
-    React.useEffect(() => {
-        if (currentJob && currentJob.tasks.length > 0) {
-            const completedTasks = currentJob.tasks.filter((t: any) => t.status === 'completed');
-            if (completedTasks.length > 0) {
-                const newResult: any = { ...lessonResult };
-                let hashChanged = false;
-                completedTasks.forEach((task: any) => {
-                    // Antigravity Sync: Map Saga Task ID to LessonResult key
-                    const key = task.id;
-                    if (task.output && !newResult[key]) {
-                        newResult[key] = task.output;
-                        hashChanged = true;
-                    }
-                });
-                if (hashChanged && setLessonResult) {
-                    setLessonResult(newResult);
-                }
-            }
-        }
-    }, [currentJob, lessonResult, setLessonResult]);
-
-    const handleSagaGenerate = async () => {
-        if (!lessonGrade || !lessonAutoFilledTheme) {
-            setError("Vui lòng nhập Khối và Tên bài dạy trước khi bắt đầu.");
-            return;
-        }
-
-        console.log("[Saga] Starting Job. Current Proxy URL in Bundle:", process.env.NEXT_PUBLIC_GEMINI_PROXY_URL);
-
-        setSuccess("🔥 Kích hoạt hệ thống Client-Side Saga (v6.2). Đang khởi tạo lộ trình tối ưu...");
-        await startSagaJob(lessonGrade, lessonAutoFilledTheme, lessonFile || undefined, expertGuidance);
-    };
-
-    // --- REDIRECTING MANUAL CLICKS TO SAGA ---
-    const handleStepGenerate = (stepId: string) => {
-        setSuccess(`Vui lòng sử dụng hệ thống "Saga Slow-Cooking" bên dưới để tạo phần "${stepId}". Chế độ thủ công đã bị tạm dừng để tránh lỗi Vercel Timeout.`);
-    };
-
-    const workflowPlan = [
-        {
-            stage: "PHASE 0: ARCHITECTURE",
-            tasks: [
-                { id: 'blueprint', label: '0. Lập dàn ý (Architecture)', resultKey: 'blueprint', icon: '🏗️' },
-                { id: 'muc_tieu_kien_thuc', label: '1. Mục tiêu & Chuẩn bị (Deep Analysis)', resultKey: 'muc_tieu_kien_thuc', icon: '🎯' },
-            ]
-        },
-        {
-            stage: "PHASE 1: FOUNDATION & WARM-UP",
-            tasks: [
-                { id: 'hoat_dong_khoi_dong', label: '2. HĐ: Khởi động - Tạo mâu thuẫn', resultKey: 'hoat_dong_khoi_dong', icon: '⚡' },
-                { id: 'shdc', label: '3. Sinh hoạt dưới cờ', resultKey: 'shdc', icon: '🏛️' },
-                { id: 'shl', label: '4. Sinh hoạt lớp', resultKey: 'shl', icon: '👥' },
-            ]
-        },
-        {
-            stage: "PHASE 2: KNOWLEDGE EXPLORATION (Compass Scripting)",
-            tasks: [
-                { id: 'hoat_dong_kham_pha_1', label: '4.1 Khám phá 1: Hình thành kiến thức', resultKey: 'hoat_dong_kham_pha_1', icon: '🔍', isSub: true },
-                { id: 'hoat_dong_kham_pha_2', label: '4.2 Khám phá 2: Phân tích & Phản biện', resultKey: 'hoat_dong_kham_pha_2', icon: '📖', isSub: true },
-                { id: 'hoat_dong_kham_pha_3', label: '4.3 Khám phá 3: Tích hợp NLS & Đạo đức', resultKey: 'hoat_dong_kham_pha_3', icon: '🌐', isSub: true },
-            ]
-        },
-        {
-            stage: "PHASE 3: PRACTICE & APPLICATION",
-            tasks: [
-                { id: 'hoat_dong_luyen_tap_1', label: '5.1 Luyện tập 1: Củng cố cơ bản', resultKey: 'hoat_dong_luyen_tap_1', icon: '💪', isSub: true },
-                { id: 'hoat_dong_luyen_tap_2', label: '5.2 Luyện tập 2: Sáng tạo & Giải quyết', resultKey: 'hoat_dong_luyen_tap_2', icon: '🛠️', isSub: true },
-                { id: 'hoat_dong_van_dung', label: '6. Vận dụng: Dự án thực tế', resultKey: 'hoat_dong_van_dung', icon: '🚀' },
-                { id: 'huong_dan_ve_nha', label: '7. Hướng dẫn về nhà', resultKey: 'huong_dan_ve_nha', icon: '🏠' },
-            ]
-        },
-        {
-            stage: "PHASE 4: FINALIZATION",
-            tasks: [
-                { id: 'ho_so_day_hoc', label: '8. Hồ sơ: Phiếu & Rubric', resultKey: 'ho_so_day_hoc', icon: '📋' },
-            ]
-        }
-    ];
-    const designSteps = workflowPlan.flatMap(p => p.tasks);
-    const retryCountDown = null;
-    const isAutoRunning = false;
-
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64String = (reader.result as string).split(',')[1];
-                setLessonFile({
-                    mimeType: file.type,
-                    data: base64String,
-                    name: file.name
-                });
-            };
-            reader.readAsDataURL(file);
-        }
-    };
 
     // AI Section Editor Component
     const AISectionEditor = ({
@@ -507,210 +466,33 @@ export function LessonTab({
                     <div className="lg:col-span-4 space-y-8 order-2 lg:order-1">
                         <Card className="border-none shadow-none bg-transparent h-fit lg:sticky lg:top-24">
                             <CardContent className="p-0 space-y-6">
-                                {/* Config Panel - Neumo Raised */}
-                                <div className="premium-neumo p-6 space-y-6">
-                                    <div className="flex items-center gap-4 mb-2">
-                                        <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 premium-glass">
-                                            <BookOpen className="h-5 w-5" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 leading-tight">Cấu hình</h3>
-                                            <p className="text-[10px] text-slate-500 font-medium">Lập trình bối cảnh bài dạy</p>
-                                        </div>
-                                    </div>
+                                {/* Config Section */}
+                                <ConfigPanel
+                                    lessonGrade={lessonGrade}
+                                    setLessonGrade={setLessonGrade}
+                                    selectedChuDeSo={selectedChuDeSo}
+                                    setSelectedChuDeSo={setSelectedChuDeSo}
+                                    setLessonAutoFilledTheme={setLessonAutoFilledTheme}
+                                    lessonDuration={lessonDuration}
+                                    setLessonDuration={setLessonDuration}
+                                    selectedChuDe={selectedChuDe}
+                                    setSelectedChuDe={setSelectedChuDe}
+                                    setLessonMonth={setLessonMonth}
+                                />
 
-                                    <div className="space-y-5">
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Khối lớp (Grade)</Label>
-                                            <Select
-                                                value={lessonGrade}
-                                                onValueChange={(value) => {
-                                                    setLessonGrade(value);
-                                                    setSelectedChuDeSo("");
-                                                    setLessonAutoFilledTheme("");
-                                                }}
-                                            >
-                                                <SelectTrigger className="h-12 rounded-2xl bg-white/50 dark:bg-slate-900/50 border-white dark:border-slate-800 shadow-sm">
-                                                    <SelectValue placeholder="Chọn khối..." />
-                                                </SelectTrigger>
-                                                <SelectContent className="premium-glass rounded-2xl">
-                                                    <SelectItem value="10">Khối 10 (Grade 10)</SelectItem>
-                                                    <SelectItem value="11">Khối 11 (Grade 11)</SelectItem>
-                                                    <SelectItem value="12">Khối 12 (Grade 12)</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Chủ đề (PPCT Month)</Label>
-                                            <Select
-                                                value={selectedChuDeSo}
-                                                onValueChange={(value) => {
-                                                    setSelectedChuDeSo(value);
-                                                    const chuDeList = getChuDeListByKhoi(lessonGrade);
-                                                    const chuDe = chuDeList.find(
-                                                        (cd) => cd.chu_de_so === Number.parseInt(value)
-                                                    );
-                                                    if (chuDe) {
-                                                        setLessonAutoFilledTheme(chuDe.ten);
-                                                        setLessonDuration(chuDe.tong_tiet.toString());
-                                                        setSelectedChuDe(chuDe);
-                                                        setLessonMonth(value);
-                                                    }
-                                                }}
-                                                disabled={!lessonGrade}
-                                            >
-                                                <SelectTrigger className="h-12 rounded-2xl bg-white/50 dark:bg-slate-900/50 border-white dark:border-slate-800">
-                                                    <SelectValue placeholder={lessonGrade ? "Chọn chủ đề..." : "Chọn khối trước"} />
-                                                </SelectTrigger>
-                                                <SelectContent className="premium-glass rounded-2xl">
-                                                    {lessonGrade &&
-                                                        getChuDeListByKhoi(lessonGrade).map((chuDe) => (
-                                                            <SelectItem key={chuDe.chu_de_so} value={chuDe.chu_de_so.toString()}>
-                                                                {chuDe.chu_de_so}. {chuDe.ten}
-                                                            </SelectItem>
-                                                        ))}
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Tiêu đề bài học</Label>
-                                            <Textarea
-                                                value={lessonAutoFilledTheme}
-                                                onChange={(e) => setLessonAutoFilledTheme(e.target.value)}
-                                                placeholder="Nhập tên bài học..."
-                                                className="min-h-[100px] premium-neumo-inset border-none px-4 py-3 focus:ring-2 focus:ring-indigo-100 text-sm leading-relaxed"
-                                            />
-                                        </div>
-
-                                        {/* Full Plan Mode Switch */}
-                                        <div className="flex items-center justify-between p-4 premium-neumo-inset rounded-2xl">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center">
-                                                    <BookOpen className="h-4 w-4 text-indigo-600" />
-                                                </div>
-                                                <div>
-                                                    <Label className="text-[11px] font-black text-slate-700 leading-none">Full Plan Mode</Label>
-                                                    <p className="text-[9px] text-slate-500 font-medium">Tạo giáo án đầy đủ theo PPCT & 5512</p>
-                                                </div>
-                                            </div>
-                                            <Switch
-                                                checked={lessonFullPlanMode}
-                                                onCheckedChange={setLessonFullPlanMode}
-                                            />
-                                        </div>
-
-                                        {/* PPCT Info Dashboard */}
-                                        {selectedChuDe && (
-                                            <div className="premium-glass p-5 rounded-3xl space-y-4 border-indigo-200/50 soft-pastel-sky/20">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse" />
-                                                    <span className="text-[10px] font-black text-indigo-900 dark:text-indigo-200 uppercase tracking-tighter">Phân bổ tiết học thực tế</span>
-                                                </div>
-                                                <div className="grid grid-cols-3 gap-3">
-                                                    <div className="flex flex-col items-center">
-                                                        <span className="text-[9px] text-slate-500 font-bold">SHDC</span>
-                                                        <span className="text-lg font-black text-indigo-600">{selectedChuDe.shdc}</span>
-                                                    </div>
-                                                    <div className="flex flex-col items-center border-x border-indigo-100">
-                                                        <span className="text-[9px] text-slate-500 font-bold">HĐGD</span>
-                                                        <span className="text-lg font-black text-emerald-600">{selectedChuDe.hdgd}</span>
-                                                    </div>
-                                                    <div className="flex flex-col items-center">
-                                                        <span className="text-[9px] text-slate-500 font-bold">SHL</span>
-                                                        <span className="text-lg font-black text-amber-600">{selectedChuDe.shl}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* File Upload Section - Neumo Raised */}
-                                <div className="premium-neumo p-6 space-y-6">
-                                    <div className="flex items-center justify-between">
-                                        <Label className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-2">
-                                            <Upload className="h-4 w-4 text-indigo-600" />
-                                            Nguồn tài liệu gốc (PDF)
-                                        </Label>
-                                        {lessonFile && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-8 w-8 rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50"
-                                                onClick={() => setLessonFile(null)}
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                    </div>
-
-                                    <input type="file" accept="application/pdf" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
-
-                                    {lessonFile ? (
-                                        <div className="premium-glass p-4 rounded-2xl flex items-center gap-4 border-emerald-200 soft-pastel-mint/30">
-                                            <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600 shadow-sm">
-                                                <BookOpen className="h-6 w-6" />
-                                            </div>
-                                            <div className="flex-1 overflow-hidden">
-                                                <p className="text-xs font-bold text-slate-700 truncate">{lessonFile.name}</p>
-                                                <p className="text-[10px] text-emerald-600 font-medium">Hệ thống đang sẵn sàng xử lý</p>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <Button
-                                            variant="outline"
-                                            className="w-full h-32 rounded-3xl border-dashed border-2 border-slate-200 bg-slate-50/50 text-slate-500 hover:text-indigo-600 hover:border-indigo-300 hover:bg-white hover:shadow-2xl transition-all duration-500 flex flex-col gap-2"
-                                            onClick={() => fileInputRef.current?.click()}
-                                        >
-                                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
-                                                <Plus className="h-5 w-5" />
-                                            </div>
-                                            <span className="text-xs font-bold uppercase tracking-widest">Nạp giáo án cũ</span>
-                                        </Button>
-                                    )}
-                                </div>
-
-                                {/* STEP 2: GENERATION CONTROL */}
-                                <div className="premium-neumo p-6 space-y-6">
-                                    <div className="flex items-center gap-4 mb-2">
-                                        <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200 premium-glass">
-                                            <Zap className="h-5 w-5" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 leading-tight">Bước 1: Khởi tạo</h3>
-                                            <p className="text-[10px] text-slate-500 font-medium">Tạo khung giáo án thô từ PDF</p>
-                                        </div>
-                                    </div>
-
-                                    {!isAutoRunning ? (
-                                        <Button
-                                            onClick={handleSagaGenerate}
-                                            disabled={isSagaGenerating || !lessonGrade || !lessonAutoFilledTheme}
-                                            className="w-full h-14 rounded-[1.5rem] bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-2xl shadow-indigo-200 border border-indigo-400/20 group"
-                                        >
-                                            <Zap className="h-5 w-5 mr-3 group-hover:animate-pulse" />
-                                            START GENERATION
-                                        </Button>
-                                    ) : (
-                                        <div className="premium-glass soft-pastel-mint h-14 w-full rounded-[1.5rem] flex items-center justify-center gap-4 text-emerald-800 border-emerald-200 font-bold">
-                                            <Loader2 className="h-4 w-4 animate-spin text-emerald-600" />
-                                            SAGA RUNNING...
-                                        </div>
-                                    )}
-                                </div>
 
                                 {/* STEP 3: EXPERT BRAIN INJECTION */}
-                                <div className="space-y-2">
-                                    <h3 className="font-bold text-lg text-slate-800 px-2">Bước 2 & 3: Tinh chỉnh</h3>
-                                    <p className="text-[10px] text-slate-500 font-medium px-2 pb-2">Nâng cấp giáo án bằng trí tuệ cấp chuyên gia</p>
+                                <div className="space-y-4">
+                                    <div className="px-2">
+                                        <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 leading-tight">Bước 2: Nhập kết quả</h3>
+                                        <p className="text-[10px] text-slate-500 font-medium leading-relaxed">Dán JSON từ Gemini Pro vào đây để phân tích và điền giáo án</p>
+                                    </div>
                                     <ExpertBrainInjection
                                         value={expertGuidance}
                                         onChange={setExpertGuidance}
                                         onApply={handleApplyExpertBrain}
-                                        isProcessing={isMerging}
-                                        fileSummary={currentJob?.lessonFileSummary}
+                                        isProcessing={isParsing || isMerging}
+                                        fileSummary={undefined}
                                         topic={lessonAutoFilledTheme}
                                         grade={lessonGrade}
                                     />
@@ -723,6 +505,17 @@ export function LessonTab({
                     <div className="lg:col-span-8 space-y-8 order-1 lg:order-2">
                         <div className="space-y-6">
                             {/* NOTIFICATION LAYER */}
+                            {lessonGrade && lessonAutoFilledTheme && (
+                                <div className="mb-8">
+                                    <SmartPromptBuilder
+                                        grade={lessonGrade}
+                                        topicName={lessonAutoFilledTheme}
+                                        chuDeSo={selectedChuDeSo}
+                                        fileSummary={undefined} // User attaches file manually 
+                                    />
+                                </div>
+                            )}
+
                             <div className="space-y-4 px-4 lg:px-0">
                                 {success && (
                                     <div className="premium-glass soft-pastel-mint p-4 rounded-3xl flex items-center gap-4 text-emerald-800 border-emerald-200 animate-in fade-in slide-in-from-top-6 duration-700 shadow-lg">
@@ -781,396 +574,18 @@ export function LessonTab({
                                 )}
                             </div>
 
-                            {/* MAIN LAB HEADER & SAGA CONTROL */}
-                            <Card className="border-none shadow-none bg-transparent overflow-visible">
-                                <CardContent className="p-0 space-y-8">
-                                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4 lg:px-0">
-                                        <div className="space-y-2 text-center md:text-left">
-                                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest border border-indigo-100">
-                                                <Zap className="h-3 w-3 fill-indigo-600" />
-                                                Advanced AI Pipeline
-                                            </div>
-                                            <h2 className="text-4xl font-black text-slate-900 leading-[1.1]">
-                                                Phòng Lab <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-emerald-600">Thiết kế</span>
-                                            </h2>
-                                            <p className="text-slate-500 text-sm font-medium">Xây dựng giáo án đa tầng với công nghệ Saga Orchestration</p>
-                                        </div>
-                                        <div className="flex gap-3">
-                                            <div className="flex gap-3">
-                                                {/* (Moved to Sidebar Step 1) */}
-                                                {!isAutoRunning && lessonResult && (
-                                                    <Button
-                                                        variant="outline"
-                                                        onClick={() => {
-                                                            if (confirm('Bạn có chắc chắn muốn xóa bản thảo hiện tại và làm mới từ đầu không?')) {
-                                                                localStorage.removeItem(`lesson_state_${lessonGrade}_${selectedChuDeSo}`);
-                                                                setLessonResult(null);
-                                                                setSuccess("Đã làm mới bản thảo thành công!");
-                                                            }
-                                                        }}
-                                                        className="h-12 w-12 rounded-[1.2rem] border-red-100 text-red-500 hover:bg-red-50 p-0"
-                                                        title="Xóa & Làm lại"
-                                                    >
-                                                        <Trash2 className="h-5 w-5" />
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
 
-                                    {/* SAGA PROGRESS DASHBOARD - REDESIGNED */}
-                                    {currentJob && (
-                                        <div className="premium-neumo mx-4 lg:mx-0 p-8 space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-12 rounded-2xl bg-white shadow-xl flex items-center justify-center text-indigo-600">
-                                                        <ShieldCheck className="h-6 w-6" />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="font-black text-slate-800">Tiến độ Client-Side Saga</h4>
-                                                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                                                            {currentJob.status === 'processing' ? '🔥 Processing Data Chunks' : '🏁 Session Ready'}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <Badge className="h-8 rounded-xl px-4 bg-slate-900 text-white font-black text-[10px]">
-                                                    {Math.round((currentJob.tasks.filter((t: any) => t.status === 'completed').length / (currentJob.tasks.length || 1)) * 100)}% COMPLETE
-                                                </Badge>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                <div className="flex justify-between text-[11px] font-black text-slate-500">
-                                                    <span>DEPLOYMENT NODES</span>
-                                                    <span className="text-indigo-600">{currentJob.tasks.filter((t: any) => t.status === 'completed').length} / {currentJob.tasks.length}</span>
-                                                </div>
-                                                <div className="h-4 w-full bg-slate-100 rounded-full p-1 shadow-inner">
-                                                    <div
-                                                        className="h-full bg-indigo-600 rounded-full shadow-lg transition-all duration-1000"
-                                                        style={{ width: `${(currentJob.tasks.filter((t: any) => t.status === 'completed').length / (currentJob.tasks.length || 1)) * 100}%` }}
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                                {currentJob.tasks.map((task: any) => (
-                                                    <div key={task.id} className={`premium-glass p-3 rounded-2xl flex items-center gap-3 border transition-all ${task.status === 'completed' ? 'soft-pastel-mint border-emerald-100' :
-                                                        task.status === 'processing' ? 'soft-pastel-sky border-indigo-100 shadow-xl' :
-                                                            'bg-white/50 border-white opacity-50'
-                                                        }`}>
-                                                        <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${task.status === 'completed' ? 'bg-white text-emerald-600' :
-                                                            task.status === 'processing' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-400'
-                                                            }`}>
-                                                            {task.status === 'completed' ? <CheckCircle className="h-4 w-4" /> :
-                                                                task.status === 'processing' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Clock className="h-4 w-4" />}
-                                                        </div>
-                                                        <span className="text-[9px] font-black text-slate-700 truncate leading-tight uppercase tracking-tighter">{task.title}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-
-                                            {currentJob.status === 'failed' && (
-                                                <div className="premium-glass soft-pastel-salmon p-4 rounded-3xl flex gap-3 border-red-200 mt-4">
-                                                    <Button onClick={() => resumeSagaJob(currentJob.jobId)} className="flex-1 h-12 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold">
-                                                        RESUME PIPELINE
-                                                    </Button>
-                                                    <Button variant="outline" onClick={() => startSagaJob(lessonGrade, lessonAutoFilledTheme)} className="flex-1 h-12 rounded-2xl border-red-200 text-red-600 font-bold">
-                                                        RESTART
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* MILESTONES GRID */}
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-20 px-4 lg:px-0">
-                                        {designSteps.map((step, idx) => {
-                                            const isDone = !!(lessonResult as any)?.[step.resultKey] || (step.id === 'shdc_shl' && !!lessonResult?.shdc);
-                                            const currentLoading = stepInProgress === step.id;
-
-                                            return (
-                                                <div key={step.id} className="space-y-2">
-                                                    {/* Stage Header */}
-                                                    {workflowPlan.find(p => p.tasks[0].id === step.id) && (
-                                                        <div className="col-span-full pt-4 pb-1 flex items-center gap-2">
-                                                            <div className="w-1 h-5 bg-indigo-600 rounded-full" />
-                                                            <span className="text-[9px] font-black text-indigo-900/60 uppercase tracking-widest">
-                                                                {workflowPlan.find(p => p.tasks[0].id === step.id)?.stage}
-                                                            </span>
-                                                            <div className="h-[1px] flex-1 bg-slate-100" />
-                                                        </div>
-                                                    )}
-
-                                                    <div
-                                                        className={`group relative flex items-center justify-between p-3 rounded-[1.5rem] border transition-all duration-500 hover:scale-[1.005] ${isDone
-                                                            ? 'premium-glass soft-pastel-mint border-emerald-200/50 shadow-sm'
-                                                            : 'premium-neumo hover:shadow-md hover:border-indigo-100'
-                                                            }`}
-                                                    >
-                                                        <div className="flex items-center gap-3 flex-1 cursor-pointer overflow-hidden" onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}>
-                                                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-lg shadow-sm transition-all duration-500 shrink-0 ${isDone
-                                                                ? 'bg-white text-emerald-500 shadow-emerald-100'
-                                                                : 'bg-white text-slate-400 group-hover:bg-indigo-600 group-hover:text-white shadow-slate-100'
-                                                                }`}>
-                                                                {isDone ? <CheckCircle className="h-4 w-4" /> : (step as any).icon}
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <h4 className={`text-xs font-bold tracking-tight truncate transition-colors duration-500 ${isDone ? 'text-emerald-900' : 'text-slate-700'}`}>
-                                                                    {step.label}
-                                                                </h4>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-1.5 pl-1.5">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className={`h-8 w-8 p-0 rounded-lg transition-all duration-300 ${expandedStep === step.id ? 'bg-indigo-600 text-white shadow-md' : 'hover:bg-indigo-50 text-slate-400'}`}
-                                                                onClick={() => setExpandedStep(expandedStep === step.id ? null : step.id)}
-                                                            >
-                                                                <MessageSquare className="h-3.5 w-3.5" />
-                                                            </Button>
-                                                            <Button
-                                                                size="sm"
-                                                                variant={isDone ? "ghost" : "default"}
-                                                                className={`h-8 px-3 rounded-lg font-bold text-[10px] transition-all duration-300 ${isDone
-                                                                    ? 'text-emerald-600 hover:bg-emerald-50'
-                                                                    : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-200/50'
-                                                                    }`}
-                                                                disabled={isGenerating || !lessonGrade || !lessonAutoFilledTheme}
-                                                                onClick={() => handleStepGenerate(step.id)}
-                                                            >
-                                                                {currentLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : (isDone ? "SỬA" : "SOẠN")}
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Step suggestion box - Compact */}
-                                                    {expandedStep === step.id && (
-                                                        <div className="p-3 premium-neumo-inset animate-in slide-in-from-top-4 duration-500 rounded-xl mx-0.5">
-                                                            <div className="flex items-center justify-between mb-1.5">
-                                                                <Label className="text-[8px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1">
-                                                                    <Sparkles className="h-2.5 w-2.5" />
-                                                                    Chỉ thị chuyên biệt
-                                                                </Label>
-                                                            </div>
-                                                            <Textarea
-                                                                value={stepInstructions[step.id] || ""}
-                                                                onChange={(e) => setStepInstructions({ ...stepInstructions, [step.id]: e.target.value })}
-                                                                placeholder="Gợi ý/yêu cầu cụ thể cho bước này..."
-                                                                className="min-h-[60px] text-xs bg-transparent border-none focus:ring-0 leading-relaxed font-medium placeholder:text-slate-400 p-0"
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-
-                                    <div className="flex items-center gap-4 p-5 premium-glass soft-pastel-sky/20 border-indigo-100/50 italic text-indigo-700 text-[11px] font-medium leading-relaxed rounded-[2rem] mx-4 lg:mx-0">
-                                        <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0">
-                                            <Info className="h-5 w-5" />
-                                        </div>
-                                        <p>AI Engine sẽ nghiên cứu sâu tệp PDF bạn đã nạp để trích xuất nội dung chính xác. Vui lòng hoàn thành các Node theo thứ tự từ trên xuống để đảm bảo tính logic xuyên suốt.</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            {/* Quick Settings & Suggestions */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 px-4 lg:px-0">
-                                <div className="space-y-6">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-2 h-8 bg-indigo-600 rounded-full" />
-                                        <h3 className="font-black text-xl text-slate-900">Gợi ý hoạt động</h3>
-                                    </div>
-                                    <div className="space-y-4">
-                                        <ActivitySuggestionBox
-                                            label="Sinh hoạt dưới cờ"
-                                            value={shdcSuggestion}
-                                            onChange={setShdcSuggestion}
-                                            placeholder="Ý tưởng tổ chức..."
-                                            colorClass="blue"
-                                            periodCount={selectedChuDe?.shdc || 0}
-                                        />
-                                        <ActivitySuggestionBox
-                                            label="Hoạt động giáo dục"
-                                            value={hdgdSuggestion}
-                                            onChange={setHdgdSuggestion}
-                                            placeholder="Nội dung trọng tâm..."
-                                            colorClass="green"
-                                            periodCount={selectedChuDe?.hdgd || 0}
-                                        />
-                                        <ActivitySuggestionBox
-                                            label="Sinh hoạt lớp"
-                                            value={shlSuggestion}
-                                            onChange={setShlSuggestion}
-                                            placeholder="Yêu cầu sinh hoạt..."
-                                            colorClass="orange"
-                                            periodCount={selectedChuDe?.shl || 0}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-6 h-full flex flex-col">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-2 h-8 bg-amber-500 rounded-full" />
-                                        <h3 className="font-black text-xl text-slate-900 focus-visible:">Chỉ dẫn đặc biệt</h3>
-                                    </div>
-                                    <div className="premium-neumo p-6 flex-1 flex flex-col gap-4">
-                                        <div className="flex items-center justify-between">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Global AI Directives</Label>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => {
-                                                    // Trigger pre-fill dialog
-                                                    const event = new CustomEvent('openPreFill', { detail: 'global' });
-                                                    window.dispatchEvent(event);
-                                                }}
-                                                className="flex items-center gap-2 text-xs"
-                                            >
-                                                <Lightbulb className="h-3 w-3" />
-                                                Gợi ý
-                                            </Button>
-                                        </div>
-                                        <Textarea
-                                            value={lessonCustomInstructions}
-                                            onChange={(e) => setLessonCustomInstructions(e.target.value)}
-                                            placeholder="VD: Sử dụng phương pháp thảo luận nhóm, tích hợp năng lực số..."
-                                            className="flex-1 premium-neumo-inset border-none px-4 py-3 text-sm leading-relaxed focus:ring-2 focus:ring-indigo-100 min-h-[200px]"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
 
                             {/* Results Display Area - Premium Editor Style */}
                             {lessonResult && (
                                 <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-1000 px-4 lg:px-0">
                                     <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
 
-                                    <div className="space-y-8">
-                                        <div className="space-y-6">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {/* Mục tiêu Kiến thức */}
-                                                <AISectionEditor
-                                                    label="Mục tiêu Kiến thức"
-                                                    value={lessonResult.muc_tieu_kien_thuc || ""}
-                                                    onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_kien_thuc: val })}
-                                                    bgClass="premium-neumo p-6"
-                                                    field="muc_tieu_kien_thuc"
-                                                />
-                                                <AISectionEditor
-                                                    label="Mục tiêu Năng lực"
-                                                    value={lessonResult.muc_tieu_nang_luc || ""}
-                                                    onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_nang_luc: val })}
-                                                    bgClass="premium-neumo p-6"
-                                                    field="muc_tieu_nang_luc"
-                                                />
-                                                <AISectionEditor
-                                                    label="Mục tiêu Phẩm chất"
-                                                    value={lessonResult.muc_tieu_pham_chat || ""}
-                                                    onChange={(val) => setLessonResult({ ...lessonResult, muc_tieu_pham_chat: val })}
-                                                    bgClass="premium-neumo p-6"
-                                                    field="muc_tieu_pham_chat"
-                                                />
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <AISectionEditor
-                                                    label="GV Chuẩn bị"
-                                                    value={lessonResult.gv_chuan_bi || ""}
-                                                    onChange={(val) => setLessonResult({ ...lessonResult, gv_chuan_bi: val })}
-                                                    bgClass="premium-glass soft-pastel-sky/10 p-6"
-                                                    field="gv_chuan_bi"
-                                                />
-                                                <AISectionEditor
-                                                    label="HS Chuẩn bị"
-                                                    value={lessonResult.hs_chuan_bi || ""}
-                                                    onChange={(val) => setLessonResult({ ...lessonResult, hs_chuan_bi: val })}
-                                                    bgClass="premium-glass soft-pastel-sky/10 p-6"
-                                                    field="hs_chuan_bi"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {(lessonResult.tich_hop_nls || lessonResult.tich_hop_dao_duc) && (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                {lessonResult.tich_hop_nls && (
-                                                    <AISectionEditor
-                                                        label="Tích hợp Năng lực số"
-                                                        value={lessonResult.tich_hop_nls}
-                                                        onChange={(val) => setLessonResult({ ...lessonResult, tich_hop_nls: val })}
-                                                        bgClass="premium-glass soft-pastel-mint/20 border-emerald-200 p-6 shadow-xl"
-                                                        field="tich_hop_nls"
-                                                    />
-                                                )}
-                                                {lessonResult.tich_hop_dao_duc && (
-                                                    <AISectionEditor
-                                                        label="Tích hợp Đạo đức"
-                                                        value={lessonResult.tich_hop_dao_duc}
-                                                        onChange={(val) => setLessonResult({ ...lessonResult, tich_hop_dao_duc: val })}
-                                                        bgClass="premium-glass soft-pastel-salmon/20 border-red-200 p-6 shadow-xl"
-                                                        field="tich_hop_dao_duc"
-                                                    />
-                                                )}
-                                            </div>
-                                        )}
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <AISectionEditor
-                                                label="Sinh hoạt Dưới cờ"
-                                                value={lessonResult.shdc || ""}
-                                                onChange={(val) => setLessonResult({ ...lessonResult, shdc: val })}
-                                                bgClass="premium-neumo p-6"
-                                                field="shdc"
-                                            />
-                                            <AISectionEditor
-                                                label="Sinh hoạt Lớp"
-                                                value={lessonResult.shl || ""}
-                                                onChange={(val) => setLessonResult({ ...lessonResult, shl: val })}
-                                                bgClass="premium-neumo p-6"
-                                                field="shl"
-                                            />
-                                        </div>
-
-                                        <AISectionEditor
-                                            label="Hồ sơ Dạy học & Phụ lục"
-                                            value={lessonResult.ho_so_day_hoc || ""}
-                                            onChange={(val) => setLessonResult({ ...lessonResult, ho_so_day_hoc: val })}
-                                            bgClass="premium-glass soft-pastel-sky/20 p-8 border-slate-200"
-                                            field="ho_so_day_hoc"
-                                        />
-
-                                        <div className="space-y-8">
-                                            <h3 className="font-black text-2xl text-slate-800 flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white">
-                                                    <Zap className="h-6 w-6" />
-                                                </div>
-                                                Diễn trình Hoạt động Chi tiết
-                                            </h3>
-
-                                            {[
-                                                { label: "Hoạt động Khởi động", field: "hoat_dong_khoi_dong" },
-                                                { label: "Hoạt động Khám phá", field: "hoat_dong_kham_pha" },
-                                                { label: "Hoạt động Luyện tập", field: "hoat_dong_luyen_tap" },
-                                                { label: "Hoạt động Vận dụng", field: "hoat_dong_van_dung" },
-                                                { label: "Hướng dẫn về nhà", field: "huong_dan_ve_nha" },
-                                                { label: "Nội dung Chuẩn bị (Bài sau)", field: "noi_dung_chuan_bi" }
-                                            ].map((act) => (
-                                                (lessonResult as any)[act.field] && (
-                                                    <AISectionEditor
-                                                        key={act.field}
-                                                        label={act.label}
-                                                        value={(lessonResult as any)[act.field]}
-                                                        onChange={(val) => setLessonResult({ ...lessonResult, [act.field]: val })}
-                                                        bgClass="premium-neumo p-8"
-                                                        field={act.field as any}
-                                                    />
-                                                )
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <SectionEditorGrid
+                                        lessonResult={lessonResult}
+                                        setLessonResult={setLessonResult}
+                                        AISectionEditor={AISectionEditor}
+                                    />
 
                                     {/* Multi-Action Dashboard */}
                                     <div className="premium-glass p-8 rounded-[3rem] border-indigo-100 shadow-2xl space-y-6">

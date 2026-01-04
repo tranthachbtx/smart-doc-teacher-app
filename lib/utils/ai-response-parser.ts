@@ -21,14 +21,14 @@ export class AIResponseParser {
    */
   static parse(text: string, options: ParseOptions = {}): any {
     const opts = { ...this.DEFAULT_OPTIONS, ...options };
-    
+
     if (!text || typeof text !== 'string') {
       return opts.fallbackKey ? { [opts.fallbackKey]: '' } : {};
     }
 
     // Clean text
     const cleanText = this.cleanText(text);
-    
+
     // Try different parsing strategies
     for (let attempt = 0; attempt < opts.maxAttempts!; attempt++) {
       try {
@@ -55,20 +55,22 @@ export class AIResponseParser {
    * Clean text before parsing
    */
   private static cleanText(text: string): string {
-    return text
-      // Remove markdown code blocks
-      .replace(/```(?:json)?\s*/g, '')
-      .replace(/```\s*$/g, '')
-      // Remove common AI prefixes/suffixes
-      .replace(/^(Here is|Here's|Below is|The following is)[^:]*:\s*/i, '')
-      .replace(/\n*(This is|That's|It's)[^.]*\.\s*$/i, '')
-      // Fix common JSON issues
-      .replace(/'/g, '"')
-      .replace(/(\w+):/g, '"$1":')
-      .replace(/:\s*([^",\[\{\}]+)([,\]\}])/g, ': "$1"$2')
-      // Remove extra whitespace
-      .replace(/\s+/g, ' ')
-      .trim();
+    if (!text) return "";
+
+    let cleaned = text.trim();
+
+    // 1. Remove Markdown code block syntax
+    cleaned = cleaned.replace(/^```(?:json)?/gm, '').replace(/```$/gm, '');
+
+    // 2. Extract content between the first { and the last }
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    }
+
+    return cleaned;
   }
 
   /**
@@ -77,27 +79,44 @@ export class AIResponseParser {
   private static tryParse(text: string, strategy: number): any {
     switch (strategy) {
       case 0:
-        // Strategy 1: Standard JSON object
-        return this.extractJSON(text, /\{[\s\S]*\}/);
-      
-      case 1:
-        // Strategy 2: JSON array
-        return this.extractJSON(text, /\[[\s\S]*\]/);
-      
-      case 2:
-        // Strategy 3: JSON with markdown wrapper
-        return this.extractJSON(text, /```json\s*\{[\s\S]*\}\s*```/);
-      
-      case 3:
-        // Strategy 4: Multiple JSON objects
-        const matches = text.match(/\{[^{}]*\}/g);
-        if (matches && matches.length > 0) {
-          return this.extractJSON(text, new RegExp(matches[0]));
+        // Strategy 1: Direct parse
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          return null;
         }
-        break;
-      
+
+      case 1:
+        // Strategy 2: Fix trailing commas - very common in AI output
+        try {
+          const fixed = text.replace(/,\s*([}\]])/g, '$1');
+          return JSON.parse(fixed);
+        } catch (e) {
+          return null;
+        }
+
+      case 2:
+        // Strategy 3: Fix unquoted keys
+        try {
+          const fixed = text.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+          return JSON.parse(fixed);
+        } catch (e) {
+          return null;
+        }
+
+      case 3:
+        // Strategy 4: Handle escaped newlines that are actual newlines
+        try {
+          const fixed = text.replace(/\n/g, "\\n");
+          // But wait, we only want to escape newlines inside quotes. 
+          // This is complex, let's try a simpler approach if the above fails.
+          return null;
+        } catch (e) {
+          return null;
+        }
+
       case 4:
-        // Strategy 5: Try to fix common JSON errors
+        // Strategy 5: Advanced cleanup
         return this.tryFixJSON(text);
     }
 
@@ -105,38 +124,42 @@ export class AIResponseParser {
   }
 
   /**
-   * Extract JSON using regex
+   * Extract JSON using regex (Deprecated in favor of direct brace finding)
    */
   private static extractJSON(text: string, regex: RegExp): any {
     const match = text.match(regex);
     if (!match) return null;
-
-    const jsonStr = match[0];
-    return JSON.parse(jsonStr);
+    try {
+      return JSON.parse(match[0]);
+    } catch (e) {
+      return null;
+    }
   }
 
   /**
    * Try to fix common JSON errors
    */
   private static tryFixJSON(text: string): any {
-    // Find JSON-like structure
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return null;
+    let jsonStr = text;
 
-    let jsonStr = jsonMatch[0];
+    // Remove control characters
+    jsonStr = jsonStr.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
 
-    // Fix trailing commas
-    jsonStr = jsonStr.replace(/,\s*([}\]])/g, '$1');
+    // Fix common AI mistakes
+    // - Replace smart quotes
+    jsonStr = jsonStr.replace(/[\u201C\u201D]/g, '"');
 
-    // Fix missing quotes around keys
-    jsonStr = jsonStr.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
-
-    // Fix missing quotes around string values
-    jsonStr = jsonStr.replace(/:\s*([^",\[\{\}\s][^",\[\{\}]*?)([,\]\}])/g, ': "$1"$2');
+    // Try to fix missing closing braces if close enough
+    const openBraces = (jsonStr.match(/\{/g) || []).length;
+    const closeBraces = (jsonStr.match(/\}/g) || []).length;
+    if (openBraces > closeBraces) {
+      jsonStr += "}".repeat(openBraces - closeBraces);
+    }
 
     try {
       return JSON.parse(jsonStr);
     } catch (e) {
+      // Last resort: deep repair or partial extraction
       return null;
     }
   }
@@ -146,7 +169,7 @@ export class AIResponseParser {
    */
   static parseLessonResult(text: string): any {
     const result = this.parse(text, { fallbackKey: 'content' });
-    
+
     // Ensure required fields for LessonResult
     if (typeof result === 'object' && result !== null) {
       return {

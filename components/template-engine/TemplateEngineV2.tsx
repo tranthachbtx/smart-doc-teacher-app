@@ -78,6 +78,7 @@ import type {
 } from "@/lib/types";
 import type { PPCTChuDe } from "@/lib/data/ppct-database";
 import { saveTemplate } from "@/lib/template-storage";
+import { ExportService } from "@/lib/services/export-service";
 
 // ========================================
 // MAIN TEMPLATE ENGINE COMPONENT
@@ -108,7 +109,6 @@ export function TemplateEngine() {
   const [lessonCustomInstructions, setLessonCustomInstructions] = useState<string>("");
   const [lessonResult, setLessonResult] = useState<LessonResult | null>(null);
   const [lessonFullPlanMode, setLessonFullPlanMode] = useState<boolean>(true);
-  const [lessonFile, setLessonFile] = useState<{ mimeType: string; data: string; name: string } | null>(null);
 
   // --- Event State ---
   const [selectedGradeEvent, setSelectedGradeEvent] = useState<string>("10");
@@ -274,10 +274,17 @@ export function TemplateEngine() {
   const handleExport = async (mode: string) => {
     setIsExporting(true);
     try {
-      // Export logic would go here
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSuccess("Tính năng xuất file đang được cập nhật...");
+      if (mode === "lesson" && lessonResult) {
+        setSuccess("Đang tạo file Word...");
+        await ExportService.exportLessonToDocx(lessonResult, `Giao_an_${lessonAutoFilledTheme || "HDTN"}.docx`);
+        setSuccess("Đã xuất file Word thành công!");
+      } else {
+        // Fallback for other modes
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setSuccess(`Tính năng xuất file cho ${mode} đang được phát triển...`);
+      }
     } catch (err) {
+      console.error("Export Error:", err);
       setError(err instanceof Error ? err.message : "Xuất file thất bại");
     } finally {
       setIsExporting(false);
@@ -455,8 +462,6 @@ export function TemplateEngine() {
     setLessonTopic,
     selectedModel,
     setSelectedModel,
-    lessonFile,
-    setLessonFile,
     onRefineSection: handleRefineSection,
     onGenerateSection: handleGenerateSection,
     lessonFullPlanMode,

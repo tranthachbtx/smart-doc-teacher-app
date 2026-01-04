@@ -20,12 +20,13 @@ import {
   getLessonIntegrationPrompt,
   getEventPrompt,
 } from "@/lib/prompts/ai-prompts";
+import { AIResilienceService } from "@/lib/services/ai-resilience-service";
 import { getAssessmentPrompt } from "@/lib/prompts/assessment-prompts";
 import { getKHDHPrompt, MONTH_TO_CHU_DE } from "@/lib/prompts/khdh-prompts";
 import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
-import { 
+import {
   parseLessonResult,
-  parseMeetingResult, 
+  parseMeetingResult,
   parseEventResult,
   parseNCBHResult,
   parseAssessmentResult,
@@ -34,37 +35,10 @@ import {
 
 import type { ActivitySuggestions } from "@/lib/prompts/khdh-prompts";
 
-/**
- * HỆ THỐNG ANTIGRAVITY ORCHESTRATOR 6.0 (CLIENT-SIDE EDITION)
- * 🚫 SERVER-SIDE SAGA DISABLED FOR VERCEL COMPATIBILITY
- * ✅ CLIENT-SIDE ORCHESTRATOR ENABLED
- */
-
 // ========================================
-// 🚫 DEPRECATED: SERVER-SIDE SAGA (DISABLED)
+// ✅ CORE AI FUNCTIONS (STATELESS & RESILIENT)
 // ========================================
-// Lý do: Không tương thích với Vercel Serverless
-// Giải pháp: Đã chuyển sang Client-side orchestrator
-// File: hooks/use-slow-orchestrator.ts
 
-export async function startSagaJob(grade: string, topic: string, file?: any): Promise<ActionResult> {
-  console.log(`[Legacy-Redirect] Redirecting to client-side saga...`);
-  return { 
-    success: false, 
-    error: "SERVER_SAGA_DISABLED. Please use client-side orchestrator. See: hooks/use-slow-orchestrator.ts" 
-  };
-}
-
-export async function processSagaStep(jobId: string, stepId: string): Promise<ActionResult> {
-  return { 
-    success: false, 
-    error: "SERVER_SAGA_DISABLED. Please use client-side orchestrator." 
-  };
-}
-
-// ========================================
-// ✅ CORE AI FUNCTIONS (STATELESS)
-// ========================================
 
 // --- 1. RESILIENCE & CIRCUIT BREAKER (v6.0 Stable) ---
 const blacklist = new Set<string>();
@@ -109,6 +83,12 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
 
   if (availableKeys.length === 0) {
     throw new Error("SHADOW_BAN_CRITICAL: All keys exhausted. Please change IP.");
+  }
+
+  // Phase 3: Simple Rate Limiting Check
+  if (!AIResilienceService.canMakeRequest()) {
+    console.warn("[Resilience] Rate limit hit. Waiting 2s...");
+    await new Promise(r => setTimeout(r, 2000));
   }
 
   const system = `ROLE: Expert Curriculum Developer (K12 Vietnam).
@@ -294,14 +274,14 @@ export async function generateLessonSection(
 
     const normalizedTasks = Array.isArray(tasks)
       ? (tasks.length > 0 && typeof tasks[0] === "string"
-          ? (tasks as string[]).map((t) => {
-              const [name, ...rest] = t.split(":");
-              return {
-                name: (name || t).trim(),
-                description: (rest.join(":").trim() || t).trim(),
-              };
-            })
-          : (tasks as Array<{ name: string; description: string; time?: number }>))
+        ? (tasks as string[]).map((t) => {
+          const [name, ...rest] = t.split(":");
+          return {
+            name: (name || t).trim(),
+            description: (rest.join(":").trim() || t).trim(),
+          };
+        })
+        : (tasks as Array<{ name: string; description: string; time?: number }>))
       : undefined;
 
     const monthNumber = typeof month === "string" ? Number.parseInt(month, 10) : undefined;
@@ -378,15 +358,15 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
 
     const p = f
       ? getKHDHPrompt(
-          g,
-          t,
-          d || "2 tiết",
-          c,
-          normalizedTasks,
-          Number.isFinite(monthNumber) ? monthNumber : undefined,
-          activitySuggestions,
-          !!f
-        )
+        g,
+        t,
+        d || "2 tiết",
+        c,
+        normalizedTasks,
+        Number.isFinite(monthNumber) ? monthNumber : undefined,
+        activitySuggestions,
+        !!f
+      )
       : getLessonIntegrationPrompt(g, t);
     const text = await callAI(p, model, f);
     return { success: true, data: parseLessonResult(text) };
