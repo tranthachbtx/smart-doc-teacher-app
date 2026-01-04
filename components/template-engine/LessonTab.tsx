@@ -110,6 +110,8 @@ export function LessonTab({
     selectedChuDe,
     setSelectedChuDe,
     setLessonMonth,
+    lessonFullPlanMode,
+    setLessonFullPlanMode,
     shdcSuggestion,
     setShdcSuggestion,
     hdgdSuggestion,
@@ -579,6 +581,23 @@ export function LessonTab({
                                                 onChange={(e) => setLessonAutoFilledTheme(e.target.value)}
                                                 placeholder="Nhập tên bài học..."
                                                 className="min-h-[100px] premium-neumo-inset border-none px-4 py-3 focus:ring-2 focus:ring-indigo-100 text-sm leading-relaxed"
+                                            />
+                                        </div>
+
+                                        {/* Full Plan Mode Switch */}
+                                        <div className="flex items-center justify-between p-4 premium-neumo-inset rounded-2xl">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center">
+                                                    <BookOpen className="h-4 w-4 text-indigo-600" />
+                                                </div>
+                                                <div>
+                                                    <Label className="text-[11px] font-black text-slate-700 leading-none">Full Plan Mode</Label>
+                                                    <p className="text-[9px] text-slate-500 font-medium">Tạo giáo án đầy đủ theo PPCT & 5512</p>
+                                                </div>
+                                            </div>
+                                            <Switch
+                                                checked={lessonFullPlanMode}
+                                                onCheckedChange={setLessonFullPlanMode}
                                             />
                                         </div>
 
