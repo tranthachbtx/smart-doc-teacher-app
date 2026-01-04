@@ -91,6 +91,8 @@ interface LessonTabProps {
     lessonTopic: string;
     selectedModel: string;
     setSelectedModel: (value: string) => void;
+    lessonFile: { mimeType: string; data: string; name: string } | null;
+    setLessonFile: (file: { mimeType: string; data: string; name: string } | null) => void;
     onRefineSection: (content: string, instruction: string, model?: string) => Promise<ActionResult>;
     onGenerateSection?: (section: any, context: any, stepInstruction?: string) => Promise<ActionResult>;
 }
@@ -143,6 +145,8 @@ export function LessonTab({
     lessonTopic,
     selectedModel,
     setSelectedModel,
+    lessonFile,
+    setLessonFile,
     onRefineSection,
     onGenerateSection,
 }: LessonTabProps) {
@@ -492,7 +496,7 @@ export function LessonTab({
                                         onChange={setExpertGuidance}
                                         onApply={handleApplyExpertBrain}
                                         isProcessing={isParsing || isMerging}
-                                        fileSummary={undefined}
+                                        fileSummary={lessonFile?.name}
                                         topic={lessonAutoFilledTheme}
                                         grade={lessonGrade}
                                     />
@@ -511,7 +515,7 @@ export function LessonTab({
                                         grade={lessonGrade}
                                         topicName={lessonAutoFilledTheme}
                                         chuDeSo={selectedChuDeSo}
-                                        fileSummary={undefined} // User attaches file manually 
+                                        fileSummary={lessonFile?.name} // User attaches file manually 
                                     />
                                 </div>
                             )}
