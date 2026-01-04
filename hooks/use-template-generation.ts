@@ -8,6 +8,7 @@ import {
   generateNCBH as generateNCBHAction,
   generateAIContent,
 } from "@/lib/actions/gemini";
+import { check5512Compliance } from "@/lib/actions/compliance-checker";
 import type {
   ActionResult,
   MeetingResult,
@@ -110,22 +111,20 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     }
 
     try {
-      const simplifiedTasks = selectedTasks.map(t => ({
-        name: t.name,
-        description: `${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`
-      }));
+      const simplifiedTasks = selectedTasks.map(
+        (t) => `${t.name}: ${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`
+      );
 
       const result = await generateLessonPlan(
         grade,
         topic,
-        fullPlanMode,
         duration,
         fullInstructions,
         simplifiedTasks,
-        foundMonth,
-        suggestions,
-        model,
-        lessonFile
+        foundMonth ? foundMonth.toString() : undefined,
+        suggestions ? JSON.stringify(suggestions) : undefined,
+        lessonFile,
+        model
       );
 
       if (result.success && result.data) {
@@ -149,17 +148,16 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     budget?: string,
     checklist?: string,
     evaluation?: string,
-    model?: string,
-    month?: number
+    model?: string
   ): Promise<ActionResult<EventResult>> => {
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await generateEventScript(grade, theme, customInstructions, budget, checklist, evaluation, model, month);
+      const result = await generateEventScript(grade, theme, customInstructions, budget, checklist, evaluation, model);
       if (result.success && result.data) {
         return { success: true, data: result.data as EventResult };
       } else {
-        setError(result.error || "Lỗi khi tạo kịch bản sự kiện");
+        setError(result.error || "Lỗi khi tạo kế hoạch ngoại khóa");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
@@ -202,9 +200,9 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await auditLessonPlan(lessonData, grade, topic);
-      if (result.success && result.audit) {
-        return { success: true, audit: result.audit };
+      const result = await check5512Compliance(lessonData);
+      if (result.success && result.report) {
+        return { success: true, audit: result.report, score: result.score };
       } else {
         setError(result.error || "Lỗi khi kiểm định giáo án");
         return { success: false, error: result.error };
@@ -258,21 +256,20 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     setIsGenerating(true);
     setError(null);
     try {
-      const simplifiedTasks = tasks?.map(t => ({
-        name: t.name,
-        description: `${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`
-      }));
+      const simplifiedTasks = tasks?.map(
+        (t) => `${t.name}: ${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`
+      );
 
       const result = await generateLessonSection(
         grade,
         topic,
         section,
-        context,
+        typeof context === "string" ? context : JSON.stringify(context ?? ""),
         duration,
         customInstructions,
         simplifiedTasks,
-        month,
-        activitySuggestions,
+        month != null ? String(month) : undefined,
+        activitySuggestions ? JSON.stringify(activitySuggestions) : undefined,
         model,
         lessonFile,
         stepInstruction

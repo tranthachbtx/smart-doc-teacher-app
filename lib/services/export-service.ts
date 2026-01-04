@@ -307,7 +307,24 @@ async function processTemplate(
       .replace(/\[\[STYLE_NO_INDENT\]\]/g, "")
       .replace(/\[\[ALIGN_LEFT\]\]/g, "");
 
-    // Enforce Vietnamese Administrative Margins (Decree 30)
+    // 4. ADVANCED XML INTERVENTION (v2.0) - For Large Documents (50+ pages)
+    // Goal: Prevent table breaking and ensure professional formatting for long tables (Point 5)
+
+    // a. Inject cantSplit to all table rows to prevent ugly splits MID-ROW
+    // But we only apply it to rows that aren't excessively long to avoid causing "infinite pagination" bugs
+    xmlContent = xmlContent.replace(/<w:tr( [^>]*)?>/g, (match, attrs) => {
+      // If the row doesn't have properties yet, add them with cantSplit
+      if (!match.includes("<w:trPr>")) {
+        return `${match}<w:trPr><w:cantSplit w:val="true"/><w:trHeight w:val="300" w:hRule="atLeast"/></w:trPr>`;
+      }
+      return match;
+    });
+
+    // b. Ensure table properties allow splitting across pages (overall table level)
+    // Decrees usually want tblInd and tblW to be consistent
+    xmlContent = xmlContent.replace(/<w:tblPr>/g, '<w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblLayout w:type="fixed"/><w:tblOverlap w:val="never"/>');
+
+    // c. Proper Page Margins (Decree 30) - Already handled but doubling down
     xmlContent = xmlContent.replace(/<w:pgMar[^>]*\/>/g, '<w:pgMar w:top="1134" w:right="850" w:bottom="1134" w:left="1701" w:header="720" w:footer="720" w:gutter="0"/>');
 
     processedZip.file("word/document.xml", xmlContent);
@@ -315,6 +332,10 @@ async function processTemplate(
 
   const output = processedZip.generate({
     type: "blob",
+    compression: "DEFLATE",
+    compressionOptions: {
+      level: 6
+    },
     mimeType:
       "application/octet-stream", // Force binary stream to avoid browser preview/rename issues
   });

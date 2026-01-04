@@ -88,43 +88,31 @@ export async function processLessonPlanWithSmartInjection(
     // Call Gemini to analyze and generate content
     const genAI = new GoogleGenAI({ apiKey })
 
-    const prompt = `Bạn là Chuyên gia Thiết kế Giáo án môn Hoạt động Trải nghiệm, Hướng nghiệp (HĐTN, HN) THPT theo chương trình GDPT 2018.
-
-THÔNG TIN BÀI DẠY:
-- Khối: ${grade}
-- Chủ đề: ${theme}
+    const prompt = `Bạn là Chuyên gia Tái cấu trúc Giáo án (Pedagogical Surgeon).
+    
+THÔNG TIN: Khối ${grade}, Chủ đề "${theme}".
 
 NỘI DUNG GIÁO ÁN CỦA GIÁO VIÊN:
 ---
 ${documentText.substring(0, 10000)}
 ---
 
-NHIỆM VỤ: Phân tích hoạt động dạy học trong giáo án và TẠO NỘI DUNG TÍCH HỢP PHÙ HỢP.
+NHIỆM VỤ: KHÔNG CHỈ LÀ TÍCH HỢP, HÃY "NÂNG CẤP" GIÁO ÁN QUA 2 NỘI DUNG SAU:
 
-YÊU CẦU NỘI DUNG:
+1. TÁI CẤU TRÚC NĂNG LỰC SỐ (tich_hop_nls):
+   - Phân tích hoạt động cũ, tìm chỗ có thể đưa công cụ số vào để HS thực hành (Canva, AI, Mentimeter...).
+   - Viết kịch bản chi tiết: GV hướng dẫn gì? HS thao tác gì? Sản phẩm số là gì?
+   - Đảm bảo theo chuẩn Thông tư 02/2025.
 
-1. TÍCH HỢP NĂNG LỰC SỐ (tich_hop_nls):
-   - Phải cụ thể, liên quan đến chủ đề "${theme}"
-   - Gợi ý sử dụng công cụ số: Canva, Google Docs, Padlet, Mentimeter, Kahoot, Google Forms
-   - Mô tả hoạt động cụ thể học sinh sẽ làm với công cụ số
-   - Độ dài: 100-150 từ, chia thành 2-3 ý bullet points
+2. NÂNG TẦM ĐẠO ĐỨC & GIÁ TRỊ (tich_hop_dao_duc):
+   - Tìm các tình huống trong giáo án cũ và lồng ghép phản biện đạo đức.
+   - Xây dựng thông điệp sống và cam kết hành động cụ thể cho HS khối ${grade}.
+   - Viết dưới dạng kịch bản đối thoại hoặc bài tập tình huống chi tiết.
 
-2. TÍCH HỢP GIÁO DỤC ĐẠO ĐỨC (tich_hop_dao_duc):
-   - Phải cụ thể, liên quan đến chủ đề "${theme}" và lứa tuổi khối ${grade}
-   - Nêu các giá trị đạo đức cần hình thành (trách nhiệm, trung thực, tự chủ, nhân ái...)
-   - Mô tả cách tích hợp vào hoạt động dạy học cụ thể
-   - Độ dài: 100-150 từ, chia thành 2-3 ý bullet points
-
-ĐỊNH DẠNG OUTPUT:
-- Sử dụng gạch đầu dòng (-) cho mỗi ý
-- Viết ngắn gọn, rõ ràng
-- KHÔNG dùng từ chung chung như "phù hợp", "hiệu quả", "tốt"
-
-Trả về CHÍNH XÁC JSON sau (KHÔNG thêm text khác):
-
+OUTPUT JSON:
 {
-  "tich_hop_nls": "- Ý 1 về năng lực số...\\n- Ý 2 về năng lực số...\\n- Ý 3 về năng lực số...",
-  "tich_hop_dao_duc": "- Ý 1 về giáo dục đạo đức...\\n- Ý 2 về giáo dục đạo đức...\\n- Ý 3 về giáo dục đạo đức..."
+  "tich_hop_nls": "Nội dung nâng cấp năng lực số chi tiết...",
+  "tich_hop_dao_duc": "Nội dung nâng cấp đạo đức chi tiết..."
 }`
 
     logs.push("Đang gọi AI để phân tích giáo án...")

@@ -109,22 +109,15 @@ CORE PHILOSOPHIES (KIM CHỈ NAM):
 // ============================================================
 
 export const KHDH_TASK = `
-MỤC TIÊU SẢN PHẨM: NÂNG CẤP & TỐI ƯU HÓA Giáo án cũ thành KHBD SIÊU CHI TIẾT (30-50 trang) theo chuẩn "LA BÀN".
+MỤC TIÊU SẢN PHẨM: "PHẪU THUẬT & TÁI CẤU TRÚC" giáo án cũ thành KHBD SIÊU CHI TIẾT (30-50 trang) chuẩn "LA BÀN".
 
-QUY TRÌNH XỬ LÝ (ƯU TIÊN):
-1. ĐỌC & PHÂN TÍCH: Sử dụng nội dung từ "Giáo án cũ/Tham khảo" (tệp đính kèm) làm khung sườn cơ bản.
-2. KIỂM ĐỊNH 5512: Nếu giáo án cũ thiếu bất kỳ bước nào trong 4 bước (Giao nhiệm vụ -> Thực hiện -> Báo cáo -> Kết luận), BẮT BUỘC phải bổ sung đầy đủ và chi tiết.
-3. INJECT NĂNG LỰC SỐ & ĐẠO ĐỨC: Chắc chắn các giáo án cũ sẽ thiếu phần này. Bạn phải lồng ghép sâu vào các hoạt động thực tế (Ví dụ: HS dùng AI tìm kiếm thông tin, thảo luận về đạo đức mạng...).
-4. CHI TIẾT HÓA (DENSITY): Biến các ý tóm tắt của giáo án cũ thành kịch bản đối thoại chi tiết giữa GV và HS.
+QUY TRÌNH XỬ LÝ (BẮT BUỘC):
+1. TRÍCH XUẤT TINH HOA: Đọc file cũ, giữ lại các "kịch bản gốc", các ví dụ thực tế và số liệu mà giáo viên đã soạn.
+2. ÁP ĐẶT KHUNG 5512: Ép toàn bộ nội dung cũ vào khung 4 bước (Chuyển giao -> Thực hiện -> Báo cáo -> Chốt). Nếu file cũ chỉ có "GV giảng, HS nghe", bạn PHẢI tự biên soạn lại thành các câu hỏi gợi mở, thảo luận nhóm.
+3. INJECT HỆ THỐNG NLS & ĐẠO ĐỨC (NÂNG TẦM): Đây là phần bắt buộc nâng cấp. Sử dụng khung Circular 02/2025 để chèn các hoạt động dùng AI, Canva, Padlet... vào đúng các bước thực hành.
+4. CHI TIẾT HÓA ĐỐI THOẠI: Biến các dòng tóm tắt thành kịch bản hội thoại 2 chiều Living Lesson.
 
-TRIẾT LÝ: "KHBD LÀ LA BÀN" - Giáo viên nhìn vào là biết: Cần làm gì? Hỏi gì? Học sinh trả lời gì? Xử lý tình huống thế nào?
-
-CÁC QUY TẮC "SẮT ĐÁ":
-1. CẤU TRÚC 5512: Mỗi hoạt động phải tuân thủ nghiêm ngặt 4 bước.
-2. TÍNH HÀNH ĐỘNG (ACTIONABLE): GV thực hiện: [Thao tác cụ thể], HỆ THỐNG CÂU HỎI CHỦ CHỐT: [Câu 1].
-3. KỊCH BẢN ĐỐI THOẠI: Gợi ý HS trả lời: "...".
-4. XỬ LÝ TÌNH HUỐNG: Scaffolding cho HS gặp khó khăn.
-5. ĐỊNH DẠNG 2 CỘT: Marker [COT_1]...[/COT_1] và [COT_2]...[/COT_2].
+TRIẾT LÝ: "KHÔNG CHỈ LÀ SAO CHÉP - MÀ LÀ NÂNG CẤP HỆ GEN GIÁO ÁN".
 `;
 
 // ============================================================
@@ -496,11 +489,11 @@ ${activitySuggestions.shl}
   }
 
   const nlsFramework = Object.entries(DIGITAL_LITERACY_FRAMEWORK)
-    .map(([k, v]) => `- NLS ${k}: ${v.name} - ${v.description}`)
+    .map(([k, v]) => `- NLS ${k}: ${v.name}`)
     .join("\n");
 
   const moralThemes = Object.entries(MORAL_EDUCATION_THEMES)
-    .map(([k, v]) => `- ${v.name}: ${v.description}`)
+    .map(([k, v]) => `- ${v.name}`)
     .join("\n");
 
   let tasksSection = "";
@@ -701,11 +694,11 @@ export function getKHDHIntegrationPrompt(
     CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE];
 
   const nlsFramework = Object.entries(DIGITAL_LITERACY_FRAMEWORK)
-    .map(([k, v]) => `- NLS ${k}: ${v.name} - ${v.description}`)
+    .map(([k, v]) => `- NLS ${k}: ${v.name}`)
     .join("\n");
 
   const moralThemes = Object.entries(MORAL_EDUCATION_THEMES)
-    .map(([k, v]) => `- ${v.name}: ${v.description}`)
+    .map(([k, v]) => `- ${v.name}`)
     .join("\n");
 
   return `${KHDH_ROLE}

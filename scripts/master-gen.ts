@@ -27,12 +27,12 @@ async function run() {
                 grade,
                 topic,
                 step,
-                context,
+                JSON.stringify(context),
                 duration,
                 "",
                 [],
-                month,
-                {},
+                String(month),
+                undefined,
                 "gemini-1.5-flash-002"
             );
 

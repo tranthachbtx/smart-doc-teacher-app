@@ -5,8 +5,6 @@
 // MEMO: To enable Edge Runtime, add "export const runtime = 'edge';" to app/page.tsx instead.
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-// import fs from "fs"; // REMOVED FOR EDGE RUNTIME
-// import path from "path"; // REMOVED FOR EDGE RUNTIME
 import { HDTN_CURRICULUM } from "@/lib/hdtn-curriculum";
 import { getPPCTChuDe } from "@/lib/data/ppct-database";
 import {
@@ -25,218 +23,54 @@ import {
 import { getAssessmentPrompt } from "@/lib/prompts/assessment-prompts";
 import { getKHDHPrompt, MONTH_TO_CHU_DE } from "@/lib/prompts/khdh-prompts";
 import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
+import { 
+  parseLessonResult,
+  parseMeetingResult, 
+  parseEventResult,
+  parseNCBHResult,
+  parseAssessmentResult,
+  parseResilient
+} from "@/lib/utils/ai-response-parser";
+
+import type { ActivitySuggestions } from "@/lib/prompts/khdh-prompts";
 
 /**
- * HỆ THỐNG ANTIGRAVITY ORCHESTRATOR 4.2 (INDUSTRIAL STABLE)
- * Triển khai theo phác đồ Saga + CoD + FSAG.
+ * HỆ THỐNG ANTIGRAVITY ORCHESTRATOR 6.0 (CLIENT-SIDE EDITION)
+ * 🚫 SERVER-SIDE SAGA DISABLED FOR VERCEL COMPATIBILITY
+ * ✅ CLIENT-SIDE ORCHESTRATOR ENABLED
  */
 
-// --- 1. SAGA PERSISTENCE (SERVERLESS ADAPTATION) ---
-// Using In-Memory Map simulating Redis for Vercel/Saga Pattern.
+// ========================================
+// 🚫 DEPRECATED: SERVER-SIDE SAGA (DISABLED)
+// ========================================
+// Lý do: Không tương thích với Vercel Serverless
+// Giải pháp: Đã chuyển sang Client-side orchestrator
+// File: hooks/use-slow-orchestrator.ts
 
-declare global {
-  var sagaState: {
-    jobs: Record<string, SagaJob>; // New: Job Registry
-    // Legacy support
-    [key: string]: any;
+export async function startSagaJob(grade: string, topic: string, file?: any): Promise<ActionResult> {
+  console.log(`[Legacy-Redirect] Redirecting to client-side saga...`);
+  return { 
+    success: false, 
+    error: "SERVER_SAGA_DISABLED. Please use client-side orchestrator. See: hooks/use-slow-orchestrator.ts" 
   };
 }
 
-// SAGA DATA MODEL (Strict JSON Structure)
-interface SagaJob {
-  jobId: string;
-  grade: string;
-  topic: string;
-  status: 'planning' | 'processing' | 'completed' | 'failed';
-  blueprint?: any; // The Architect's Design
-  steps: Record<string, {
-    status: 'pending' | 'processing' | 'completed' | 'failed';
-    retry_count: number;
-    error?: string;
-    output_ref?: string; // Content is stored in checkpoints, this is just a ref
-  }>;
-  created_at: string;
-}
-
-if (!global.sagaState) {
-  global.sagaState = { jobs: {} };
-}
-
-function getSagaStore(pName: string): any {
-  // Legacy adapter for specific project lookups
-  if (!global.sagaState[pName]) {
-    global.sagaState[pName] = {
-      path: pName,
-      history: [],
-      concepts: [],
-      summaries: {},
-      gists: {},
-      constitution: null,
-      checkpoints: {}
-    };
-  }
-  return global.sagaState[pName];
-}
-
-// --- SAGA ORCHESTRATOR (THE ARCHITECT) ---
-export async function createSagaJob(grade: string, topic: string): Promise<ActionResult> {
-  const jobId = `job_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-  // 1. Initialize Job
-  global.sagaState.jobs[jobId] = {
-    jobId,
-    grade,
-    topic,
-    status: 'planning',
-    steps: {},
-    created_at: new Date().toISOString()
-  };
-
-  try {
-    // 2. The Architect Phase (Generate Blueprint)
-    console.log(`[Saga] Architecting 50-page "COMPASS" Blueprint for ${grade} - ${topic}...`);
-    const blueprintPrompt = `
-    ROLE: Lead Curriculum Architect & Pedagogical Engineer.
-    TASK: Decompose the lesson plan for 'Grade ${grade} - ${topic}' into a HIGH-DENSITY "COMPASS" (LA BÀN) ARCHITECTURE.
-    Standard: "MOET 5512 (30-50 pages target)".
-    Philosophy: "Less fluff, more action".
-    
-    OUTPUT: JSON ONLY used for queueing system.
-    Structure:
-    {
-      "sections": [
-        { "id": "1_setup", "title": "I. Mục tiêu & Chuẩn bị (Deep Analysis)", "estimated_tokens": 1200 },
-        { "id": "2_khoidong", "title": "II. Hoạt động Khởi động - Tạo mâu thuẫn nhận thức", "estimated_tokens": 1000 },
-        { "id": "3_khampha_1", "title": "III.1 Khám phá 1: Hình thành kiến thức cốt lõi", "estimated_tokens": 2000 },
-        { "id": "3_khampha_2", "title": "III.2 Khám phá 2: Phân tích sâu & Tư duy phản biện", "estimated_tokens": 2000 },
-        { "id": "3_khampha_3", "title": "III.3 Khám phá 3: Tích hợp Năng lực số & Đạo đức", "estimated_tokens": 2000 },
-        { "id": "4_luyentap_1", "title": "IV.1 Luyện tập 1: Củng cố kỹ năng cơ bản", "estimated_tokens": 1500 },
-        { "id": "4_luyentap_2", "title": "IV.2 Luyện tập 2: Sáng tạo & Giải quyết vấn đề", "estimated_tokens": 1500 },
-        { "id": "5_vandung", "title": "V. Vận dụng: Dự án thực tiễn & Cam kết hành động", "estimated_tokens": 1500 },
-        { "id": "6_phuluu", "title": "VI. Hồ sơ dạy học: Phiếu học tập & Rubric chi tiết", "estimated_tokens": 1500 }
-      ]
-    }`;
-
-    // Use a fast model for planning
-    const blueprintJson = await callAI(blueprintPrompt, "gemini-1.5-flash-8b");
-    const blueprint = parseResilient(blueprintJson);
-
-    // 3. Hydrate Job with Micro-tasks
-    global.sagaState.jobs[jobId].blueprint = blueprint;
-
-    if (blueprint.sections && Array.isArray(blueprint.sections)) {
-      blueprint.sections.forEach((sec: any) => {
-        global.sagaState.jobs[jobId].steps[sec.id] = {
-          status: 'pending',
-          retry_count: 0
-        };
-      });
-    }
-
-    global.sagaState.jobs[jobId].status = 'processing';
-    return { success: true, data: { jobId, blueprint } };
-
-  } catch (e: any) {
-    global.sagaState.jobs[jobId].status = 'failed';
-    return { success: false, error: e.message };
-  }
-}
-
-// --- SAGA WORKER (THE BUILDER) ---
 export async function processSagaStep(jobId: string, stepId: string): Promise<ActionResult> {
-  const job = global.sagaState.jobs[jobId];
-  if (!job) return { success: false, error: "Job not found" };
-
-  const step = job.steps[stepId];
-  if (!step) return { success: false, error: "Step not found" };
-
-  try {
-    step.status = 'processing';
-
-    // 1. Retrieve Context (Dependencies)
-    // In a real Saga, we pull summaries from previous steps (Linear Dependency)
-    // For now, we simulate context by pulling the Global Blueprint
-    const context = `BLUEPRINT: ${JSON.stringify(job.blueprint)}`;
-
-    // 2. Execute Generation (Reuse existing logic)
-    // We map stepId to our content generation logic
-    const sectionTitle = job.blueprint.sections.find((s: any) => s.id === stepId)?.title || stepId;
-
-    const result = await generateLessonSection(
-      job.grade,
-      job.topic,
-      sectionTitle,
-      context
-    );
-
-    if (result.success) {
-      step.status = 'completed';
-      step.output_ref = `stored_in_checkpoint_${stepId}`; // Data is already in pName store via generateLessonSection
-      return { success: true, data: { stepId, status: 'completed' } };
-    } else {
-      throw new Error(result.error);
-    }
-
-  } catch (e: any) {
-    step.status = 'failed';
-    step.retry_count++;
-    step.error = e.message;
-    return { success: false, error: e.message };
-  }
-}
-
-function checkpoint_save(pName: string, id: string, data: any) {
-  const store = getSagaStore(pName);
-
-  // Save Full Data Payload
-  store.checkpoints[id] = {
-    metadata: {
-      timestamp: new Date().toISOString(),
-      section: id,
-      version: "5.2-Lite-Serverless"
-    },
-    data
+  return { 
+    success: false, 
+    error: "SERVER_SAGA_DISABLED. Please use client-side orchestrator." 
   };
-
-  // Dynamic Registry Update (Brain)
-  if (data && typeof data === 'object') {
-    const contentStr = JSON.stringify(data);
-
-    // 1. Concept Extraction
-    const concepts = contentStr.match(/khái niệm|định nghĩa|quy tắc|công thức:?\s*"([^"]+)"/gi);
-    if (concepts) store.concepts = Array.from(new Set([...store.concepts, ...concepts]));
-
-    // 2. GIST EXTRACTION
-    const gistMatch = contentStr.match(/STUDENT_GIST:?\s*([\s\S]*?)$/i) || contentStr.match(/TÓM TẮT CỐT LÕI:?\s*([\s\S]*?)$/i);
-    const gist = gistMatch ? gistMatch[1].trim().slice(0, 800) : contentStr.slice(0, 500) + "...";
-
-    store.gists[id] = gist;
-    store.summaries[id] = gist; // Legacy compat
-  }
 }
 
-function checkpoint_load(pName: string, id: string) {
-  const store = getSagaStore(pName);
-  const ckpt = store.checkpoints[id];
-  if (!ckpt) return null;
-  return ckpt.data || ckpt;
-}
+// ========================================
+// ✅ CORE AI FUNCTIONS (STATELESS)
+// ========================================
 
-function get_constitution(pName: string) {
-  const store = getSagaStore(pName);
-  return store.constitution;
-}
-
-function save_constitution(pName: string, data: any) {
-  const store = getSagaStore(pName);
-  store.constitution = data;
-}
-
-// --- 2. RESILIENCE & CIRCUIT BREAKER (v4.7 Slow-Cooking Mode) ---
+// --- 1. RESILIENCE & CIRCUIT BREAKER (v6.0 Stable) ---
 const blacklist = new Set<string>();
 let lastSuccess = Date.now();
-const GAP_MIN = 60000;  // Tăng lên 1 phút tối thiểu
-const GAP_MAX = 180000; // Tăng lên 3 phút tối đa
+const GAP_MIN = 60000;  // 1 phút tối thiểu
+const GAP_MAX = 180000; // 3 phút tối đa
 
 // Token Bucket State
 let tokens = 15;
@@ -264,7 +98,7 @@ async function physical_gap() {
   }
 }
 
-// --- 3. CORE ENGINE (TUNNEL-FETCH MODE v5.2) ---
+// --- 2. CORE ENGINE (TUNNEL-FETCH MODE v6.0) ---
 
 async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: { mimeType: string, data: string }): Promise<string> {
   const allKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3]
@@ -328,7 +162,7 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-antigravity-proxy": "v5.2",
+            "x-antigravity-proxy": "v6.0",
           },
           body: JSON.stringify({
             contents: [{ parts }]
@@ -368,87 +202,64 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
           break; // Next key
         }
 
-        // 4. RATE LIMIT (429) - Decorrelated Jitter Backoff
-        if (status === 429 || errorMsg.includes("429")) {
-          console.warn(`[RateLimit] 429 Detected. Applying Decorrelated Jitter...`);
-          retryWait = Math.min(60000, Math.floor(Math.random() * (retryWait * 3 - 2000 + 1)) + 2000);
-          await new Promise(r => setTimeout(r, retryWait));
-          continue; // Retry same key
+        // 4. RATE LIMIT (429)
+        if (status === 429 || errorMsg.includes("429") || errorMsg.includes("RESOURCE_EXHAUSTED")) {
+          console.error(`[RateLimit] ${status} on key ${key.slice(0, 8)}...`);
+          blacklist.add(key);
+          break; // Next key
         }
 
-        console.warn(`[Error] Key ${key.slice(0, 8)} failed: ${errorMsg}`);
-        break; // Next key
+        // 5. RETRY LOGIC (Internal Server Error)
+        if (status >= 500 && attempt < 1) {
+          console.warn(`[Retryable] ${status} on key ${key.slice(0, 8)}... Retrying...`);
+          await new Promise(r => setTimeout(r, retryWait));
+          retryWait *= 2; // Exponential backoff
+          continue;
+        }
+
+        // 6. FATAL ERRORS
+        console.error(`[Fatal] ${status} on key ${key.slice(0, 8)}...`);
+        break;
       }
     }
   }
 
-  throw new Error(`AI_GENERATION_FAILED: Resilience layers exhausted. Last Error: ${lastError}`);
+  // ALL KEYS FAILED
+  throw new Error(`ALL_KEYS_FAILED. Last error: ${lastError}`);
 }
 
-function apiVer_label(v: string) { return v === "v1" ? "STABLE" : "EXPERIMENTAL"; }
+// --- 3. IMPROVED JSON PARSER (v2.0) ---
+// ✅ Using hardened parser from lib/utils/ai-response-parser.ts
 
-// --- 4. BUSINESS ACTIONS (EXPERT AUDITED) ---
+// --- 4. CORE GENERATION FUNCTIONS ---
 
-export async function checkApiKeyStatus() {
-  const k = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3].filter(x => !!x);
-  return { configured: k.length > 0, primaryKey: k.length > 0, backupKey: k.length > 1, backupKey2: k.length > 2 };
-}
-
-function parseResilient(text: string, key?: string) {
-  const m = text.match(/\{[\s\S]*\}/);
-  if (m) try { return JSON.parse(m[0]); } catch (e) { }
-  return key ? { [key]: text } : { content: text };
-}
-
-export async function generateLessonSection(grade: string, topic: string, section: any, context?: any, duration?: string, custInstr?: string, tasks?: any[], month?: number, suggest?: any, model?: string, file?: any, stepInstr?: string): Promise<ActionResult> {
-  const pName = `${grade}_${topic}`;
-  const ckptId = `section_${section}`;
-
-  // Checkpoint Discovery (FSAG)
-  const cached = checkpoint_load(pName, ckptId);
-  if (cached) {
-    console.log(`[FSAG] Resume Success: ${ckptId}`);
-    return { success: true, data: cached };
-  }
-
+export async function generateLessonSection(
+  grade: string,
+  topic: string,
+  section: string,
+  context: string = "",
+  duration?: string,
+  custInstr?: string,
+  tasks?: Array<string> | Array<{ name: string; description: string; time?: number }>,
+  month?: string,
+  suggest?: string | ActivitySuggestions,
+  model?: string,
+  file?: { mimeType: string, data: string, name: string },
+  stepInstr?: string
+): Promise<ActionResult> {
   try {
-    if (section === 'blueprint') {
-      save_constitution(pName, { grade, topic, duration, month, density: "Standard-30-50-Pages" });
+    const pName = `${grade}_${topic.replace(/\s+/g, '_')}`;
+    const ckptId = `section_${section}`;
+
+    // Check cache first
+    const cached = checkpoint_load(pName, ckptId);
+    if (cached) {
+      console.log(`[Cache] Hit for ${ckptId}`);
+      return { success: true, data: cached };
     }
 
-    // CONTEXT INJECTION: GIST-BASED (vv5.0 Lite)
-    let context_injection = "";
-
-    // In-Memory Lookup (No fs/path)
-    const store = getSagaStore(pName);
-
-    // Inject Blueprint
-    if (store.summaries && store.summaries['section_blueprint']) {
-      context_injection += `GLOBAL_BLUEPRINT: ${store.summaries['section_blueprint']}\n`;
-    }
-
-    // Inject Gists
-    if (store.gists) {
-      context_injection += "PREVIOUS_LEARNING_GISTS:\n";
-      const recentGists = Object.entries(store.gists as Record<string, string>).slice(-3);
-      recentGists.forEach(([sId, g]) => {
-        context_injection += `[${sId.replace('section_', '')}]: ${g}\n`;
-      });
-    }
-
-    // Final Stage: Map-Reduce
-    if (section === 'final' && store.gists) {
-      context_injection += "FULL_LEARNING_JOURNEY (All Gists):\n";
-      Object.entries(store.gists as Record<string, string>).forEach(([sId, g]) => {
-        context_injection += `- ${sId.replace('section_', '')}: ${g}\n`;
-      });
-    }
-
-    // Concept Registry (The Brain)
-    if (store.concepts && store.concepts.length > 0) {
-      context_injection += `VERIFIED_CONCEPTS: ${store.concepts.slice(-15).join(", ")}\n`;
-    }
-
+    // CONTEXT INJECTION: GIST-BASED
+    let context_injection = context;
 
     let specializedPrompt = "";
     switch (section) {
@@ -465,7 +276,6 @@ export async function generateLessonSection(grade: string, topic: string, sectio
         specializedPrompt = "TASK: CONSOLIDATE. Combine all PREVIOUS_LEARNING_GISTS into a cohesive document. Add final Assessment Rubrics.";
         break;
       default:
-        // STRATEGY: TEACHER Q & STUDENT GIST (Abstractive Q&A)
         specializedPrompt = `
         TASK: GENERATE CONTENT FOR SECTION '${section}'.
         STRATEGY: TEACHER Q & STUDENT GIST (Abstractive Generative QA).
@@ -482,9 +292,42 @@ export async function generateLessonSection(grade: string, topic: string, sectio
         CONSTRAINT: Output strictly in Vietnamese. No filler.`;
     }
 
-    const base = getKHDHPrompt(grade, topic, duration || "2 tiết", custInstr, tasks, month, suggest, !!file);
+    const normalizedTasks = Array.isArray(tasks)
+      ? (tasks.length > 0 && typeof tasks[0] === "string"
+          ? (tasks as string[]).map((t) => {
+              const [name, ...rest] = t.split(":");
+              return {
+                name: (name || t).trim(),
+                description: (rest.join(":").trim() || t).trim(),
+              };
+            })
+          : (tasks as Array<{ name: string; description: string; time?: number }>))
+      : undefined;
+
+    const monthNumber = typeof month === "string" ? Number.parseInt(month, 10) : undefined;
+
+    const activitySuggestions: ActivitySuggestions | undefined = (() => {
+      if (!suggest) return undefined;
+      if (typeof suggest === "object") return suggest;
+      try {
+        return JSON.parse(suggest) as ActivitySuggestions;
+      } catch {
+        return undefined;
+      }
+    })();
+
+    const base = getKHDHPrompt(
+      grade,
+      topic,
+      duration || "2 tiết",
+      custInstr,
+      normalizedTasks,
+      Number.isFinite(monthNumber) ? monthNumber : undefined,
+      activitySuggestions,
+      !!file
+    );
     const qualityRules = `
-    RULES (Antigravity Lite v5.2):
+    RULES (Antigravity v6.0):
     1. Output Target: High-Density Pedagogical Content (Markdown).
     2. Format: Use ## Headers, - Bullet points. NO JSON.
     3. MANDATORY: End output with "STUDENT_GIST: <summary>" for memory retention.`;
@@ -492,9 +335,8 @@ export async function generateLessonSection(grade: string, topic: string, sectio
     const complexPrompt = `${context_injection}\n\n${base}\n\nCORE_TASK: ${specializedPrompt}\n${stepInstr || ""}\n${qualityRules}`;
 
     const text = await callAI(complexPrompt, model, file);
-    const data = parseResilient(text, section);
+    const data = parseLessonResult(text);
 
-    checkpoint_save(pName, ckptId, data);
     return { success: true, data };
   } catch (e: any) {
     console.error(`[Fatal Stage ${section}] ${e.message}`);
@@ -502,54 +344,100 @@ export async function generateLessonSection(grade: string, topic: string, sectio
   }
 }
 
-// RESTORE ALL OTHER EXPORTS FOR SYSTEM INTEGRITY
+// Simple cache functions (stateless)
+function checkpoint_load(pName: string, id: string) {
+  return null; // Disabled server-side caching
+}
+
+// ========================================
+// ✅ LEGACY FUNCTIONS (FOR COMPATIBILITY)
+// ========================================
+
 export async function generateMeetingMinutes(m: string, s: string, c: string, conc: string, model?: string): Promise<ActionResult<MeetingResult>> {
   try {
     const t = await callAI(getMeetingPrompt(m, s, c, conc, "", ""), model);
-    return { success: true, data: parseResilient(t) as MeetingResult };
+    return { success: true, data: parseMeetingResult(t) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateLessonPlan(g: string, t: string, f = false, d?: string, c?: string, tasks?: any[], m?: number, s?: any, model?: string, file?: any): Promise<ActionResult<LessonResult>> {
+export async function generateLesson(g: string, t: string, d?: string, c?: string, tasks?: string[], m?: string, s?: string, f?: { mimeType: string, data: string, name: string }, model?: string): Promise<ActionResult<LessonResult>> {
   try {
-    const p = f ? getKHDHPrompt(g, t, d || "2 tiết", c, tasks, m, s, !!file) : getLessonIntegrationPrompt(g, t);
-    const text = await callAI(p, model, file);
-    return { success: true, data: parseResilient(text) as LessonResult };
+    const normalizedTasks = Array.isArray(tasks)
+      ? tasks.map((task) => ({ name: task, description: task }))
+      : undefined;
+    const monthNumber = typeof m === "string" ? Number.parseInt(m, 10) : undefined;
+
+    const activitySuggestions: ActivitySuggestions | undefined = (() => {
+      if (!s) return undefined;
+      try {
+        return JSON.parse(s) as ActivitySuggestions;
+      } catch {
+        return undefined;
+      }
+    })();
+
+    const p = f
+      ? getKHDHPrompt(
+          g,
+          t,
+          d || "2 tiết",
+          c,
+          normalizedTasks,
+          Number.isFinite(monthNumber) ? monthNumber : undefined,
+          activitySuggestions,
+          !!f
+        )
+      : getLessonIntegrationPrompt(g, t);
+    const text = await callAI(p, model, f);
+    return { success: true, data: parseLessonResult(text) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateEventScript(g: string, t: string, i?: string, budget?: string, checklist?: string, evaluation?: string, model?: string, month?: number): Promise<ActionResult<EventResult>> {
+export async function generateEvent(g: string, t: string, i?: string, budget?: string, checklist?: string, evaluation?: string, model?: string): Promise<ActionResult<EventResult>> {
   try {
     const extra = `\n\nNGÂN SÁCH: ${budget || "Tối ưu hóa"}\nDANH MỤC CẦN CHUẨN BỊ: ${checklist || "Tự đề xuất"}\nTIÊU CHÍ ĐÁNH GIÁ: ${evaluation || "Tự đề xuất"}`;
-    const text = await callAI(getEventPrompt(g, t, month) + (i || "") + extra, model);
-    return { success: true, data: parseResilient(text) as EventResult };
-  } catch (e: any) { return { success: false, error: e.message }; }
-}
-
-export async function auditLessonPlan(d: any, g: string, t: string): Promise<ActionResult> {
-  try {
-    const text = await callAI(`Pedagogical Audit for ${t}: ${JSON.stringify(d)}`);
-    return { success: true, audit: text.replace(/\*/g, "") };
+    const text = await callAI(getEventPrompt(g, t, undefined) + (i ? `\n\nCHỈ DẪN BỔ SUNG:\n${i}` : "") + extra, model);
+    return { success: true, data: parseEventResult(text) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
 export async function generateNCBH(g: string, t: string, i?: string, m?: string): Promise<ActionResult<NCBHResult>> {
   try {
     const text = await callAI(`${NCBH_ROLE}\n${NCBH_TASK}\n${g}, ${t}, ${i || ""}`, m);
-    return { success: true, data: parseResilient(text) as NCBHResult };
+    return { success: true, data: parseNCBHResult(text) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
 export async function generateAssessmentPlan(g: string, tr: string, ty: string, to: string, model?: string): Promise<ActionResult<AssessmentResult>> {
   try {
     const text = await callAI(getAssessmentPrompt(g, tr, ty, to), model);
-    return { success: true, data: parseResilient(text) as AssessmentResult };
+    return { success: true, data: parseAssessmentResult(text) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateAIContent(p: string, model?: string): Promise<ActionResult> {
+// API Key Status Check
+export async function checkApiKeyStatus(): Promise<{ configured: boolean; primaryKey: boolean; backupKey: boolean; backupKey2: boolean }> {
+  const k = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3]
+    .filter((k): k is string => !!k)
+    .map(k => k.trim().replace(/^["']|["']$/g, ""));
+  return { configured: k.length > 0, primaryKey: k.length > 0, backupKey: k.length > 1, backupKey2: k.length > 2 };
+}
+
+// ========================================
+// ✅ LEGACY EXPORTS (FOR COMPATIBILITY)
+// ========================================
+
+// Aliases for backward compatibility
+export const generateLessonPlan = generateLesson;
+export const generateEventScript = generateEvent;
+export const auditLessonPlan = generateAssessmentPlan;
+
+// Generic AI content generator
+export async function generateAIContent(prompt: string, model?: string): Promise<ActionResult> {
   try {
-    const text = await callAI(p, model);
-    return { success: true, content: text.replace(/\*/g, "") };
-  } catch (e: any) { return { success: false, error: e.message }; }
+    const text = await callAI(prompt, model);
+    return { success: true, content: text };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
 }

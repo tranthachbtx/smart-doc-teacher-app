@@ -165,6 +165,7 @@ const TemplateEngine = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isAuditing, setIsAuditing] = useState(false);
   const [auditResult, setAuditResult] = useState<string | null>(null);
+  const [auditScore, setAuditScore] = useState<number>(0);
 
   // Common state
   const {
@@ -769,8 +770,7 @@ const TemplateEngine = () => {
       eventBudget,
       eventChecklist,
       eventEvaluation,
-      selectedModel,
-      monthNum
+      selectedModel
     );
 
     if (result.success && result.data) {
@@ -924,10 +924,12 @@ const TemplateEngine = () => {
     if (!lessonResult) return;
     setIsAuditing(true);
     setAuditResult(null);
+    setAuditScore(0);
     try {
       const result = await auditLesson(lessonResult, lessonGrade, lessonTopic || lessonAutoFilledTheme);
       if (result.success && "audit" in result && result.audit) {
         setAuditResult(result.audit);
+        if ("score" in result) setAuditScore(Number(result.score) || 0);
       } else if (result.error) {
         setError(String(result.error));
       }
@@ -1554,14 +1556,6 @@ const TemplateEngine = () => {
           <div className="flex flex-col md:flex-row items-center justify-center gap-3 max-w-4xl mx-auto">
             <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full bg-white shadow-md rounded-xl p-1 h-auto">
               <TabsTrigger
-                value="meeting"
-                className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
-              >
-                <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">Biên bản</span>
-                <span className="sm:hidden">Họp</span>
-              </TabsTrigger>
-              <TabsTrigger
                 value="lesson"
                 className="gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
@@ -1576,6 +1570,14 @@ const TemplateEngine = () => {
                 <Sparkles className="w-4 h-4" />
                 <span className="hidden sm:inline">Ngoại khóa</span>
                 <span className="sm:hidden">HĐNK</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="meeting"
+                className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="hidden sm:inline">Biên bản</span>
+                <span className="sm:hidden">Họp</span>
               </TabsTrigger>
               <TabsTrigger
                 value="ncbh"
@@ -1677,6 +1679,7 @@ const TemplateEngine = () => {
               isAuditing={isAuditing}
               onAudit={handleAudit}
               auditResult={auditResult}
+              auditScore={auditScore}
               setSuccess={setSuccess}
               setError={setError}
               success={success}

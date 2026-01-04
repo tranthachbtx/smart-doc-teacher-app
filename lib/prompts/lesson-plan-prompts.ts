@@ -465,15 +465,52 @@ V. HỒ SƠ DẠY HỌC (PHỤ LỤC):
 // ============================================================
 
 export const DIGITAL_LITERACY_FRAMEWORK = {
-  "1.1": { name: "Tìm kiếm thông tin", description: "Tra cứu nghề nghiệp, tìm hiểu tổ chức trên internet" },
-  "1.2": { name: "Đánh giá thông tin", description: "Phân biệt nguồn tin đáng tin cậy" },
-  "2.1": { name: "Tương tác số", description: "Làm việc nhóm qua Zalo, Google Drive" },
-  "2.2": { name: "Chia sẻ nội dung", description: "Chia sẻ bài học, kinh nghiệm trên mạng xã hội" },
-  "2.4": { name: "Hợp tác số", description: "Sử dụng Padlet, Mentimeter thu thập ý kiến" },
-  "3.1": { name: "Tạo nội dung số", description: "Thiết kế áp phích bằng Canva, video ngắn" },
-  "3.2": { name: "Chỉnh sửa nội dung", description: "Biên tập video, hình ảnh" },
-  "4.1": { name: "An toàn thông tin", description: "Bảo vệ thông tin cá nhân trên mạng" },
-  "4.2": { name: "Bảo vệ sức khỏe số", description: "Cân bằng thời gian sử dụng thiết bị" },
+  "D1": {
+    name: "Khai thác dữ liệu và thông tin",
+    competencies: [
+      "D1.1: Tìm kiếm và lọc dữ liệu, thông tin và nội dung số",
+      "D1.2: Đánh giá dữ liệu, thông tin và nội dung số",
+      "D1.3: Quản lý dữ liệu, thông tin và nội dung số"
+    ]
+  },
+  "D2": {
+    name: "Giao tiếp và hợp tác trong môi trường số",
+    competencies: [
+      "D2.1: Tương tác qua công nghệ số",
+      "D2.2: Chia sẻ thông tin và nội dung số",
+      "D2.4: Hợp tác qua công nghệ số",
+      "D2.5: Quy tắc ứng xử trên môi trường số"
+    ]
+  },
+  "D3": {
+    name: "Sáng tạo nội dung số",
+    competencies: [
+      "D3.1: Phát triển nội dung số (Canva, Video...)",
+      "D3.2: Chỉnh sửa, tích hợp nội dung số"
+    ]
+  },
+  "D4": {
+    name: "An toàn",
+    competencies: [
+      "D4.1: Bảo vệ thiết bị",
+      "D4.2: Bảo vệ dữ liệu cá nhân",
+      "D4.3: Bảo vệ sức khỏe"
+    ]
+  },
+  "D5": {
+    name: "Giải quyết vấn đề",
+    competencies: [
+      "D5.2: Xác định nhu cầu và giải pháp công nghệ",
+      "D5.3: Sáng tạo sử dụng công nghệ số"
+    ]
+  },
+  "D6": {
+    name: "Ứng dụng trí tuệ nhân tạo (AI)",
+    competencies: [
+      "D6.2: Sử dụng công cụ trí tuệ nhân tạo (Gemini, ChatGPT...)",
+      "D6.3: Đánh giá và đạo đức trong sử dụng AI"
+    ]
+  }
 }
 
 export const MORAL_EDUCATION_THEMES = {
@@ -572,15 +609,15 @@ ${LESSON_STRUCTURE_CV5512}
 
 ${INTEGRATION_PLACEMENT_GUIDE}
 
-NĂNG LỰC SỐ CẦN TÍCH HỢP (chọn 2-3 phù hợp với hoạt động cụ thể):
+NĂNG LỰC SỐ THEO THÔNG TƯ 02/2025 (chọn 2-3 năng lực cụ thể để tích hợp):
 ${Object.entries(DIGITAL_LITERACY_FRAMEWORK)
-  .map(([k, v]) => `- NLS ${k}: ${v.name} - ${v.description}`)
-  .join("\n")}
+      .map(([k, v]) => `Miền ${k} (${v.name}):\n` + v.competencies.map(c => `  - ${c}`).join("\n"))
+      .join("\n")}
 
 GIÁO DỤC ĐẠO ĐỨC CẦN TÍCH HỢP (chọn 1-2 phù hợp, giáo dục qua hành động):
 ${Object.entries(MORAL_EDUCATION_THEMES)
-  .map(([k, v]) => `- ${v.name}: ${v.description}`)
-  .join("\n")}
+      .map(([k, v]) => `- ${v.name}: ${v.description}`)
+      .join("\n")}
 
 QUY TẮC TÍCH HỢP BẮT BUỘC:
 1. NLS phải được tích hợp VÀO TỪNG HOẠT ĐỘNG cụ thể (Khởi động/Khám phá/Luyện tập/Vận dụng)

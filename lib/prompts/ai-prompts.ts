@@ -204,9 +204,9 @@ HƯỚNG DẪN VỊ TRÍ TÍCH HỢP:
    - Hoạt động LUYỆN TẬP: Bài tập thực hành có yếu tố đạo đức (đóng vai, xử lý tình huống)
    - Hoạt động VẬN DỤNG: Cam kết hành động thể hiện phẩm chất
 
-KHUNG NĂNG LỰC SỐ (chọn 2-4 phù hợp với hoạt động):
+KHUNG NĂNG LỰC SỐ THÔNG TƯ 02/2025 (chọn 2-4 phù hợp với hoạt động):
 ${Object.entries(DIGITAL_LITERACY_FRAMEWORK)
-      .map(([k, v]) => `- NLS ${k}: ${v.name} - ${v.description}`)
+      .map(([k, v]) => `Miền ${k} (${v.name}):\n` + v.competencies.map(c => `  - ${c}`).join("\n"))
       .join("\n")}
 
 KHUNG GIÁO DỤC ĐẠO ĐỨC (chọn 1-2 phù hợp):
@@ -546,3 +546,49 @@ QUY TẮC ĐỊNH DẠNG VĂN BẢN - CỰC KỲ QUAN TRỌNG:
   "thong_diep_ket_thuc": "Thông điệp truyền cảm hứng (2-3 câu) đúc kết giá trị của toàn bộ hoạt động."
 }`;
 }
+
+// ============================================================
+// PHẦN 6: PROMPT PHẪU THUẬT VÀ NÂNG CẤP CHIẾN LƯỢC (EXPERB BRAIN)
+// ============================================================
+
+export const SURGICAL_UPGRADE_PROMPT = (fileSummary: string, topic: string) => `
+BẠN LÀ: Chuyên gia Khai phá Dữ liệu Giáo dục (Educational Data Mining Expert) với sự ám ảnh về độ chính xác nguyên bản (verbatim accuracy).
+
+MỤC TIÊU: Thực hiện "Content Surgery" (Phẫu thuật nội dung) trên tóm tắt giáo án cũ để trích xuất nguyên liệu thô trước khi tái cấu trúc theo chuẩn 5512.
+
+NGUYÊN TẮC BẤT DI BẤT DỊCH (STRICT RULES):
+1. KHÔNG TÓM TẮT (NO SUMMARIZATION): Tuyệt đối không rút gọn, cải biên. Nếu ví dụ dài, phải trích xuất đủ.
+2. KHÔNG BỎ SÓT (ZERO TRUNCATION): Mọi ví dụ, câu hỏi gợi mở, tình huống thực tế phải được giữ lại 100%.
+3. GIỮ NGUYÊN ĐỊNH DẠNG: Công thức Toán/Lý/Hóa phải dùng LaTeX.
+
+VĂN BẢN CẦN PHẪU THUẬT:
+---
+${fileSummary}
+---
+CHỦ ĐỀ/BỐI CẢNH: ${topic}
+
+QUY TRÌNH TƯ DUY (SURGICAL PROCESS):
+1. Bước 1 [Quét]: Xác định ranh giới (Start/End) của tất cả Ví dụ, Hoạt động trò chơi, Câu hỏi dẫn dắt. Tìm các anchor keywords (Ví dụ, Xét, Cho, Trò chơi...).
+2. Bước 2 [Trích xuất]: Sao chép nguyên văn nội dung vào các mục tương ứng.
+3. Bước 3 [Kiểm chứng]: Tự đối chiếu: "Mình có vừa tóm tắt nội dung này không?". Nếu có, hãy hoàn tác và viết lại nguyên văn.
+
+CẤU TRÚC PHẢN HỒI (BẮT BUỘC):
+
+# 🔍 PHÂN TÍCH LỖI THỜI (Audit)
+- Phân tích ngắn gọn tại sao giáo án cũ chưa đạt chuẩn Năng lực số 2025 (Thông tư 02).
+- Chỉ ra các bước 5512 còn thiếu.
+
+# 💾 TRÍ TUỆ CỐT LÕI (VERBATIM DATA)
+[Danh sách tất cả ví dụ, câu hỏi, kịch bản trò chơi TRÍCH XUẤT NGUYÊN VĂN]
+- Ví dụ 1: ...
+- Hoạt động 2: ...
+- Câu hỏi gợi mở: ...
+
+# 🚀 CHỈ THỊ PHẪU THUẬT (ACTIONABLE DIRECTIVES)
+[Cung cấp 5-10 chỉ dẫn cụ thể cho AI thế hệ sau]
+1. [Khởi động]: Nâng cấp bằng công cụ [Tên công cụ từ Ma trận 2025] để đạt NLS [Mã]...
+2. [Tích hợp]: Chèn ví dụ [Tên ví dụ] vào bước Báo cáo của Hoạt động 2...
+3. [Năng lực số]: Sử dụng AI (Gemini/ChatGPT) để hỗ trợ học sinh ở phần...
+
+LƯU Ý: Phản hồi này là nguyên liệu đầu vào cho Prompt AI sau. Hãy viết ngắn gọn ở phần Chỉ thị nhưng DÀI VÀ ĐẦY ĐỦ ở phần Trí tuệ cốt lõi.
+`;

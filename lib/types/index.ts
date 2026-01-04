@@ -4,6 +4,7 @@ export interface ActionResult<T = any> {
   error?: string;
   audit?: string; // For audit results
   content?: string; // For refined content
+  score?: number; // For compliance scoring
 }
 
 export interface MeetingResult {
@@ -79,6 +80,8 @@ export interface LessonResult {
   is_partial?: boolean;
   sections?: Record<string, string>;
   blueprint?: any;
+  expertGuidance?: string; // Gemini Pro analysis
+  expert_instructions?: string; // Legacy compatibility
 }
 
 export interface SagaTask {
@@ -102,6 +105,7 @@ export interface SagaJob {
   lastUpdateTime?: number;
   lessonFile?: { mimeType: string; data: string; name: string };
   lessonFileSummary?: string; // New: Stores the compressed reference document
+  expertGuidance?: string; // New: Stores external analysis from Gemini Pro
 }
 
 export interface EventResult {

@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -113,41 +114,113 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@layer base {
+  :root {
+    --background: oklch(0.98 0.01 240);
+    --foreground: oklch(0.2 0.02 240);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.6 0.15 250);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.9 0.05 330);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.95 0.02 240);
+    --muted-foreground: oklch(0.4 0.02 240);
+    --accent: oklch(0.92 0.08 20);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.6 0.2 25);
+    --border: oklch(0.9 0.02 240);
+    --input: oklch(0.9 0.02 240);
+    --ring: oklch(0.6 0.15 250);
+    --radius: 1.25rem;
+    
+    /* Pastel Palette */
+    --p-sky: #E0F2FE;
+    --p-salmon: #FEE2E2;
+    --p-mint: #ECFDF5;
+    --p-lavender: #F5F3FF;
+  }
+
+  .dark {
+    --background: #212121;
+    --foreground: #e0e0e0;
+    --card: #2a2a2a;
+    --card-foreground: #e0e0e0;
+    --primary: oklch(0.7 0.1 250);
+    --primary-foreground: #212121;
+    --secondary: #333333;
+    --border: rgba(255, 255, 255, 0.1);
+    --input: #333333;
+    --ring: oklch(0.7 0.1 250);
+  }
+}
+
 @layer utilities {
-  .neumo-raised {
+  .premium-glass {
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 
+      0 8px 32px 0 rgba(31, 38, 135, 0.07),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  }
+
+  .dark .premium-glass {
+    background: rgba(45, 45, 45, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  }
+
+  .premium-neumo {
     background: #f0f2f5;
-    box-shadow: 6px 6px 12px #d1d9e6, -6px -6px 12px #ffffff;
-    border-radius: 12px;
-  }
-  
-  .dark .neumo-raised {
-    background: #212121;
-    box-shadow: 6px 6px 12px #151515, -6px -6px 12px #2d2d2d;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 
+      8px 8px 16px #d1d9e6, 
+      -8px -8px 16px #ffffff,
+      inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius);
   }
 
-  .neumo-pressed {
+  .dark .premium-neumo {
+    background: #212121;
+    box-shadow: 
+      10px 10px 20px #151515, 
+      -10px -10px 20px #2d2d2d;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+  }
+
+  .premium-neumo-inset {
     background: #f0f2f5;
-    box-shadow: inset 6px 6px 12px #d1d9e6, inset -6px -6px 12px #ffffff;
-    border-radius: 12px;
+    box-shadow: 
+      inset 6px 6px 12px #d1d9e6, 
+      inset -6px -6px 12px #ffffff;
+    border-radius: var(--radius);
   }
 
-  .dark .neumo-pressed {
-    background: #212121;
-    box-shadow: inset 6px 6px 12px #151515, inset -6px -6px 12px #2d2d2d;
+  .dark .premium-neumo-inset {
+    background: #1a1a1a;
+    box-shadow: 
+      inset 6px 6px 12px #0c0c0c, 
+      inset -6px -6px 12px #282828;
   }
 
-  .glass-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-  }
+  .soft-pastel-sky { background-color: var(--p-sky); }
+  .soft-pastel-salmon { background-color: var(--p-salmon); }
+  .soft-pastel-mint { background-color: var(--p-mint); }
+  .soft-pastel-lavender { background-color: var(--p-lavender); }
 
-  .dark .glass-card {
-    background: rgba(33, 33, 33, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
+}
+
+/* Font fallbacks */
+body {
+  font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+code, pre {
+  font-family: 'Geist Mono', 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', 'Consolas', 'Courier New', monospace;
 }

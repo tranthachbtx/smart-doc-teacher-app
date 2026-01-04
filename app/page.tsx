@@ -1,6 +1,6 @@
 "use client";
 
-import TemplateEngine from "@/components/template-engine";
+import { TemplateEngine } from "@/components/template-engine/TemplateEngineV2";
 import { Sparkles } from "lucide-react";
 import { DEPT_INFO } from "@/lib/config/department";
 

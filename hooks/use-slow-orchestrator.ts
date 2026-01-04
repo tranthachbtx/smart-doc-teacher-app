@@ -16,7 +16,7 @@ export function useSlowOrchestrator() {
         refreshHistory();
     }, [refreshHistory]);
 
-    const startJob = useCallback(async (grade: string, topic: string, lessonFile?: { mimeType: string, data: string, name: string }) => {
+    const startJob = useCallback(async (grade: string, topic: string, lessonFile?: { mimeType: string, data: string, name: string }, expertGuidance?: string) => {
         const jobId = `job_${Date.now()}`;
         const newJob: SagaJob = {
             jobId,
@@ -27,6 +27,7 @@ export function useSlowOrchestrator() {
             startTime: Date.now(),
             lastUpdateTime: Date.now(),
             lessonFile,
+            expertGuidance,
         };
 
         await saveJob(newJob);
