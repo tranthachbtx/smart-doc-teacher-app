@@ -766,14 +766,14 @@ export function LessonTab({
 
                                     <div className="space-y-2">
                                         <div className="flex justify-between text-xs font-bold">
-                                            <span className="text-slate-500">Hoàn thành: {currentJob.tasks.filter(t => t.status === 'completed').length}/{currentJob.tasks.length}</span>
-                                            <span className="text-emerald-600">{Math.round((currentJob.tasks.filter(t => t.status === 'completed').length / (currentJob.tasks.length || 1)) * 100)}%</span>
+                                            <span className="text-slate-500">Hoàn thành: {currentJob.tasks.filter((t: any) => t.status === 'completed').length}/{currentJob.tasks.length}</span>
+                                            <span className="text-emerald-600">{Math.round((currentJob.tasks.filter((t: any) => t.status === 'completed').length / (currentJob.tasks.length || 1)) * 100)}%</span>
                                         </div>
-                                        <Progress value={(currentJob.tasks.filter(t => t.status === 'completed').length / (currentJob.tasks.length || 1)) * 100} className="h-2 rounded-full" />
+                                        <Progress value={(currentJob.tasks.filter((t: any) => t.status === 'completed').length / (currentJob.tasks.length || 1)) * 100} className="h-2 rounded-full" />
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
-                                        {currentJob.tasks.map((task) => (
+                                        {currentJob.tasks.map((task: any) => (
                                             <div key={task.id} className={`p-3 rounded-2xl border transition-all ${task.status === 'completed' ? 'bg-emerald-50/50 border-emerald-100' :
                                                 task.status === 'processing' ? 'bg-indigo-50/50 border-indigo-100 shadow-lg shadow-indigo-100/50' :
                                                     task.status === 'failed' ? 'bg-red-50 border-red-100' :
