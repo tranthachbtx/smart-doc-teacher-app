@@ -61,6 +61,8 @@ export interface LessonEngineProps {
   onGenerateSection?: (section: any, context: any, stepInstruction?: string) => Promise<ActionResult>;
   lessonFullPlanMode: boolean;
   setLessonFullPlanMode: (value: boolean) => void;
+  lessonFile: { mimeType: string; data: string; name: string } | null;
+  setLessonFile: (file: { mimeType: string; data: string; name: string } | null) => void;
 }
 
 export function LessonEngine(props: LessonEngineProps) {
