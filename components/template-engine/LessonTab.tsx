@@ -31,6 +31,7 @@ import {
     Zap,
     Upload,
     Trash2,
+    ShieldCheck,
 } from "lucide-react";
 import type { LessonResult, LessonTask, ActionResult } from "@/lib/types";
 import type { PPCTChuDe } from "@/lib/data/ppct-database";
