@@ -97,7 +97,7 @@ export const ExportService = {
   /**
    * Wrapper for Lesson Plan export to match TemplateEngine expectations
    */
-  async exportLesson(result: LessonResult, template: any, metadata: any): Promise<{ success: boolean; method: string }> {
+  async exportLesson(result: LessonResult, template: any, metadata: any): Promise<{ success: boolean; method: "download" | "clipboard" }> {
     const fileName = `Giao_an_${metadata.topic || result.ten_bai || "HDTN"}.docx`.replace(/\s+/g, "_");
     await this.exportLessonToDocx(result, fileName);
     return { success: true, method: "download" };
@@ -106,7 +106,7 @@ export const ExportService = {
   /**
    * Exports a Meeting Minute to a .docx file
    */
-  async exportMeeting(result: MeetingResult, template: any, month: string, session: string): Promise<{ success: boolean; method: string }> {
+  async exportMeeting(result: MeetingResult, template: any, month: string, session: string): Promise<{ success: boolean; method: "download" | "clipboard" }> {
     const fileName = `Bien_ban_hop_T${month}_Lan_${session}.docx`;
     const doc = new Document({
       sections: [{
@@ -136,7 +136,7 @@ export const ExportService = {
   /**
    * Exports an Event Script to a .docx file
    */
-  async exportEvent(result: EventResult, template: any, metadata: any): Promise<{ success: boolean; method: string }> {
+  async exportEvent(result: EventResult, template: any, metadata: any): Promise<{ success: boolean; method: "download" | "clipboard" }> {
     const fileName = `Kich_ban_Ngoai_khoa_${metadata.month || "T"}_Khoi_${metadata.grade || ""}.docx`.replace(/\s+/g, "_");
 
     const children: any[] = [
@@ -183,7 +183,7 @@ export const ExportService = {
   /**
    * Exports a NCBH Profile to a .docx file
    */
-  async exportNCBH(result: NCBHResult, template: any, metadata: any): Promise<{ success: boolean; method: string }> {
+  async exportNCBH(result: NCBHResult, template: any, metadata: any): Promise<{ success: boolean; method: "download" | "clipboard" }> {
     const { grade, month } = metadata;
     const fileName = `Ho_so_NCBH_Khoi_${grade || ""}_T${month || ""}.docx`;
     const doc = new Document({
@@ -215,7 +215,7 @@ export const ExportService = {
   /**
    * Exports an Assessment Plan to a .docx file
    */
-  async exportAssessmentPlan(result: AssessmentResult, template: any, metadata: any): Promise<{ success: boolean; method: string }> {
+  async exportAssessmentPlan(result: AssessmentResult, template: any, metadata: any): Promise<{ success: boolean; method: "download" | "clipboard" }> {
     const fileName = `Ke_hoach_Kiem_tra_${metadata.term || ""}_Khoi_${metadata.grade || ""}.docx`.replace(/\s+/g, "_");
 
     const children: any[] = [
