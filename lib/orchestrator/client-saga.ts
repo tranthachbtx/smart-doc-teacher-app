@@ -1,4 +1,7 @@
-import { SagaJob, SagaTask } from '@/lib/types';
+import { SagaJob, SagaTask } from '@/lib/types/index';
+
+// Re-export types for other modules
+export type { SagaJob, SagaTask };
 
 /**
  * ANTIGRAVITY CLIENT-SIDE ORCHESTRATOR (v6.13 - Fortress Edition)
