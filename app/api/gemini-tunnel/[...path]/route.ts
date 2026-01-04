@@ -43,7 +43,7 @@ export async function POST(req: NextRequest, { params }: any) {
         if (proxyUrl) {
             try {
                 const targetUrl = `${proxyUrl.replace(/\/$/, "")}${fullPath}`;
-                console.log(`[Tunnel] Proxy Call -> ${targetUrl}`);
+                console.log(`[Tunnel] 🌩️ Proxy Attempt -> ${targetUrl}`);
                 const response = await fetch(targetUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -51,52 +51,74 @@ export async function POST(req: NextRequest, { params }: any) {
                     signal: AbortSignal.timeout(9000)
                 });
 
+                console.log(`[Tunnel] Proxy Response: ${response.status} ${response.statusText}`);
                 const contentType = response.headers.get("content-type") || "";
+                console.log(`[Tunnel] Proxy Content-Type: ${contentType}`);
+
                 if (response.ok && contentType.includes("application/json")) {
                     const raw = await response.text();
+                    console.log(`[Tunnel] Proxy Raw Response (first 200): ${raw.slice(0, 200)}`);
                     try {
                         return NextResponse.json(raw ? JSON.parse(raw) : null);
                     } catch {
-                        console.warn("[Tunnel] Proxy returned non-JSON. Skipping.");
+                        console.warn("[Tunnel] ⚠️ Proxy returned non-JSON. Skipping.");
                     }
+                } else {
+                    const raw = await response.text();
+                    console.warn(`[Tunnel] ⚠️ Proxy Junk/Error. Status: ${response.status}. Body: ${raw.slice(0, 200)}`);
                 }
-                console.warn("[Tunnel] Proxy Junk/Error. Skipping.");
-            } catch (e) {
-                console.warn("[Tunnel] Proxy Fail.");
+            } catch (e: any) {
+                console.warn(`[Tunnel] ⚠️ Proxy Fail: ${e.message}`);
             }
+        } else {
+            console.log("[Tunnel] ℹ️ No proxy URL configured, skipping proxy");
         }
 
         // 2. Thử xoay Key trực tiếp và tự tìm Model tương thích
-        console.log(`[Tunnel] Google direct auth with ${API_KEYS.length} keys...`);
-        for (const key of API_KEYS) {
+        console.log(`[Tunnel] 🔑 Google direct auth with ${API_KEYS.length} keys...`);
+        for (let i = 0; i < API_KEYS.length; i++) {
+            const key = API_KEYS[i];
+            console.log(`[Tunnel] 🔑 Trying key ${i + 1}/${API_KEYS.length} (${key.slice(0, 5)}...)`);
             let result = await tryGeminiCall(fullPath, key, body);
-            if (result.success) return NextResponse.json(result.data);
+            console.log(`[Tunnel] 🔑 Key ${i + 1} result: ${result.success ? 'SUCCESS' : `FAIL (${result.status})`}`);
+            
+            if (result.success) {
+                console.log(`[Tunnel] ✅ Key ${i + 1} SUCCESS! Returning response.`);
+                return NextResponse.json(result.data);
+            }
 
             // Phát hiện lỗi Resource Exhausted (429) hoặc Not Found (404)
             if (result.status === 404 || result.status === 429) {
-                console.log(`[Discovery] Key ${key.slice(0, 5)} failed (${result.status}). Trying variants...`);
+                console.log(`[Tunnel] 🔍 Key ${i + 1} failed (${result.status}). Trying model discovery...`);
                 for (const model of DISCOVERY_MODELS) {
                     const discoveryPath = fullPath.replace(/models\/[^:]+:/, `models/${model}:`);
                     if (discoveryPath === fullPath) continue;
 
+                    console.log(`[Tunnel] 🔍 Trying model: ${model}`);
                     const retry = await tryGeminiCall(discoveryPath, key, body);
                     if (retry.success) {
-                        console.log(`[Discovery] Recovered with: ${model}`);
+                        console.log(`[Tunnel] ✅ Discovery SUCCESS with: ${model}`);
                         return NextResponse.json(retry.data);
+                    } else {
+                        console.log(`[Tunnel] 🔍 Model ${model} failed: ${retry.status}`);
                     }
                 }
             }
             lastError = { provider: "gemini", status: result.status, detail: result.data };
+            console.log(`[Tunnel] ❌ Key ${i + 1} completely failed. Error: ${result.status}`);
         }
 
         // 3. CỐ CÁNH CUỐI CÙNG: Fallback tới OpenAI/Groq (Dùng mã của người dùng)
-        console.log("[Tunnel] All Gemini gates failing. Trying Text-Only Fallback...");
+        console.log("[Tunnel] 🆘 All Gemini gates failing. Trying Text-Only Fallback...");
         const fallback = await tryTextOnlyFallback(body);
         if (fallback) {
-            console.log("[Tunnel] Fallback Recovery with OpenAI/Groq SUCCESS.");
+            console.log("[Tunnel] ✅ Fallback Recovery with OpenAI/Groq SUCCESS.");
             return NextResponse.json(fallback);
+        } else {
+            console.log("[Tunnel] ❌ Fallback also failed. No options left.");
         }
 
+        console.log("[Tunnel] 💀 COMPLETE FAILURE. Returning 502 with details:", JSON.stringify(lastError, null, 2));
         return NextResponse.json({ error: "Saga Halted: All AI Channels Failed", detail: lastError }, { status: 502 });
 
     } catch (error: any) {
@@ -131,32 +153,58 @@ async function tryGeminiCall(fullPath: string, key: string, body: any) {
 async function tryTextOnlyFallback(body: any): Promise<any | null> {
     const parts: any[] = body?.contents?.[0]?.parts || [];
     const hasInlineData = parts.some(p => !!p?.inlineData);
-    if (hasInlineData) return null; // Không fallback được file PDF nặng
+    if (hasInlineData) {
+        console.log("[Tunnel] 🆘 Fallback skipped: contains inline data (PDF/image)");
+        return null; // Không fallback được file PDF nặng
+    }
 
     const prompt = parts.map(p => (typeof p?.text === 'string' ? p.text : '')).filter(Boolean).join('\n');
-    if (!prompt.trim()) return null;
+    if (!prompt.trim()) {
+        console.log("[Tunnel] 🆘 Fallback skipped: no text content");
+        return null;
+    }
+
+    console.log(`[Tunnel] 🆘 Fallback attempt with prompt (${prompt.length} chars)`);
 
     const openaiKey = (process.env.OPENAI_API_KEY || '').trim();
     if (openaiKey) {
+        console.log("[Tunnel] 🆘 Trying OpenAI fallback...");
         const r = await callOpenAICompatible({
             baseUrl: 'https://api.openai.com/v1',
             apiKey: openaiKey,
             model: 'gpt-4o-mini',
             prompt
         });
-        if (r) return wrapAsGeminiCandidate(r);
+        if (r) {
+            console.log("[Tunnel] ✅ OpenAI fallback SUCCESS");
+            return wrapAsGeminiCandidate(r);
+        } else {
+            console.log("[Tunnel] ❌ OpenAI fallback failed");
+        }
+    } else {
+        console.log("[Tunnel] ℹ️ No OpenAI key configured");
     }
 
     const groqKey = (process.env.GROQ_API_KEY || '').trim();
     if (groqKey) {
+        console.log("[Tunnel] 🆘 Trying Groq fallback...");
         const r = await callOpenAICompatible({
             baseUrl: 'https://api.groq.com/openai/v1',
             apiKey: groqKey,
             model: 'llama3-8b-8192',
             prompt
         });
-        if (r) return wrapAsGeminiCandidate(r);
+        if (r) {
+            console.log("[Tunnel] ✅ Groq fallback SUCCESS");
+            return wrapAsGeminiCandidate(r);
+        } else {
+            console.log("[Tunnel] ❌ Groq fallback failed");
+        }
+    } else {
+        console.log("[Tunnel] ℹ️ No Groq key configured");
     }
+    
+    console.log("[Tunnel] ❌ All fallback providers failed");
     return null;
 }
 
