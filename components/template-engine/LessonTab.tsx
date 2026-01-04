@@ -173,7 +173,7 @@ export function LessonTab({
     // --- ANTIGRAVITY v4.5: INDUSTRIAL HIERARCHICAL WORKFLOW ---
     // --- ANTIGRAVITY v6.0: DECOMMISSIONED OLD LOGIC ---
     // (Old handleAutoGenerate and manual states were triggering timeouts)
-    // --- ANTIGRAVITY v6.0: CLIENT-SIDE SAGA INTEGRATION ---
+    // --- ANTIGRAVITY v6.2: DIAGNOSTIC & SYNC ---
     const {
         currentJob,
         isGenerating: isSagaGenerating,
@@ -181,21 +181,16 @@ export function LessonTab({
         resumeJob: resumeSagaJob
     } = useSlowOrchestrator();
 
-    const handleSagaGenerate = async () => {
-        if (!lessonGrade || !lessonAutoFilledTheme) return;
-
-        // Prepare file context if exists
-        const sagaContext = {
-            lessonFile: lessonFile || undefined,
-            grade: lessonGrade,
-            topic: lessonAutoFilledTheme,
-        };
-
-        setSuccess("🔥 Kích hoạt hệ thống Client-Side Saga (v6.0). Hệ thống đang nghiên cứu tệp PDF cũ để thiết kế lộ trình tối ưu...");
-
-        // Start the job (which internally handles task distribution and slow cooking)
-        await startSagaJob(lessonGrade, lessonAutoFilledTheme, lessonFile || undefined);
-    };
+    React.useEffect(() => {
+        if (currentJob) {
+            console.log(`[Diagnostic] Saga State: ${currentJob.status}. Tasks Completed: ${currentJob.tasks.filter(t => t.status === 'completed').length}`);
+            // Check if any task failed with ENV_ERROR
+            const envError = currentJob.tasks.find(t => t.error?.includes("ENV_ERROR"));
+            if (envError) {
+                console.error("[Crit] Environment Variable Sync Error detected in Saga:", envError.error);
+            }
+        }
+    }, [currentJob]);
 
     // Effect to sync Saga completed tasks to lessonResult
     React.useEffect(() => {
@@ -205,8 +200,10 @@ export function LessonTab({
                 const newResult: any = { ...lessonResult };
                 let hashChanged = false;
                 completedTasks.forEach(task => {
-                    if (task.output && !newResult[task.id]) {
-                        newResult[task.id] = task.output;
+                    // Antigravity Sync: Map Saga Task ID to LessonResult key
+                    const key = task.id;
+                    if (task.output && !newResult[key]) {
+                        newResult[key] = task.output;
                         hashChanged = true;
                     }
                 });
@@ -216,6 +213,18 @@ export function LessonTab({
             }
         }
     }, [currentJob, lessonResult, setLessonResult]);
+
+    const handleSagaGenerate = async () => {
+        if (!lessonGrade || !lessonAutoFilledTheme) {
+            setError("Vui lòng nhập Khối và Tên bài dạy trước khi bắt đầu.");
+            return;
+        }
+
+        console.log("[Saga] Starting Job. Current Proxy URL in Bundle:", process.env.NEXT_PUBLIC_GEMINI_PROXY_URL);
+
+        setSuccess("🔥 Kích hoạt hệ thống Client-Side Saga (v6.2). Đang khởi tạo lộ trình tối ưu...");
+        await startSagaJob(lessonGrade, lessonAutoFilledTheme, lessonFile || undefined);
+    };
 
     // --- REDIRECTING MANUAL CLICKS TO SAGA ---
     const handleStepGenerate = (stepId: string) => {
@@ -781,6 +790,11 @@ export function LessonTab({
                                                         {task.title}
                                                     </span>
                                                 </div>
+                                                {task.status === 'failed' && task.error && (
+                                                    <div className="mt-2 text-[8px] leading-tight text-red-600 bg-red-100/50 p-1.5 rounded-lg border border-red-200 animate-in fade-in duration-300 font-mono">
+                                                        {task.error.slice(0, 50)}...
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

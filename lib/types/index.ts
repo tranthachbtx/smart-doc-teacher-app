@@ -81,13 +81,27 @@ export interface LessonResult {
   blueprint?: any;
 }
 
-export interface SagaStatus {
+export interface SagaTask {
+  id: string;
+  title: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  output?: string;
+  gist?: string;
+  error?: string;
+  retryCount: number;
+  provider?: 'gemini' | 'openai';
+}
+
+export interface SagaJob {
   jobId: string;
-  status: "planning" | "processing" | "completed" | "failed";
-  progress: number;
-  currentStep?: string;
-  sections: string[];
-  completedSteps: string[];
+  grade: string;
+  topic: string;
+  tasks: SagaTask[];
+  status: 'idle' | 'architecting' | 'processing' | 'completed' | 'failed';
+  startTime?: number;
+  lastUpdateTime?: number;
+  lessonFile?: { mimeType: string; data: string; name: string };
+  lessonFileSummary?: string; // New: Stores the compressed reference document
 }
 
 export interface EventResult {
