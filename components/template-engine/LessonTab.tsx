@@ -199,7 +199,7 @@ export function LessonTab({
             if (completedTasks.length > 0) {
                 const newResult: any = { ...lessonResult };
                 let hashChanged = false;
-                completedTasks.forEach(task => {
+                completedTasks.forEach((task: any) => {
                     // Antigravity Sync: Map Saga Task ID to LessonResult key
                     const key = task.id;
                     if (task.output && !newResult[key]) {
