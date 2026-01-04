@@ -183,9 +183,9 @@ export function LessonTab({
 
     React.useEffect(() => {
         if (currentJob) {
-            console.log(`[Diagnostic] Saga State: ${currentJob.status}. Tasks Completed: ${currentJob.tasks.filter((t: any) => t.status === 'completed').length}`);
+            console.log(`[Diagnostic] Saga State: ${currentJob.status}. Tasks Completed: ${currentJob.tasks.filter((t: { status: string }) => t.status === 'completed').length}`);
             // Check if any task failed with ENV_ERROR
-            const envError = currentJob.tasks.find((t: any)=>  t.error?.includes("ENV_ERROR"));
+            const envError = currentJob.tasks.find((t: { error: string | undefined }) => t.error?.includes("ENV_ERROR"));
             if (envError) {
                 console.error("[Crit] Environment Variable Sync Error detected in Saga:", envError.error);
             }
