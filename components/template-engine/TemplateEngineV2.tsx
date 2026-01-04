@@ -107,7 +107,7 @@ export function TemplateEngine() {
   const [lessonTasks, setLessonTasks] = useState<LessonTask[]>([]);
   const [lessonCustomInstructions, setLessonCustomInstructions] = useState<string>("");
   const [lessonResult, setLessonResult] = useState<LessonResult | null>(null);
-  const [lessonFullPlanMode, setLessonFullPlanMode] = useState<boolean>(false);
+  const [lessonFullPlanMode, setLessonFullPlanMode] = useState<boolean>(true);
   const [lessonFile, setLessonFile] = useState<{ mimeType: string; data: string; name: string } | null>(null);
 
   // --- Event State ---

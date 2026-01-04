@@ -62,6 +62,39 @@ Yêu cầu:
 - Áp dụng kiến thức thực tế
 - Phát triển kỹ năng mềm
 - Có sản phẩm cụ thể`
+  },
+  
+  global: {
+    title: "Gợi ý Global AI Directives",
+    content: `Yêu cầu AI tạo giáo án theo chuẩn CV 5512 với các mục sau:
+
+1. MỤC TIÊU
+   - Kiến thức: [chủ đề bài học]
+   - Năng lực: tư duy phản biện, hợp tác, giao tiếp
+   - Phẩm chất: trách nhiệm, lòng yêu nước
+
+2. CHUẨN BỊ
+   - GV: slide, video, phiếu học tập
+   - HS: tài liệu, thiết bị học tập
+
+3. TIẾN TRÌNH DẠY HỌC
+   - Khởi động: tình huống, vấn đề
+   - Khám phá: thảo luận nhóm, thực hành
+   - Luyện tập: bài tập tăng dần
+   - Vận dụng: dự án thực tế
+
+4. TÍCH HỢP
+   - Năng lực số: sử dụng công cụ
+   - Giáo dục đạo đức: giá trị sống
+
+5. HỒ SƠ
+   - Phiếu học tập
+   - Rubric đánh giá
+
+Yêu cầu chất lượng:
+- Độ dài: tối thiểu 12 trang A4
+- Chi tiết: kịch bản GV, câu hỏi gợi mở
+- Thực tế: tình huống dạy học`
   }
 };
 
