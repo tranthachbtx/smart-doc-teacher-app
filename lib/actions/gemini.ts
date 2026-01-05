@@ -446,3 +446,18 @@ export async function onRefineSection(content: string, instruction: string, mode
   return generateAIContent(prompt, model);
 }
 // CV5512 COMPLIANCE CHECKER is now imported from compliance-checker.ts
+
+/**
+ * FILE ANALYZER: Trích xuất nội dung từ file (PDF, Image) để làm context
+ */
+export async function extractTextFromFile(
+  file: { mimeType: string; data: string },
+  prompt: string = "Hãy tóm tắt nội dung chính của tài liệu này để làm tư liệu soạn bài. Liệt kê các hoạt động chính."
+): Promise<ActionResult> {
+  try {
+    const text = await callAI(prompt, "gemini-1.5-flash", file);
+    return { success: true, content: text };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}

@@ -29,6 +29,21 @@ Hệ thống đã được nâng cấp toàn diện dựa trên 8 yêu cầu ngh
 - **Vị trí**: `SURGICAL_UPGRADE_PROMPT` trong `lib/prompts/ai-prompts.ts`.
 - **Đặc tính**: Thiết kế với các hướng dẫn nghiêm ngặt để trích xuất 100% "Trí tuệ cốt lõi" (ví dụ, tình huống hay) từ file cũ, đảm bảo không bỏ sót di sản sư phạm của giáo viên.
 
+## 6. SMART EXPORT ENGINE (Template Injection)
+- **Công nghệ**: Thay thế hoàn toàn code sinh Word cũ bằng `ExportService` mới: **Direct XML Template Injection**.
+- **Tính năng**:
+  - Hỗ trợ xuất file lên tới 100 trang.
+  - Tách cột GV/HS triệt để (không bao giờ bị trộn nội dung).
+  - Giữ nguyên 100% định dạng file mẫu của nhà trường.
+  - Tự động parse JSON arrays thành bảng 2 cột.
+
+## 7. MANUAL WORKFLOW HUB (Smart Copy-Paste)
+- **Giao diện**: Tab "Chế độ Chuyên gia".
+- **Tính năng**:
+  - Quy trình "Module-based": Chia nhỏ giáo án thành 4 phần để xử lý từng phần.
+  - **Context-Aware Prompt**: Tự động sinh prompt kèm bối cảnh module trước.
+  - **Strict JSON Protocol**: Ép buộc AI trả về JSON để đảm bảo cấu trúc dữ liệu chính xác tuyệt đối.
+
 ## 🚀 HƯỚNG DẪN SỬ DỤNG LỒNG GHÉP:
 1. **Upload**: Nạp giáo án cũ vào hệ thống.
 2. **Consult**: Nhấn "Copy Prompt" -> Chạy Gemini Pro bên ngoài.

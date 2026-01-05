@@ -426,12 +426,41 @@ export const ExportService = {
       // Ideally, the AI should return separated content. If currently mixed, we rely on parseTwoColumnContent
 
       const parseColumns = (content: string) => {
-        // Re-use logic: Find {{cot_1}} and {{cot_2}}
+        // 1. Try JSON Parsing (Priority for Manual Workflow)
+        // 1. Try JSON Parsing (Priority for Manual Workflow)
+        try {
+          // Smart Sanitizer: Extract JSON object only
+          const startIndex = content.indexOf("{");
+          const endIndex = content.lastIndexOf("}");
+
+          if (startIndex !== -1 && endIndex !== -1) {
+            const jsonString = content.substring(startIndex, endIndex + 1);
+            const jsonData = JSON.parse(jsonString);
+
+            if (jsonData.steps && Array.isArray(jsonData.steps)) {
+              let gv = "";
+              let hs = "";
+              jsonData.steps.forEach((step: any) => {
+                const tAction = step.teacher_action || "";
+                const sAction = step.student_action || "";
+                // Supports LaTeX escaping if present
+                if (tAction) gv += (gv ? "\n\n" : "") + tAction;
+                if (sAction) hs += (hs ? "\n\n" : "") + sAction;
+              });
+              // Also support Duration injection if template allows (optional future feature)
+              return { gv, hs };
+            }
+          }
+        } catch (e) {
+          // Not JSON or Invalid JSON, ignore and fallback
+        }
+
+        // 2. Old Regex Logic (Legacy/Fallback)
         const cot1Match = /\{\{cot_1\}\}/i.exec(content);
         const cot2Match = /\{\{cot_2\}\}/i.exec(content);
 
         if (!cot1Match && !cot2Match) {
-          // No markers -> Return full content for GV, empty for HS (or splitting logic if appropriate)
+          // No markers -> Return full content for GV, empty for HS
           return { gv: content, hs: "" };
         }
 

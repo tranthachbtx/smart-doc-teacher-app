@@ -2,6 +2,15 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { LessonResult, LessonTask } from '@/lib/types';
 
+export interface ProcessingModule {
+    id: string;
+    title: string;
+    type: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung' | 'khac';
+    prompt: string;
+    content: string;
+    isCompleted: boolean;
+}
+
 interface LessonState {
     // Data
     lessonResult: LessonResult | null;
@@ -13,6 +22,9 @@ interface LessonState {
     lessonTasks: LessonTask[];
     lessonFile: { mimeType: string; data: string; name: string } | null;
     expertGuidance: string;
+
+    // Manual Processing State (NEW)
+    manualModules: ProcessingModule[];
 
     // UI Status
     isGenerating: boolean;
@@ -35,6 +47,10 @@ interface LessonState {
     setStatus: (type: 'success' | 'error', msg: string | null) => void;
     setExportProgress: (progress: number) => void;
     setSelectedModel: (model: string) => void;
+
+    // Manual Processing Actions (NEW)
+    setManualModules: (modules: ProcessingModule[]) => void;
+    updateModuleContent: (id: string, content: string) => void;
     resetAll: () => void;
 }
 
@@ -51,6 +67,7 @@ export const useLessonStore = create<LessonState>()(
             lessonTasks: [],
             lessonFile: null,
             expertGuidance: "",
+            manualModules: [], // Initial empty
             isGenerating: false,
             isExporting: false,
             isAuditing: false,
@@ -76,7 +93,16 @@ export const useLessonStore = create<LessonState>()(
             setStatus: (type, msg) => set({ [type]: msg }),
             setExportProgress: (progress: number) => set({ exportProgress: progress }),
             setSelectedModel: (model: string) => set({ selectedModel: model }),
-            resetAll: () => set({ lessonResult: null, success: null, error: null, exportProgress: 0 }),
+
+            // Manual Actions
+            setManualModules: (modules) => set({ manualModules: modules }),
+            updateModuleContent: (id, content) => set((state) => ({
+                manualModules: state.manualModules.map(m =>
+                    m.id === id ? { ...m, content: content, isCompleted: !!content.trim() } : m
+                )
+            })),
+
+            resetAll: () => set({ lessonResult: null, success: null, error: null, exportProgress: 0, manualModules: [] }),
         }),
         {
             name: 'lesson-storage',
@@ -84,8 +110,9 @@ export const useLessonStore = create<LessonState>()(
             partialize: (state) => ({
                 lessonResult: state.lessonResult,
                 lessonGrade: state.lessonGrade,
-                lessonAutoFilledTheme: state.lessonAutoFilledTheme
-            }), // Chỉ persist những dữ liệu quan trọng
+                lessonAutoFilledTheme: state.lessonAutoFilledTheme,
+                manualModules: state.manualModules // Persist manual modules too
+            }),
         }
     )
 );

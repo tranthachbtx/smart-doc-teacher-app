@@ -65,6 +65,8 @@ import { MeetingEngine, type MeetingEngineProps } from "./MeetingEngine";
 import { LessonEngine, type LessonEngineProps } from "./LessonEngine";
 import { EventEngine, type EventEngineProps } from "./EventEngine";
 import { NCBHTab } from "./NCBHTab";
+import { ManualProcessingHub } from "@/components/manual-workflow/ManualProcessingHub";
+
 import { AssessmentTab } from "./AssessmentTab";
 import { TemplateManager } from "../template-manager";
 import type {
@@ -88,6 +90,7 @@ import { ExportService } from "@/lib/services/export-service";
 export function TemplateEngine() {
   // --- Tab Management ---
   const [activeMode, setActiveMode] = useState<string>("lesson");
+  const [useManualWorkflow, setUseManualWorkflow] = useState(false);
 
   // --- Meeting State ---
   const [selectedSession, setSelectedSession] = useState<string>("1");
@@ -624,8 +627,27 @@ export function TemplateEngine() {
             <MeetingEngine {...meetingEngineProps} />
           </TabsContent>
 
-          <TabsContent value="lesson">
-            <LessonEngine {...lessonEngineProps} />
+          <TabsContent value="lesson" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
+            {/* Workflow Toggle */}
+            <div className="flex items-center justify-center space-x-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+              <span className={`text-sm font-medium ${!useManualWorkflow ? "text-blue-600 font-bold" : "text-slate-500"}`}>
+                🤖 Chế độ Tự động (AI System)
+              </span>
+              <Switch
+                id="workflow-mode"
+                checked={useManualWorkflow}
+                onCheckedChange={setUseManualWorkflow}
+              />
+              <span className={`text-sm font-medium ${useManualWorkflow ? "text-green-600 font-bold" : "text-slate-500"}`}>
+                🧠 Chế độ Chuyên gia (Copy-Paste)
+              </span>
+            </div>
+
+            {useManualWorkflow ? (
+              <ManualProcessingHub />
+            ) : (
+              <LessonEngine {...lessonEngineProps} />
+            )}
           </TabsContent>
 
           <TabsContent value="event">
