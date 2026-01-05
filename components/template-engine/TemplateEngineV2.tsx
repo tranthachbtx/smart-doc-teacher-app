@@ -543,10 +543,10 @@ export function TemplateEngine() {
         <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Trợ lý Soạn thảo Giáo án
+              Trợ lý cho Trần Thạch - Trường THPT Bùi Thị Xuân - Mũi Né - Lâm Đồng
             </CardTitle>
             <CardDescription className="text-lg text-slate-600">
-              Hệ thống AI hỗ trợ tạo giáo án, biên bản họp, kế hoạch ngoại khóa và đánh giá
+              Hệ thống AI hỗ trợ tạo Kế hoạch bài học chuẩn 5512, nghiên cứu bài học chuyên sâu, kế hoạch ngoại khóa chất lượng và kế hoạch đánh giá khoa học!
             </CardDescription>
           </CardHeader>
         </Card>

@@ -421,3 +421,55 @@ export async function generateAIContent(prompt: string, model?: string): Promise
     return { success: false, error: e.message };
   }
 }
+
+/**
+ * REFINE SECTION: Tinh chỉnh một đoạn nội dung cụ thể
+ */
+export async function onRefineSection(content: string, instruction: string, model: string = "gemini-1.5-flash"): Promise<ActionResult> {
+  const prompt = `
+    VAI TRÒ: Chuyên gia biên soạn giáo án.
+    YÊU CẦU: Một giáo viên đang cần bạn tinh chỉnh đoạn nội dung dưới đây.
+    
+    NỘI DUNG HIỆN TẠI:
+    "${content}"
+    
+    CHỈ DẪN TINH CHỈNH:
+    "${instruction}"
+    
+    QUY TẮC:
+    1. Giữ nguyên định dạng Markdown.
+    2. Chỉ trả về nội dung đã tinh chỉnh, không thêm lời dẫn giải.
+    3. Ngôn ngữ: Tiếng Việt.
+  `;
+
+  return generateAIContent(prompt, model);
+}
+/**
+ * CV5512 COMPLIANCE CHECKER: Professional Audit System
+ */
+export async function check5512Compliance(lessonContent: any, model: string = "gemini-1.5-flash"): Promise<ActionResult> {
+  const prompt = `
+    VAI TRÒ: Chuyên gia kiểm định chất lượng giáo dục (BGDĐT).
+    NHIỆM VỤ: Kiểm định tính tuân thủ của Kế hoạch bài dạy dưới đây theo Công văn 5512.
+    
+    NỘI DUNG GIÁO ÁN:
+    ${JSON.stringify(lessonContent, null, 2)}
+    
+    TIÊU CHÍ KIỂM ĐỊNH (100 ĐIỂM):
+    1. Cấu trúc 4 hoạt động (25đ): Khởi động, Khám phá, Luyện tập, Vận dụng.
+    2. Chi tiết 4 bước (25đ): Chuyển giao, Thực hiện, Báo cáo, Kết luận.
+    3. Tích hợp Năng lực số & Đạo đức (20đ): Có tính ứng dụng thực tế, công cụ hiện đại.
+    4. Ngôn ngữ sư phạm & LOGIC (20đ): Phù hợp độ tuổi, tính khả thi cao.
+    5. Hình thức trình bày (10đ): Chuẩn 2 cột, marker {{cot_1}}, {{cot_2}} chính xác.
+    
+    YÊU CẦU ĐẦU RA (MARKDOWN):
+    1. ĐIỂM CHẤT LƯỢNG: [X/100]
+    2. ƯU ĐIỂM: [Các điểm sáng]
+    3. TỒN TẠI: [Các điểm cần sửa]
+    4. CHỈ THỊ PHẪU THUẬT (SURGICAL DIRECTIVES): Ghi rõ "Sửa mục X thành Y" để AI có thể thực hiện ngay.
+    
+    Ngôn ngữ: Tiếng Việt.
+  `;
+
+  return generateAIContent(prompt, model);
+}

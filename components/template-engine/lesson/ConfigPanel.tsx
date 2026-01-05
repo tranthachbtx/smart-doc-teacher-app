@@ -2,7 +2,6 @@
 
 import React from "react";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import {
     Select,
     SelectContent,
@@ -10,37 +9,19 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import { BookOpen, Clock, Calendar } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { BookOpen } from "lucide-react";
 import { getChuDeListByKhoi, type PPCTChuDe } from "@/lib/data/ppct-database";
+import { useLessonStore } from "@/lib/store/use-lesson-store";
 
-interface ConfigPanelProps {
-    lessonGrade: string;
-    setLessonGrade: (val: string) => void;
-    selectedChuDeSo: string;
-    setSelectedChuDeSo: (val: string) => void;
-    setLessonAutoFilledTheme: (val: string) => void;
-    lessonDuration: string;
-    setLessonDuration: (val: string) => void;
-    selectedChuDe: PPCTChuDe | null;
-    setSelectedChuDe: (val: PPCTChuDe | null) => void;
-    setLessonMonth: (val: string) => void;
-}
+export const ConfigPanel = React.memo(() => {
+    const store = useLessonStore();
 
-export function ConfigPanel({
-    lessonGrade,
-    setLessonGrade,
-    selectedChuDeSo,
-    setSelectedChuDeSo,
-    setLessonAutoFilledTheme,
-    lessonDuration,
-    setLessonDuration,
-    selectedChuDe,
-    setSelectedChuDe,
-    setLessonMonth,
-}: ConfigPanelProps) {
+    // Local derived state for UI only
+    const chuDeList = getChuDeListByKhoi(store.lessonGrade);
+    const selectedChuDe = chuDeList.find(
+        (cd) => cd.chu_de_so === Number.parseInt(store.selectedChuDeSo)
+    );
+
     return (
         <div className="space-y-6">
             <div className="premium-neumo p-6 space-y-6">
@@ -58,11 +39,11 @@ export function ConfigPanel({
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Khối lớp (Grade)</Label>
                         <Select
-                            value={lessonGrade}
+                            value={store.lessonGrade}
                             onValueChange={(value) => {
-                                setLessonGrade(value);
-                                setSelectedChuDeSo("");
-                                setLessonAutoFilledTheme("");
+                                store.setLessonGrade(value);
+                                // Reset related fields when grade changes
+                                useLessonStore.setState({ selectedChuDeSo: "", lessonAutoFilledTheme: "" });
                             }}
                         >
                             <SelectTrigger className="h-12 rounded-2xl bg-white/50 dark:bg-slate-900/50 border-white dark:border-slate-800 shadow-sm">
@@ -79,38 +60,45 @@ export function ConfigPanel({
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Chủ đề (PPCT Month)</Label>
                         <Select
-                            value={selectedChuDeSo}
+                            value={store.selectedChuDeSo}
                             onValueChange={(value) => {
-                                setSelectedChuDeSo(value);
-                                const chuDeList = getChuDeListByKhoi(lessonGrade);
                                 const chuDe = chuDeList.find(
                                     (cd) => cd.chu_de_so === Number.parseInt(value)
                                 );
                                 if (chuDe) {
-                                    setLessonAutoFilledTheme(chuDe.ten);
-                                    setLessonDuration(chuDe.tong_tiet.toString());
-                                    setSelectedChuDe(chuDe);
-                                    setLessonMonth(value);
+                                    useLessonStore.setState({
+                                        selectedChuDeSo: value,
+                                        lessonAutoFilledTheme: chuDe.ten,
+                                        lessonDuration: chuDe.tong_tiet.toString(),
+                                        lessonMonth: value
+                                    });
                                 }
                             }}
-                            disabled={!lessonGrade}
+                            disabled={!store.lessonGrade}
                         >
-                            <SelectTrigger className="h-12 rounded-2xl bg-white/50 dark:bg-slate-900/50 border-white dark:border-slate-800">
-                                <SelectValue placeholder={lessonGrade ? "Chọn chủ đề..." : "Chọn khối trước"} />
+                            <SelectTrigger className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm focus:ring-4 focus:ring-indigo-50">
+                                <SelectValue placeholder={store.lessonGrade ? "Chọn chủ đề..." : "Chọn khối trước"} />
                             </SelectTrigger>
-                            <SelectContent className="premium-glass rounded-2xl">
-                                {lessonGrade &&
-                                    getChuDeListByKhoi(lessonGrade).map((chuDe) => (
-                                        <SelectItem key={chuDe.chu_de_so} value={chuDe.chu_de_so.toString()}>
-                                            {chuDe.chu_de_so}. {chuDe.ten}
+                            <SelectContent className="bg-white dark:bg-slate-900 rounded-3xl p-2 shadow-2xl border-indigo-100 max-h-[400px]">
+                                {store.lessonGrade &&
+                                    chuDeList.map((chuDe) => (
+                                        <SelectItem
+                                            key={chuDe.chu_de_so}
+                                            value={chuDe.chu_de_so.toString()}
+                                            className="focus:bg-indigo-50 focus:text-indigo-600 rounded-2xl py-3 px-4 transition-all duration-200"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <span className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 group-focus:bg-indigo-100 group-focus:text-indigo-600">
+                                                    {chuDe.chu_de_so}
+                                                </span>
+                                                <span className="font-semibold text-sm">{chuDe.ten}</span>
+                                            </div>
                                         </SelectItem>
                                     ))}
                             </SelectContent>
                         </Select>
                     </div>
 
-
-                    {/* PPCT Dash */}
                     {selectedChuDe && (
                         <div className="premium-glass p-4 rounded-3xl space-y-3 border-indigo-200/50 bg-indigo-50/10">
                             <div className="flex items-center gap-2 border-b border-indigo-100/50 pb-2">
@@ -137,4 +125,4 @@ export function ConfigPanel({
             </div>
         </div>
     );
-}
+});

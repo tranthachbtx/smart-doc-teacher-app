@@ -84,12 +84,13 @@ Gợi ý sư phạm: Tập trung vào các hoạt động thực hành, trải n
         // 4. Get SHDC/SHL Suggestions
         const shdcShlContext = chuDeSoNum ? taoContextSHDC_SHL(gradeInt, chuDeSoNum) : "Gợi ý Sinh hoạt dưới cờ và Sinh hoạt lớp theo chủ đề.";
 
-        // 5. Get Digital Competency (NLS)
+        // 5. Get Digital Competency (NLS) - Cleaned version focusing only on content
         const nlsSuggestions = goiYNLSTheoChuDe(chuDe?.mach_noi_dung || topicName);
-        const nlsText = nlsSuggestions.length > 0
-            ? nlsSuggestions.map(n => `[${n.ma}] ${n.ten}: ${n.mo_ta}`).join("\n")
+        const nlsItems = nlsSuggestions.length > 0
+            ? nlsSuggestions.map((n, i) => `${i + 1}. [${n.ma}] ${n.ten}: ${n.mo_ta}\n   - Ví dụ: ${n.vi_du_tich_hop[0] || ""}`).join("\n\n")
             : "Sử dụng công nghệ số để tìm kiếm thông tin và cộng tác.";
-        const nlsContext = taoContextNLSChiTiet(gradeInt, chuDe?.mach_noi_dung || topicName) + "\n\nGỢI Ý CỤ THỂ CHO BÀI DẠY:\n" + nlsText;
+
+        const nlsContext = `GỢI Ý NĂNG LỰC SỐ (NLS) PHÙ HỢP:\n${nlsItems}\n\n* Lưu ý: Ghi mã năng lực thành phần tương ứng (VD: 1.1.NC1a) vào mục tiêu KHBD.`.trim();
 
         // 6. Get Assessment Tools (Rubrics & Worksheets)
         const phtContext = taoContextPhieuHocTap(topicName, chuDe?.hoat_dong[0]?.ten || topicName);
@@ -117,58 +118,70 @@ Gợi ý sư phạm: Tập trung vào các hoạt động thực hành, trải n
 
     /**
      * Builds the final structured prompt for Gemini Pro
+     * Tối ưu hóa khoa học, chuyên nghiệp, loại bỏ rác dữ liệu.
+     * Áp dụng chuẩn 5512 với cấu trúc 2 cột (GV - HS).
      */
     buildFinalSmartPrompt(data: SmartPromptData, fileSummary?: string): string {
+        const clean = (text: string) => {
+            if (!text) return "Không có dữ liệu bổ sung.";
+            return text
+                .replace(/[·•]/g, '')        // Xóa dấu chấm lửng/dấu điểm
+                .replace(/\s+/g, ' ')       // Chuẩn hóa khoảng trắng
+                .replace(/undefined/g, '')  // Xóa các lỗi undefined nếu có
+                .trim();
+        };
+
         return `
-BẠN LÀ CHUYÊN GIA THIẾT KẾ GIÁO DỤC (INSTRUCTIONAL DESIGNER) CẤP CAO.
-NHIỆM VỤ: SOẠN KẾ HOẠCH BÀI DẠY (KHBD) CHI TIẾT THEO CÔNG VĂN 5512.
+# VAI TRÒ: CHUYÊN GIA THIẾT KẾ GIÁO DỤC & SOẠN THẢO KHBD CAO CẤP
+# NHIỆM VỤ: KHỞI TẠO KẾ HOẠCH BÀI DẠY (KHBD) CHUẨN MOET 5512
 
---- CÔNG VIỆC CẦN THỰC HIỆN ---
-1. Phân tích nội dung bài dạy cũ (nếu có) và dữ liệu chương trình chuẩn bên dưới.
-2. Thực hiện "Surgical Upgrade" (Nâng cấp phẫu thuật): Giữ lại các ý tưởng tốt từ bài cũ, nhưng cấu trúc lại hoàn toàn theo form 5512.
-3. Tiêm (Inject) các yếu tố hiện đại: Năng lực số (TT 02/2025), Đạo đức, Kỹ thuật dạy học tích cực.
+## 1. CHỈ DẪN PHÂN TÍCH CHIẾN LƯỢC
+- COI CÁC DỮ LIỆU DƯỚI ĐÂY LÀ "NỘI DUNG NGHIÊN CỨU TRỌNG TÂM" (Primordial Research Content). Đây là kết quả của việc nghiên cứu sâu và tra cứu hệ thống cơ sở dữ liệu học thuật.
+- ƯU TIÊN TUYỆT ĐỐI việc sử dụng các ngữ liệu, nhiệm vụ và gợi ý sư phạm đã được chuẩn bị sẵn.
+- LUÔN PHÂN TÍCH file giáo án cũ tôi gửi kèm theo prompt này (nếu có).
+- THỰC HIỆN "Surgical Upgrade": Giữ lại ngữ liệu hay từ bài cũ, nhưng cấu trúc lại 100% theo form 4 bước của Công văn 5512.
+- TIÊM (INJECT) YẾU TỐ HIỆN ĐẠI: Năng lực số (TT 02/2025), Đạo đức và Kỹ thuật dạy học tích cực.
 
---- CƠ SỞ DỮ LIỆU ĐÃ TRA CỨU ---
+## 2. QUY TẮC CẤU TRÚC 2 CỘT (QUAN TRỌNG NHẤT)
+Để xuất Word chuyên nghiệp, nội dung các hoạt động PHẢI sử dụng marker:
+- {{cot_1}}: Dùng cho Hoạt động của Giáo viên (Chuyển giao nhiệm vụ, Quan sát, Hỗ trợ, Kết luận).
+- {{cot_2}}: Dùng cho Hoạt động của Học sinh (Thực hiện nhiệm vụ, Thảo luận, Báo cáo, Trình bày).
 
-1. THÀNH PHẦN CHƯƠNG TRÌNH & MỤC TIÊU:
-${data.objectives}
+## 3. CĂN CỨ DỮ LIỆU NGHIÊN CỨU SÂU (INPUT PRIMARY SOURCE)
+- Khối lớp: ${data.grade}
+- Đặc điểm học sinh: ${clean(data.studentCharacteristics)}
+- Chủ đề: ${data.topicName}
+- Mục tiêu đạt được (Chuyên môn): ${clean(data.objectives)}
+- Nhiệm vụ trọng tâm (SGK & PPCT): ${clean(data.coreTasks)}
+- Năng lực số & Công cụ (TT 02/2025): ${clean(data.digitalCompetency)}
+- Gợi ý SHDC & SHL: ${clean(data.shdc_shl_suggestions)}
+- Công cụ Đánh giá & Phụ lục: ${clean(data.assessmentTools)}
+- Lưu ý sư phạm chuyên sâu: ${clean(data.pedagogicalNotes)}
+- Tài liệu đính kèm (File Summary): ${fileSummary || "Xem trực tiếp tệp đính kèm."}
 
-2. ĐẶC ĐIỂM TÂM LÝ HỌC SINH KHỐI ${data.grade}:
-${data.studentCharacteristics}
+## 4. QUY CÁCH ĐẦU RA (JSON ĐƠN NHẤT)
+Yêu cầu trả về duy nhất 01 khối JSON với các trường sau:
 
-3. NỘI DUNG CỐT LÕI & CÁC HOẠT ĐỘNG (SGK KẾT NỐI TRI THỨC):
-${data.coreTasks}
+{
+  "ten_bai": "Tên bài dạy chi tiết",
+  "muc_tieu_kien_thuc": "Nội dung kiến thức...",
+  "muc_tieu_nang_luc": "Nội dung năng lực...",
+  "muc_tieu_pham_chat": "Nội dung phẩm chất...",
+  "thiet_bi_day_hoc": "Giáo viên: ...; Học sinh: ...",
+  "shdc": "Nội dung sinh hoạt dưới cờ (Tuần 1, 2, 3, 4)...",
+  "shl": "Nội dung sinh hoạt lớp (Tuần 1, 2, 3, 4)...",
+  "hoat_dong_khoi_dong": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV giao nhiệm vụ... {{cot_2}} HS thực hiện...",
+  "hoat_dong_kham_pha": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV chia nhóm... {{cot_2}} HS thảo luận...",
+  "hoat_dong_luyen_tap": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV giao bài tập... {{cot_2}} HS làm bài...",
+  "hoat_dong_van_dung": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV hướng dẫn... {{cot_2}} HS thực hiện ngoài giờ...",
+  "ho_so_day_hoc": "Các phụ lục, phiếu học tập (trình bày chi tiết)...",
+  "huong_dan_ve_nha": "Dặn dò cụ thể..."
+}
 
-4. NĂNG LỰC SỐ (THÔNG TƯ 02/2025):
-${data.digitalCompetency}
-
-5. GỢI Ý SINH HOẠT (SHDC & SHL):
-${data.shdc_shl_suggestions}
-
-6. CÔNG CỤ ĐÁNH GIÁ & GỢI Ý SƯ PHẠM:
-${data.assessmentTools}
-${data.pedagogicalNotes}
-
-${fileSummary ? `
---- HƯỚNG DẪN PHÂN TÍCH GIÁO ÁN CŨ ---
-Tôi đã gởi kèm nội dung/tóm tắt giáo án cũ của tôi. Hãy thực hiện:
-- Đối chiếu mục tiêu cũ với mục tiêu chuẩn GDPT 2018 phía trên.
-- Giữ lại các ngữ liệu thực tế, ví dụ hay trong bài cũ.
-- Tái cấu trúc chuỗi hoạt động bài cũ sang 4 bước: Khởi động -> Khám phá -> Luyện tập -> Vận dụng.
-- Bổ sung chi tiết Hoạt động của GV và Hoạt động của HS (dạng bảng 2 cột).
-` : ""}
-
---- YÊU CẦU ĐẦU RA (JSON FORMAT) ---
-Viết nội dung cực kỳ chi tiết, mạch lạc, ngôn ngữ chuyên nghiệp.
-Cấu trúc JSON yêu cầu các trường:
-- ten_bai, muc_tieu_kien_thuc, muc_tieu_nang_luc, muc_tieu_pham_chat
-- gv_chuan_bi, hs_chuan_bi
-- shdc (kịch bản chi tiết), shl (nội dung chi tiết)
-- activities (mảng các hoạt động với name và content chi tiết)
-- tich_hop_nls, tich_hop_dao_duc
-- homework, assessment
-
-TRẢ VỀ DUY NHẤT KHỐI JSON.
+LƯU Ý: 
+- Mục d) "Tổ chức thực hiện" của mỗi hoạt động BẮT BUỘC phải dùng {{cot_1}} và {{cot_2}}.
+- Ngôn ngữ sư phạm chuẩn MOET, chuyên nghiệp.
+- CHỈ TRẢ VỀ JSON. KHÔNG GIẢI THÍCH THÊM.
 `.trim();
     }
 };

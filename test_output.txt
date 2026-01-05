@@ -1,0 +1,21 @@
+FAIL __tests__/useLessonActions.test.ts
+  ● Test suite failed to run
+
+    Cannot find module '../services/export-service' from '__tests__/useLessonActions.test.ts'
+
+    [0m [90m 4 |[39m
+     [90m 5 |[39m [90m// Mocking dependencies[39m
+    [31m[1m>[22m[39m[90m 6 |[39m jest[33m.[39mmock([32m'../services/export-service'[39m[33m,[39m () [33m=>[39m ({
+     [90m   |[39m      [31m[1m^[22m[39m
+     [90m 7 |[39m     [33mExportService[39m[33m:[39m {
+     [90m 8 |[39m         exportLesson[33m:[39m jest[33m.[39mfn()[33m.[39mmockResolvedValue({ success[33m:[39m [36mtrue[39m })[33m,[39m
+     [90m 9 |[39m     }[33m,[39m[0m
+
+      at Resolver._throwModNotFoundError (node_modules/jest-resolve/build/resolver.js:427:11)
+      at Object.mock (__tests__/useLessonActions.test.ts:6:6)
+
+Test Suites: 1 failed, 1 total
+Tests:       0 total
+Snapshots:   0 total
+Time:        0.748 s
+Ran all test suites matching /__tests__\\useLessonActions.test.ts/i.

@@ -558,8 +558,10 @@ MỤC TIÊU: Thực hiện "Content Surgery" (Phẫu thuật nội dung) trên t
 
 NGUYÊN TẮC BẤT DI BẤT DỊCH (STRICT RULES):
 1. KHÔNG TÓM TẮT (NO SUMMARIZATION): Tuyệt đối không rút gọn, cải biên. Nếu ví dụ dài, phải trích xuất đủ.
-2. KHÔNG BỎ SÓT (ZERO TRUNCATION): Mọi ví dụ, câu hỏi gợi mở, tình huống thực tế phải được giữ lại 100%.
-3. GIỮ NGUYÊN ĐỊNH DẠNG: Công thức Toán/Lý/Hóa phải dùng LaTeX.
+2. PHẬN TÁCH 2 CỘT (2-COLUMN STRUCTURE): Mọi hoạt động phải được định hướng theo cấu trúc GV - HS.
+   - Sử dụng marker {{cot_1}} cho Hoạt động của Giáo viên.
+   - Sử dụng marker {{cot_2}} cho Hoạt động của Học sinh.
+3. INJECT HỆ THỐNG NLS & ĐẠO ĐỨC: Chèn các chỉ dẫn công cụ số (Canva, AI, Mentimeter) vào đúng các nhiệm vụ trích xuất.
 
 VĂN BẢN CẦN PHẪU THUẬT:
 ---
@@ -569,8 +571,8 @@ CHỦ ĐỀ/BỐI CẢNH: ${topic}
 
 QUY TRÌNH TƯ DUY (SURGICAL PROCESS):
 1. Bước 1 [Quét]: Xác định ranh giới (Start/End) của tất cả Ví dụ, Hoạt động trò chơi, Câu hỏi dẫn dắt. Tìm các anchor keywords (Ví dụ, Xét, Cho, Trò chơi...).
-2. Bước 2 [Trích xuất]: Sao chép nguyên văn nội dung vào các mục tương ứng.
-3. Bước 3 [Kiểm chứng]: Tự đối chiếu: "Mình có vừa tóm tắt nội dung này không?". Nếu có, hãy hoàn tác và viết lại nguyên văn.
+2. Bước 2 [Trích xuất & Tái cấu trúc]: Sao chép nguyên văn nội dung, đồng thời phân bổ vào {{cot_1}} (GV) và {{cot_2}} (HS) cho phần Tổ chức thực hiện.
+3. Bước 3 [Kiểm chứng]: Tự đối chiếu: "Mình có vừa tóm tắt nội dung này không?". "Đã dùng đúng marker {{cot_1}}, {{cot_2}} chưa?".
 
 CẤU TRÚC PHẢN HỒI (BẮT BUỘC):
 
@@ -578,16 +580,15 @@ CẤU TRÚC PHẢN HỒI (BẮT BUỘC):
 - Phân tích ngắn gọn tại sao giáo án cũ chưa đạt chuẩn Năng lực số 2025 (Thông tư 02).
 - Chỉ ra các bước 5512 còn thiếu.
 
-# 💾 TRÍ TUỆ CỐT LÕI (VERBATIM DATA)
-[Danh sách tất cả ví dụ, câu hỏi, kịch bản trò chơi TRÍCH XUẤT NGUYÊN VĂN]
-- Ví dụ 1: ...
-- Hoạt động 2: ...
-- Câu hỏi gợi mở: ...
+# 💾 TRÍ TUỆ CỐT LÕI (VERBATIM DATA & 2-COLUMN MAP)
+[Danh sách tất cả ví dụ, câu hỏi, kịch bản trò chơi TRÍCH XUẤT NGUYÊN VĂN và gán marker]
+- Ví dụ 1: {{cot_1}} GV giới thiệu... {{cot_2}} HS quan sát...
+- Hoạt động 2: {{cot_1}} GV giao nhiệm vụ nhóm... {{cot_2}} HS thảo luận...
 
 # 🚀 CHỈ THỊ PHẪU THUẬT (ACTIONABLE DIRECTIVES)
 [Cung cấp 5-10 chỉ dẫn cụ thể cho AI thế hệ sau]
-1. [Khởi động]: Nâng cấp bằng công cụ [Tên công cụ từ Ma trận 2025] để đạt NLS [Mã]...
-2. [Tích hợp]: Chèn ví dụ [Tên ví dụ] vào bước Báo cáo của Hoạt động 2...
+1. [Khởi động]: Sử dụng marker {{cot_1}} cho phần dẫn dắt của GV...
+2. [Tổ chức]: Bắt buộc dùng {{cot_1}} và {{cot_2}} trong mục d) Tổ chức thực hiện của 4 hoạt động 5512.
 3. [Năng lực số]: Sử dụng AI (Gemini/ChatGPT) để hỗ trợ học sinh ở phần...
 
 LƯU Ý: Phản hồi này là nguyên liệu đầu vào cho Prompt AI sau. Hãy viết ngắn gọn ở phần Chỉ thị nhưng DÀI VÀ ĐẦY ĐỦ ở phần Trí tuệ cốt lõi.

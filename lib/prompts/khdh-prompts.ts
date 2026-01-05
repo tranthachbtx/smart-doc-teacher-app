@@ -151,7 +151,7 @@ CẤU TRÚC HOẠT ĐỘNG (ĐỊNH DẠNG BẢNG 2 CỘT - CHUẨN MÔN HĐTN, 
 
 Mỗi hoạt động (hoat_dong_khoi_dong, hoat_dong_kham_pha,...) PHẢI được định dạng như sau:
 
-[COT_1]
+{{cot_1}}
 a) Mục tiêu:
 - [Ghi rõ Yêu cầu cần đạt về kiến thức/kỹ năng, tối thiểu 3 ý].
 - [Ý nghĩa thực tiễn đối với học sinh].
@@ -163,9 +163,9 @@ b) Nội dung (Kịch bản thực hiện):
 c) Sản phẩm:
 - [Kết quả cụ thể: Nội dung phiếu học tập, kết quả thảo luận, hoặc sản phẩm số].
 - [Mô tả tiêu chí đạt được của sản phẩm].
-[/COT_1]
 
-[COT_2]
+d) Tổ chức thực hiện:
+{{cot_2}}
 Bước 1: CHUYỂN GIAO NHIỆM VỤ
 • GV thực hiện: [Thao tác cụ thể: Chiếu video, phát phiếu, chia nhóm...].
 • Hệ thống câu hỏi chủ chốt: 
@@ -186,11 +186,12 @@ Bước 3: BÁO CÁO, THẢO LUẬN ([X] phút)
 Bước 4: KẾT LUẬN, NHẬN ĐỊNH
 • GV chốt kiến thức: [Tóm tắt ngắn gọn, cốt lõi nhất].
 • Giáo dục tích hợp: [Bài học về Đạo đức/Năng lực số rút ra từ hoạt động này].
-[/COT_2]
+{{/cot_2}}
+{{/cot_1}}
 
 === LƯU Ý ===
 - KHÔNG thêm tiêu đề "HOẠT ĐỘNG 1:...".
-- BẮT BUỘC giữ marker [COT_1] / [COT_2].
+- BẮT BUỘC giữ marker {{cot_1}} và {{cot_2}}.
 - Nội dung GV/HS phải CỤ THỂ, TRỰC QUAN, không viết chung chung.
 `;
 
@@ -650,10 +651,10 @@ ${FORMAT_RULES}
 
 ĐỊNH DẠNG ĐẦU RA (OUTPUT FORMAT) - ĐỊNH DẠNG BẢNG 2 CỘT:
 
-*** QUAN TRỌNG: SỬ DỤNG MARKER [COT_1] VÀ [COT_2] ***
+*** QUAN TRỌNG: SỬ DỤNG MARKER {{cot_1}} VÀ {{cot_2}} ***
 
 Mỗi hoạt động (hoat_dong_khoi_dong, hoat_dong_kham_pha, hoat_dong_luyen_tap, hoat_dong_van_dung) 
-PHẢI sử dụng marker [COT_1]...[/COT_1] và [COT_2]...[/COT_2] để hệ thống tự động điền vào 2 cột của bảng Word.
+PHẢI sử dụng marker {{cot_1}} và {{cot_2}} ở phần d) Tổ chức thực hiện để hệ thống tự động điền vào 2 cột của bảng Word.
 
 Hãy soạn Kế hoạch dạy học và trả về JSON thuần túy với cấu trúc sau:
 
@@ -667,10 +668,10 @@ Hãy soạn Kế hoạch dạy học và trả về JSON thuần túy với cấ
   "hs_chuan_bi": "- [Dụng cụ học tập cần mang]\\n- [Nhiệm vụ chuẩn bị cụ thể từ tiết trước]\\n- [Nội dung cần sưu tầm/tìm hiểu trước]",
   "shdc": "- Tuần 1: [Tên hoạt động]\\n  + Mục tiêu: [...]\\n  + Tiến trình: B1-[...], B2-[...], B3-[...]\\n\\n- Tuần 2: [Tên hoạt động]\\n  [Tương tự]",
   "shl": "- Tuần 1: [Tên hoạt động]\\n  + Đánh giá tuần qua: [...]\\n  + Sinh hoạt chủ đề: [...]\\n  + Kế hoạch tuần tới: [...]",
-  "hoat_dong_khoi_dong": "[COT_1]\\na) Mục tiêu:\\n- Tạo hứng thú, kết nối kiến thức đã học với nội dung mới\\n- Kích hoạt kinh nghiệm sống của học sinh về chủ đề\\n\\nb) Nội dung:\\n- [Mô tả nhiệm vụ HS thực hiện]\\n- [Phương pháp/hình thức tổ chức]\\n\\nc) Sản phẩm:\\n- [Sản phẩm cụ thể, quan sát được]\\n[/COT_1]\\n\\n[COT_2]\\nBước 1: CHUYỂN GIAO NHIỆM VỤ\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 3: BÁO CÁO, THẢO LUẬN ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 4: KẾT LUẬN, NHẬN ĐỊNH\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n[/COT_2]",
-  "hoat_dong_kham_pha": "[COT_1]\\na) Mục tiêu:\\n- [Mục tiêu 1]\\n- [Mục tiêu 2]\\n\\nb) Nội dung:\\n- [Nhiệm vụ + Tích hợp NLS + Đạo đức]\\n\\nc) Sản phẩm:\\n- [Sản phẩm cụ thể]\\n[/COT_1]\\n\\n[COT_2]\\nBước 1: CHUYỂN GIAO NHIỆM VỤ\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 3: BÁO CÁO, THẢO LUẬN ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 4: KẾT LUẬN, NHẬN ĐỊNH\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n[/COT_2]",
-  "hoat_dong_luyen_tap": "[COT_1]\\na) Mục tiêu:\\n- [Mục tiêu thực hành]\\n\\nb) Nội dung:\\n- [Nhiệm vụ + Tích hợp NLS tạo sản phẩm số]\\n\\nc) Sản phẩm:\\n- [Sản phẩm cụ thể: poster/video/bài trình bày...]\\n[/COT_1]\\n\\n[COT_2]\\nBước 1: CHUYỂN GIAO NHIỆM VỤ\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 3: BÁO CÁO, THẢO LUẬN ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 4: KẾT LUẬN, NHẬN ĐỊNH\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n[/COT_2]",
-  "hoat_dong_van_dung": "[COT_1]\\na) Mục tiêu:\\n- [Mục tiêu vận dụng]\\n\\nb) Nội dung:\\n- [Nhiệm vụ + Cam kết hành động]\\n\\nc) Sản phẩm:\\n- [Kế hoạch/Cam kết cá nhân]\\n[/COT_1]\\n\\n[COT_2]\\nBước 1: CHUYỂN GIAO NHIỆM VỤ\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 3: BÁO CÁO, THẢO LUẬN ([X] phút)\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n\\nBước 4: KẾT LUẬN, NHẬN ĐỊNH\\n• GV: [Chi tiết]\\n• HS: [Chi tiết]\\n[/COT_2]",
+  "hoat_dong_khoi_dong": "a) Mục tiêu: [Mô tả]\\n\\nb) Nội dung: [Mô tả]\\n\\nc) Sản phẩm: [Mô tả]\\n\\nd) Tổ chức thực hiện: {{cot_1}} GV: [Chi tiết] {{cot_2}} HS: [Chi tiết]",
+  "hoat_dong_kham_pha": "a) Mục tiêu: [Mô tả]\\n\\nb) Nội dung: [Mô tả]\\n\\nc) Sản phẩm: [Mô tả]\\n\\nd) Tổ chức thực hiện: {{cot_1}} GV: [Chi tiết] {{cot_2}} HS: [Chi tiết]",
+  "hoat_dong_luyen_tap": "a) Mục tiêu: [Mô tả]\\n\\nb) Nội dung: [Mô tả]\\n\\nc) Sản phẩm: [Mô tả]\\n\\nd) Tổ chức thực hiện: {{cot_1}} GV: [Chi tiết] {{cot_2}} HS: [Chi tiết]",
+  "hoat_dong_van_dung": "a) Mục tiêu: [Mô tả]\\n\\nb) Nội dung: [Mô tả]\\n\\nc) Sản phẩm: [Mô tả]\\n\\nd) Tổ chức thực hiện: {{cot_1}} GV: [Chi tiết] {{cot_2}} HS: [Chi tiết]",
   "ho_so_day_hoc": "PHIẾU HỌC TẬP:\\n[Tiêu đề và nội dung]\\n\\nRUBRIC ĐÁNH GIÁ:\\n- Tiêu chí 1: [Mức Tốt] | [Mức Đạt] | [Mức Cần cố gắng]\\n- Tiêu chí 2: [...]",
   "tich_hop_nls": "- Khởi động: NLS [Mã] - [Mô tả]\\n- Khám phá: NLS [Mã] - [Mô tả]\\n- Luyen tập: NLS [Mã] - [Mô tả]\\n- Vận dụng: NLS [Mã] - [Mô tả]",
   "tich_hop_dao_duc": "- Khám phá: [Phẩm chất] - [Tình huống]\\n- Luyện tập: [Phẩm chất] - [Bài tập]\\n- Vận dụng: [Phẩm chất] - [Cam kết]",
@@ -678,7 +679,7 @@ Hãy soạn Kế hoạch dạy học và trả về JSON thuần túy với cấ
   "tich_hop_dao_duc_va_bai_hat": "- Khởi động: [Tên bài hát/video gợi mở]\\n- Kết thúc: [Tên bài hát/video kết thúc]",
   "huong_dan_ve_nha": "1. Bài tập về nhà và thực hành: [Mô tả chi tiết bài tập/nhiệm vụ HS cần hoàn thành tại nhà].\\n\\n2. Chuẩn bị cho nội dung/chủ đề kế tiếp: [Ghi rõ tên chủ đề tiếp theo, các tài liệu cần đọc, học liệu cần mang hoặc nhiệm vụ sưu tầm cụ thể]."
 }
-}`;
+} `;
 }
 
 // ============================================================
