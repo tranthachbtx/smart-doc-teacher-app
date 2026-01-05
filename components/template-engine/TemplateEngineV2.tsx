@@ -58,7 +58,8 @@ import {
   generateMeetingMinutes,
   generateLessonPlan,
   generateEventScript,
-  generateNCBH as generateNCBHAction
+  generateNCBH as generateNCBHAction,
+  generateAIContent
 } from "@/lib/actions/gemini";
 import { MeetingEngine, type MeetingEngineProps } from "./MeetingEngine";
 import { LessonEngine, type LessonEngineProps } from "./LessonEngine";
@@ -147,6 +148,7 @@ export function TemplateEngine() {
   const [selectedModel, setSelectedModel] = useState<string>("gemini-2.0-flash");
   const [lessonTopic, setLessonTopic] = useState<string>("");
   const [templateManagerOpen, setTemplateManagerOpen] = useState<boolean>(false);
+  const [lessonFile, setLessonFile] = useState<{ mimeType: string; data: string; name: string } | null>(null);
 
   // --- Effects ---
   useEffect(() => {
@@ -305,62 +307,53 @@ export function TemplateEngine() {
   };
 
   const handleRefineSection = async (content: string, instruction: string, model?: string): Promise<ActionResult> => {
-    // Basic wrapper for refinement
+    setIsGenerating(true);
     try {
-      // We can reuse generateLessonSection for refinement by targeting a specific section with instructions
-      // This is a simplification; a dedicated refine action would be better
-      return await generateLessonSection(
-        lessonGrade,
-        lessonTopic || lessonAutoFilledTheme,
-        "refine_content", // Virtual section name
-        content, // Context is the current content
-        lessonDuration,
-        instruction, // User instruction
-        [],
-        selectedChuDeSo,
-        undefined,
-        model || selectedModel,
-        undefined,
-        instruction // Step instruction
-      );
-    } catch (e: any) {
-      return { success: false, error: e.message };
+      const prompt = `Bạn là một biên tập viên giáo dục chuyên nghiệp. Hãy chỉnh sửa nội dung sau đây dựa trên yêu cầu.\n\nNỘI DUNG GỐC:\n${content}\n\nYÊU CẦU CHỈNH SỬA: ${instruction}\n\nLưu ý: Chỉ trả về nội dung đã chỉnh sửa, không kèm lời dẫn.`;
+      const res = await generateAIContent(prompt, model || selectedModel);
+      return res;
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   const handleGenerateSection = async (section: any, context: any, stepInstruction?: string): Promise<ActionResult> => {
-    const effectiveTopic = lessonTopic || lessonAutoFilledTheme;
-    const simplifiedTasks = lessonTasks.filter(t => t.selected).map(t => `${t.name}: ${t.content}`);
+    setIsGenerating(true);
+    try {
+      const effectiveTopic = lessonTopic || lessonAutoFilledTheme;
+      const result = await generateLessonSection(
+        lessonGrade,
+        effectiveTopic,
+        section,
+        typeof context === 'string' ? context : JSON.stringify(context || ""),
+        lessonDuration,
+        lessonCustomInstructions,
+        lessonTasks.filter(t => t.selected).map(t => `${t.name}: ${t.content}`),
+        Number(selectedChuDeSo).toString(),
+        JSON.stringify({ shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion }),
+        selectedModel,
+        lessonFile || undefined,
+        stepInstruction
+      );
 
-    const result = await generateLessonSection(
-      lessonGrade,
-      effectiveTopic,
-      section,
-      context,
-      lessonDuration,
-      lessonCustomInstructions,
-      simplifiedTasks,
-      selectedChuDeSo,
-      JSON.stringify({ shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion }),
-      selectedModel,
-      lessonFile || undefined,
-      stepInstruction
-    );
-
-    if (result.success && result.data) {
-      // Update the main lesson result with the new section data
-      setLessonResult((prev: LessonResult | null) => {
-        if (!prev) return result.data as LessonResult;
-        return {
-          ...prev,
-          ...result.data
-        } as LessonResult;
-      });
-      return { success: true, data: result.data };
+      if (result.success && result.data) {
+        setLessonResult((prev: LessonResult | null) => {
+          if (!prev) return result.data as LessonResult;
+          return {
+            ...prev,
+            ...result.data
+          } as LessonResult;
+        });
+      }
+      return result;
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    } finally {
+      setIsGenerating(false);
     }
-    return { success: false, error: result.error };
   };
-
 
   const distributeTimeForTasks = () => {
     // Logic placeholder
@@ -462,6 +455,8 @@ export function TemplateEngine() {
     setLessonTopic,
     selectedModel,
     setSelectedModel,
+    lessonFile,
+    setLessonFile,
     onRefineSection: handleRefineSection,
     onGenerateSection: handleGenerateSection,
     lessonFullPlanMode,
