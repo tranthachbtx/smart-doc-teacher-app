@@ -36,6 +36,12 @@ export const TRIET_LY_CHUONG_TRINH = {
         "tìm hiểu bản thân",
         "làm quen môi trường mới",
       ],
+      dac_diem: [
+        "Chuyển cấp, cần làm quen môi trường mới",
+        "Đang hình thành bản sắc cá nhân",
+        "Bắt đầu quan tâm đến định hướng nghề nghiệp sớm",
+        "Nhu cầu khẳng định bản thân cao"
+      ],
     },
     khoi_11: {
       chu_de_chinh: "Phát triển và Bản sắc",
@@ -46,6 +52,12 @@ export const TRIET_LY_CHUONG_TRINH = {
         "phát triển bản thân",
         "quan hệ xã hội",
       ],
+      dac_diem: [
+        "Ổn định hơn về tâm lý so với lớp 10",
+        "Quan tâm sâu sắc đến các mối quan hệ xã hội và bạn bè",
+        "Khả năng tư duy phản biện và độc lập phát triển mạnh",
+        "Cần định hướng nhóm nghề cụ thể"
+      ],
     },
     khoi_12: {
       chu_de_chinh: "Trưởng thành và Chuyển tiếp",
@@ -55,6 +67,12 @@ export const TRIET_LY_CHUONG_TRINH = {
         "ra quyết định",
         "lựa chọn nghề",
         "kế hoạch tương lai",
+      ],
+      dac_diem: [
+        "Áp lực thi cử và chọn nghề cuối cấp",
+        "Tư duy thực tế và hướng tới tương lai",
+        "Mong muốn khẳng định sự trưởng thành và độc lập",
+        "Cần kỹ năng ra quyết định và giải quyết vấn đề phức tạp"
       ],
     },
   },

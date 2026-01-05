@@ -32,14 +32,14 @@ QUY TẮC CHẤM ĐIỂM (Thanh điểm 100):
 2. [Thêm...] vào...
 `;
 
-export async function check5512Compliance(lessonContent: any) {
+export async function check5512Compliance(lessonContent: any, modelName: string = "gemini-1.5-flash") {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return { success: false, error: "Missing API Key" };
 
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
+            model: modelName,
             generationConfig: { temperature: 0.2 }
         });
 
@@ -56,7 +56,7 @@ export async function check5512Compliance(lessonContent: any) {
 
         return {
             success: true,
-            report: result.response.text(),
+            audit: result.response.text(),
             score: parseInt(result.response.text().match(/Điểm tổng quát: (\d+)/)?.[1] || "0")
         };
     } catch (e: any) {
