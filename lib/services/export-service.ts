@@ -738,17 +738,32 @@ export const ExportService = {
   parseTwoColumnContent(content: string): { gv: string; hs: string } {
     if (!content) return { gv: "...", hs: "..." };
 
-    // Regular expressions to find the markers
-    const cot1Regex = /\{\{cot_1\}\}([\s\S]*?)(?=\{\{cot_2\}\}|$)/i;
-    const cot2Regex = /\{\{cot_2\}\}([\s\S]*?)(?=\{\{cot_1\}\}|$)/i;
+    // Regex finding indices (Case Insensitive)
+    const cot1Match = /\{\{cot_1\}\}/i.exec(content);
+    const cot2Match = /\{\{cot_2\}\}/i.exec(content);
 
-    const gvMatch = content.match(cot1Regex);
-    const hsMatch = content.match(cot2Regex);
+    const cot1Index = cot1Match ? cot1Match.index : -1;
+    const cot2Index = cot2Match ? cot2Match.index : -1;
 
-    return {
-      gv: gvMatch ? gvMatch[1].trim() : content.split('{{')[0].trim() || "...",
-      hs: hsMatch ? hsMatch[1].trim() : "..."
-    };
+    if (cot1Index === -1 && cot2Index === -1) {
+      return { gv: content.trim(), hs: "..." };
+    }
+
+    let gvContent = "...";
+    let hsContent = "...";
+
+    if (cot1Index !== -1) {
+      const startGv = cot1Index + 9;
+      const endGv = (cot2Index !== -1 && cot2Index > cot1Index) ? cot2Index : content.length;
+      gvContent = content.substring(startGv, endGv).trim();
+    }
+
+    if (cot2Index !== -1) {
+      const startHs = cot2Index + 9;
+      hsContent = content.substring(startHs).trim();
+    }
+
+    return { gv: gvContent, hs: hsContent };
   },
 
   /**
@@ -781,7 +796,7 @@ export const ExportService = {
                 shading: { fill: "F1F5F9" },
                 width: { size: 50, type: WidthType.PERCENTAGE },
                 verticalAlign: VerticalAlign.CENTER,
-                margins: { top: 120, bottom: 120 }
+                margins: { top: 120, bottom: 120, left: 120, right: 120 }
               } as any)
             }),
             new TableCell({
@@ -793,14 +808,14 @@ export const ExportService = {
                 shading: { fill: "F1F5F9" },
                 width: { size: 50, type: WidthType.PERCENTAGE },
                 verticalAlign: VerticalAlign.CENTER,
-                margins: { top: 120, bottom: 120 }
+                margins: { top: 120, bottom: 120, left: 120, right: 120 }
               } as any)
             }),
           ]
         }),
         // Content Row
         new TableRow({
-          cantSplit: true,
+          cantSplit: false, // Allow extensive content to split pages
           height: { value: 300, rule: HeightRule.ATLEAST },
           children: [
             new TableCell({
@@ -834,8 +849,8 @@ export const ExportService = {
       })
     ];
 
-    // Splitting by major steps a), b), c), d)
-    const steps = fullContent.split(/(?=[a-d]\))/i);
+    // Splitting by major steps a), b), c), d) - STRICT START OF LINE
+    const steps = fullContent.split(/(?:\r?\n|^)(?=[a-d]\))/i);
 
     steps.forEach(step => {
       const trimmedStep = step.trim();
@@ -843,11 +858,12 @@ export const ExportService = {
 
       if (trimmedStep.toLowerCase().startsWith('d)')) {
         // Handle 2-column for Step D
-        const label = trimmedStep.split(':')[0] || "d) Tổ chức thực hiện";
-        const body = trimmedStep.substring(label.length + 1).trim();
+        const labelEnd = trimmedStep.indexOf(':');
+        const label = labelEnd > -1 ? trimmedStep.substring(0, labelEnd) : "d) Tổ chức thực hiện";
+        const body = labelEnd > -1 ? trimmedStep.substring(labelEnd + 1).trim() : trimmedStep.substring(2).trim();
 
         results.push(new Paragraph({
-          spacing: { before: 120, after: 80 },
+          spacing: { before: 120, after: 60 },
           children: [new TextRun({ text: label + ":", bold: true, size: 24, italics: true })]
         }));
 
@@ -861,7 +877,9 @@ export const ExportService = {
           const body = trimmedStep.substring(colonIndex + 1).trim();
 
           results.push(new Paragraph({
-            spacing: { before: 80, after: 40 },
+            spacing: { before: 60, after: 60 },
+            alignment: AlignmentType.JUSTIFIED,
+            indent: { firstLine: 720 },
             children: [
               new TextRun({ text: label, bold: true, size: 24, italics: true }),
               new TextRun({ text: " ", size: 24 }),
@@ -919,62 +937,47 @@ export const ExportService = {
   renderFormattedText(text: string): Paragraph[] {
     if (!text) return [new Paragraph({ text: "...", size: 24 })];
 
-    // AI Artifact Cleaning (Phase 5.3)
-    let cleanedText = text
-      .replace(/```(json|markdown|text|html)?/g, '') // Remove starting code fences
-      .replace(/```/g, '') // Remove ending code fences
+    const cleanedText = text
+      .replace(/```(json|markdown|text|html)?/g, '')
+      .replace(/```/g, '')
       .trim();
 
     const paragraphs: Paragraph[] = [];
     const lines = cleanedText.split('\n');
-    let isInCodeBlock = false;
-    let codeBlockLines: string[] = [];
 
     lines.forEach(line => {
       const trimmedLine = line.trim();
-
-      // Simple Code Block Detection (Indent based or logic based)
-      // If a line starts with 4 spaces or is very "code-like", format it
-      if (trimmedLine.startsWith('    ') || (trimmedLine.includes(';') && (trimmedLine.includes('let ') || trimmedLine.includes('var ') || trimmedLine.includes('const ')))) {
-        paragraphs.push(new Paragraph({
-          children: [new TextRun({
-            text: trimmedLine,
-            font: "Courier New",
-            size: 20,
-            shading: { fill: "F3F4F6" }
-          })],
-          spacing: { before: 40, after: 40 },
-          indent: { left: 720 }
-        }));
-        return;
-      }
+      if (!trimmedLine) return;
 
       // Heading detection
       if (trimmedLine.startsWith('### ')) {
         paragraphs.push(new Paragraph({
           children: [new TextRun({ text: trimmedLine.substring(4), bold: true, size: 26, underline: {} })],
-          spacing: { before: 100, after: 80 }
+          spacing: { before: 120, after: 60 },
+          alignment: AlignmentType.JUSTIFIED
         }));
         return;
       }
 
-      // Nested List detection (Phase 4.1)
-      const indentMatch = line.match(/^(\s+)/);
-      const indentLevel = indentMatch ? Math.floor(indentMatch[1].length / 2) : 0;
-      const listMatch = trimmedLine.match(/^([-*•]|\d+\.)\s+(.*)/);
+      // Explicit new line detection for list items or steps
+      // Detects: -, +, *, •, ●, \d., or specific keywords like "Bước"
+      const listMatch = trimmedLine.match(/^([-*•+●]|\d+\.|Bước\s+\d+:?)\s+(.*)/);
 
       if (listMatch) {
+        // It's a list item or distinct step -> New Paragraph with formatting
         paragraphs.push(new Paragraph({
-          children: this.parseMarkdownToRuns(listMatch[2]),
-          bullet: { level: indentLevel > 0 ? 1 : 0 },
-          indent: { left: 360 + (indentLevel * 360), hanging: 360 },
-          spacing: { after: 120 }
+          children: this.parseMarkdownToRuns(trimmedLine),
+          spacing: { after: 60, before: 60 },
+          alignment: AlignmentType.JUSTIFIED,
+          indent: { left: 360, hanging: 360 } // Hanging indent for nice list look
         }));
       } else {
+        // Standard Paragraph
         paragraphs.push(new Paragraph({
-          children: this.parseMarkdownToRuns(line),
-          indent: { left: indentLevel * 360 },
-          spacing: { after: 120 }
+          children: this.parseMarkdownToRuns(trimmedLine),
+          spacing: { after: 60, before: 60 },
+          alignment: AlignmentType.JUSTIFIED,
+          indent: { firstLine: 720 }
         }));
       }
     });

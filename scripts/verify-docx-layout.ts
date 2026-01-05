@@ -16,7 +16,7 @@ import {
 } from "docx";
 import * as fs from "fs";
 
-// === Recreating Logic from ExportService to ensure STRUCTURE correctness ===
+// === Recreating Logic from ExportService to ensure STRUCTURE correctness (ENHANCED) ===
 
 const parseMarkdownToRuns = (text: string) => {
     if (!text) return [new TextRun({ text: "", size: 24 })];
@@ -56,25 +56,39 @@ const renderFormattedText = (text: string) => {
 
     lines.forEach(line => {
         const trimmedLine = line.trim();
+        if (!trimmedLine) return; // Skip empty lines
+
+        // Heading detection
         if (trimmedLine.startsWith('### ')) {
             paragraphs.push(new Paragraph({
                 children: [new TextRun({ text: trimmedLine.substring(4), bold: true, size: 26, underline: {} })],
-                spacing: { before: 100, after: 80 }
+                spacing: { before: 120, after: 60 },
+                alignment: AlignmentType.JUSTIFIED
             }));
             return;
         }
 
-        const listMatch = trimmedLine.match(/^([-*•]|\d+\.)\s+(.*)/);
+        // Explicit new line detection for list items or steps
+        // Detects: -, +, *, •, ●, \d., or specific keywords like "Bước"
+        const listMatch = trimmedLine.match(/^([-*•+●]|\d+\.|Bước\s+\d+:?)\s+(.*)/);
+
         if (listMatch) {
+            // It's a list item or distinct step -> New Paragraph with formatting
             paragraphs.push(new Paragraph({
-                children: parseMarkdownToRuns(listMatch[2]),
-                bullet: { level: 0 },
-                spacing: { after: 120 }
+                children: parseMarkdownToRuns(lines.length > 1 ? trimmedLine : listMatch[2] || trimmedLine), // If part of large block, keep full line or just content
+                // Simplified logic: If it looks like a list item, just treat entire line as content but force new paragraph
+                children: parseMarkdownToRuns(trimmedLine),
+                spacing: { after: 60, before: 60 },
+                alignment: AlignmentType.JUSTIFIED,
+                indent: { left: 360, hanging: 360 } // Hanging indent for nice list look
             }));
         } else {
+            // Standard Paragraph
             paragraphs.push(new Paragraph({
-                children: parseMarkdownToRuns(line),
-                spacing: { after: 120 }
+                children: parseMarkdownToRuns(trimmedLine),
+                spacing: { after: 60, before: 60 },
+                alignment: AlignmentType.JUSTIFIED,
+                indent: { firstLine: 720 } // 1.27cm
             }));
         }
     });
@@ -85,14 +99,14 @@ const renderFormattedText = (text: string) => {
 const createSectionTitle = (text: string) => {
     return new Paragraph({
         heading: HeadingLevel.HEADING_2,
-        spacing: { before: 400, after: 200 },
+        spacing: { before: 240, after: 120 },
         children: [
             new TextRun({
                 text: text,
                 bold: true,
-                size: 28,
-                underline: { type: "single" },
-                color: "1A365D"
+                size: 28, // 14pt for Headers
+                font: "Times New Roman",
+                color: "000000" // Strict Black
             }),
         ],
     });
@@ -100,7 +114,8 @@ const createSectionTitle = (text: string) => {
 
 const createField = (label: string, value: string | undefined) => {
     return new Paragraph({
-        spacing: { after: 120 },
+        spacing: { after: 60 },
+        alignment: AlignmentType.JUSTIFIED,
         children: [
             new TextRun({ text: label, bold: true, size: 24 }),
             new TextRun({ text: " ", size: 24 }),
@@ -112,66 +127,94 @@ const createField = (label: string, value: string | undefined) => {
 // === CRITICAL TABLE LOGIC FROM EXPORT SERVICE ===
 const parseTwoColumnContent = (content: string) => {
     if (!content) return { gv: "...", hs: "..." };
-    const cot1Regex = /\{\{cot_1\}\}([\s\S]*?)(?=\{\{cot_2\}\}|$)/i;
-    const cot2Regex = /\{\{cot_2\}\}([\s\S]*?)(?=\{\{cot_1\}\}|$)/i;
-    const gvMatch = content.match(cot1Regex);
-    const hsMatch = content.match(cot2Regex);
-    return {
-        gv: gvMatch ? gvMatch[1].trim() : content.split('{{')[0].trim() || "...",
-        hs: hsMatch ? hsMatch[1].trim() : "..."
-    };
+
+    // Regex finding indices (Case Insensitive)
+    const cot1Match = /\{\{cot_1\}\}/i.exec(content);
+    const cot2Match = /\{\{cot_2\}\}/i.exec(content);
+
+    const cot1Index = cot1Match ? cot1Match.index : -1;
+    const cot2Index = cot2Match ? cot2Match.index : -1;
+
+    if (cot1Index === -1 && cot2Index === -1) {
+        // Fallback: If no markers, everything goes to Column 1 ? 
+        // Or if it's "outside", maybe we should try to split by half?
+        // For now, put everything in GV column as per original logic, but risk of "leaking".
+        return { gv: content.trim(), hs: "..." };
+    }
+
+    let gvContent = "...";
+    let hsContent = "...";
+
+    if (cot1Index !== -1) {
+        // GV Content starts after {{cot_1}} (length 9)
+        const startGv = cot1Index + 9;
+        const endGv = (cot2Index !== -1 && cot2Index > cot1Index) ? cot2Index : content.length;
+        gvContent = content.substring(startGv, endGv).trim();
+    }
+
+    if (cot2Index !== -1) {
+        // HS Content starts after {{cot_2}}
+        const startHs = cot2Index + 9;
+        hsContent = content.substring(startHs).trim();
+    }
+
+    return { gv: gvContent, hs: hsContent };
 };
 
 const createTwoColumnTable = (gvContent: string, hsContent: string) => {
     return new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
         borders: {
-            top: { style: BorderStyle.SINGLE, size: 2, color: "E2E8F0" },
-            bottom: { style: BorderStyle.SINGLE, size: 2, color: "E2E8F0" },
-            left: { style: BorderStyle.SINGLE, size: 2, color: "E2E8F0" },
-            right: { style: BorderStyle.SINGLE, size: 2, color: "E2E8F0" },
-            insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: "F1F5F9" },
-            insideVertical: { style: BorderStyle.SINGLE, size: 1, color: "F1F5F9" },
+            top: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+            bottom: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+            left: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+            right: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+            insideHorizontal: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
+            insideVertical: { style: BorderStyle.SINGLE, size: 4, color: "000000" },
         },
         rows: [
             new TableRow({
                 tableHeader: true,
-                cantSplit: true,
-                height: { value: 300, rule: HeightRule.ATLEAST }, // FIXED LOGIC
+                cantSplit: true, // Header SHOULD stay together
+                height: { value: 300, rule: HeightRule.ATLEAST },
                 children: [
                     new TableCell({
                         children: [new Paragraph({
                             alignment: AlignmentType.CENTER,
                             children: [new TextRun({ text: "Hoạt động của Giáo viên", bold: true, size: 22 })]
                         })],
-                        shading: { fill: "F1F5F9" },
+                        // shading removed
                         width: { size: 50, type: WidthType.PERCENTAGE },
                         verticalAlign: VerticalAlign.CENTER,
+                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
                     }),
                     new TableCell({
                         children: [new Paragraph({
                             alignment: AlignmentType.CENTER,
                             children: [new TextRun({ text: "Hoạt động của Học sinh", bold: true, size: 22 })]
                         })],
-                        shading: { fill: "F1F5F9" },
+                        // shading removed for standard look
                         width: { size: 50, type: WidthType.PERCENTAGE },
                         verticalAlign: VerticalAlign.CENTER,
+                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
                     }),
                 ]
             }),
             new TableRow({
-                cantSplit: true,
-                height: { value: 300, rule: HeightRule.ATLEAST }, // FIXED LOGIC
+                cantSplit: false, // CONTENT MUST BE ABLE TO SPLIT
+                height: { value: 300, rule: HeightRule.ATLEAST },
                 children: [
                     new TableCell({
                         children: renderFormattedText(gvContent),
                         width: { size: 50, type: WidthType.PERCENTAGE },
-                        verticalAlign: VerticalAlign.TOP
+                        verticalAlign: VerticalAlign.TOP,
+                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
                     }),
                     new TableCell({
                         children: renderFormattedText(hsContent),
                         width: { size: 50, type: WidthType.PERCENTAGE },
-                        verticalAlign: VerticalAlign.TOP
+                        verticalAlign: VerticalAlign.TOP,
+                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
                     })
                 ]
             })
@@ -187,26 +230,42 @@ const createTwoColumnActivity = (title: string, fullContent: string | undefined)
             children: [new TextRun({ text: title, bold: true, size: 26, color: "2E59A7", underline: {} })]
         })
     ];
-    const steps = fullContent.split(/(?=[a-d]\))/i);
-    steps.forEach(step => {
+
+    // Split carefully by steps a), b), c), d) ENSURING they are at start of line
+    // This prevents splitting on text like "(xem phụ lục)" where "c)" matches.
+    const steps = fullContent.split(/(?:\r?\n|^)(?=[a-d]\))/i);
+
+    steps.forEach((step, index) => {
         const trimmedStep = step.trim();
         if (!trimmedStep) return;
+
+        // console.log(`DEBUG: Processing step ${index}, starts with: ${trimmedStep.substring(0, 10)}...`);
+
         if (trimmedStep.toLowerCase().startsWith('d)')) {
-            const label = trimmedStep.split(':')[0] || "d) Tổ chức thực hiện";
-            const body = trimmedStep.substring(label.length + 1).trim();
+            console.log("DEBUG: Found Step D (2-Column)");
+            const labelEnd = trimmedStep.indexOf(':');
+            const label = labelEnd > -1 ? trimmedStep.substring(0, labelEnd) : "d) Tổ chức thực hiện";
+            const body = labelEnd > -1 ? trimmedStep.substring(labelEnd + 1).trim() : trimmedStep.substring(2).trim();
+
             results.push(new Paragraph({
-                spacing: { before: 120, after: 80 },
-                children: [new TextRun({ text: label + ":", bold: true, size: 24, italics: true })]
+                spacing: { before: 120, after: 60 },
+                children: [
+                    new TextRun({ text: label + ":", bold: true, size: 24, italics: true }),
+                    new TextRun({ text: " ", size: 24 })
+                ]
             }));
             const { gv, hs } = parseTwoColumnContent(body);
             results.push(createTwoColumnTable(gv, hs));
         } else {
+            // console.log("DEBUG: Standard step");
             const colonIndex = trimmedStep.indexOf(':');
             if (colonIndex !== -1) {
                 const label = trimmedStep.substring(0, colonIndex + 1);
                 const body = trimmedStep.substring(colonIndex + 1).trim();
                 results.push(new Paragraph({
-                    spacing: { before: 80, after: 40 },
+                    spacing: { before: 60, after: 60 },
+                    alignment: AlignmentType.JUSTIFIED,
+                    indent: { firstLine: 720 },
                     children: [
                         new TextRun({ text: label, bold: true, size: 24, italics: true }),
                         new TextRun({ text: " ", size: 24 }),
@@ -225,18 +284,96 @@ const createTwoColumnActivity = (title: string, fullContent: string | undefined)
 const generateDoc = async () => {
     console.log("Starting DOCX Generation Test...");
 
+    // === STANDARD ADMINISTRATIVE HEADER (MÔ PHỎNG TEMPLATE 5512) ===
+    const headerTable = new Table({
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: {
+            top: { style: BorderStyle.NONE },
+            bottom: { style: BorderStyle.NONE },
+            left: { style: BorderStyle.NONE },
+            right: { style: BorderStyle.NONE },
+            insideHorizontal: { style: BorderStyle.NONE },
+            insideVertical: { style: BorderStyle.NONE },
+        },
+        rows: [
+            new TableRow({
+                children: [
+                    // LEFT COLUMN: School & Dept
+                    new TableCell({
+                        width: { size: 40, type: WidthType.PERCENTAGE },
+                        children: [
+                            new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                children: [
+                                    new TextRun({ text: "TRƯỜNG THPT ....................", font: "Times New Roman", size: 22 }),
+                                ],
+                            }),
+                            new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                children: [
+                                    new TextRun({ text: "TỔ: ....................", font: "Times New Roman", size: 22, bold: true }),
+                                ],
+                            }),
+                        ],
+                    }),
+                    // RIGHT COLUMN: Country Info
+                    new TableCell({
+                        width: { size: 60, type: WidthType.PERCENTAGE },
+                        children: [
+                            new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                children: [
+                                    new TextRun({ text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", font: "Times New Roman", size: 22, bold: true }),
+                                ],
+                            }),
+                            new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                children: [
+                                    new TextRun({ text: "Độc lập - Tự do - Hạnh phúc", font: "Times New Roman", size: 24, bold: true }),
+                                ],
+                            }),
+                            new Paragraph({
+                                alignment: AlignmentType.CENTER,
+                                children: [
+                                    new TextRun({ text: "-------------------", font: "Times New Roman", size: 22 }),
+                                ],
+                            }),
+                        ],
+                    }),
+                ],
+            }),
+        ],
+    });
+
     const children: any[] = [
+        headerTable,
+        new Paragraph({ text: "", spacing: { after: 200 } }), // Spacer
+
         new Paragraph({
             alignment: AlignmentType.CENTER,
             heading: HeadingLevel.HEADING_1,
             children: [
                 new TextRun({
-                    text: "KẾ HOẠCH BÀI DẠY (TEST LAYOUT 5512)",
+                    text: "KẾ HOẠCH BÀI DẠY",
                     bold: true,
                     size: 32,
-                    color: "2E59A7"
+                    font: "Times New Roman",
+                    color: "000000"
                 }),
             ],
+        }),
+        new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [
+                new TextRun({
+                    text: "(MÔ PHỎNG CHUẨN MẪU 5512)",
+                    bold: true,
+                    size: 28,
+                    font: "Times New Roman",
+                    color: "000000"
+                }),
+            ],
+            spacing: { after: 240 }
         }),
         new Paragraph({ text: "", spacing: { after: 200 } }),
 
@@ -308,12 +445,50 @@ const generateDoc = async () => {
     );
 
     const doc = new Document({
-        sections: [{ children }],
+        styles: {
+            default: {
+                document: {
+                    run: {
+                        font: "Times New Roman",
+                        size: 26, // 13pt Standard
+                        color: "000000"
+                    },
+                    paragraph: {
+                        spacing: { after: 60, before: 60 }
+                    }
+                },
+                heading1: {
+                    run: {
+                        font: "Times New Roman",
+                        size: 32,
+                        bold: true,
+                        color: "000000"
+                    },
+                    paragraph: {
+                        alignment: AlignmentType.CENTER,
+                        spacing: { after: 240 }
+                    }
+                }
+            }
+        },
+        sections: [{
+            properties: {
+                page: {
+                    margin: {
+                        top: 1134, // 2cm
+                        bottom: 1134, // 2cm
+                        left: 1701, // 3cm
+                        right: 1134 // 2cm
+                    }
+                }
+            },
+            children
+        }],
     });
 
     const buffer = await Packer.toBuffer(doc);
-    fs.writeFileSync("d:/smart-doc-teacher-app/TEST_MASSIVE_50_PAGES.docx", buffer);
-    console.log("File saved to d:/smart-doc-teacher-app/TEST_MASSIVE_50_PAGES.docx");
+    fs.writeFileSync("d:/smart-doc-teacher-app/TEST_FINAL_VERIFICATION_V7.docx", buffer);
+    console.log("File saved to d:/smart-doc-teacher-app/TEST_FINAL_VERIFICATION_V7.docx");
 };
 
 generateDoc().catch(err => console.error(err));

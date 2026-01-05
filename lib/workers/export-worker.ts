@@ -73,53 +73,42 @@ const renderFormattedText = (text: string) => {
 
     lines.forEach(line => {
         const trimmedLine = line.trim();
-
-        // Code Block Detection
-        if (trimmedLine.startsWith('    ') || (trimmedLine.includes(';') && (trimmedLine.includes('let ') || trimmedLine.includes('var ') || trimmedLine.includes('const ')))) {
-            paragraphs.push(new d.Paragraph({
-                children: [new d.TextRun({
-                    text: trimmedLine,
-                    font: "Courier New",
-                    size: 20,
-                    shading: { fill: "F3F4F6" }
-                })],
-                spacing: { before: 40, after: 40 },
-                indent: { left: 720 }
-            }));
-            return;
-        }
+        if (!trimmedLine) return;
 
         // Heading detection
         if (trimmedLine.startsWith('### ')) {
             paragraphs.push(new d.Paragraph({
                 children: [new d.TextRun({ text: trimmedLine.substring(4), bold: true, size: 26, underline: {} })],
-                spacing: { before: 100, after: 80 }
+                spacing: { before: 120, after: 60 },
+                alignment: d.AlignmentType.JUSTIFIED
             }));
             return;
         }
 
-        // Nested List detection
-        const indentMatch = line.match(/^(\s+)/);
-        const indentLevel = indentMatch ? Math.floor(indentMatch[1].length / 2) : 0;
-        const listMatch = trimmedLine.match(/^([-*•]|\d+\.)\s+(.*)/);
+        // Explicit new line detection for list items or steps
+        // Detects: -, +, *, •, ●, \d., or specific keywords like "Bước"
+        const listMatch = trimmedLine.match(/^([-*•+●]|\d+\.|Bước\s+\d+:?)\s+(.*)/);
 
         if (listMatch) {
+            // It's a list item or distinct step -> New Paragraph with formatting
             paragraphs.push(new d.Paragraph({
-                children: parseMarkdownToRuns(listMatch[2]),
-                bullet: { level: indentLevel > 0 ? 1 : 0 },
-                indent: { left: 360 + (indentLevel * 360), hanging: 360 },
-                spacing: { after: 120 }
+                children: parseMarkdownToRuns(trimmedLine),
+                spacing: { after: 60, before: 60 },
+                alignment: d.AlignmentType.JUSTIFIED,
+                indent: { left: 360, hanging: 360 } // Hanging indent for nice list look
             }));
         } else {
+            // Standard Paragraph
             paragraphs.push(new d.Paragraph({
-                children: parseMarkdownToRuns(line),
-                indent: { left: indentLevel * 360 },
-                spacing: { after: 120 }
+                children: parseMarkdownToRuns(trimmedLine),
+                spacing: { after: 60, before: 60 },
+                alignment: d.AlignmentType.JUSTIFIED,
+                indent: { firstLine: 720 }
             }));
         }
     });
 
-    return paragraphs;
+    return paragraphs.length > 0 ? paragraphs : [new d.Paragraph({ text: cleanedText, size: 24 })];
 };
 
 const createField = (label: string, value: string | undefined) => {
@@ -135,14 +124,32 @@ const createField = (label: string, value: string | undefined) => {
 
 const parseTwoColumnContent = (content: string) => {
     if (!content) return { gv: "...", hs: "..." };
-    const cot1Regex = /\{\{cot_1\}\}([\s\S]*?)(?=\{\{cot_2\}\}|$)/i;
-    const cot2Regex = /\{\{cot_2\}\}([\s\S]*?)(?=\{\{cot_1\}\}|$)/i;
-    const gvMatch = content.match(cot1Regex);
-    const hsMatch = content.match(cot2Regex);
-    return {
-        gv: gvMatch ? gvMatch[1].trim() : content.split('{{')[0].trim() || "...",
-        hs: hsMatch ? hsMatch[1].trim() : "..."
-    };
+
+    const cot1Match = /\{\{cot_1\}\}/i.exec(content);
+    const cot2Match = /\{\{cot_2\}\}/i.exec(content);
+
+    const cot1Index = cot1Match ? cot1Match.index : -1;
+    const cot2Index = cot2Match ? cot2Match.index : -1;
+
+    if (cot1Index === -1 && cot2Index === -1) {
+        return { gv: content.trim(), hs: "..." };
+    }
+
+    let gvContent = "...";
+    let hsContent = "...";
+
+    if (cot1Index !== -1) {
+        const startGv = cot1Index + 9;
+        const endGv = (cot2Index !== -1 && cot2Index > cot1Index) ? cot2Index : content.length;
+        gvContent = content.substring(startGv, endGv).trim();
+    }
+
+    if (cot2Index !== -1) {
+        const startHs = cot2Index + 9;
+        hsContent = content.substring(startHs).trim();
+    }
+
+    return { gv: gvContent, hs: hsContent };
 };
 
 const createTwoColumnTable = (gvContent: string, hsContent: string) => {
@@ -170,6 +177,7 @@ const createTwoColumnTable = (gvContent: string, hsContent: string) => {
                         shading: { fill: "F1F5F9" },
                         width: { size: 50, type: d.WidthType.PERCENTAGE },
                         verticalAlign: d.VerticalAlign.CENTER,
+                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
                     }),
                     new d.TableCell({
                         children: [new d.Paragraph({
@@ -179,20 +187,25 @@ const createTwoColumnTable = (gvContent: string, hsContent: string) => {
                         shading: { fill: "F1F5F9" },
                         width: { size: 50, type: d.WidthType.PERCENTAGE },
                         verticalAlign: d.VerticalAlign.CENTER,
+                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
                     }),
                 ]
             }),
             new d.TableRow({
-                cantSplit: true,
+                cantSplit: false, // Allow extensive content to split pages
                 height: { value: 300, rule: d.HeightRule.ATLEAST },
                 children: [
                     new d.TableCell({
                         children: renderFormattedText(gvContent),
                         width: { size: 50, type: d.WidthType.PERCENTAGE },
+                        verticalAlign: d.VerticalAlign.TOP,
+                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
                     }),
                     new d.TableCell({
                         children: renderFormattedText(hsContent),
                         width: { size: 50, type: d.WidthType.PERCENTAGE },
+                        verticalAlign: d.VerticalAlign.TOP,
+                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
                     })
                 ]
             })
@@ -208,15 +221,21 @@ const createTwoColumnActivity = (title: string, fullContent: string | undefined)
             children: [new d.TextRun({ text: title, bold: true, size: 26, color: "2E59A7", underline: {} })]
         })
     ];
-    const steps = fullContent.split(/(?=[a-d]\))/i);
+
+    // Robust splitting by steps a), b), c), d) - STRICT START OF LINE
+    const steps = fullContent.split(/(?:\r?\n|^)(?=[a-d]\))/i);
+
     steps.forEach(step => {
         const trimmedStep = step.trim();
         if (!trimmedStep) return;
+
         if (trimmedStep.toLowerCase().startsWith('d)')) {
-            const label = trimmedStep.split(':')[0] || "d) Tổ chức thực hiện";
-            const body = trimmedStep.substring(label.length + 1).trim();
+            const labelEnd = trimmedStep.indexOf(':');
+            const label = labelEnd > -1 ? trimmedStep.substring(0, labelEnd) : "d) Tổ chức thực hiện";
+            const body = labelEnd > -1 ? trimmedStep.substring(labelEnd + 1).trim() : trimmedStep.substring(2).trim();
+
             results.push(new d.Paragraph({
-                spacing: { before: 120, after: 80 },
+                spacing: { before: 120, after: 60 },
                 children: [new d.TextRun({ text: label + ":", bold: true, size: 24, italics: true })]
             }));
             const { gv, hs } = parseTwoColumnContent(body);
@@ -227,7 +246,9 @@ const createTwoColumnActivity = (title: string, fullContent: string | undefined)
                 const label = trimmedStep.substring(0, colonIndex + 1);
                 const body = trimmedStep.substring(colonIndex + 1).trim();
                 results.push(new d.Paragraph({
-                    spacing: { before: 80, after: 40 },
+                    spacing: { before: 60, after: 60 },
+                    alignment: d.AlignmentType.JUSTIFIED,
+                    indent: { firstLine: 720 },
                     children: [
                         new d.TextRun({ text: label, bold: true, size: 24, italics: true }),
                         new d.TextRun({ text: " ", size: 24 }),
@@ -239,6 +260,7 @@ const createTwoColumnActivity = (title: string, fullContent: string | undefined)
             }
         }
     });
+
     return results;
 };
 
