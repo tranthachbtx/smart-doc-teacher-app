@@ -13,17 +13,19 @@ export class WorkerManager {
         }
 
         try {
-            // Attempt to use the actual worker file (Phase 2.1)
-            // Note: In Next.js, this usually requires new Worker(new URL('../workers/export-worker.ts', import.meta.url))
-            return new Worker(new URL('../workers/export-worker.ts', import.meta.url));
+            // In Production, use absolute URL to avoid base path issues
+            const workerUrl = new URL('../../lib/workers/export-worker.ts', import.meta.url);
+            return new Worker(workerUrl);
         } catch (e) {
             console.warn("Could not load worker file, falling back to Blob worker");
-            // Fallback to Blob-based worker (Phase 2.1) if file-based fails
+            // Public path for docx in local public folder
+            const publicPath = typeof window !== 'undefined' ? window.location.origin : '';
             const workerCode = `
+                importScripts('${publicPath}/scripts/docx.iife.min.js');
                 self.onmessage = function(e) {
                     const { content, fileName, options } = e.data;
                     self.postMessage({ type: 'progress', percent: 20 });
-                    // Signal fallback required
+                    // Signal fallback required for complex generation
                     self.postMessage({ type: 'error', error: 'Worker-side docx generation requires library bundling.' });
                 };
             `;
