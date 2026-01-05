@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { saveAs } from "file-saver";
+import { ExportOptimizer } from "./export-optimizer";
 import {
   Document,
   Packer,
@@ -12,7 +13,11 @@ import {
   TableCell,
   WidthType,
   BorderStyle,
-  VerticalAlign
+  VerticalAlign,
+  TextDirection,
+  UnderlineType,
+  convertInchesToTwip,
+  ShadingType
 } from "docx";
 import type {
   LessonResult,

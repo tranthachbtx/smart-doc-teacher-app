@@ -2682,6 +2682,43 @@ export const CHUONG_TRINH_LOP_12: ChuongTrinhKhoi = {
       so_tiet_de_xuat: 3,
       thang_thuc_hien: [5]
     },
+    {
+      ma: "12.11",
+      ten: "Xây dựng giá trị gia đình",
+      mach_noi_dung: "xa_hoi",
+      muc_tieu: ["Xác định các giá trị cốt lõi của gia đình", "Xây dựng kế hoạch tổ chức cuộc sống gia đình hạnh phúc"],
+      hoat_dong: [
+        {
+          so_thu_tu: 1,
+          ten: "Xây dựng gia đình bền vững",
+          mo_ta: "Tìm hiểu các yếu tố tạo nên sự bền vững của gia đình.",
+          nhiem_vu: [
+            {
+              ten: "Giá trị văn hóa gia đình",
+              mo_ta: "Thảo luận về các giá trị: Hiếu thảo, yêu thương, chia sẻ and trách nhiệm.",
+              thoi_luong_de_xuat: "20 phút"
+            }
+          ]
+        },
+        {
+          so_thu_tu: 2,
+          ten: "Tổ chức cuộc sống gia đình hạnh phúc",
+          mo_ta: "Xây dựng nếp sống văn minh and hạnh phúc.",
+          nhiem_vu: [
+            {
+              ten: "Kế hoạch gia đình hạnh phúc",
+              mo_ta: "Đề xuất các hoạt động gắn kết: Bữa cơm cuối tuần, du lịch gia đình, chia sẻ công việc.",
+              thoi_luong_de_xuat: "25 phút"
+            }
+          ]
+        }
+      ],
+      ket_qua_can_dat: ["Hiểu giá trị gia đình", "Biết cách tổ chức cuộc sống hạnh phúc"],
+      phuong_phap_goi_y: ["Thảo luận", "Lập kế hoạch"],
+      tu_khoa_tim_kiem: ["gia đình", "hạnh phúc", "bền vững"],
+      so_tiet_de_xuat: 3,
+      thang_thuc_hien: [5]
+    },
   ],
 };
 

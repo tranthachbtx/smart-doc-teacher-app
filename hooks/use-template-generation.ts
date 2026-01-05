@@ -201,8 +201,8 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     setError(null);
     try {
       const result = await check5512Compliance(lessonData);
-      if (result.success && result.report) {
-        return { success: true, audit: result.report, score: result.score };
+      if (result.success && result.audit) {
+        return { success: true, audit: result.audit, score: result.score };
       } else {
         setError(result.error || "Lỗi khi kiểm định giáo án");
         return { success: false, error: result.error };
