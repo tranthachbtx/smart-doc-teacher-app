@@ -7,10 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText, AlertCircle } from 'lucide-react';
+import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText, AlertCircle, Search, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractTextFromFile } from '@/lib/actions/gemini';
 import { SmartPromptService } from '@/lib/services/smart-prompt-service';
+import { LessonPlanAnalyzer, AnalyzedLessonPlan } from '@/lib/services/lesson-plan-analyzer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ContentStructureAnalyzer, StructuredContent } from '@/lib/services/content-structure-analyzer';
+import { StructuredContentViewer } from '@/components/ui/structured-content-viewer';
+import { ActivityContentBuilder } from '@/components/ui/activity-content-builder';
 
 export function ManualProcessingHub() {
     const {
@@ -30,6 +36,8 @@ export function ManualProcessingHub() {
     const { toast } = useToast();
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
     const [analyzingStatus, setAnalyzingStatus] = React.useState<string>("");
+    const [structuredContent, setStructuredContent] = React.useState<StructuredContent | null>(null);
+    const [optimizedMap, setOptimizedMap] = React.useState<Record<string, string>>({});
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     // Init modules if empty
@@ -59,20 +67,30 @@ export function ManualProcessingHub() {
                 setAnalyzingStatus(status);
             });
 
-            console.log('[ManualHub] Result received:', result);
-
             if (result.content && result.content.trim().length > 0) {
-                setExpertGuidance(result.content); // Save Context
+                // 1. Phân tích cấu trúc sâu bằng AI (NEW)
+                setAnalyzingStatus("AI đang cấu trúc hóa nội dung...");
+                const analyzer = new ContentStructureAnalyzer();
+                const structured = await analyzer.analyzePDFContent(result.content);
+                setStructuredContent(structured);
 
-                // Re-analyze structure based on new content
-                const modules = ManualWorkflowService.analyzeStructure(result.content, "2");
+                // 2. Chuyển đổi thành text khoa học cho context mặc định
+                const scientificText = LessonPlanAnalyzer.formatForPrompt(LessonPlanAnalyzer.analyze(result.content));
+                setExpertGuidance(scientificText);
+
+                // 3. Khởi tạo các Modules
+                const modules = ManualWorkflowService.analyzeStructure(scientificText, "2");
                 setManualModules(modules);
 
+                const isFallback = structured.title.includes("(Regex Mode)");
+
                 toast({
-                    title: result.source === 'cache' ? "⚡ Đã tải từ Cache!" : "✅ Phân tích hoàn tất!",
-                    description: result.source === 'cache'
-                        ? "Tài liệu này đã được phân tích trước đó."
-                        : `Đã trích xuất ${result.content.length} ký tự và cập nhật cấu trúc.`
+                    title: isFallback ? "⚠️ Chế độ Dự phòng" : (result.source === 'cache' ? "⚡ Đã tải từ Cache!" : "✅ Phân tích hoàn tất!"),
+                    description: isFallback
+                        ? "AI tạm thời không khả dụng. Hệ thống đã sử dụng bộ lọc thông minh (Regex) để trích xuất cấu trúc."
+                        : (result.source === 'cache'
+                            ? "Tài liệu này đã được phân tích trước đó."
+                            : `Đã cấu trúc hóa ${structured.sections.length} phần nội dung hữu ích.`)
                 });
             } else {
                 console.warn('[ManualHub] Content empty despite success flag.');
@@ -119,6 +137,7 @@ export function ManualProcessingHub() {
             topic: lessonAutoFilledTheme,
             grade: lessonGrade,
             fileSummary: expertGuidance || "Nội dung sách giáo khoa...",
+            optimizedFileSummary: optimizedMap[module.id],
             previousContext: prevContext,
             smartData: smartData
         });
@@ -233,23 +252,107 @@ export function ManualProcessingHub() {
                 </Button>
             </div>
 
-            {/* Context Viewer (Nơi hiển thị kết quả phân tích PDF) */}
+            {/* Visual Analysis Viewer (Nơi hiển thị kết quả phân tích PDF trực quan) */}
             {expertGuidance && (
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <div className="flex items-center gap-2 mb-2 text-slate-700 font-semibold">
-                        <FileText className="w-4 h-4" />
-                        <span>Dữ liệu trích xuất từ tài liệu (Context cho AI):</span>
-                    </div>
-                    <Textarea
-                        value={expertGuidance}
-                        onChange={(e) => setExpertGuidance(e.target.value)}
-                        className="bg-white min-h-[100px] text-sm text-slate-600"
-                        placeholder="Nội dung tóm tắt từ file PDF sẽ hiện ở đây..."
-                    />
-                    <p className="text-[10px] text-slate-500 mt-1 italic">
-                        * Đây là nội dung AI đã "đọc" được từ file PDF của thầy. Thầy có thể chỉnh sửa để AI hiểu đúng ý hơn trước khi Copy Prompt.
-                    </p>
-                </div>
+                <Card className="border-blue-200 bg-white overflow-hidden">
+                    <CardHeader className="bg-slate-50 border-b py-3">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-blue-800 font-semibold">
+                                <Search className="w-5 h-5" />
+                                <span>Phân tích nội dung tài liệu</span>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => setExpertGuidance("")} className="text-slate-400">
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                        <Tabs defaultValue="structured" className="w-full">
+                            <TabsList className="w-full justify-start rounded-none border-b bg-slate-50/50 px-4 h-11">
+                                <TabsTrigger value="structured" className="data-[state=active]:bg-white">Cấu trúc trích xuất</TabsTrigger>
+                                <TabsTrigger value="raw" className="data-[state=active]:bg-white">Nội dung thô (AI Context)</TabsTrigger>
+                            </TabsList>
+
+                            <TabsContent value="structured" className="p-4 m-0">
+                                {(() => {
+                                    const analyzed = LessonPlanAnalyzer.analyze(expertGuidance);
+                                    return (
+                                        <div className="space-y-6">
+                                            {structuredContent ? (
+                                                <StructuredContentViewer
+                                                    structuredContent={structuredContent}
+                                                    onSectionSelect={(section, act) => {
+                                                        toast({
+                                                            title: "Đã ghi nhận!",
+                                                            description: `Đã chọn phần "${section.title}" cho hoạt động ${act}.`
+                                                        });
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                                                <CheckCircle className="w-4 h-4 text-green-500" /> Mục tiêu bài học
+                                                            </h4>
+                                                            <div className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600 min-h-[100px] border border-slate-100 whitespace-pre-wrap">
+                                                                {analyzed.objectives || "Không tìm thấy dữ liệu mục tiêu cụ thể."}
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-2">
+                                                            <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                                                                <CheckCircle className="w-4 h-4 text-blue-500" /> Thiết bị dạy học
+                                                            </h4>
+                                                            <div className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600 min-h-[100px] border border-slate-100 whitespace-pre-wrap">
+                                                                {analyzed.preparations || "Không tìm thấy dữ liệu chuẩn bị cụ thể."}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 border-b pb-1">
+                                                            <ClipboardList className="w-4 h-4 text-purple-500" /> Các hoạt động dạy học được trích xuất ({analyzed.activities.length})
+                                                        </h4>
+                                                        <Accordion type="single" collapsible className="w-full">
+                                                            {analyzed.activities.length > 0 ? (
+                                                                analyzed.activities.map((act, i) => (
+                                                                    <AccordionItem value={`act-${i}`} key={i} className="border-slate-100">
+                                                                        <AccordionTrigger className="hover:no-underline py-2 text-sm font-medium">
+                                                                            <span className="text-left">{act.title}</span>
+                                                                        </AccordionTrigger>
+                                                                        <AccordionContent className="bg-slate-50/50 p-3 rounded-md text-slate-600 text-xs leading-relaxed whitespace-pre-wrap">
+                                                                            {act.content}
+                                                                        </AccordionContent>
+                                                                    </AccordionItem>
+                                                                ))
+                                                            ) : (
+                                                                <div className="text-center py-6 text-slate-400 text-sm italic">
+                                                                    Hệ thống sẽ tự đề xuất hoạt động chuẩn 5512 dựa trên chủ đề nếu không trích xuất được file.
+                                                                </div>
+                                                            )}
+                                                        </Accordion>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </TabsContent>
+
+                            <TabsContent value="raw" className="p-0 m-0">
+                                <Textarea
+                                    value={expertGuidance}
+                                    onChange={(e) => setExpertGuidance(e.target.value)}
+                                    className="border-0 rounded-none focus-visible:ring-0 min-h-[400px] font-mono text-xs bg-slate-900 text-slate-300 p-4"
+                                    placeholder="Nội dung tóm tắt từ file PDF sẽ hiện ở đây..."
+                                />
+                                <div className="p-2 bg-slate-100 text-[10px] text-slate-500 italic border-t">
+                                    * Đây là dữ liệu AI sẽ đọc trực tiếp. Thầy có thể chỉnh sửa để tối ưu prompt.
+                                </div>
+                            </TabsContent>
+                        </Tabs>
+                    </CardContent>
+                </Card>
             )}
 
             {/* Modules Grid */}
@@ -266,17 +369,28 @@ export function ManualProcessingHub() {
                                     Bước {manualModules.indexOf(module) + 1} / {manualModules.length}
                                 </CardDescription>
                             </div>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleCopyPrompt(module)}
-                                className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                            >
-                                <Copy className="w-4 h-4 mr-2" />
-                                Copy Prompt
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleCopyPrompt(module)}
+                                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                >
+                                    <Copy className="w-4 h-4 mr-2" />
+                                    Copy Prompt
+                                </Button>
+                            </div>
                         </CardHeader>
-                        <CardContent>
+                        <CardContent className="space-y-4">
+                            {structuredContent && (
+                                <ActivityContentBuilder
+                                    structuredContent={structuredContent}
+                                    activityType={module.type as any}
+                                    onContentGenerated={(optimized) => {
+                                        setOptimizedMap(prev => ({ ...prev, [module.id]: optimized }));
+                                    }}
+                                />
+                            )}
                             <Textarea
                                 placeholder={`Dán JSON kết quả từ Gemini/ChatGPT cho phần ${module.title} vào đây (Bắt buộc định dạng JSON)...`}
                                 className={`min-h-[200px] font-mono text-sm ${isValidJSON(module.content) ? 'bg-green-50/10' : 'bg-white'}`}

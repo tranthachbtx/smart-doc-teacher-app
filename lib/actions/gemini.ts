@@ -155,6 +155,12 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
           throw new Error(`${response.status} - ${errText}`);
         }
 
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          const rawText = await response.text();
+          throw new Error(`NON_JSON_RESPONSE: Proxy returned unexpected content: "${rawText.substring(0, 100)}"`);
+        }
+
         const json = await response.json();
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
 
