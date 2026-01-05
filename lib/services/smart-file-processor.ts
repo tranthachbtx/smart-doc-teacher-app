@@ -26,17 +26,21 @@ export class SmartFileProcessor {
             throw new Error(`File too large (Max ${this.MAX_FILE_SIZE / 1024 / 1024}MB).`);
         }
 
-        const cacheEngine = CachedProcessingEngine.getInstance();
-        if (onProgress) onProgress("Calculating unique hash...");
+        const { SmartCacheV2 } = await import('@/lib/services/smart-cache-v2');
+        const cacheEngine = SmartCacheV2.getInstance();
+
+        if (onProgress) onProgress("Checking compressed cache...");
 
         // 2. Hash & Cache
-        const hash = await cacheEngine.generateFileHash(file);
-        const cachedContent = cacheEngine.getFromCache(hash);
+        const { CachedProcessingEngine } = await import('@/lib/services/cached-processing-engine');
+        const legacyHashEngine = CachedProcessingEngine.getInstance();
+        const hash = await legacyHashEngine.generateFileHash(file);
+
+        const cachedContent = await cacheEngine.get(hash);
 
         if (cachedContent) {
-            console.log('[SmartFileProcessor] Cache hit for', file.name);
-            if (onProgress) onProgress("Found in cache!");
-            // Small delay to let user see "Found in cache"
+            console.log('[SmartFileProcessor] Smart Cache V2 hit for', file.name);
+            if (onProgress) onProgress("⚡ Found in Smart Cache!");
             await new Promise(r => setTimeout(r, 500));
             return { content: cachedContent, source: 'cache' };
         }
@@ -48,7 +52,7 @@ export class SmartFileProcessor {
         // Convert to Base64
         const base64Data = await this.fileToBase64(file);
 
-        if (onProgress) onProgress("Analyzing content (Local Parse -> Cloud AI)...");
+        if (onProgress) onProgress("Analyzing content (Client PDF / Local / Cloud AI)...");
 
         // Lazy load extractor
         const { MultiStrategyExtractor } = await import('@/lib/services/multi-strategy-extractor');
@@ -62,8 +66,9 @@ export class SmartFileProcessor {
         // Let's ensure if it's raw text, we ask Gemini to summarize it briefly IF it's massive.
         // For now, return as is, or optionally summarize.
 
-        // 4. Save to Cache
-        cacheEngine.setCache(hash, extractionResult.content);
+        // 4. Save to Smart Cache
+        // Save async to not block UI
+        cacheEngine.set(hash, extractionResult.content).catch(e => console.warn('Cache set failed', e));
 
         return { content: extractionResult.content, source: 'api' };
     }

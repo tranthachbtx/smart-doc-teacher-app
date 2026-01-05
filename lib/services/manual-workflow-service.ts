@@ -19,6 +19,16 @@ export const ManualWorkflowService = {
     },
 
     /**
+     * Helper to validate and clean file summary
+     */
+    validateAndCleanFileSummary(fileSummary: string): string {
+        if (!fileSummary || fileSummary.trim().length === 0 || fileSummary === "Nội dung sách giáo khoa...") {
+            return "Không có nội dung gốc được cung cấp. Hãy dựa vào kiến thức chuyên môn và chủ đề để thiết kế hoạt động.";
+        }
+        return fileSummary;
+    },
+
+    /**
      * Tạo Prompt "xịn" cho từng module để user copy sang Gemini Pro Web/ChatGPT
      */
     generatePromptForModule(
@@ -31,6 +41,9 @@ export const ManualWorkflowService = {
             smartData?: SmartPromptData
         }
     ): string {
+        // Validate fileSummary
+        const validatedFileSummary = ManualWorkflowService.validateAndCleanFileSummary(context.fileSummary);
+
         const contextInjection = context.previousContext
             ? `\n[CONTEXT_UPDATE]: Hoạt động trước đó đã hoàn thành. Hãy tiếp nối mạch bài học này để tạo sự logic.\nBối cảnh cũ: ${context.previousContext}\n`
             : "";
@@ -38,6 +51,7 @@ export const ManualWorkflowService = {
         let smartDataSection = "";
         if (context.smartData) {
             const sd = context.smartData;
+            // ... (Smart Data Filtering Logic remains same)
 
             // SMART FILTERING ENGINE: Chỉ đưa dữ liệu CẦN THIẾT cho từng loại hoạt động
             let specificAdvice = "";
@@ -76,7 +90,7 @@ ${specificAdvice}
 - Lớp: ${context.grade}
 - Tài liệu gốc (Tham khảo ý tưởng):
 """
-${context.fileSummary.substring(0, 1000)}... (trích dẫn)
+${validatedFileSummary.substring(0, 3000)}... (trích dẫn)
 """
 ${smartDataSection}
 ${contextInjection}
