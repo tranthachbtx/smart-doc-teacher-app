@@ -284,7 +284,10 @@ export function TemplateEngine() {
           if (!lessonResult) throw new Error("Chưa có kết quả giáo án để xuất");
           res = await ExportService.exportLessonToDocx(
             lessonResult,
-            `Giao_an_${lessonAutoFilledTheme || "HDTN"}.docx`
+            {
+              onProgress: (p) => setSuccess(`Đang xuất file... ${Math.round(p)}%`),
+              onError: (e) => setError(e.message)
+            }
           );
           break;
         case "meeting":
