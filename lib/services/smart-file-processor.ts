@@ -67,8 +67,13 @@ export class SmartFileProcessor {
         // For now, return as is, or optionally summarize.
 
         // 4. Save to Smart Cache
-        // Save async to not block UI
-        cacheEngine.set(hash, extractionResult.content).catch(e => console.warn('Cache set failed', e));
+        // Validate content before caching
+        if (extractionResult.content && extractionResult.content.length > 50) {
+            // Save async to not block UI
+            cacheEngine.set(hash, extractionResult.content).catch(e => console.warn('Cache set failed', e));
+        } else {
+            console.warn('[SmartFileProcessor] Content too short/empty. NOT caching.');
+        }
 
         return { content: extractionResult.content, source: 'api' };
     }

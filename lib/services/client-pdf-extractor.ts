@@ -7,7 +7,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 // Use unpkg for wider compatibility or specify exact .mjs extension for PDF.js v4+
 // pdfjsLib.version might be undefined in some bundlers, safer to hardcode or use a robust pattern.
 // We will try to use the mjs version which is standard for newer PDF.js
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+// Use unpkg with specific version 5.4.530 and .mjs extension
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.4.530/build/pdf.worker.min.mjs`;
 
 export interface ClientPDFResult {
     text: string;
