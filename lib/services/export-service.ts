@@ -17,7 +17,8 @@ import {
   VerticalAlign,
   TextDirection,
   UnderlineType,
-  convertInchesToTwip
+  convertInchesToTwip,
+  HeightRule
 } from "docx";
 import type {
   LessonResult,
@@ -178,19 +179,19 @@ export const ExportService = {
         const base64Data = workerResult.base64;
         const byteCharacters = atob(base64Data);
         const byteArrays = [];
-        
+
         for (let offset = 0; offset < byteCharacters.length; offset += 512) {
           const slice = byteCharacters.slice(offset, offset + 512);
           const byteNumbers = new Array(slice.length);
-          
+
           for (let i = 0; i < slice.length; i++) {
             byteNumbers[i] = slice.charCodeAt(i);
           }
-          
+
           const byteArray = new Uint8Array(byteNumbers);
           byteArrays.push(byteArray);
         }
-        
+
         finalBlob = new Blob(byteArrays, { type: docxMimeType });
       } else if (workerResult.blob) {
         finalBlob = workerResult.blob.slice(0, workerResult.blob.size, docxMimeType);
@@ -768,6 +769,8 @@ export const ExportService = {
         // Header Row
         new TableRow({
           tableHeader: true,
+          cantSplit: true,
+          height: { value: 300, rule: HeightRule.ATLEAST },
           children: [
             new TableCell({
               children: [new Paragraph({
@@ -797,6 +800,8 @@ export const ExportService = {
         }),
         // Content Row
         new TableRow({
+          cantSplit: true,
+          height: { value: 300, rule: HeightRule.ATLEAST },
           children: [
             new TableCell({
               children: this.renderFormattedText(gvContent),

@@ -159,6 +159,8 @@ const createTwoColumnTable = (gvContent: string, hsContent: string) => {
         rows: [
             new d.TableRow({
                 tableHeader: true,
+                cantSplit: true,
+                height: { value: 300, rule: d.HeightRule.ATLEAST },
                 children: [
                     new d.TableCell({
                         children: [new d.Paragraph({
@@ -181,6 +183,8 @@ const createTwoColumnTable = (gvContent: string, hsContent: string) => {
                 ]
             }),
             new d.TableRow({
+                cantSplit: true,
+                height: { value: 300, rule: d.HeightRule.ATLEAST },
                 children: [
                     new d.TableCell({
                         children: renderFormattedText(gvContent),

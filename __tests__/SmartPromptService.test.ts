@@ -25,7 +25,7 @@ describe('SmartPromptService', () => {
         };
 
         const prompt = SmartPromptService.buildFinalSmartPrompt(mockData);
-        expect(prompt).toContain("KHỐI 11");
+        expect(prompt).toContain("Khối lớp: 11");
         expect(prompt).toContain("CHỦ ĐỀ: Test Topic");
         expect(prompt).toContain("5512");
     });
