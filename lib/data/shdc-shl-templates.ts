@@ -287,6 +287,10 @@ export const GOI_Y_SHDC_SHL_THEO_LOAI = {
     shdc: ["Ngày hội hướng nghiệp"],
     shl: ["Tìm hiểu yêu cầu nghề nghiệp em quan tâm"],
   },
+  moi_truong_tu_nhien: {
+    shdc: ["Chiến dịch 'Trường học không rác thải nhựa'", "Tọa đàm 'Bảo vệ cảnh quan địa phương'"],
+    shl: ["Thực hành phân loại rác tại lớp", "Lập kế hoạch bảo vệ cây xanh trong trường"],
+  },
 }
 
 // ========================================
@@ -296,13 +300,43 @@ export const GOI_Y_SHDC_SHL_THEO_LOAI = {
 export const TRO_CHOI_KHOI_DONG_BO_SUNG = {
   chay_tiep_suc_cong_dong: {
     ten: "Chạy tiếp sức hoạt động cộng đồng",
-    chu_de_phu_hop: ["Cộng đồng", "Xã hội"],
+    chu_de_phu_hop: ["xa_hoi", "Cộng đồng", "Xã hội"],
     so_nguoi: "Cả lớp chia 2 đội",
     thoi_gian: "5-7 phút",
     chuan_bi: ["Bảng/giấy A0", "Bút dạ"],
     luat_choi: ["Mỗi đội cử lần lượt 1 HS lên bảng viết 1 hoạt động"],
     vi_du_dap_an: ["Hiến máu nhân đạo", "Dọn vệ sinh môi trường"],
     luu_y: "GV có thể thay đổi chủ đề",
+  },
+  ai_la_trieu_phu_career: {
+    ten: "Ai là triệu phú Career",
+    chu_de_phu_hop: ["huong_nghiep", "Nghề nghiệp"],
+    so_nguoi: "Cả lớp",
+    thoi_gian: "5-7 phút",
+    chuan_bi: ["Câu hỏi trắc nghiệm về nghề nghiệp"],
+    luat_choi: ["HS giơ tay trả lời các câu hỏi về kỹ năng và yêu cầu nghề nghiệp"],
+    vi_du_dap_an: ["Kỹ năng mềm là gì?", "Nghề AI cần học môn gì?"],
+    luu_y: "Cập nhật các nghề mới 4.0",
+  },
+  manh_ghep_thien_nhien: {
+    ten: "Mảnh ghép thiên nhiên",
+    chu_de_phu_hop: ["tu_nhien", "Môi trường"],
+    so_nguoi: "Nhóm 4-5 HS",
+    thoi_gian: "5-7 phút",
+    chuan_bi: ["Hình ảnh bị cắt rời về cảnh quan"],
+    luat_choi: ["Các nhóm thi nhau ghép hình và gọi tên cảnh quan/vấn đề môi trường"],
+    vi_du_dap_an: ["Vịnh Hạ Long", "Rừng bị tàn phá"],
+    luu_y: "Gắn với thực trạng địa phương",
+  },
+  guong_mat_than_quen: {
+    ten: "Gương mặt thân quen (Thấu cảm)",
+    chu_de_phu_hop: ["ban_than", "Bản thân"],
+    so_nguoi: "Cả lớp",
+    thoi_gian: "5-7 phút",
+    chuan_bi: ["Thẻ ghi cảm xúc"],
+    luat_choi: ["1 HS diễn tả cảm xúc qua nét mặt, các HS khác đoán tên cảm xúc"],
+    vi_du_dap_an: ["Tự hào", "Lo lắng", "Bỡ ngỡ"],
+    luu_y: "Giúp HS nhận diện cảm xúc cá nhân",
   },
 }
 
@@ -401,6 +435,13 @@ export function getMaTichHopDaoDuc(maCodes: string[]) {
 
 export function getGoiYSHDC_SHL_TheoLoai(loaiChuDe: string) {
   const loaiMap: Record<string, keyof typeof GOI_Y_SHDC_SHL_THEO_LOAI> = {
+    // Mapping từ mach_noi_dung (kntt-curriculum-database)
+    ban_than: "truong_thanh_kham_pha_ban_than",
+    xa_hoi: "gia_dinh_gia_tri",
+    huong_nghiep: "nghe_nghiep_huong_nghiep",
+    tu_nhien: "moi_truong_tu_nhien",
+
+    // Mapping cũ để tương thích
     truong_thanh: "truong_thanh_kham_pha_ban_than",
     gia_dinh: "gia_dinh_gia_tri",
     ban_be: "thay_co_ban_be",
@@ -415,9 +456,12 @@ export function getGoiYSHDC_SHL_TheoLoai(loaiChuDe: string) {
 // HÀM TẠO CONTEXT (DUY NHẤT)
 // ========================================
 
-export function taoContextSHDC_SHL(khoi: number, chuDeSo: number): string {
+export function taoContextSHDC_SHL(khoi: number, chuDeSo: number, machNoiDung?: string): string {
   const key = `${khoi}.${chuDeSo}`
-  let context = `## GỢI Ý SHDC VÀ SHL\n\n`
+  let context = `## GỢI Ý SINH HOẠT DƯỚI CỜ (SHDC) VÀ SINH HOẠT LỚP (SHL)\n\n`
+
+  // 1. Lấy mẫu cụ thể nếu có
+  const hasSample = MAU_SHDC_THEO_CHU_DE[key] || MAU_SHL_THEO_CHU_DE[key];
 
   if (MAU_SHDC_THEO_CHU_DE[key]) {
     context += `### Mẫu SHDC cho chủ đề ${key}:\n`
@@ -435,10 +479,31 @@ export function taoContextSHDC_SHL(khoi: number, chuDeSo: number): string {
     context += "\n"
   }
 
+  // 2. Nếu không có mẫu, dùng AI gợi ý dựa trên machNoiDung
+  if (!hasSample && machNoiDung) {
+    const goiY = getGoiYSHDC_SHL_TheoLoai(machNoiDung);
+    if (goiY) {
+      context += `### Gợi ý định hướng (Do chưa có mẫu chi tiết):\n`
+      context += `- Định hướng SHDC: ${goiY.shdc.join(", ")}\n`
+      context += `- Định hướng SHL: ${goiY.shl.join(", ")}\n\n`
+      context += `* Yêu cầu AI: Đây là khung định hướng. Hãy dùng trí tuệ nhân tạo để thiết kế các hoạt động chi tiết, sáng tạo, đúng chuẩn sư phạm cho SHDC và SHL dựa trên khung này.\n\n`
+    }
+  }
+
+  // 3. Trò chơi khởi động (Lọc theo chủ đề)
   context += `### Trò chơi khởi động gợi ý:\n`
-  Object.values(TRO_CHOI_KHOI_DONG_BO_SUNG).forEach((tc) => {
-    context += `- ${tc.ten} (${tc.thoi_gian}): Phù hợp với ${tc.chu_de_phu_hop.join(", ")}\n`
-  })
+  const relevantGames = Object.values(TRO_CHOI_KHOI_DONG_BO_SUNG).filter(tc =>
+    !machNoiDung || tc.chu_de_phu_hop.some(cd => cd.toLowerCase() === machNoiDung.toLowerCase() || cd === machNoiDung)
+  );
+
+  if (relevantGames.length > 0) {
+    relevantGames.forEach((tc) => {
+      context += `- ${tc.ten} (${tc.thoi_gian}): ${tc.luat_choi}\n`
+    })
+  } else {
+    // Fallback nếu không có trò chơi nào khớp
+    context += `- Trò chơi 'Nếu - Thì' (5-7 phút): GV đưa ra tình huống giả định liên quan đến chủ đề để học sinh ứng biến.\n`
+  }
 
   return context
 }

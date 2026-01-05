@@ -1,185 +1,146 @@
-/**
- * 🚀 Export Performance Optimizer
- * Tối ưu hóa hiệu suất và độ tin cậy cho Word Export
- */
+
+import type { LessonResult } from "@/lib/types";
+
+export interface PerformanceReport {
+    startTime: number;
+    endTime?: number;
+    duration?: number;
+    contentSize: number;
+    heapSizeBefore: number;
+    heapSizeAfter?: number;
+    memoryUsage?: number;
+    chunkCount: number;
+    success: boolean;
+}
 
 export class ExportOptimizer {
-  // Performance monitoring
-  private static performanceMetrics = {
-    startTime: 0,
-    memoryUsage: 0,
-    chunkCount: 0,
-    errorCount: 0
-  };
+    private static metrics: Partial<PerformanceReport> = {
+        chunkCount: 0,
+        success: false
+    };
 
-  /**
-   * Memory-safe chunking for large content
-   */
-  static async processWithMemorySafety<T>(
-    data: T[],
-    processor: (chunk: T[]) => Promise<any[]>,
-    chunkSize: number = 100,
-    onProgress?: (percent: number) => void
-  ): Promise<any[]> {
-    const results: any[] = [];
-    const totalChunks = Math.ceil(data.length / chunkSize);
-    
-    for (let i = 0; i < totalChunks; i++) {
-      const chunk = data.slice(i * chunkSize, (i + 1) * chunkSize);
-      
-      // Memory check before processing
-      if (this.checkMemoryUsage()) {
-        await this.garbageCollect();
-      }
-      
-      try {
-        const chunkResult = await processor(chunk);
-        results.push(...chunkResult);
-        
-        // Progress update
-        if (onProgress) {
-          onProgress(Math.round(((i + 1) / totalChunks) * 100));
+    /**
+     * Start monitoring performance metrics
+     */
+    static startMonitoring(contentSize: number = 0) {
+        this.metrics = {
+            startTime: Date.now(),
+            contentSize,
+            heapSizeBefore: this.getUsedMemory(),
+            chunkCount: 0,
+            success: false
+        };
+    }
+
+    /**
+     * Helper to get current memory usage
+     */
+    private static getUsedMemory(): number {
+        if (typeof window !== 'undefined' && (window.performance as any).memory) {
+            return (window.performance as any).memory.usedJSHeapSize;
         }
-        
-        // Yield to main thread
-        await this.yieldToMainThread();
-        
-      } catch (error) {
-        console.error(`Chunk ${i} processing failed:`, error);
-        this.performanceMetrics.errorCount++;
-        
-        // Continue with fallback
-        results.push(this.createFallbackChunk(chunk));
-      }
-    }
-    
-    return results;
-  }
-
-  /**
-   * Check memory usage and return true if cleanup needed
-   */
-  private static checkMemoryUsage(): boolean {
-    if (typeof window !== 'undefined' && 'memory' in performance) {
-      const memory = (performance as any).memory;
-      const usageRatio = memory.usedJSHeapSize / memory.jsHeapSizeLimit;
-      return usageRatio > 0.7; // 70% threshold
-    }
-    return false;
-  }
-
-  /**
-   * Force garbage collection if available
-   */
-  private static async garbageCollect(): Promise<void> {
-    if (typeof window !== 'undefined' && 'gc' in window) {
-      (window as any).gc();
-    }
-    // Always yield to allow natural GC
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-
-  /**
-   * Yield to main thread with adaptive delay
-   */
-  private static async yieldToMainThread(): Promise<void> {
-    const delay = this.performanceMetrics.errorCount > 0 ? 50 : 10;
-    await new Promise(resolve => setTimeout(resolve, delay));
-  }
-
-  /**
-   * Create fallback chunk when processing fails
-   */
-  private static createFallbackChunk(chunk: any[]): any[] {
-    return chunk.map(item => ({
-      text: typeof item === 'string' ? item : '...',
-      fallback: true
-    }));
-  }
-
-  /**
-   * Validate content before export
-   */
-  static validateContent(content: any): { valid: boolean; errors: string[] } {
-    const errors: string[] = [];
-    
-    if (!content) {
-      errors.push('Content is null or undefined');
-      return { valid: false, errors };
+        return 0;
     }
 
-    // Check for circular references
-    try {
-      JSON.stringify(content);
-    } catch (e) {
-      errors.push('Circular reference detected in content');
+    /**
+     * Check if memory usage is within safe limits (Phase 1.1)
+     */
+    static checkMemoryUsage(): boolean {
+        const used = this.getUsedMemory();
+        if (typeof window !== 'undefined' && (window.performance as any).memory) {
+            const limit = (window.performance as any).memory.jsHeapSizeLimit;
+            // Warning if using more than 80% of limit
+            return used < limit * 0.8;
+        }
+        return true;
     }
 
-    // Check content size
-    const contentSize = JSON.stringify(content).length;
-    if (contentSize > 10 * 1024 * 1024) { // 10MB
-      errors.push('Content too large (>10MB)');
+    /**
+     * Suggest/trigger garbage collection hints (Phase 1.1)
+     */
+    static async garbageCollect() {
+        console.log("[ExportOptimizer] Triggering memory relief...");
+        // In JS we can't force GC, but we can nullify references
+        // and pause to let the engine breathe
+        await new Promise(resolve => setTimeout(resolve, 100));
     }
 
-    return { valid: errors.length === 0, errors };
-  }
+    /**
+     * Validate content structure before export (Phase 1.1)
+     */
+    static validateContent(result: any): { valid: boolean; errors: string[] } {
+        const errors: string[] = [];
+        if (!result) errors.push("Dữ hiệu trống");
+        else if (typeof result !== 'object') errors.push("Dữ liệu không hợp lệ");
 
-  /**
-   * Optimize content for processing
-   */
-  static optimizeContent(content: any): any {
-    if (typeof content === 'string') {
-      return content
-        .replace(/\s+/g, ' ') // Normalize whitespace
-        .replace(/[\x00-\x1F\x7F]/g, ''); // Remove control chars
+        return { valid: errors.length === 0, errors };
     }
-    
-    if (Array.isArray(content)) {
-      return content.map(item => this.optimizeContent(item));
-    }
-    
-    if (typeof content === 'object' && content !== null) {
-      const optimized: any = {};
-      for (const [key, value] of Object.entries(content)) {
-        optimized[key] = this.optimizeContent(value);
-      }
-      return optimized;
-    }
-    
-    return content;
-  }
 
-  /**
-   * Start performance monitoring
-   */
-  static startMonitoring(): void {
-    this.performanceMetrics = {
-      startTime: Date.now(),
-      memoryUsage: 0,
-      chunkCount: 0,
-      errorCount: 0
-    };
-  }
+    /**
+     * Optimize content for processing (Phase 1.1)
+     */
+    static optimizeContent(content: any): any {
+        // Deep clone or pick necessary fields to reduce memory footprint
+        if (!content) return null;
+        return JSON.parse(JSON.stringify(content));
+    }
 
-  /**
-   * Get performance report
-   */
-  static getPerformanceReport(): {
-    duration: number;
-    memoryUsage: string;
-    chunkCount: number;
-    errorCount: number;
-    success: boolean;
-  } {
-    const duration = Date.now() - this.performanceMetrics.startTime;
-    const success = this.performanceMetrics.errorCount === 0;
-    
-    return {
-      duration,
-      memoryUsage: `${Math.round(this.performanceMetrics.memoryUsage / 1024 / 1024)}MB`,
-      chunkCount: this.performanceMetrics.chunkCount,
-      errorCount: this.performanceMetrics.errorCount,
-      success
-    };
-  }
+    /**
+     * Generate detailed performance report (Phase 3.2)
+     */
+    static getPerformanceReport(): PerformanceReport {
+        const endTime = Date.now();
+        const heapSizeAfter = this.getUsedMemory();
+
+        return {
+            startTime: this.metrics.startTime || 0,
+            endTime,
+            duration: endTime - (this.metrics.startTime || 0),
+            contentSize: this.metrics.contentSize || 0,
+            heapSizeBefore: this.metrics.heapSizeBefore || 0,
+            heapSizeAfter,
+            memoryUsage: heapSizeAfter - (this.metrics.heapSizeBefore || 0),
+            chunkCount: this.metrics.chunkCount || 0,
+            success: this.metrics.success || false
+        };
+    }
+
+    static setSuccess(value: boolean) {
+        this.metrics.success = value;
+    }
+
+    /**
+     * Memory-safe processing in chunks (Phase 1.1)
+     */
+    static async processWithMemorySafety<T, R>(
+        items: T[],
+        processor: (chunk: T[]) => Promise<R[]>,
+        chunkSize: number = 1,
+        onProgress?: (percent: number) => void
+    ): Promise<R[]> {
+        const results: R[] = [];
+        const total = items.length;
+
+        for (let i = 0; i < total; i += chunkSize) {
+            // Check memory before each chunk
+            if (!this.checkMemoryUsage()) {
+                await this.garbageCollect();
+            }
+
+            const chunk = items.slice(i, i + chunkSize);
+            const chunkResults = await processor(chunk);
+            results.push(...chunkResults);
+
+            this.metrics.chunkCount!++;
+
+            if (onProgress) {
+                onProgress(Math.round(((i + chunk.length) / total) * 100));
+            }
+
+            // Yield to main thread (Phase 1)
+            await new Promise(resolve => setTimeout(resolve, 10));
+        }
+
+        return results;
+    }
 }

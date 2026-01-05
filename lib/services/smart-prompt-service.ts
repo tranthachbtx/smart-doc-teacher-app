@@ -82,7 +82,7 @@ Gợi ý sư phạm: Tập trung vào các hoạt động thực hành, trải n
         const ppctContext = chuDeSoNum ? taoContextPhanBoThoiGian(gradeInt, chuDeSoNum) : "Dữ liệu phân phối chương trình.";
 
         // 4. Get SHDC/SHL Suggestions
-        const shdcShlContext = chuDeSoNum ? taoContextSHDC_SHL(gradeInt, chuDeSoNum) : "Gợi ý Sinh hoạt dưới cờ và Sinh hoạt lớp theo chủ đề.";
+        const shdcShlContext = chuDeSoNum ? taoContextSHDC_SHL(gradeInt, chuDeSoNum, chuDe?.mach_noi_dung) : "Gợi ý Sinh hoạt dưới cờ và Sinh hoạt lớp theo chủ đề.";
 
         // 5. Get Digital Competency (NLS) - Cleaned version focusing only on content
         const nlsSuggestions = goiYNLSTheoChuDe(chuDe?.mach_noi_dung || topicName);

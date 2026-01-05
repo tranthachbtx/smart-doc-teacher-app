@@ -26,26 +26,93 @@ export const useLessonActions = () => {
     }, [store.lessonAutoFilledTheme, store.setLoading, store.setStatus]);
 
     const handleExportDocx = useCallback(async () => {
-        if (!store.lessonResult) return;
+        if (!store.lessonResult) {
+            store.setStatus('error', "Không có dữ liệu giáo án để xuất");
+            return;
+        }
 
         store.setLoading('isExporting', true);
         store.setExportProgress(0);
 
         try {
+            // Pre-export validation
+            const contentSize = JSON.stringify(store.lessonResult).length;
+            console.log(`Exporting content size: ${Math.round(contentSize / 1024)}KB`);
+
+            if (contentSize > 5 * 1024 * 1024) { // 5MB warning
+                store.setStatus('error', "⚠️ Nội dung rất lớn (>5MB), có thể mất thời gian xử lý");
+            }
+
             const fileName = `Giao_an_${store.lessonAutoFilledTheme || store.lessonResult.ten_bai || "HDTN"}.docx`.replace(/\s+/g, "_");
-            await ExportService.exportLessonToDocx(
+
+            // Enhanced progress tracking
+            const startTime = Date.now();
+            const progressCallback = (percent: number) => {
+                store.setExportProgress(percent);
+
+                // Log progress for debugging
+                if (percent % 25 === 0) {
+                    const elapsed = Date.now() - startTime;
+                    console.log(`Export progress: ${percent}% (${elapsed}ms elapsed)`);
+                }
+            };
+
+            const result = await ExportService.exportLessonToDocx(
                 store.lessonResult,
                 fileName,
-                (percent) => store.setExportProgress(percent)
+                progressCallback
             );
-            store.setStatus('success', "💾 Đã tải xuống file Word!");
+
+            if (result.success) {
+                const totalTime = Date.now() - startTime;
+                store.setStatus('success', `💾 Đã tải xuống file Word! (${totalTime}ms)`);
+
+                // Log success metrics
+                console.log(`Export completed successfully in ${totalTime}ms`);
+            } else {
+                throw new Error("Export returned false");
+            }
+
         } catch (error: any) {
-            store.setStatus('error', "Lỗi xuất file: " + error.message);
+            console.error('Export error details:', {
+                error: error.message,
+                stack: error.stack,
+                lessonResultSize: store.lessonResult ? JSON.stringify(store.lessonResult).length : 0,
+                timestamp: new Date().toISOString()
+            });
+
+            // Enhanced error messages
+            let errorMessage = "Lỗi xuất file: ";
+
+            if (error.message.includes('timeout')) {
+                errorMessage += "Quá thời gian xử lý. Vui lòng thử lại với nội dung ngắn hơn.";
+            } else if (error.message.includes('memory')) {
+                errorMessage += "Bộ nhớ không đủ. Vui lòng đóng các tab khác và thử lại.";
+            } else if (error.message.includes('validation')) {
+                errorMessage += "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại nội dung.";
+            } else if (error.message.includes('network')) {
+                errorMessage += "Lỗi kết nối. Vui lòng kiểm tra mạng và thử lại.";
+            } else {
+                errorMessage += error.message || "Lỗi không xác định";
+            }
+
+            store.setStatus('error', errorMessage);
+
+            // Optional: Report error to analytics (Phase 3.1)
+            if (typeof window !== 'undefined' && 'gtag' in window) {
+                (window as any).gtag('event', 'export_error', {
+                    error_message: error.message,
+                    content_size: store.lessonResult ? JSON.stringify(store.lessonResult).length : 0
+                });
+            }
+
         } finally {
             store.setLoading('isExporting', false);
-            setTimeout(() => store.setStatus('success', null), 3000);
+            // Clear success message after 5 seconds, error after 10 seconds
+            const clearTime = store.success ? 5000 : 10000;
+            setTimeout(() => store.setStatus('success', null), clearTime);
         }
-    }, [store.lessonResult, store.lessonAutoFilledTheme, store.lessonGrade, store.setLoading, store.setStatus, store.setExportProgress]);
+    }, [store.lessonResult, store.lessonAutoFilledTheme, store.lessonGrade, store.setLoading, store.setStatus, store.setExportProgress, store.success]);
 
     const handleAudit = useCallback(async () => {
         if (!store.lessonResult) return;

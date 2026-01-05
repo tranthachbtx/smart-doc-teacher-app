@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { saveAs } from "file-saver";
 import { ExportOptimizer } from "./export-optimizer";
+import { WorkerManager } from "./worker-manager";
 import {
   Document,
   Packer,
@@ -16,8 +17,7 @@ import {
   VerticalAlign,
   TextDirection,
   UnderlineType,
-  convertInchesToTwip,
-  ShadingType
+  convertInchesToTwip
 } from "docx";
 import type {
   LessonResult,
@@ -30,24 +30,111 @@ import type {
 /**
  * Service to handle document exports with enhanced formatting (MOET 5512 Standard)
  * Optimized for large content (60-80 pages) with chunking and non-blocking processing.
+ * ENHANCED: Worker support for background processing
  */
 export const ExportService = {
   // Thresholds for Large Content Handling
   LARGE_CONTENT_THRESHOLD: 50000, // characters
   PROGRESS_CHUNK_SIZE: 5000,
-  /**
-   * Exports a Lesson Plan to a .docx file with Progress Tracking
-   */
+  WORKER_ENABLED: typeof Worker !== 'undefined' && typeof window !== 'undefined',
   /**
    * Exports a Lesson Plan to a .docx file with Progress Tracking
    * Tuân thủ chuẩn Công văn 5512/BGDĐT-GDTrH với cấu trúc 2 cột.
+   * ENHANCED: Memory-safe processing with error recovery & worker support
    */
   async exportLessonToDocx(
     result: LessonResult,
     fileName: string = "Giao_an_HDTN.docx",
     onProgress?: (percent: number) => void
   ): Promise<{ success: boolean; method: "download" | "clipboard" }> {
-    if (onProgress) onProgress(10);
+    // Start performance monitoring
+    ExportOptimizer.startMonitoring();
+
+    // Validate content before processing
+    const validation = ExportOptimizer.validateContent(result);
+    if (!validation.valid) {
+      console.error('Content validation failed:', validation.errors);
+      throw new Error(`Content validation failed: ${validation.errors.join(', ')}`);
+    }
+
+    // Optimize content for processing
+    const optimizedResult = ExportOptimizer.optimizeContent(result);
+
+    if (onProgress) onProgress(5);
+
+    try {
+      // Decide processing strategy based on content size and worker support
+      const contentSize = JSON.stringify(optimizedResult).length;
+      const useWorker = this.WORKER_ENABLED && contentSize > this.LARGE_CONTENT_THRESHOLD;
+
+      console.log(`Export strategy: ${useWorker ? 'Worker' : 'Main thread'} (size: ${Math.round(contentSize / 1024)}KB)`);
+
+      if (useWorker) {
+        return await this.exportWithWorker(optimizedResult, fileName, onProgress);
+      } else {
+        return await this.exportMainThread(optimizedResult, fileName, onProgress);
+      }
+
+    } catch (error) {
+      console.error('Export failed:', error);
+      const report = ExportOptimizer.getPerformanceReport();
+      console.error('Performance Report on Error:', report);
+
+      // Attempt recovery with simplified export
+      return await this.fallbackExport(optimizedResult, fileName, onProgress);
+    }
+  },
+
+  /**
+   * Export using worker for large content
+   */
+  async exportWithWorker(
+    result: LessonResult,
+    fileName: string,
+    onProgress?: (percent: number) => void
+  ): Promise<{ success: boolean; method: "download" | "clipboard" }> {
+    console.log('Starting worker-based export...');
+
+    try {
+      // Prepare content for worker
+      const content = this.prepareContentForWorker(result);
+
+      // Execute export in worker
+      const workerResult = await WorkerManager.executeExport(
+        content,
+        fileName,
+        {
+          timeout: 60000, // 60 seconds for worker
+          chunkSize: 50,
+          onProgress: (percent) => onProgress ? onProgress(10 + Math.round(percent * 0.8)) : null
+        }
+      );
+
+      // Download the result
+      saveAs(workerResult.blob, workerResult.fileName);
+
+      // Log worker metrics
+      console.log('Worker export metrics:', workerResult.metrics);
+
+      if (onProgress) onProgress(100);
+
+      return { success: true, method: "download" };
+
+    } catch (error) {
+      console.error('Worker export failed, falling back to main thread:', error);
+      return await this.exportMainThread(result, fileName, onProgress);
+    }
+  },
+
+  /**
+   * Export on main thread (fallback or small content)
+   */
+  async exportMainThread(
+    result: LessonResult,
+    fileName: string,
+    onProgress?: (percent: number) => void
+  ): Promise<{ success: boolean; method: "download" | "clipboard" }> {
+    console.log('Starting main thread export...');
 
     const children: any[] = [
       // Header Title
@@ -86,45 +173,173 @@ export const ExportService = {
       this.createSectionTitle("IV. TIẾN TRÌNH DẠY HỌC"),
     ];
 
-    if (onProgress) onProgress(40);
+    if (onProgress) onProgress(20);
 
-    // Activity 1: Khởi động
-    children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 1: KHỞI ĐỘNG (5-7 phút)", result.hoat_dong_khoi_dong));
+    // Process activities with memory safety
+    const activities = [
+      { title: "HOẠT ĐỘNG 1: KHỞI ĐỘNG (5-7 phút)", content: result.hoat_dong_khoi_dong },
+      { title: "HOẠT ĐỘNG 2: KHÁM PHÁ (15-20 phút)", content: result.hoat_dong_kham_pha || result.hoat_dong_kham_pha_1 },
+      { title: "HOẠT ĐỘNG 3: LUYỆN TẬP (10-15 phút)", content: result.hoat_dong_luyen_tap || result.hoat_dong_luyen_tap_1 },
+      { title: "HOẠT ĐỘNG 4: VẬN DỤNG (5-10 phút)", content: result.hoat_dong_van_dung }
+    ];
 
-    // Activity 2: Khám phá
-    children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 2: KHÁM PHÁ (15-20 phút)", result.hoat_dong_kham_pha || result.hoat_dong_kham_pha_1));
+    // Process activities with chunking for large content
+    const activityResults = await ExportOptimizer.processWithMemorySafety(
+      activities,
+      async (chunk) => {
+        const chunkChildren = [];
+        for (const activity of chunk) {
+          chunkChildren.push(...this.createTwoColumnActivity(activity.title, activity.content));
+        }
+        return chunkChildren;
+      },
+      2, // Process 2 activities at a time
+      (percent) => onProgress ? onProgress(20 + Math.round(percent * 0.4)) : null
+    );
+
+    children.push(...activityResults);
 
     if (onProgress) onProgress(60);
-    // Yield to main thread for large content
-    await new Promise(resolve => setTimeout(resolve, 0));
 
-    // Activity 3: Luyện tập
-    children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 3: LUYỆN TẬP (10-15 phút)", result.hoat_dong_luyen_tap || result.hoat_dong_luyen_tap_1));
-
-    // Activity 4: Vận dụng
-    children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 4: VẬN DỤNG (5-10 phút)", result.hoat_dong_van_dung));
+    // Add remaining sections
+    children.push(
+      this.createSectionTitle("V. HỒ SƠ DẠY HỌC (PHỤ LỤC)"),
+      ...this.renderFormattedText(result.ho_so_day_hoc || "..."),
+      this.createSectionTitle("VI. HƯỚNG DẪN VỀ NHÀ"),
+      ...this.renderFormattedText(result.huong_dan_ve_nha || "...")
+    );
 
     if (onProgress) onProgress(80);
 
-    // V. HỒ SƠ DẠY HỌC
-    children.push(this.createSectionTitle("V. HỒ SƠ DẠY HỌC (PHỤ LỤC)"));
-    children.push(...this.renderFormattedText(result.ho_so_day_hoc || "..."));
-
-    // VI. HƯỚNG DẪN VỀ NHÀ
-    children.push(this.createSectionTitle("VI. HƯỚNG DẪN VỀ NHÀ"));
-    children.push(...this.renderFormattedText(result.huong_dan_ve_nha || "..."));
-
-    if (onProgress) onProgress(90);
-
+    // Create document with error handling
     const doc = new Document({
       sections: [{ properties: {}, children }],
     });
 
-    const blob = await Packer.toBlob(doc);
-    saveAs(blob, fileName);
+    if (onProgress) onProgress(90);
+
+    // Generate blob with timeout protection
+    const blob = await this.generateBlobWithTimeout(doc, 30000); // 30 second timeout
+
+    // Download with error handling
+    await this.downloadWithRetry(blob, fileName, 3);
 
     if (onProgress) onProgress(100);
+
+    // Log performance metrics
+    ExportOptimizer.setSuccess(true);
+    const report = ExportOptimizer.getPerformanceReport();
+    console.log('Export Performance Report:', report);
+
     return { success: true, method: "download" };
+  },
+
+  /**
+   * Prepare content for worker processing
+   */
+  prepareContentForWorker(result: LessonResult): any {
+    // Simplify content for worker processing
+    return {
+      type: 'lesson_plan',
+      data: {
+        title: result.ten_bai,
+        objectives: {
+          knowledge: result.muc_tieu_kien_thuc,
+          skills: result.muc_tieu_nang_luc,
+          attitudes: result.muc_tieu_pham_chat
+        },
+        equipment: {
+          teacher: result.gv_chuan_bi || result.thiet_bi_day_hoc,
+          student: result.hs_chuan_bi
+        },
+        activities: [
+          { title: "HOẠT ĐỘNG 1: KHỞI ĐỘNG", content: result.hoat_dong_khoi_dong },
+          { title: "HOẠT ĐỘNG 2: KHÁM PHÁ", content: result.hoat_dong_kham_pha || result.hoat_dong_kham_pha_1 },
+          { title: "HOẠT ĐỘNG 3: LUYỆN TẬP", content: result.hoat_dong_luyen_tap || result.hoat_dong_luyen_tap_1 },
+          { title: "HOẠT ĐỘNG 4: VẬN DỤNG", content: result.hoat_dong_van_dung }
+        ],
+        attachments: result.ho_so_day_hoc,
+        homework: result.huong_dan_ve_nha
+      }
+    };
+  },
+
+  /**
+   * Generate blob with timeout protection
+   */
+  async generateBlobWithTimeout(doc: any, timeoutMs: number): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error(`Document generation timeout after ${timeoutMs}ms`));
+      }, timeoutMs);
+
+      Packer.toBlob(doc)
+        .then(blob => {
+          clearTimeout(timeout);
+          resolve(blob);
+        })
+        .catch(error => {
+          clearTimeout(timeout);
+          reject(error);
+        });
+    });
+  },
+
+  /**
+   * Download with retry mechanism
+   */
+  async downloadWithRetry(blob: Blob, fileName: string, maxRetries: number): Promise<void> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        saveAs(blob, fileName);
+        return; // Success
+      } catch (error) {
+        console.error(`Download attempt ${attempt} failed:`, error);
+        if (attempt === maxRetries) {
+          throw error;
+        }
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+    }
+  },
+
+  /**
+   * Fallback export with simplified structure
+   */
+  async fallbackExport(
+    result: LessonResult,
+    fileName: string,
+    onProgress?: (percent: number) => void
+  ): Promise<{ success: boolean; method: "download" | "clipboard" }> {
+    console.log('Attempting fallback export...');
+
+    try {
+      const simplifiedChildren = [
+        new Paragraph({
+          alignment: AlignmentType.CENTER,
+          children: [
+            new TextRun({ text: "KẾ HOẠCH BÀI DẠY (FALLBACK)", bold: true, size: 28 })
+          ]
+        }),
+        new Paragraph({ text: "", spacing: { after: 200 } }),
+        ...this.renderFormattedText(`Tên bài: ${result.ten_bai || "..."}`),
+        ...this.renderFormattedText(`Mục tiêu: ${result.muc_tieu_kien_thuc || "..."}`),
+        ...this.renderFormattedText(`Hoạt động: ${result.hoat_dong_khoi_dong || "..."}`)
+      ];
+
+      const doc = new Document({
+        sections: [{ children: simplifiedChildren }]
+      });
+
+      const blob = await Packer.toBlob(doc);
+      saveAs(blob, `fallback_${fileName}`);
+
+      return { success: true, method: "download" };
+    } catch (error) {
+      console.error('Fallback export failed:', error);
+      throw new Error('Both primary and fallback exports failed');
+    }
   },
 
   /**
