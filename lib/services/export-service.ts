@@ -28,7 +28,7 @@ export const ExportService = {
   /**
    * Exports a Lesson Plan to a .docx file
    */
-  async exportLessonToDocx(result: LessonResult, fileName: string = "Giao_an_HDTN.docx"): Promise<void> {
+  async exportLessonToDocx(result: LessonResult, fileName: string = "Giao_an_HDTN.docx"): Promise<{ success: boolean; method: "download" | "clipboard" }> {
     const doc = new Document({
       sections: [
         {
@@ -99,8 +99,7 @@ export const ExportService = {
    */
   async exportLesson(result: LessonResult, template: any, metadata: any): Promise<{ success: boolean; method: "download" | "clipboard" }> {
     const fileName = `Giao_an_${metadata.topic || result.ten_bai || "HDTN"}.docx`.replace(/\s+/g, "_");
-    await this.exportLessonToDocx(result, fileName);
-    return { success: true, method: "download" };
+    return await this.exportLessonToDocx(result, fileName);
   },
 
   /**

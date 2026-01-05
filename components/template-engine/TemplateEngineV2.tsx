@@ -276,14 +276,60 @@ export function TemplateEngine() {
   const handleExport = async (mode: string) => {
     setIsExporting(true);
     try {
-      if (mode === "lesson" && lessonResult) {
-        setSuccess("Đang tạo file Word...");
-        await ExportService.exportLessonToDocx(lessonResult, `Giao_an_${lessonAutoFilledTheme || "HDTN"}.docx`);
+      setSuccess("Đang tạo file Word...");
+
+      let res;
+      switch (mode) {
+        case "lesson":
+          if (!lessonResult) throw new Error("Chưa có kết quả giáo án để xuất");
+          res = await ExportService.exportLessonToDocx(
+            lessonResult,
+            `Giao_an_${lessonAutoFilledTheme || "HDTN"}.docx`
+          );
+          break;
+        case "meeting":
+          if (!meetingResult) throw new Error("Chưa có kết quả biên bản để xuất");
+          res = await ExportService.exportMeeting(
+            meetingResult,
+            null,
+            selectedMonth,
+            selectedSession
+          );
+          break;
+        case "event":
+          if (!eventResult) throw new Error("Chưa có kết quả kịch bản để xuất");
+          res = await ExportService.exportEvent(
+            eventResult,
+            null,
+            { grade: selectedGradeEvent, month: selectedEventMonth }
+          );
+          break;
+        case "ncbh":
+          if (!ncbhResult) throw new Error("Chưa có kết quả NCBH để xuất");
+          res = await ExportService.exportNCBH(
+            ncbhResult,
+            null,
+            { grade: ncbhGrade, month: selectedMonth }
+          );
+          break;
+        case "assessment":
+          if (!assessmentResult) throw new Error("Chưa có kết quả đánh giá để xuất");
+          res = await ExportService.exportAssessmentPlan(
+            assessmentResult,
+            null,
+            {
+              grade: assessmentGrade,
+              term: assessmentTerm,
+              productType: assessmentProductType
+            }
+          );
+          break;
+        default:
+          throw new Error(`Chế độ xuất "${mode}" chưa được hỗ trợ`);
+      }
+
+      if (res?.success) {
         setSuccess("Đã xuất file Word thành công!");
-      } else {
-        // Fallback for other modes
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setSuccess(`Tính năng xuất file cho ${mode} đang được phát triển...`);
       }
     } catch (err) {
       console.error("Export Error:", err);
