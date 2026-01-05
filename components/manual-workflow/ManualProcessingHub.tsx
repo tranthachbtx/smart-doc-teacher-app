@@ -59,7 +59,9 @@ export function ManualProcessingHub() {
                 setAnalyzingStatus(status);
             });
 
-            if (result.content) {
+            console.log('[ManualHub] Result received:', result);
+
+            if (result.content && result.content.trim().length > 0) {
                 setExpertGuidance(result.content); // Save Context
 
                 // Re-analyze structure based on new content
@@ -70,10 +72,14 @@ export function ManualProcessingHub() {
                     title: result.source === 'cache' ? "⚡ Đã tải từ Cache!" : "✅ Phân tích hoàn tất!",
                     description: result.source === 'cache'
                         ? "Tài liệu này đã được phân tích trước đó."
-                        : "Đã trích xuất nội dung và cập nhật cấu trúc bài học."
+                        : `Đã trích xuất ${result.content.length} ký tự và cập nhật cấu trúc.`
                 });
+            } else {
+                console.warn('[ManualHub] Content empty despite success flag.');
+                throw new Error("Không tìm thấy nội dung văn bản trong tài liệu này. Vui lòng kiểm tra lại file.");
             }
         } catch (error: any) {
+            console.error('[ManualHub] Error:', error);
             toast({ title: "Lỗi phân tích", description: error.message, variant: "destructive" });
         } finally {
             setIsAnalyzing(false);

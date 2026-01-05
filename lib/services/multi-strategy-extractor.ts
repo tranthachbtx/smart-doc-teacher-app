@@ -28,32 +28,54 @@ export class MultiStrategyExtractor {
 
         const errors: string[] = [];
 
-        // STRATEGY 1: Local Parser (Fastest, Cheapest)
-        // We always try this first for DOCX and PDF (Text-based).
+        // STRATEGY 1: Client-Side PDF Parser (Browser Main Thread / Worker)
+        // Fastest, Zero Network Latency for Text PDFs.
+        if (file.type === 'application/pdf') {
+            try {
+                console.log('[MultiStrategy] Attempting Client-Side PDF Parse...');
+                // Dynamic import to ensure it runs only in browser
+                const { ClientPDFExtractor } = await import('@/lib/services/client-pdf-extractor');
+
+                const clientRes = await ClientPDFExtractor.extractText(file);
+
+                if (!clientRes.isScanned && clientRes.text.length > 100) {
+                    console.log('[MultiStrategy] Client-side success.');
+                    return {
+                        content: clientRes.text,
+                        source: 'local_parser' // Effectively local
+                    };
+                } else {
+                    console.warn('[MultiStrategy] PDF appears scanned or empty (Client). Falling back...');
+                }
+            } catch (e: any) {
+                console.warn(`[MultiStrategy] Client PDF Parse failed: ${e.message}`, e);
+                errors.push(`Client PDF: ${e.message}`);
+            }
+        }
+
+        // STRATEGY 2: Server-Side Local Parser (DOCX mainly, or PDF fallback)
         try {
-            console.log('[MultiStrategy] Attempting Local Parse...');
+            console.log('[MultiStrategy] Attempting Server-Side Local Parse...');
             const localRes = await parseFileLocally({
                 mimeType: file.type,
                 data: base64Data
             });
 
             if (localRes.success && localRes.content && localRes.content.length > 50) {
-                // Validation: If extraction is too short (<50 chars), it might be a scanned PDF (image only).
-                // If reasonably long, accept it.
                 return {
                     content: localRes.content,
                     source: 'local_parser'
                 };
             } else if (localRes.success) {
-                console.warn('[MultiStrategy] Local parse too short. Likely scanned document.');
+                console.warn('[MultiStrategy] Server Local parse too short.');
             } else {
-                errors.push(`Local Parser: ${localRes.error}`);
+                errors.push(`Server Parser: ${localRes.error}`);
             }
         } catch (e: any) {
-            errors.push(`Local Parser Exception: ${e.message}`);
+            errors.push(`Server Parser Exception: ${e.message}`);
         }
 
-        // STRATEGY 2: Gemini Vision (Fallback for Scanned PDFs or Complex Layouts)
+        // STRATEGY 3: Gemini Vision (Ultimate Fallback for Scanned/Complex)
         try {
             console.log('[MultiStrategy] Falling back to Gemini Vision...');
             const geminiRes = await extractTextFromFile(
