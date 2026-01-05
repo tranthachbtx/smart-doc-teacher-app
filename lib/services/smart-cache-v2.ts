@@ -120,7 +120,7 @@ export class SmartCacheV2 {
             const stream = new DecompressionStream('gzip');
             const writer = stream.writable.getWriter();
 
-            writer.write(bytes);
+            writer.write(bytes as any);
             writer.close();
 
             const reader = stream.readable.getReader();
