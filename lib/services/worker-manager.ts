@@ -107,7 +107,10 @@ export class WorkerManager {
                 reject(err);
             };
 
-            worker.postMessage({ content, fileName, options });
+            // Strip functions from options before sending to worker (Phase 5.5)
+            // Functions cannot be cloned via postMessage
+            const workerData = { content, fileName };
+            worker.postMessage(workerData);
         });
     }
 }

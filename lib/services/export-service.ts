@@ -37,6 +37,60 @@ export const ExportService = {
   LARGE_CONTENT_THRESHOLD: 50000, // characters
   PROGRESS_CHUNK_SIZE: 5000,
   WORKER_ENABLED: typeof Worker !== 'undefined' && typeof window !== 'undefined',
+
+  /**
+   * Helper: Trigger download using a robust anchor method (Fix GUID filename)
+   */
+  triggerDownload(blob: Blob, fileName: string) {
+    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+    // Sanitize filename: Remove diacritics and special chars (Phase 5.7)
+    const sanitizedName = fileName
+      .normalize('NFD') // Decompose accents
+      .replace(/[\u0300-\u036f]/g, '') // Remove accent marks
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+      .trim();
+
+    let safeName = sanitizedName.toLowerCase().endsWith('.docx') ? sanitizedName : `${sanitizedName}.docx`;
+    if (safeName === '.docx') safeName = "Giao_an.docx";
+
+    console.log(`[ExportService] Triggering download via file-saver: ${safeName}`);
+    console.log(`[ExportService] Blob size: ${blob.size}, type: ${blob.type}`);
+
+    // ✅ ENHANCED: Validate blob before download
+    if (blob.size === 0) {
+      console.error("[ExportService] Blob is empty, cannot download");
+      throw new Error("Generated file is empty");
+    }
+
+    if (blob.size < 1024) {
+      console.warn("[ExportService] Blob is very small, might be corrupted");
+    }
+
+    try {
+      // Primary method: file-saver (most robust for older/specific browsers)
+      const sanitizedBlob = blob.type === docxMimeType ? blob : blob.slice(0, blob.size, docxMimeType);
+      saveAs(sanitizedBlob, safeName);
+      console.log(`[ExportService] Download triggered successfully via file-saver`);
+    } catch (e) {
+      console.warn("file-saver failed, falling back to anchor click", e);
+      // Fallback method: anchor click
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.style.display = 'none';
+      link.href = url;
+      link.download = safeName;
+      document.body.appendChild(link);
+      link.click();
+
+      setTimeout(() => {
+        if (link.parentNode) document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 1000);
+      console.log(`[ExportService] Download triggered successfully via anchor click`);
+    }
+  },
   /**
    * Exports a Lesson Plan to a .docx file with Progress Tracking
    * Tuân thủ chuẩn Công văn 5512/BGDĐT-GDTrH với cấu trúc 2 cột.
@@ -115,10 +169,37 @@ export const ExportService = {
         }
       );
 
-      // Download the result
+      // Download using a more robust method (Phase 5.6)
       const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      const finalBlob = workerResult.blob.type === docxMimeType ? workerResult.blob : new Blob([workerResult.blob], { type: docxMimeType });
-      saveAs(finalBlob, workerResult.fileName);
+      let finalBlob: Blob;
+
+      if (workerResult.base64) {
+        // ✅ FIXED: Proper Base64 to Blob conversion
+        const base64Data = workerResult.base64;
+        const byteCharacters = atob(base64Data);
+        const byteArrays = [];
+        
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+        
+        finalBlob = new Blob(byteArrays, { type: docxMimeType });
+      } else if (workerResult.blob) {
+        finalBlob = workerResult.blob.slice(0, workerResult.blob.size, docxMimeType);
+      } else {
+        throw new Error("Worker returned no usable data");
+      }
+
+      const actualFileName = (workerResult && workerResult.fileName) || fileName || "Giao_an.docx";
+      this.triggerDownload(finalBlob, actualFileName);
 
       // Log worker metrics
       console.log('Worker export metrics:', workerResult.metrics);
@@ -285,9 +366,9 @@ export const ExportService = {
       Packer.toBlob(doc)
         .then(blob => {
           clearTimeout(timeout);
-          // Force correct MIME type for DOCX (Phase 5.4)
+          // Safe re-typing of Blob without nesting
           const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-          const finalBlob = blob.type === docxMimeType ? blob : new Blob([blob], { type: docxMimeType });
+          const finalBlob = blob.slice(0, blob.size, docxMimeType);
           resolve(finalBlob);
         })
         .catch(error => {
@@ -303,9 +384,7 @@ export const ExportService = {
   async downloadWithRetry(blob: Blob, fileName: string, maxRetries: number): Promise<void> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        const finalBlob = blob.type === docxMimeType ? blob : new Blob([blob], { type: docxMimeType });
-        saveAs(finalBlob, fileName);
+        this.triggerDownload(blob, fileName);
         return; // Success
       } catch (error) {
         console.error(`Download attempt ${attempt} failed:`, error);
@@ -347,10 +426,7 @@ export const ExportService = {
       });
 
       const blob = await Packer.toBlob(doc);
-      const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      const finalBlob = new Blob([blob], { type: docxMimeType });
-      saveAs(finalBlob, `fallback_${fileName}`);
-
+      this.triggerDownload(blob, `fallback_${fileName}`);
       return { success: true, method: "download" };
     } catch (error) {
       console.error('Fallback export failed:', error);
@@ -407,9 +483,7 @@ export const ExportService = {
     });
 
     const blob = await Packer.toBlob(doc);
-    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    const finalBlob = new Blob([blob], { type: docxMimeType });
-    saveAs(finalBlob, fileName);
+    this.triggerDownload(blob, fileName);
     return { success: true, method: "download" };
   },
 
@@ -456,9 +530,7 @@ export const ExportService = {
 
     const doc = new Document({ sections: [{ children }] });
     const blob = await Packer.toBlob(doc);
-    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    const finalBlob = new Blob([blob], { type: docxMimeType });
-    saveAs(finalBlob, fileName);
+    this.triggerDownload(blob, fileName);
     return { success: true, method: "download" };
   },
 
@@ -490,9 +562,7 @@ export const ExportService = {
     });
 
     const blob = await Packer.toBlob(doc);
-    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    const finalBlob = new Blob([blob], { type: docxMimeType });
-    saveAs(finalBlob, fileName);
+    this.triggerDownload(blob, fileName);
     return { success: true, method: "download" };
   },
 
@@ -609,9 +679,7 @@ export const ExportService = {
     });
 
     const blob = await Packer.toBlob(doc);
-    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    const finalBlob = new Blob([blob], { type: docxMimeType });
-    saveAs(finalBlob, fileName);
+    this.triggerDownload(blob, fileName);
     return { success: true, method: "download" };
   },
 

@@ -3,18 +3,21 @@
 /// <reference lib="webworker" />
 
 /**
- * Enterprise-grade Web Worker for DOCX export.
- * Implements Phase 4: Worker Equity - full parity with Main Thread rendering.
- * Implements Phase 5.3: Advanced Formatting & AI Cleaning.
+ * Enterprise-grade Web Worker for DOCX export (Base64 Transport version).
+ * This version uses Base64 for the final document to avoid Blob serialization issues.
  */
 
-// Use the local script
+// Use absolute path for scripts
 importScripts('/scripts/docx.iife.min.js');
 
-// Helper to access docx from the global scope (IIFE)
-const d = (self as any).docx || {};
+// Access the library from global scope
+const d = (self as any).docx;
 
-// --- Helper Functions (Ported & Enhanced from ExportService) ---
+if (!d) {
+    self.postMessage({ type: 'error', error: 'Library "docx" failed to load in Worker context.' });
+}
+
+// --- Helper Functions ---
 
 const createSectionTitle = (text: string) => {
     return new d.Paragraph({
@@ -60,7 +63,6 @@ const parseMarkdownToRuns = (text: string) => {
 const renderFormattedText = (text: string) => {
     if (!text) return [new d.Paragraph({ text: "...", size: 24 })];
 
-    // AI Artifact Cleaning
     const cleanedText = text
         .replace(/```(json|markdown|text|html)?/g, '')
         .replace(/```/g, '')
@@ -166,7 +168,6 @@ const createTwoColumnTable = (gvContent: string, hsContent: string) => {
                         shading: { fill: "F1F5F9" },
                         width: { size: 50, type: d.WidthType.PERCENTAGE },
                         verticalAlign: d.VerticalAlign.CENTER,
-                        margins: { top: 120, bottom: 120 }
                     }),
                     new d.TableCell({
                         children: [new d.Paragraph({
@@ -176,7 +177,6 @@ const createTwoColumnTable = (gvContent: string, hsContent: string) => {
                         shading: { fill: "F1F5F9" },
                         width: { size: 50, type: d.WidthType.PERCENTAGE },
                         verticalAlign: d.VerticalAlign.CENTER,
-                        margins: { top: 120, bottom: 120 }
                     }),
                 ]
             }),
@@ -185,14 +185,10 @@ const createTwoColumnTable = (gvContent: string, hsContent: string) => {
                     new d.TableCell({
                         children: renderFormattedText(gvContent),
                         width: { size: 50, type: d.WidthType.PERCENTAGE },
-                        margins: { top: 180, bottom: 180, left: 180, right: 180 },
-                        verticalAlign: d.VerticalAlign.TOP
                     }),
                     new d.TableCell({
                         children: renderFormattedText(hsContent),
                         width: { size: 50, type: d.WidthType.PERCENTAGE },
-                        margins: { top: 180, bottom: 180, left: 180, right: 180 },
-                        verticalAlign: d.VerticalAlign.TOP
                     })
                 ]
             })
@@ -246,14 +242,13 @@ const createTwoColumnActivity = (title: string, fullContent: string | undefined)
 
 self.onmessage = async (event: any) => {
     const { content, fileName } = event.data;
+    if (!content || !content.data) return;
     const { data } = content;
 
     try {
-        console.log("[Worker] Processing Lesson Plan:", fileName);
         self.postMessage({ type: 'progress', percent: 10 });
 
         const children: any[] = [
-            // Header
             new d.Paragraph({
                 alignment: d.AlignmentType.CENTER,
                 heading: d.HeadingLevel.HEADING_1,
@@ -287,7 +282,6 @@ self.onmessage = async (event: any) => {
 
         self.postMessage({ type: 'progress', percent: 30 });
 
-        // Activities
         if (data.activities && Array.isArray(data.activities)) {
             data.activities.forEach((act: any, idx: number) => {
                 children.push(...createTwoColumnActivity(act.title, act.content));
@@ -305,21 +299,39 @@ self.onmessage = async (event: any) => {
         self.postMessage({ type: 'progress', percent: 80 });
 
         const doc = new d.Document({
-            sections: [{ properties: {}, children }],
+            sections: [{ children }],
         });
 
-        const blob = await d.Packer.toBlob(doc);
+        // ✅ ENHANCED: Try both Base64 and Blob for maximum compatibility
+        let base64: string | undefined;
+        let blob: Blob | undefined;
 
-        // Force correct MIME type for DOCX (Phase 5.4)
-        const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-        const finalBlob = blob.type === docxMimeType ? blob : new Blob([blob], { type: docxMimeType });
+        try {
+            // Primary: Base64 transport (more reliable for postMessage)
+            base64 = await d.Packer.toBase64String(doc);
+        } catch (error) {
+            console.warn("[Worker] Base64 generation failed, trying Blob:", error);
+        }
+
+        try {
+            // Fallback: Blob transport (if Base64 fails)
+            blob = await d.Packer.toBlob(doc);
+        } catch (error) {
+            console.warn("[Worker] Blob generation failed:", error);
+        }
+
+        if (!base64 && !blob) {
+            throw new Error("Both Base64 and Blob generation failed");
+        }
 
         self.postMessage({
             type: 'complete',
-            blob: finalBlob,
+            base64,
+            blob,
             fileName,
             metrics: {
                 workerProcessed: true,
+                transport: base64 ? 'base64' : 'blob',
                 timestamp: Date.now()
             }
         });
