@@ -17,7 +17,7 @@ import { ExpertBrainInjection } from "./ExpertBrainInjection";
 import { SmartPromptBuilder } from "./SmartPromptBuilder";
 import { LessonActionCenter } from "./lesson/LessonActionCenter"; // Chúng ta sẽ tạo component này
 
-export const LessonTab = React.memo(() => {
+export const LessonTab = React.memo((props: any) => {
     // Individual selectors for fine-grained re-renders
     const lessonGrade = useLessonStore(s => s.lessonGrade);
     const lessonAutoFilledTheme = useLessonStore(s => s.lessonAutoFilledTheme);
