@@ -1,5 +1,6 @@
 
 import { ProcessingModule } from "@/lib/store/use-lesson-store";
+import { SmartPromptData } from "./smart-prompt-service";
 
 export const ManualWorkflowService = {
     /**
@@ -7,51 +8,13 @@ export const ManualWorkflowService = {
      * Trả về danh sách các Module cần xử lý.
      */
     analyzeStructure(fileSummary: string, duration: string): ProcessingModule[] {
-        // Logic cứng (Hardcoded Logic) hoặc AI nhẹ để chia module
-        // Với KHBD 5512, cấu trúc luôn là:
-        // 1. Khởi động (Mở đầu)
-        // 2. Hình thành kiến thức (Có thể chia nhỏ thành HĐ 2.1, 2.2 nếu bài dài)
-        // 3. Luyện tập
-        // 4. Vận dụng
-
-        // Để đơn giản và hiệu quả, ta tạo cấu trúc chuẩn 4 bước. 
-        // Nếu số tiết > 2, có thể chia nhỏ phần Khám phá.
-
+        // ... (Keep existing logic)
         const modules: ProcessingModule[] = [
-            {
-                id: "mod_khoi_dong",
-                title: "Hoạt động 1: Khởi động (Mở đầu)",
-                type: "khoi_dong",
-                prompt: "",
-                content: "",
-                isCompleted: false
-            },
-            {
-                id: "mod_kham_pha",
-                title: "Hoạt động 2: Hình thành kiến thức mới (Khám phá)",
-                type: "kham_pha",
-                prompt: "",
-                content: "",
-                isCompleted: false
-            },
-            {
-                id: "mod_luyen_tap",
-                title: "Hoạt động 3: Luyện tập",
-                type: "luyen_tap",
-                prompt: "",
-                content: "",
-                isCompleted: false
-            },
-            {
-                id: "mod_van_dung",
-                title: "Hoạt động 4: Vận dụng",
-                type: "van_dung",
-                prompt: "",
-                content: "",
-                isCompleted: false
-            }
+            { id: "mod_khoi_dong", title: "Hoạt động 1: Khởi động (Mở đầu)", type: "khoi_dong", prompt: "", content: "", isCompleted: false },
+            { id: "mod_kham_pha", title: "Hoạt động 2: Hình thành kiến thức mới (Khám phá)", type: "kham_pha", prompt: "", content: "", isCompleted: false },
+            { id: "mod_luyen_tap", title: "Hoạt động 3: Luyện tập", type: "luyen_tap", prompt: "", content: "", isCompleted: false },
+            { id: "mod_van_dung", title: "Hoạt động 4: Vận dụng", type: "van_dung", prompt: "", content: "", isCompleted: false }
         ];
-
         return modules;
     },
 
@@ -60,11 +23,53 @@ export const ManualWorkflowService = {
      */
     generatePromptForModule(
         module: ProcessingModule,
-        context: { topic: string, grade: string, fileSummary: string, previousContext?: string }
+        context: {
+            topic: string,
+            grade: string,
+            fileSummary: string,
+            previousContext?: string,
+            smartData?: SmartPromptData
+        }
     ): string {
         const contextInjection = context.previousContext
             ? `\n[CONTEXT_UPDATE]: Hoạt động trước đó đã hoàn thành. Hãy tiếp nối mạch bài học này để tạo sự logic.\nBối cảnh cũ: ${context.previousContext}\n`
             : "";
+
+        let smartDataSection = "";
+        if (context.smartData) {
+            const sd = context.smartData;
+
+            // SMART FILTERING ENGINE: Chỉ đưa dữ liệu CẦN THIẾT cho từng loại hoạt động
+            let specificAdvice = "";
+
+            if (module.type === 'khoi_dong') {
+                specificAdvice = `
+- **Tâm lý lứa tuổi**: ${sd.studentCharacteristics}
+- **Chiến lược**: Hãy dùng đặc điểm tâm lý trên để thiết kế một trò chơi/tình huống mở đầu cực cuốn hút.`;
+            } else if (module.type === 'kham_pha') {
+                specificAdvice = `
+- **Nhiệm vụ TRỌNG TÂM (SGK)**: 
+${sd.coreTasks}
+- **Công cụ số (NLS)**: 
+${sd.digitalCompetency}
+- **Chiến lược**: Hãy chuyển hóa các nhiệm vụ trọng tâm trên thành chuỗi hoạt động khám phá cụ thể. KHÔNG sáng tạo xa rời nhiệm vụ này.`;
+            } else if (module.type === 'luyen_tap') {
+                specificAdvice = `
+- **Mục tiêu cần đạt**: ${sd.objectives}
+- **Công cụ đánh giá**: ${sd.assessmentTools}
+- **Chiến lược**: Thiết kế hệ thống bài tập để củng cố các mục tiêu trên.`;
+            } else if (module.type === 'van_dung') {
+                specificAdvice = `
+- **Lưu ý thực tiễn**: ${sd.pedagogicalNotes}
+- **Chiến lược**: Đưa ra bài toán thực tế/Dự án nhỏ kết nối với lưu ý trên.`;
+            }
+
+            smartDataSection = `
+## 💡 CHỈ DẪN THÔNG MINH TỪ DATABASE (Cụ thể cho hoạt động này):
+${specificAdvice}
+----------------------------------
+`;
+        }
 
         const basePrompt = `Bạn là một Giáo viên xuất sắc, chuyên gia sư phạm hiện đại. Dựa trên thông tin sau:
 - Môn học/Chủ đề: ${context.topic}
@@ -73,9 +78,16 @@ export const ManualWorkflowService = {
 """
 ${context.fileSummary.substring(0, 1000)}... (trích dẫn)
 """
+${smartDataSection}
 ${contextInjection}
 
 Hãy viết chi tiết nội dung cho **${module.title}** theo công văn 5512.
+
+🎯 PHẠM VI TẬP TRUNG (FOCUS SCOPE):
+Nhiệm vụ của bạn CHỈ LÀ thiết kế nội dung cho: "**${module.title}**".
+- Hãy LỌC ra những thông tin liên quan đến hoạt động này từ "Dữ liệu nghiên cứu" ở trên.
+- TUYỆT ĐỐI KHÔNG viết nội dung của các hoạt động khác vào đây.
+- Nếu Dữ liệu nghiên cứu nhắc đến hoạt động sau, hãy để dành nó, ĐỪNG VIẾT VÀO BÂY GIỜ.
 Yêu cầu đặc biệt:
 1. Phong cách GEN Z: Ngôn ngữ gần gũi, ví dụ thực tế, bắt trend nhưng vẫn chuẩn mực sư phạm.
 2. Phương pháp dạy học tích cực: Sử dụng các kỹ thuật như "Mảnh ghép", "Khăn trải bàn", "Phòng tranh", hoặc Gamification.

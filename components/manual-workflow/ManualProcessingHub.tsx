@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractTextFromFile } from '@/lib/actions/gemini';
+import { SmartPromptService } from '@/lib/services/smart-prompt-service';
 
 export function ManualProcessingHub() {
     const {
@@ -28,6 +29,7 @@ export function ManualProcessingHub() {
 
     const { toast } = useToast();
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+    const [analyzingStatus, setAnalyzingStatus] = React.useState<string>("");
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     // Init modules if empty
@@ -42,45 +44,44 @@ export function ManualProcessingHub() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        if (file.size > 10 * 1024 * 1024) {
-            toast({ title: "Lỗi", description: "File quá lớn (>10MB)", variant: "destructive" });
-            return;
-        }
-
         setIsAnalyzing(true);
+        setAnalyzingStatus("Đang khởi tạo...");
+
+        // Reset file input value to allow re-uploading the same file if needed (e.g. after error)
+        // fileInputRef.current!.value = ''; // Optional, but good practice
+
         try {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = async () => {
-                const base64Data = (reader.result as string).split(',')[1];
+            // Lazy import to avoid circular dependencies if any, though here it is fine.
+            const { SmartFileProcessor } = await import('@/lib/services/smart-file-processor');
+            const processor = SmartFileProcessor.getInstance();
 
-                toast({ title: "Đang phân tích...", description: "AI đang đọc tài liệu của bạn..." });
+            const result = await processor.processFile(file, (status) => {
+                setAnalyzingStatus(status);
+            });
 
-                const res = await extractTextFromFile(
-                    { mimeType: file.type, data: base64Data },
-                    "Hãy phân tích tài liệu này. Tóm tắt nội dung chính và đề xuất cấu trúc bài dạy phù hợp. Trả về text thuần."
-                );
+            if (result.content) {
+                setExpertGuidance(result.content); // Save Context
 
-                if (res.success && res.content) {
-                    setExpertGuidance(res.content); // Save Context
+                // Re-analyze structure based on new content
+                const modules = ManualWorkflowService.analyzeStructure(result.content, "2");
+                setManualModules(modules);
 
-                    // Re-analyze structure based on new content
-                    const modules = ManualWorkflowService.analyzeStructure(res.content, "2");
-                    setManualModules(modules);
-
-                    toast({ title: "Thành công!", description: "Đã cập nhật cấu trúc bài học từ tài liệu." });
-                } else {
-                    throw new Error(res.error || "Không thể đọc file");
-                }
-                setIsAnalyzing(false);
-            };
+                toast({
+                    title: result.source === 'cache' ? "⚡ Đã tải từ Cache!" : "✅ Phân tích hoàn tất!",
+                    description: result.source === 'cache'
+                        ? "Tài liệu này đã được phân tích trước đó."
+                        : "Đã trích xuất nội dung và cập nhật cấu trúc bài học."
+                });
+            }
         } catch (error: any) {
             toast({ title: "Lỗi phân tích", description: error.message, variant: "destructive" });
+        } finally {
             setIsAnalyzing(false);
+            setAnalyzingStatus("");
         }
     };
 
-    const handleCopyPrompt = (module: ProcessingModule) => {
+    const handleCopyPrompt = async (module: ProcessingModule) => {
         // Get previous context
         const currentIndex = manualModules.findIndex(m => m.id === module.id);
         const prevModule = currentIndex > 0 ? manualModules[currentIndex - 1] : undefined;
@@ -102,17 +103,24 @@ export function ManualProcessingHub() {
             }
         }
 
+        // Notify user about system lookup
+        toast({ title: "Đang tối ưu...", description: "Hệ thống đang tra cứu dữ liệu chuyên môn..." });
+
+        // Lookup Smart Data (Async)
+        const smartData = await SmartPromptService.lookupSmartData(lessonGrade, lessonAutoFilledTheme);
+
         const prompt = ManualWorkflowService.generatePromptForModule(module, {
             topic: lessonAutoFilledTheme,
             grade: lessonGrade,
             fileSummary: expertGuidance || "Nội dung sách giáo khoa...",
-            previousContext: prevContext
+            previousContext: prevContext,
+            smartData: smartData
         });
 
         navigator.clipboard.writeText(prompt);
         toast({
             title: "Đã sao chép Prompt!",
-            description: `Dán vào Gemini Pro/ChatGPT để tạo nội dung cho ${module.title}`,
+            description: `Đã tích hợp Dữ liệu Chuyên gia vào Prompt (Clipboard Ready)`,
         });
     };
 
@@ -198,7 +206,7 @@ export function ManualProcessingHub() {
                             disabled={isAnalyzing}
                         >
                             {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
-                            {isAnalyzing ? "Đang đọc..." : "Phân tích tài liệu PDF"}
+                            {isAnalyzing ? (analyzingStatus || "Đang phân tích...") : "Phân tích tài liệu PDF"}
                         </Button>
                         {expertGuidance && (
                             <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
@@ -218,6 +226,25 @@ export function ManualProcessingHub() {
                     Tổng hợp & Xuất Word
                 </Button>
             </div>
+
+            {/* Context Viewer (Nơi hiển thị kết quả phân tích PDF) */}
+            {expertGuidance && (
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div className="flex items-center gap-2 mb-2 text-slate-700 font-semibold">
+                        <FileText className="w-4 h-4" />
+                        <span>Dữ liệu trích xuất từ tài liệu (Context cho AI):</span>
+                    </div>
+                    <Textarea
+                        value={expertGuidance}
+                        onChange={(e) => setExpertGuidance(e.target.value)}
+                        className="bg-white min-h-[100px] text-sm text-slate-600"
+                        placeholder="Nội dung tóm tắt từ file PDF sẽ hiện ở đây..."
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1 italic">
+                        * Đây là nội dung AI đã "đọc" được từ file PDF của thầy. Thầy có thể chỉnh sửa để AI hiểu đúng ý hơn trước khi Copy Prompt.
+                    </p>
+                </div>
+            )}
 
             {/* Modules Grid */}
             <div className="grid grid-cols-1 gap-6">

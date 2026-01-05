@@ -90,7 +90,7 @@ import { ExportService } from "@/lib/services/export-service";
 export function TemplateEngine() {
   // --- Tab Management ---
   const [activeMode, setActiveMode] = useState<string>("lesson");
-  const [useManualWorkflow, setUseManualWorkflow] = useState(false);
+  const [useManualWorkflow, setUseManualWorkflow] = useState(true); // Default to Expert Mode
 
   // --- Meeting State ---
   const [selectedSession, setSelectedSession] = useState<string>("1");
@@ -628,26 +628,8 @@ export function TemplateEngine() {
           </TabsContent>
 
           <TabsContent value="lesson" className="space-y-6 focus-visible:outline-none focus-visible:ring-0">
-            {/* Workflow Toggle */}
-            <div className="flex items-center justify-center space-x-4 mb-6 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-              <span className={`text-sm font-medium ${!useManualWorkflow ? "text-blue-600 font-bold" : "text-slate-500"}`}>
-                🤖 Chế độ Tự động (AI System)
-              </span>
-              <Switch
-                id="workflow-mode"
-                checked={useManualWorkflow}
-                onCheckedChange={setUseManualWorkflow}
-              />
-              <span className={`text-sm font-medium ${useManualWorkflow ? "text-green-600 font-bold" : "text-slate-500"}`}>
-                🧠 Chế độ Chuyên gia (Copy-Paste)
-              </span>
-            </div>
-
-            {useManualWorkflow ? (
-              <ManualProcessingHub />
-            ) : (
-              <LessonEngine {...lessonEngineProps} />
-            )}
+            {/* Integrated Workflow (Auto + Manual merged) */}
+            <LessonEngine {...lessonEngineProps} />
           </TabsContent>
 
           <TabsContent value="event">
