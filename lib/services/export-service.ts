@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { saveAs } from "file-saver";
+import PizZip from "pizzip";
 import { ExportOptimizer } from "./export-optimizer";
 import { WorkerManager } from "./worker-manager";
 import {
@@ -353,6 +354,225 @@ export const ExportService = {
         homework: result.huong_dan_ve_nha
       }
     };
+  },
+
+  /**
+   * Exports a Lesson Plan to a .docx file using a template
+   */
+  async exportLessonToDocx(
+    lesson: LessonResult,
+    options?: {
+      onProgress?: (progress: number) => void;
+      onError?: (error: Error) => void;
+    }
+  ): Promise<void> {
+    try {
+      console.log("[ExportService] Starting Template-Based Export 5512...");
+      options?.onProgress?.(10);
+
+      // 1. Load Template
+      const response = await fetch("/templates/KHBD_Template_2Cot.docx");
+      if (!response.ok) throw new Error("Could not load template file");
+      const templateArrayBuffer = await response.arrayBuffer();
+
+      options?.onProgress?.(30);
+
+      // 2. Init PizZip
+      // PizZip works with binary string or Uint8Array. Best is binary string from arraybuffer for browser
+      // Convert ArrayBuffer to Binary String
+      const data = new Uint8Array(templateArrayBuffer);
+      let binaryString = "";
+      for (let i = 0; i < data.length; i++) {
+        binaryString += String.fromCharCode(data[i]);
+      }
+      const zip = new PizZip(binaryString);
+
+      // 3. Clean XML (Remove phantom tags in placeholders)
+      let docXml = zip.file("word/document.xml")?.asText();
+      if (!docXml) throw new Error("Invalid template: No document.xml found");
+
+      docXml = docXml.replace(/(\{\{)([\s\S]*?)(\}\})/g, (match, open, inner, close) => {
+        const key = inner.replace(/<[^>]+>/g, "");
+        return "{{" + key + "}}";
+      });
+
+      options?.onProgress?.(50);
+
+      // 4. Prepare Data Helper Functions
+      const escapeXml = (unsafe: string) => {
+        return unsafe.replace(/[<>&'"]/g, (c) => {
+          switch (c) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+            default: return c;
+          }
+        });
+      };
+
+      const formatContent = (text: string | undefined) => {
+        if (!text) return "";
+        // Clean markdown code blocks if any
+        let clean = text.replace(/```[\s\S]*?```/g, "").replace(/\*\*/g, "").replace(/\*/g, "");
+        clean = escapeXml(clean);
+        return clean.replace(/\n/g, '<w:br/>');
+      };
+
+      // Helper to parse content into GV/HS columns if they are combined in one markdown string
+      // Note: This relies on the specific content structure or we treat the whole block as GV/Shared?
+      // Since lessonResult structure varies, let's assume we extract generic sections for now.
+      // Ideally, the AI should return separated content. If currently mixed, we rely on parseTwoColumnContent
+
+      const parseColumns = (content: string) => {
+        // Re-use logic: Find {{cot_1}} and {{cot_2}}
+        const cot1Match = /\{\{cot_1\}\}/i.exec(content);
+        const cot2Match = /\{\{cot_2\}\}/i.exec(content);
+
+        if (!cot1Match && !cot2Match) {
+          // No markers -> Return full content for GV, empty for HS (or splitting logic if appropriate)
+          return { gv: content, hs: "" };
+        }
+
+        const cot1Index = cot1Match ? cot1Match.index : -1;
+        const cot2Index = cot2Match ? cot2Match.index : -1;
+
+        let gv = "";
+        let hs = "";
+
+        if (cot1Index !== -1) {
+          const startGv = cot1Index + 9;
+          const endGv = (cot2Index !== -1 && cot2Index > cot1Index) ? cot2Index : content.length;
+          gv = content.substring(startGv, endGv).trim();
+        }
+        if (cot2Index !== -1) {
+          const startHs = cot2Index + 9;
+          hs = content.substring(startHs).trim();
+        }
+        return { gv, hs };
+      };
+
+      // 5. Map Data
+      // Extract Sections from LessonResult
+      const getSectionContent = (titleKeyword: string) => {
+        // This is heuristic: find section in lesson.activities that matches keyword
+        // Or if lesson.activities is structured.
+        // Fallback: If 'activities' is just markdown string or array, we search.
+        // Assuming lesson.activities is Key-Value map as per type definition? 
+        // Let's look at type usage. Usually it is: { title: "...", content: "..." }[] or similar.
+        // Actually check types: interface LessonResult { ... activities: any ... }
+        // Let's assume generic access for now.
+        return "";
+      };
+
+      // MAPPING STRATEGY: 
+      // We map specific fields from LessonResult to Placeholders.
+      // Objectives
+      const muc_tieu_kt = formatContent(lesson.objectives?.knowledge || lesson.objectives_content || "");
+      const muc_tieu_nl = formatContent(lesson.objectives?.skills || "");
+      const muc_tieu_pc = formatContent(lesson.objectives?.qualities || "");
+
+      // Preparations
+      const gv_prep = formatContent(lesson.preparations?.teacher || "");
+      const hs_prep = formatContent(lesson.preparations?.student || "");
+
+      // Activities: We need to find Khởi động, Khám phá, Luyện tập, Vận dụng
+      // Since the input `lesson` might have widely varying structure from AI, we do best effort mapping.
+
+      // Simple logic: Extract from the BIG content string if sections are not strictly separated, 
+      // OR if `lesson.activities` is an array of sections.
+      let act1 = { gv: "", hs: "" }; // KHOI DONG
+      let act2 = { gv: "", hs: "" }; // KHAM PHA (The big one)
+      let act3 = { gv: "", hs: "" }; // LUYEN TAP
+      let act4 = { gv: "", hs: "" }; // VAN DUNG
+
+      // Try to parse from lesson.activities if it is an array
+      if (Array.isArray(lesson.activities)) {
+        // Heuristic mapping by index or title
+        lesson.activities.forEach((act: any, index: number) => {
+          const title = (act.title || "").toLowerCase();
+          const content = act.content || act.full_content || "";
+          const { gv, hs } = parseColumns(content);
+
+          if (title.includes("khởi động") || index === 0) {
+            act1 = { gv: formatContent(gv), hs: formatContent(hs) };
+          } else if (title.includes("luyện tập")) {
+            act3 = { gv: formatContent(gv), hs: formatContent(hs) };
+          } else if (title.includes("vận dụng")) {
+            act4 = { gv: formatContent(gv), hs: formatContent(hs) };
+          } else {
+            // Default to Kham Pha (Content Heavy) for specific knowledge formation
+            // Append if multiple activities
+            act2.gv += (act2.gv ? "<w:br/><w:br/>" : "") + `<b>${formatContent(act.title)}</b><w:br/>` + formatContent(gv);
+            act2.hs += (act2.hs ? "<w:br/><w:br/>" : "") + formatContent(hs);
+          }
+        });
+      }
+
+      options?.onProgress?.(70);
+
+      const replacements: Record<string, string> = {
+        ten_truong: formatContent("TRƯỜNG THPT................"),
+        to_chuyen_mon: formatContent("TỔ................"),
+        ten_chu_de: formatContent((lesson.title || "TÊN BÀI HỌC").toUpperCase()),
+        ten_giao_vien: formatContent("................"),
+        lop: formatContent(lesson.grade || "................"),
+        so_tiet: formatContent(lesson.duration || "................"),
+        ngay_soan: formatContent(new Date().toLocaleDateString('vi-VN')),
+
+        muc_tieu_kien_thuc: muc_tieu_kt,
+        muc_tieu_nang_luc: muc_tieu_nl,
+        muc_tieu_pham_chat: muc_tieu_pc,
+
+        gv_chuan_bi: gv_prep,
+        hs_chuan_bi: hs_prep,
+
+        // Activities
+        hoat_dong_khoi_dong_cot_1: act1.gv,
+        hoat_dong_khoi_dong_cot_2: act1.hs,
+
+        hoat_dong_kham_pha_cot_1: act2.gv, // This will handle the MASSIVE content
+        hoat_dong_kham_pha_cot_2: act2.hs,
+
+        hoat_dong_luyen_tap_cot_1: act3.gv,
+        hoat_dong_luyen_tap_cot_2: act3.hs,
+
+        hoat_dong_van_dung_cot_1: act4.gv,
+        hoat_dong_van_dung_cot_2: act4.hs,
+
+        shdc: "",
+        shl: "",
+        ho_so_day_hoc: formatContent(lesson.materials || ""),
+        huong_dan_ve_nha: formatContent(lesson.homework || "")
+      };
+
+      // 6. Perform Replacement
+      Object.keys(replacements).forEach(key => {
+        const placeholder = `{{${key}}}`;
+        const value = replacements[key];
+        docXml = docXml?.split(placeholder).join(value);
+      });
+
+      // 7. Save and Download
+      zip.file("word/document.xml", docXml);
+      const out = zip.generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        compression: "DEFLATE"
+      });
+
+      options?.onProgress?.(100);
+
+      const fileName = `${lesson.title || "Giao_an_5512"}.docx`;
+      this.triggerDownload(out, fileName);
+
+      console.log("[ExportService] Template Export Completed Successfully");
+
+    } catch (error) {
+      console.error("[ExportService] Template Export Failed:", error);
+      options?.onError?.(error instanceof Error ? error : new Error("Unknown error"));
+    }
   },
 
   /**
