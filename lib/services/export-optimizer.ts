@@ -66,14 +66,73 @@ export class ExportOptimizer {
     }
 
     /**
-     * Validate content structure before export (Phase 1.1)
+     * Deep Validation of content structure (Phase 5.2)
      */
-    static validateContent(result: any): { valid: boolean; errors: string[] } {
+    static validateContent(result: any): { valid: boolean; errors: string[]; warnings: string[] } {
         const errors: string[] = [];
-        if (!result) errors.push("Dữ hiệu trống");
-        else if (typeof result !== 'object') errors.push("Dữ liệu không hợp lệ");
+        const warnings: string[] = [];
 
-        return { valid: errors.length === 0, errors };
+        if (!result) return { valid: false, errors: ["Dữ liệu trống"], warnings: [] };
+
+        // Required field checking (MOET 5512 Integrity)
+        if (!result.ten_bai || result.ten_bai.trim().length < 5) {
+            errors.push("Tên bài học không hợp lệ hoặc quá ngắn.");
+        }
+
+        const essentialObjectives = [
+            { fieldPath: 'muc_tieu_kien_thuc', label: 'Kiến thức' },
+            { fieldPath: 'muc_tieu_nang_luc', label: 'Năng lực' },
+            { fieldPath: 'muc_tieu_pham_chat', label: 'Phẩm chất' }
+        ];
+
+        essentialObjectives.forEach(obj => {
+            if (!result[obj.fieldPath] || result[obj.fieldPath].trim().length < 10) {
+                warnings.push(`Trường "${obj.label}" có vẻ quá ngắn hoặc đang để trống.`);
+            }
+        });
+
+        // Activity Check
+        if (!result.hoat_dong_khoi_dong && !result.hoat_dong_kham_pha) {
+            errors.push("Giáo án thiếu các hoạt động dạy học cốt lõi.");
+        }
+
+        // Duplicate content detection (Simple check)
+        if (result.hoat_dong_khoi_dong === result.hoat_dong_kham_pha && result.hoat_dong_khoi_dong) {
+            warnings.push("Phát hiện nội dung trùng lặp giữa các hoạt động.");
+        }
+
+        return {
+            valid: errors.length === 0,
+            errors,
+            warnings
+        };
+    }
+
+    /**
+     * Predict export risk based on content size and memory availability (Phase 5.1)
+     */
+    static predictExportRisk(content: any): { riskLevel: 'low' | 'medium' | 'high'; message?: string } {
+        const contentStr = JSON.stringify(content);
+        const sizeInKB = contentStr.length / 1024;
+
+        let riskLevel: 'low' | 'medium' | 'high' = 'low';
+        let message = "Bộ nhớ an toàn. Hệ thống đã sẵn sàng.";
+
+        if (sizeInKB > 1500) { // > 1.5MB of JSON
+            riskLevel = 'high';
+            message = "Tài liệu rất lớn. Hệ thống sẽ tự động chuyển sang chế độ xử lý ngầm (Web Worker) để đảm bảo ổn định.";
+        } else if (sizeInKB > 600) {
+            riskLevel = 'medium';
+            message = "Tài liệu có kích thước trung bình. Quá trình xử lý có thể mất vài giây.";
+        }
+
+        // Final check against current available memory
+        if (!this.checkMemoryUsage()) {
+            riskLevel = 'high';
+            message = "Cảnh báo: Bộ nhớ trình duyệt đang ở mức báo động! Vui lòng đóng bớt các tab khác.";
+        }
+
+        return { riskLevel, message };
     }
 
     /**

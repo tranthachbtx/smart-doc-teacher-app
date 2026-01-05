@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useLessonStore } from '../store/use-lesson-store';
 import { ExportService } from '../services/export-service';
+import { ExportOptimizer } from '../services/export-optimizer';
 import { auditLessonPlan } from '../actions/gemini';
 
 export const useLessonActions = () => {
@@ -35,12 +36,11 @@ export const useLessonActions = () => {
         store.setExportProgress(0);
 
         try {
-            // Pre-export validation
-            const contentSize = JSON.stringify(store.lessonResult).length;
-            console.log(`Exporting content size: ${Math.round(contentSize / 1024)}KB`);
-
-            if (contentSize > 5 * 1024 * 1024) { // 5MB warning
-                store.setStatus('error', "⚠️ Nội dung rất lớn (>5MB), có thể mất thời gian xử lý");
+            // Pre-export validation & Risk Prediction (Phase 5.1)
+            const risk = ExportOptimizer.predictExportRisk(store.lessonResult);
+            if (risk.riskLevel !== 'low') {
+                console.warn(`Export Risk (${risk.riskLevel}): ${risk.message}`);
+                store.setStatus(risk.riskLevel === 'high' ? 'error' : 'success', risk.message || "");
             }
 
             const fileName = `Giao_an_${store.lessonAutoFilledTheme || store.lessonResult.ten_bai || "HDTN"}.docx`.replace(/\s+/g, "_");

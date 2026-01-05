@@ -50,11 +50,16 @@ export const ExportService = {
     // Start performance monitoring
     ExportOptimizer.startMonitoring();
 
-    // Validate content before processing
+    // Validate content before processing (Phase 5.2)
     const validation = ExportOptimizer.validateContent(result);
     if (!validation.valid) {
       console.error('Content validation failed:', validation.errors);
       throw new Error(`Content validation failed: ${validation.errors.join(', ')}`);
+    }
+
+    if (validation.warnings.length > 0) {
+      console.warn('Content validation warnings:', validation.warnings);
+      // Optional: Pass warnings back to UI via potential callback
     }
 
     // Optimize content for processing
@@ -111,7 +116,9 @@ export const ExportService = {
       );
 
       // Download the result
-      saveAs(workerResult.blob, workerResult.fileName);
+      const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      const finalBlob = workerResult.blob.type === docxMimeType ? workerResult.blob : new Blob([workerResult.blob], { type: docxMimeType });
+      saveAs(finalBlob, workerResult.fileName);
 
       // Log worker metrics
       console.log('Worker export metrics:', workerResult.metrics);
@@ -246,7 +253,9 @@ export const ExportService = {
         objectives: {
           knowledge: result.muc_tieu_kien_thuc,
           skills: result.muc_tieu_nang_luc,
-          attitudes: result.muc_tieu_pham_chat
+          attitudes: result.muc_tieu_pham_chat,
+          digital_competency: result.tich_hop_nls,
+          ethics: result.tich_hop_dao_duc
         },
         equipment: {
           teacher: result.gv_chuan_bi || result.thiet_bi_day_hoc,
@@ -276,7 +285,10 @@ export const ExportService = {
       Packer.toBlob(doc)
         .then(blob => {
           clearTimeout(timeout);
-          resolve(blob);
+          // Force correct MIME type for DOCX (Phase 5.4)
+          const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+          const finalBlob = blob.type === docxMimeType ? blob : new Blob([blob], { type: docxMimeType });
+          resolve(finalBlob);
         })
         .catch(error => {
           clearTimeout(timeout);
@@ -291,7 +303,9 @@ export const ExportService = {
   async downloadWithRetry(blob: Blob, fileName: string, maxRetries: number): Promise<void> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        saveAs(blob, fileName);
+        const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        const finalBlob = blob.type === docxMimeType ? blob : new Blob([blob], { type: docxMimeType });
+        saveAs(finalBlob, fileName);
         return; // Success
       } catch (error) {
         console.error(`Download attempt ${attempt} failed:`, error);
@@ -333,7 +347,9 @@ export const ExportService = {
       });
 
       const blob = await Packer.toBlob(doc);
-      saveAs(blob, `fallback_${fileName}`);
+      const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      const finalBlob = new Blob([blob], { type: docxMimeType });
+      saveAs(finalBlob, `fallback_${fileName}`);
 
       return { success: true, method: "download" };
     } catch (error) {
@@ -391,7 +407,9 @@ export const ExportService = {
     });
 
     const blob = await Packer.toBlob(doc);
-    saveAs(blob, fileName);
+    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    const finalBlob = new Blob([blob], { type: docxMimeType });
+    saveAs(finalBlob, fileName);
     return { success: true, method: "download" };
   },
 
@@ -438,7 +456,9 @@ export const ExportService = {
 
     const doc = new Document({ sections: [{ children }] });
     const blob = await Packer.toBlob(doc);
-    saveAs(blob, fileName);
+    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    const finalBlob = new Blob([blob], { type: docxMimeType });
+    saveAs(finalBlob, fileName);
     return { success: true, method: "download" };
   },
 
@@ -470,7 +490,9 @@ export const ExportService = {
     });
 
     const blob = await Packer.toBlob(doc);
-    saveAs(blob, fileName);
+    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    const finalBlob = new Blob([blob], { type: docxMimeType });
+    saveAs(finalBlob, fileName);
     return { success: true, method: "download" };
   },
 
@@ -587,7 +609,9 @@ export const ExportService = {
     });
 
     const blob = await Packer.toBlob(doc);
-    saveAs(blob, fileName);
+    const docxMimeType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    const finalBlob = new Blob([blob], { type: docxMimeType });
+    saveAs(finalBlob, fileName);
     return { success: true, method: "download" };
   },
 
@@ -817,37 +841,72 @@ export const ExportService = {
   },
 
   /**
-   * Renders plain text with Markdown support and list detection
+   * Advanced Text Rendering with Nested Lists, Code Blocks and AI Cleaning
    */
   renderFormattedText(text: string): Paragraph[] {
     if (!text) return [new Paragraph({ text: "...", size: 24 })];
 
-    return text.split('\n').map(line => {
-      const trimmed = line.trim();
+    // AI Artifact Cleaning (Phase 5.3)
+    let cleanedText = text
+      .replace(/```(json|markdown|text|html)?/g, '') // Remove starting code fences
+      .replace(/```/g, '') // Remove ending code fences
+      .trim();
 
-      // List detection
-      const listMatch = trimmed.match(/^([-*•]|\d+\.)\s+(.*)/);
-      if (listMatch) {
-        return new Paragraph({
-          children: this.parseMarkdownToRuns(listMatch[2]),
-          bullet: { level: 0 },
-          spacing: { after: 120 }
-        });
+    const paragraphs: Paragraph[] = [];
+    const lines = cleanedText.split('\n');
+    let isInCodeBlock = false;
+    let codeBlockLines: string[] = [];
+
+    lines.forEach(line => {
+      const trimmedLine = line.trim();
+
+      // Simple Code Block Detection (Indent based or logic based)
+      // If a line starts with 4 spaces or is very "code-like", format it
+      if (trimmedLine.startsWith('    ') || (trimmedLine.includes(';') && (trimmedLine.includes('let ') || trimmedLine.includes('var ') || trimmedLine.includes('const ')))) {
+        paragraphs.push(new Paragraph({
+          children: [new TextRun({
+            text: trimmedLine,
+            font: "Courier New",
+            size: 20,
+            shading: { fill: "F3F4F6" }
+          })],
+          spacing: { before: 40, after: 40 },
+          indent: { left: 720 }
+        }));
+        return;
       }
 
       // Heading detection
-      if (trimmed.startsWith('### ')) {
-        return new Paragraph({
-          children: [new TextRun({ text: trimmed.substring(4), bold: true, size: 26, underline: {} })],
+      if (trimmedLine.startsWith('### ')) {
+        paragraphs.push(new Paragraph({
+          children: [new TextRun({ text: trimmedLine.substring(4), bold: true, size: 26, underline: {} })],
           spacing: { before: 100, after: 80 }
-        });
+        }));
+        return;
       }
 
-      return new Paragraph({
-        children: this.parseMarkdownToRuns(line),
-        spacing: { after: 120 }
-      });
+      // Nested List detection (Phase 4.1)
+      const indentMatch = line.match(/^(\s+)/);
+      const indentLevel = indentMatch ? Math.floor(indentMatch[1].length / 2) : 0;
+      const listMatch = trimmedLine.match(/^([-*•]|\d+\.)\s+(.*)/);
+
+      if (listMatch) {
+        paragraphs.push(new Paragraph({
+          children: this.parseMarkdownToRuns(listMatch[2]),
+          bullet: { level: indentLevel > 0 ? 1 : 0 },
+          indent: { left: 360 + (indentLevel * 360), hanging: 360 },
+          spacing: { after: 120 }
+        }));
+      } else {
+        paragraphs.push(new Paragraph({
+          children: this.parseMarkdownToRuns(line),
+          indent: { left: indentLevel * 360 },
+          spacing: { after: 120 }
+        }));
+      }
     });
+
+    return paragraphs.length > 0 ? paragraphs : [new Paragraph({ text: cleanedText, size: 24 })];
   },
 
   /**
