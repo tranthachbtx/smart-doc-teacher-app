@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText } from 'lucide-react';
+import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractTextFromFile } from '@/lib/actions/gemini';
 import { SmartPromptService } from '@/lib/services/smart-prompt-service';
