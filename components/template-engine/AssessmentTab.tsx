@@ -25,26 +25,10 @@ import {
     Info,
     Upload,
 } from "lucide-react";
-import type { TemplateData, AssessmentResult } from "@/lib/types";
+import type { TemplateData, AssessmentResult, AssessmentTabProps } from "@/lib/types";
 import { ASSESSMENT_PRODUCT_TYPES } from "@/lib/prompts/assessment-prompts";
 
-interface AssessmentTabProps {
-    assessmentGrade: string;
-    setAssessmentGrade: (value: string) => void;
-    assessmentTerm: string;
-    setAssessmentTerm: (value: string) => void;
-    assessmentProductType: string;
-    setAssessmentProductType: (value: string) => void;
-    assessmentTopic: string;
-    setAssessmentTopic: (value: string) => void;
-    assessmentTemplate: TemplateData | null;
-    onTemplateUpload: (file: File) => void;
-    assessmentResult: AssessmentResult | null;
-    isGenerating: boolean;
-    onGenerate: () => void;
-    isExporting: boolean;
-    onExport: () => void;
-}
+// AssessmentTabProps is now imported from @/lib/types
 
 export function AssessmentTab({
     assessmentGrade,

@@ -21,6 +21,7 @@ interface LessonState {
     exportProgress: number;
     success: string | null;
     error: string | null;
+    selectedModel: string;
 
     // Actions
     setLessonResult: (result: LessonResult | null) => void;
@@ -33,6 +34,7 @@ interface LessonState {
     setLoading: (key: 'isGenerating' | 'isExporting' | 'isAuditing', value: boolean) => void;
     setStatus: (type: 'success' | 'error', msg: string | null) => void;
     setExportProgress: (progress: number) => void;
+    setSelectedModel: (model: string) => void;
     resetAll: () => void;
 }
 
@@ -55,6 +57,7 @@ export const useLessonStore = create<LessonState>()(
             exportProgress: 0,
             success: null,
             error: null,
+            selectedModel: "gemini-2.0-flash",
 
             // Actions
             setLessonResult: (result) => set({ lessonResult: result }),
@@ -72,6 +75,7 @@ export const useLessonStore = create<LessonState>()(
             },
             setStatus: (type, msg) => set({ [type]: msg }),
             setExportProgress: (progress: number) => set({ exportProgress: progress }),
+            setSelectedModel: (model: string) => set({ selectedModel: model }),
             resetAll: () => set({ lessonResult: null, success: null, error: null, exportProgress: 0 }),
         }),
         {

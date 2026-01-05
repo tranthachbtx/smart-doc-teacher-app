@@ -1691,7 +1691,7 @@ const TemplateEngine = () => {
                 setSelectedModel={setSelectedModel}
                 lessonFile={lessonFile}
                 setLessonFile={setLessonFile}
-                onRefineSection={(content, instruction) => refineSection(content, instruction, selectedModel)}
+                onRefineSection={(content: string, instruction: string) => refineSection(content, instruction, selectedModel)}
                 onGenerateSection={handleGenerateLessonSection}
               />
             </ErrorBoundary>

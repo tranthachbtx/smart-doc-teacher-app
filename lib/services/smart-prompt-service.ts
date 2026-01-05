@@ -2,7 +2,7 @@ import {
     getChuDeTheoThang,
     timChuDeTheoTen
 } from "@/lib/data/kntt-curriculum-database";
-import { getPPCTChuDe, taoContextPPCT } from "@/lib/data/ppct-database";
+import { getPPCTChuDe, taoContextPhanBoThoiGian } from "@/lib/data/ppct-database";
 import {
     taoContextSHDC_SHL
 } from "@/lib/data/shdc-shl-templates";
@@ -58,7 +58,7 @@ export const SmartPromptService = {
 CHỦ ĐỀ: ${chuDe.ten}
 MẠCH NỘI DUNG: ${chuDe.mach_noi_dung.toUpperCase()}
 MỤC TIÊU TỔNG QUÁT: ${chuDe.muc_tieu.join("; ")}
-KẾT QUẢ CẦN ĐẠT: ${chuDe.ket_quả_can_dat?.join("; ") || "Theo quy định chương trình GDPT 2018"}
+KẾT QUẢ CẦN ĐẠT: ${chuDe.ket_qua_can_dat?.join("; ") || "Theo quy định chương trình GDPT 2018"}
 `;
 
             // Generate detailed tasks text
@@ -79,7 +79,7 @@ Giai đoạn tâm lý: ${trongTam?.dac_diem?.join(", ") || "Học sinh đang tro
 Gợi ý sư phạm: Tập trung vào các hoạt động thực hành, trải nghiệm nhóm, khuyến khích tự học và sáng tạo.`;
 
         // 3. Get PPCT Context
-        const ppctContext = chuDeSoNum ? taoContextPPCT(gradeInt, chuDeSoNum) : "Dữ liệu phân phối chương trình.";
+        const ppctContext = chuDeSoNum ? taoContextPhanBoThoiGian(gradeInt, chuDeSoNum) : "Dữ liệu phân phối chương trình.";
 
         // 4. Get SHDC/SHL Suggestions
         const shdcShlContext = chuDeSoNum ? taoContextSHDC_SHL(gradeInt, chuDeSoNum) : "Gợi ý Sinh hoạt dưới cờ và Sinh hoạt lớp theo chủ đề.";

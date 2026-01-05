@@ -24,26 +24,9 @@ import {
     getThemeForMonth,
     getThemesByGrade,
 } from "@/lib/hdtn-curriculum";
-import type { NCBHResult } from "@/lib/types";
+import type { NCBHResult, NCBHTabProps } from "@/lib/types";
 
-interface NCBHTabProps {
-    selectedMonth: string;
-    setSelectedMonth: (value: string) => void;
-    ncbhGrade: string;
-    setNcbhGrade: (value: string) => void;
-    ncbhTopic: string;
-    setNcbhTopic: (value: string) => void;
-    ncbhCustomInstructions: string;
-    setNcbhCustomInstructions: (value: string) => void;
-    ncbhResult: NCBHResult | null;
-    setNcbhResult: (result: NCBHResult | null) => void;
-    isGenerating: boolean;
-    onGenerate: () => void;
-    isExporting: boolean;
-    onExport: () => void;
-    copyToClipboard: (text: string) => void;
-    ppctData: any[]; // Added
-}
+// NCBHTabProps is now imported from @/lib/types
 
 export function NCBHTab({
     selectedMonth,

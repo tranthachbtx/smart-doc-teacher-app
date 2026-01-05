@@ -410,7 +410,7 @@ export async function checkApiKeyStatus(): Promise<{ configured: boolean; primar
 // Aliases for backward compatibility
 export const generateLessonPlan = generateLesson;
 export const generateEventScript = generateEvent;
-export const auditLessonPlan = generateAssessmentPlan;
+export const auditLessonPlan = check5512Compliance;
 
 // Generic AI content generator
 export async function generateAIContent(prompt: string, model?: string): Promise<ActionResult> {

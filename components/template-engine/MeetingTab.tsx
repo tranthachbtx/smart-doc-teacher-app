@@ -23,25 +23,9 @@ import {
     ACADEMIC_MONTHS,
     getThemeForMonth,
 } from "@/lib/hdtn-curriculum";
-import type { MeetingResult } from "@/lib/types";
+import type { MeetingResult, MeetingTabProps } from "@/lib/types";
 
-interface MeetingTabProps {
-    selectedMonth: string;
-    setSelectedMonth: (value: string) => void;
-    selectedSession: string;
-    setSelectedSession: (value: string) => void;
-    meetingKeyContent: string;
-    setMeetingKeyContent: (value: string) => void;
-    meetingConclusion: string;
-    setMeetingConclusion: (value: string) => void;
-    meetingResult: MeetingResult | null;
-    setMeetingResult: (result: MeetingResult | null) => void;
-    isGenerating: boolean;
-    onGenerate: () => void;
-    isExporting: boolean;
-    onExport: () => void;
-    copyToClipboard: (text: string) => void;
-}
+// MeetingTabProps is now imported from @/lib/types
 
 export function MeetingTab({
     selectedMonth,

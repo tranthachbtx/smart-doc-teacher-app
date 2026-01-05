@@ -53,8 +53,8 @@ export const useLessonActions = () => {
         store.setLoading('isAuditing', true);
         try {
             const result = await auditLessonPlan(
-                store.lessonGrade,
-                store.lessonAutoFilledTheme
+                store.lessonResult,
+                store.selectedModel
             );
             if (result.success) {
                 store.setStatus('success', "🔍 Đã hoàn tất kiểm định MOET 5512");

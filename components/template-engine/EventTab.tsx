@@ -18,30 +18,10 @@ import {
     Copy,
     Clock,
 } from "lucide-react";
-import type { EventResult } from "@/lib/types";
+import type { EventResult, EventTabProps } from "@/lib/types";
 import { getChuDeListByKhoi, type PPCTChuDe } from "@/lib/data/ppct-database";
 
-interface EventTabProps {
-    selectedGradeEvent: string;
-    setSelectedGradeEvent: (value: string) => void;
-    selectedEventMonth: string;
-    setSelectedEventMonth: (value: string) => void;
-    autoFilledTheme: string;
-    setAutoFilledTheme: (value: string) => void;
-    eventBudget: string;
-    setEventBudget: (value: string) => void;
-    eventChecklist: string;
-    setEventChecklist: (value: string) => void;
-    eventCustomInstructions: string;
-    setEventCustomInstructions: (value: string) => void;
-    eventResult: EventResult | null;
-    setEventResult: (result: EventResult | null) => void;
-    isGenerating: boolean;
-    onGenerate: () => void;
-    isExporting: boolean;
-    onExport: () => void;
-    copyToClipboard: (text: string) => void;
-}
+// EventTabProps is now imported from @/lib/types
 
 export function EventTab({
     selectedGradeEvent,

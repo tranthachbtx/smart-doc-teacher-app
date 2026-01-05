@@ -15,9 +15,10 @@ import { ConfigPanel } from "./lesson/ConfigPanel";
 import { SectionEditorGrid } from "./lesson/SectionEditorGrid";
 import { ExpertBrainInjection } from "./ExpertBrainInjection";
 import { SmartPromptBuilder } from "./SmartPromptBuilder";
-import { LessonActionCenter } from "./lesson/LessonActionCenter"; // Chúng ta sẽ tạo component này
+import { LessonActionCenter } from "./lesson/LessonActionCenter";
+import type { LessonEngineProps } from "@/lib/types";
 
-export const LessonTab = React.memo((props: any) => {
+export const LessonTab = React.memo((props: Partial<LessonEngineProps>) => {
     // Individual selectors for fine-grained re-renders
     const lessonGrade = useLessonStore(s => s.lessonGrade);
     const lessonAutoFilledTheme = useLessonStore(s => s.lessonAutoFilledTheme);

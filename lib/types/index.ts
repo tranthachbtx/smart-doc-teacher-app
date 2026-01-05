@@ -173,3 +173,136 @@ export type TemplateData = {
   name: string;
   data: ArrayBuffer;
 };
+
+// UI & Engine Props
+export interface LessonEngineProps {
+  lessonGrade: string;
+  setLessonGrade: (value: string) => void;
+  selectedChuDeSo: string;
+  setSelectedChuDeSo: (value: string) => void;
+  lessonAutoFilledTheme: string;
+  setLessonAutoFilledTheme: (value: string) => void;
+  lessonDuration: string;
+  setLessonDuration: (value: string) => void;
+  selectedChuDe: any; // Type from ppct-database
+  setSelectedChuDe: (value: any) => void;
+  setLessonMonth: (value: string) => void;
+  shdcSuggestion: string;
+  setShdcSuggestion: (value: string) => void;
+  hdgdSuggestion: string;
+  setHdgdSuggestion: (value: string) => void;
+  shlSuggestion: string;
+  setShlSuggestion: (value: string) => void;
+  curriculumTasks: LessonTask[];
+  distributeTimeForTasks: () => void;
+  showCurriculumTasks: boolean;
+  setShowCurriculumTasks: (value: boolean) => void;
+  lessonTasks: LessonTask[];
+  updateLessonTask: (id: string, field: any, value: any) => void;
+  removeLessonTask: (id: string) => void;
+  addLessonTask: () => void;
+  lessonCustomInstructions: string;
+  setLessonCustomInstructions: (value: string) => void;
+  lessonResult: LessonResult | null;
+  setLessonResult: (result: LessonResult | null) => void;
+  isGenerating: boolean;
+  onGenerate: () => void;
+  isExporting: boolean;
+  onExport: () => void;
+  copyToClipboard: (text: string) => void;
+  isAuditing: boolean;
+  onAudit: () => void;
+  auditResult: string | null;
+  auditScore: number;
+  setSuccess: (msg: string | null) => void;
+  setError: (msg: string | null) => void;
+  success: string | null;
+  error: string | null;
+  lessonTopic: string;
+  setLessonTopic: (value: string) => void;
+  selectedModel: string;
+  setSelectedModel: (value: string) => void;
+  onRefineSection: (content: string, instruction: string, model?: string) => Promise<ActionResult>;
+  onGenerateSection?: (section: any, context: any, stepInstruction?: string) => Promise<ActionResult>;
+  lessonFullPlanMode: boolean;
+  setLessonFullPlanMode: (value: boolean) => void;
+  lessonFile: { mimeType: string; data: string; name: string } | null;
+  setLessonFile: (file: { mimeType: string; data: string; name: string } | null) => void;
+}
+
+export interface MeetingTabProps {
+  selectedMonth: string;
+  setSelectedMonth: (value: string) => void;
+  selectedSession: string;
+  setSelectedSession: (value: string) => void;
+  meetingKeyContent: string;
+  setMeetingKeyContent: (value: string) => void;
+  meetingConclusion: string;
+  setMeetingConclusion: (value: string) => void;
+  meetingResult: MeetingResult | null;
+  setMeetingResult: (result: MeetingResult | null) => void;
+  isGenerating: boolean;
+  onGenerate: () => void;
+  isExporting: boolean;
+  onExport: () => void;
+  copyToClipboard: (text: string) => void;
+}
+
+export interface EventTabProps {
+  selectedGradeEvent: string;
+  setSelectedGradeEvent: (value: string) => void;
+  selectedEventMonth: string;
+  setSelectedEventMonth: (value: string) => void;
+  autoFilledTheme: string;
+  setAutoFilledTheme: (value: string) => void;
+  eventBudget: string;
+  setEventBudget: (value: string) => void;
+  eventChecklist: string;
+  setEventChecklist: (value: string) => void;
+  eventCustomInstructions: string;
+  setEventCustomInstructions: (value: string) => void;
+  eventResult: EventResult | null;
+  setEventResult: (result: EventResult | null) => void;
+  isGenerating: boolean;
+  onGenerate: () => void;
+  isExporting: boolean;
+  onExport: () => void;
+  copyToClipboard: (text: string) => void;
+}
+
+export interface NCBHTabProps {
+  selectedMonth: string;
+  setSelectedMonth: (value: string) => void;
+  ncbhGrade: string;
+  setNcbhGrade: (value: string) => void;
+  ncbhTopic: string;
+  setNcbhTopic: (value: string) => void;
+  ncbhCustomInstructions: string;
+  setNcbhCustomInstructions: (value: string) => void;
+  ncbhResult: NCBHResult | null;
+  setNcbhResult: (result: NCBHResult | null) => void;
+  isGenerating: boolean;
+  onGenerate: () => void;
+  isExporting: boolean;
+  onExport: () => void;
+  copyToClipboard: (text: string) => void;
+  ppctData: any[];
+}
+
+export interface AssessmentTabProps {
+  assessmentGrade: string;
+  setAssessmentGrade: (value: string) => void;
+  assessmentTerm: string;
+  setAssessmentTerm: (value: string) => void;
+  assessmentProductType: string;
+  setAssessmentProductType: (value: string) => void;
+  assessmentTopic: string;
+  setAssessmentTopic: (value: string) => void;
+  assessmentTemplate: TemplateData | null;
+  onTemplateUpload: (file: File) => void;
+  assessmentResult: AssessmentResult | null;
+  isGenerating: boolean;
+  onGenerate: () => void;
+  isExporting: boolean;
+  onExport: () => void;
+}
