@@ -24,7 +24,7 @@ export class AdvancedAIManager {
             resetTimeout: 30000,
             monitoringPeriod: 60000
         });
-        this.performanceMonitor = new PerformanceMonitor();
+        this.performanceMonitor = PerformanceMonitor.getInstance();
     }
 
     public static getInstance(): AdvancedAIManager {
