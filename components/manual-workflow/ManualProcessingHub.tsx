@@ -280,7 +280,7 @@ export function ManualProcessingHub() {
         setLoading('isExporting', true);
         try {
             // 1. Construct LessonResult (Baseline)
-            const baselineResult: LessonResult = {
+            const baselineResult = {
                 ten_bai: lessonAutoFilledTheme,
                 grade: lessonGrade,
                 muc_tieu_kien_thuc: "Xem nội dung chi tiết trong các hoạt động",
@@ -294,7 +294,7 @@ export function ManualProcessingHub() {
                 hoat_dong_van_dung: manualModules.find(m => m.type === 'van_dung')?.content || "",
                 ho_so_day_hoc: "",
                 huong_dan_ve_nha: ""
-            };
+            } as LessonResult;
 
             // 2. Architecture 6.0: Precision Length Achievement
             setAnalyzingStatus("Đang tinh chỉnh độ dài chuẩn 30-50 trang...");
@@ -867,10 +867,22 @@ export function ManualProcessingHub() {
     return renderUI;
 }
 
+interface AnalysisLog {
+    msg: string;
+    time: string;
+    type: 'info' | 'success' | 'warn';
+}
+
+interface AnalysisConsoleProps {
+    isAnalyzing: boolean;
+    analyzingStatus: string;
+    logs: AnalysisLog[];
+}
+
 /**
  * Isolated Analysis Console to prevent heavy parent re-renders
  */
-const AnalysisConsole = React.memo(({ isAnalyzing, analyzingStatus, logs }: any) => {
+const AnalysisConsole = React.memo(({ isAnalyzing, analyzingStatus, logs }: AnalysisConsoleProps) => {
     return (
         <Card className="border-blue-200 bg-slate-950 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
             <CardHeader className="bg-slate-900 border-b border-slate-800 py-3">
@@ -895,7 +907,7 @@ const AnalysisConsole = React.memo(({ isAnalyzing, analyzingStatus, logs }: any)
                         items={logs}
                         itemHeight={24}
                         containerHeight={200}
-                        renderItem={(log, i) => (
+                        renderItem={(log: AnalysisLog, i: number) => (
                             <div key={i} className="flex gap-3 h-[24px] items-center animate-in slide-in-from-left-2 duration-200">
                                 <span className="text-slate-600 shrink-0 w-[70px]">[{log.time}]</span>
                                 <span className={
