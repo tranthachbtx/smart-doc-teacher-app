@@ -6,8 +6,37 @@
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import { LessonPlanData } from './simple-json-parser';
 
-export async function exportSimpleWord(lessonPlan: LessonPlanData): Promise<Buffer> {
+export async function exportToWord(lessonPlan: any): Promise<Buffer> {
   try {
+    // Determine data structure
+    const isEnhanced = !!lessonPlan.ten_bai;
+    const title = isEnhanced ? lessonPlan.ten_bai : (lessonPlan.title || 'Giáo án');
+    const grade = isEnhanced ? (lessonPlan.grade || 'Không xác định') : (lessonPlan.grade || 'Không xác định');
+
+    // Normalize objectives
+    let objectives: string[] = [];
+    if (isEnhanced) {
+      if (lessonPlan.muc_tieu_kien_thuc) objectives.push(`Kiến thức: ${lessonPlan.muc_tieu_kien_thuc}`);
+      if (lessonPlan.muc_tieu_nang_luc) objectives.push(`Năng lực: ${lessonPlan.muc_tieu_nang_luc}`);
+      if (lessonPlan.muc_tieu_pham_chat) objectives.push(`Phẩm chất: ${lessonPlan.muc_tieu_pham_chat}`);
+    } else {
+      objectives = lessonPlan.objectives || [];
+    }
+
+    // Normalize activities
+    let activities: { title: string, content: string }[] = [];
+    if (isEnhanced) {
+      if (lessonPlan.hoat_dong_khoi_dong) activities.push({ title: "Khởi động", content: lessonPlan.hoat_dong_khoi_dong });
+      if (lessonPlan.hoat_dong_kham_pha) activities.push({ title: "Khám phá", content: lessonPlan.hoat_dong_kham_pha });
+      if (lessonPlan.hoat_dong_luyen_tap) activities.push({ title: "Luyện tập", content: lessonPlan.hoat_dong_luyen_tap });
+      if (lessonPlan.hoat_dong_van_dung) activities.push({ title: "Vận dụng", content: lessonPlan.hoat_dong_van_dung });
+    } else {
+      activities = (lessonPlan.activities || []).map((a: any, i: number) => ({
+        title: `Hoạt động ${i + 1}`,
+        content: a
+      }));
+    }
+
     const doc = new Document({
       sections: [{
         properties: {},
@@ -16,7 +45,7 @@ export async function exportSimpleWord(lessonPlan: LessonPlanData): Promise<Buff
           new Paragraph({
             children: [
               new TextRun({
-                text: lessonPlan.title.toUpperCase(),
+                text: title.toUpperCase(),
                 bold: true,
                 size: 32,
                 color: "2E74BC"
@@ -31,7 +60,7 @@ export async function exportSimpleWord(lessonPlan: LessonPlanData): Promise<Buff
           new Paragraph({
             children: [
               new TextRun({
-                text: `Lớp: ${lessonPlan.grade}`,
+                text: `Lớp: ${grade}`,
                 bold: true,
                 size: 24
               })
@@ -54,11 +83,11 @@ export async function exportSimpleWord(lessonPlan: LessonPlanData): Promise<Buff
             spacing: { before: 400, after: 200 }
           }),
 
-          ...lessonPlan.objectives.map((objective, index) =>
+          ...objectives.map((objective, index) =>
             new Paragraph({
               children: [
                 new TextRun({
-                  text: `${index + 1}. ${objective}`,
+                  text: isEnhanced ? objective : `${index + 1}. ${objective}`,
                   size: 22
                 })
               ],
@@ -80,43 +109,77 @@ export async function exportSimpleWord(lessonPlan: LessonPlanData): Promise<Buff
             spacing: { before: 400, after: 200 }
           }),
 
-          ...lessonPlan.activities.map((activity, index) =>
+          ...activities.flatMap((activity) => [
             new Paragraph({
               children: [
                 new TextRun({
-                  text: `Hoạt động ${index + 1}: ${activity}`,
+                  text: activity.title,
+                  bold: true,
+                  size: 24,
+                  underline: {}
+                })
+              ],
+              spacing: { before: 200, after: 100 }
+            }),
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: activity.content,
                   size: 22
                 })
               ],
               spacing: { after: 200 }
             })
-          ),
+          ]),
 
-          // Assessment section
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: "III. KIỂM TRA ĐÁNH GIÁ",
-                bold: true,
-                size: 28,
-                color: "4F81BD"
+          // Assessment section (if simple)
+          ...(!isEnhanced && lessonPlan.assessment && lessonPlan.assessment.length > 0 ? [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "III. KIỂM TRA ĐÁNH GIÁ",
+                  bold: true,
+                  size: 28,
+                  color: "4F81BD"
+                })
+              ],
+              heading: HeadingLevel.HEADING_1,
+              spacing: { before: 400, after: 200 }
+            }),
+            ...lessonPlan.assessment.map((item: string, index: number) =>
+              new Paragraph({
+                children: [
+                  new TextRun({
+                    text: `${index + 1}. ${item}`,
+                    size: 22
+                  })
+                ],
+                spacing: { after: 200 }
               })
-            ],
-            heading: HeadingLevel.HEADING_1,
-            spacing: { before: 400, after: 200 }
-          }),
+            )
+          ] : []),
 
-          ...lessonPlan.assessment.map((item, index) =>
+          // Extra sections for Enhanced
+          ...(isEnhanced ? [
             new Paragraph({
-              children: [
-                new TextRun({
-                  text: `${index + 1}. ${item}`,
-                  size: 22
-                })
-              ],
+              children: [new TextRun({ text: "III. HỒ SƠ DẠY HỌC", bold: true, size: 28, color: "4F81BD" })],
+              heading: HeadingLevel.HEADING_1,
+              spacing: { before: 400, after: 200 }
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: lessonPlan.ho_so_day_hoc || "...", size: 22 })],
+              spacing: { after: 200 }
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: "IV. HƯỚNG DẪN VỀ NHÀ", bold: true, size: 28, color: "4F81BD" })],
+              heading: HeadingLevel.HEADING_1,
+              spacing: { before: 400, after: 200 }
+            }),
+            new Paragraph({
+              children: [new TextRun({ text: lessonPlan.huong_dan_ve_nha || "...", size: 22 })],
               spacing: { after: 200 }
             })
-          ),
+          ] : []),
 
           // Footer
           new Paragraph({
@@ -168,6 +231,7 @@ export async function exportSimpleWord(lessonPlan: LessonPlanData): Promise<Buff
     throw new Error(`Failed to export to Word: ${errorMessage}`);
   }
 }
+
 
 export async function exportSimpleText(content: string, title: string = "document"): Promise<Buffer> {
   try {
