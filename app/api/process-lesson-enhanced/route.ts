@@ -11,7 +11,7 @@ import { exportToWord } from '@/lib/simple-word-exporter';
 
 export async function POST(request: NextRequest) {
   console.log('[ENHANCED-API] Processing lesson request with Database Integration...');
-  
+
   try {
     // Step 1: Get file from form data
     const formData = await request.formData();
@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
     const topic = (formData.get('topic') as string) || '';
     const chuDeSo = (formData.get('chuDeSo') as string) || '';
     const oldLessonContent = (formData.get('oldLessonContent') as string) || '';
-    
+
     if (!file) {
       return NextResponse.json(
         { success: false, error: 'Vui lòng chọn file PDF hoặc DOCX' },
         { status: 400 }
       );
     }
-    
+
     // Validate file size (max 50MB)
     const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
@@ -36,22 +36,22 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     // Validate file type
     const allowedTypes = [
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
-    
+
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         { success: false, error: 'Chỉ hỗ trợ file PDF và DOCX' },
         { status: 400 }
       );
     }
-    
+
     console.log(`[ENHANCED-API] Processing file: ${file.name} (${file.size} bytes)`);
-    
+
     // Step 2: Enhanced PDF extraction and analysis
     let pdfContent: AnalyzedPDFContent;
     try {
@@ -64,14 +64,14 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     // Step 3: Get database context
     let context: LessonContext;
     try {
       context = await databaseIntegrationService.getContextForLesson(
         grade,
         topic || pdfContent.metadata.title || 'Bài học',
-        chuDeSo ? parseInt(chuDeSo) : undefined,
+        chuDeSo || undefined,
         oldLessonContent
       );
       console.log(`[ENHANCED-API] Database context retrieved: ${context.referenceMaterials.length} reference materials`);
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    
+
     // Step 4: Advanced AI processing
     let lessonPlan: StructuredLessonPlan;
     try {
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    
+
     // Step 5: Export to Word
     let wordBuffer: Buffer;
     try {
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-    
+
     // Step 6: Return comprehensive response
     const response = {
       success: true,
@@ -159,10 +159,10 @@ export async function POST(request: NextRequest) {
         }
       }
     };
-    
+
     console.log('[ENHANCED-API] Processing completed successfully');
     return NextResponse.json(response);
-    
+
   } catch (error) {
     console.error('[ENHANCED-API] Unexpected error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';

@@ -13,27 +13,28 @@ export interface StructuredLessonPlan {
   muc_tieu_kien_thuc: string;
   muc_tieu_nang_luc: string;
   muc_tieu_pham_chat: string;
-  
+
   // Resources
   thiet_bi_day_hoc: string;
   shdc: string;
   shl: string;
-  
+
   // Activities with 2-column structure
   hoat_dong_khoi_dong: string;
   hoat_dong_kham_pha: string;
   hoat_dong_luyen_tap: string;
   hoat_dong_van_dung: string;
-  
+
   // Additional
   ho_so_day_hoc: string;
   huong_dan_ve_nha: string;
-  
+
   // Metadata
   ai_generated: boolean;
   confidence: number;
   processing_time: number;
   database_context_used: boolean;
+  processing_steps?: ProcessingStep[];
 }
 
 export interface ProcessingStep {
@@ -56,29 +57,29 @@ export class AdvancedAIProcessor {
   ): Promise<StructuredLessonPlan> {
     console.log('[AdvancedAI] Starting multi-step AI processing...');
     const startTime = Date.now();
-    
+
     const processingSteps: ProcessingStep[] = [];
-    
+
     try {
       // Step 1: Extract learning objectives
       const step1 = await this.extractLearningObjectives(pdfContent, context);
       processingSteps.push(step1);
-      
+
       // Step 2: Generate activities
       const step2 = await this.generateActivities(pdfContent, context, step1.output);
       processingSteps.push(step2);
-      
+
       // Step 3: Create assessment plan
       const step3 = await this.createAssessmentPlan(pdfContent, context, step1.output, step2.output);
       processingSteps.push(step3);
-      
+
       // Step 4: Generate complete lesson plan
       const step4 = await this.generateCompleteLesson(step1.output, step2.output, step3.output, context, oldLessonContent);
       processingSteps.push(step4);
-      
+
       const processingTime = Date.now() - startTime;
       console.log(`[AdvancedAI] Processing completed in ${processingTime}ms`);
-      
+
       return {
         ...step4.output,
         ai_generated: true,
@@ -87,22 +88,22 @@ export class AdvancedAIProcessor {
         database_context_used: true,
         processing_steps: processingSteps
       } as StructuredLessonPlan;
-      
+
     } catch (error) {
       console.error('[AdvancedAI] Processing failed:', error);
       throw new Error(`AI processing failed: ${error.message}`);
     }
   }
-  
+
   /**
    * Step 1: Extract learning objectives from PDF and context
    */
   private async extractLearningObjectives(
-    pdfContent: AnalyzedPDFContent, 
+    pdfContent: AnalyzedPDFContent,
     context: LessonContext
   ): Promise<ProcessingStep> {
     const startTime = Date.now();
-    
+
     const prompt = `
 # STEP 1: EXTRACT LEARNING OBJECTIVES
 
@@ -132,11 +133,11 @@ Return a JSON object with:
   "confidence": 0.9
 }
     `;
-    
+
     try {
       const response = await callAIWithRetry(prompt, 2);
       const result = this.parseAIResponse(response);
-      
+
       return {
         step: 1,
         name: 'Extract Learning Objectives',
@@ -149,7 +150,7 @@ Return a JSON object with:
       throw new Error(`Step 1 failed: ${error.message}`);
     }
   }
-  
+
   /**
    * Step 2: Generate learning activities
    */
@@ -159,7 +160,7 @@ Return a JSON object with:
     objectives: any
   ): Promise<ProcessingStep> {
     const startTime = Date.now();
-    
+
     const prompt = `
 # STEP 2: GENERATE LEARNING ACTIVITIES
 
@@ -195,11 +196,11 @@ Return a JSON object with:
   "confidence": 0.9
 }
     `;
-    
+
     try {
       const response = await callAIWithRetry(prompt, 2);
       const result = this.parseAIResponse(response);
-      
+
       return {
         step: 2,
         name: 'Generate Learning Activities',
@@ -212,7 +213,7 @@ Return a JSON object with:
       throw new Error(`Step 2 failed: ${error.message}`);
     }
   }
-  
+
   /**
    * Step 3: Create assessment plan
    */
@@ -223,7 +224,7 @@ Return a JSON object with:
     activities: any
   ): Promise<ProcessingStep> {
     const startTime = Date.now();
-    
+
     const prompt = `
 # STEP 3: CREATE ASSESSMENT PLAN
 
@@ -253,11 +254,11 @@ Return a JSON object with:
   "confidence": 0.9
 }
     `;
-    
+
     try {
       const response = await callAIWithRetry(prompt, 2);
       const result = this.parseAIResponse(response);
-      
+
       return {
         step: 3,
         name: 'Create Assessment Plan',
@@ -270,7 +271,7 @@ Return a JSON object with:
       throw new Error(`Step 3 failed: ${error.message}`);
     }
   }
-  
+
   /**
    * Step 4: Generate complete lesson plan
    */
@@ -282,13 +283,13 @@ Return a JSON object with:
     oldLessonContent?: string
   ): Promise<ProcessingStep> {
     const startTime = Date.now();
-    
+
     // Build enhanced prompt with database integration
     const enhancedPrompt = context.smartPrompts.buildFinalSmartPrompt(
       context.smartPrompts,
       oldLessonContent
     );
-    
+
     // Add step results to prompt
     const stepResults = `
 ## PREVIOUS STEP RESULTS
@@ -301,17 +302,17 @@ ${JSON.stringify(activities, null, 2)}
 ### Step 3 - Assessment:
 ${JSON.stringify(assessment, null, 2)}
 `;
-    
+
     const finalPrompt = enhancedPrompt + '\n\n' + stepResults + '\n\n' + `
 ## FINAL TASK
 Based on all the above analysis and database context, generate the complete lesson plan in the specified JSON format.
 Ensure all activities use {{cot_1}} and {{cot_2}} markers properly.
     `;
-    
+
     try {
       const response = await callAIWithRetry(finalPrompt, 3);
       const result = this.parseAIResponse(response);
-      
+
       return {
         step: 4,
         name: 'Generate Complete Lesson Plan',
@@ -324,7 +325,7 @@ Ensure all activities use {{cot_1}} and {{cot_2}} markers properly.
       throw new Error(`Step 4 failed: ${error.message}`);
     }
   }
-  
+
   /**
    * Parse AI response with fallback
    */
@@ -343,12 +344,12 @@ Ensure all activities use {{cot_1}} and {{cot_2}} markers properly.
           return this.parseTextResponse(response);
         }
       }
-      
+
       // Final fallback
       return this.parseTextResponse(response);
     }
   }
-  
+
   /**
    * Parse text response as fallback
    */
@@ -359,7 +360,7 @@ Ensure all activities use {{cot_1}} and {{cot_2}} markers properly.
       note: "Parsed from text response"
     };
   }
-  
+
   /**
    * Calculate overall confidence
    */
