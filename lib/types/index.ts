@@ -57,13 +57,19 @@ export interface LessonResult {
   ky_thuat_day_hoc?: string;
   tich_hop_dao_duc_va_bai_hat?: string;
   huong_dan_ve_nha?: string;
+  homework?: string; // Alias for huong_dan_ve_nha
+  duration?: string;
+  materials?: string; // Alias for ho_so_day_hoc
   shdc_shl_combined?: string;
-  noi_dung_chuan_bi?: string;
-  thiet_bi_day_hoc?: string;
   shdc_gợi_ý?: string;
   hdgd_gợi_ý?: string;
   shl_gợi_ý?: string;
   hoat_dong_duoi_co?: string;
+  summary?: string;
+  introduction?: string;
+  activities?: any[]; // For dynamic activities array
+  noi_dung_chuan_bi?: string;
+  thiet_bi_day_hoc?: string;
   // Task details
   nhiem_vu?: Array<{
     ten: string;
