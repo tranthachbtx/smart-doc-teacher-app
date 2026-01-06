@@ -25,6 +25,9 @@ import { PrecisionLengthController } from '@/lib/services/precision-length-contr
 import { IntelligentPromptOrchestrator } from '@/lib/services/intelligent-prompt-orchestrator';
 import { VirtualScroller } from '@/components/ui/virtual-scroller';
 import { ReactPerformanceManager } from '@/lib/services/react-performance-manager';
+import { QuantumComplianceSystem, QuantumComplianceReport } from '@/lib/services/quantum-compliance-system';
+import { QuantumNeuralFusionEngine } from '@/lib/services/quantum-neural-fusion-engine';
+import { ShieldAlert, BookOpen, Lightbulb, CheckCircle2, Info } from 'lucide-react';
 
 export function ManualProcessingHub() {
     const {
@@ -52,6 +55,9 @@ export function ManualProcessingHub() {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     const [lastFileHash, setLastFileHash] = React.useState<string>("");
+
+    const [complianceReport, setComplianceReport] = React.useState<QuantumComplianceReport | null>(null);
+    const [isAuditing, setIsAuditing] = React.useState(false);
 
     // Performance Monitoring init
     React.useEffect(() => {
@@ -315,26 +321,55 @@ export function ManualProcessingHub() {
         }
     };
 
+    // Quantum Neural Audit (Architecture 11.0)
+    const handleRunDeepAudit = async () => {
+        if (manualModules.every(m => !m.content)) {
+            toast({ title: "Thiếu dữ liệu", description: "Vui lòng nhập nội dung giáo án trước khi kiểm định.", variant: "destructive" });
+            return;
+        }
+
+        setIsAuditing(true);
+        addLog("Bắt đầu kiểm định 5512 bằng mạng Neural...", 'info');
+
+        try {
+            const auditor = QuantumComplianceSystem.getInstance();
+            const lessonSummary = {
+                theme: lessonAutoFilledTheme,
+                grade: lessonGrade,
+                modules: manualModules.map(m => ({ title: m.title, content: m.content || "" }))
+            };
+
+            const report = await auditor.quantumComplianceCheck(lessonSummary);
+            setComplianceReport(report);
+            addLog(`Kiểm định hoàn tất. Điểm tổng quát: ${report.overallQuantumScore}%`, 'success');
+
+            toast({
+                title: "✅ Kiểm định Quantum hoàn tất!",
+                description: `KHBD đạt ${report.overallQuantumScore}/100 điểm sư phạm.`
+            });
+        } catch (error) {
+            console.error("[Audit] Error:", error);
+            toast({ title: "Lỗi", description: "Không thể chạy kiểm định AI.", variant: "destructive" });
+        } finally {
+            setIsAuditing(false);
+        }
+    };
+
     const handleExpandModule = async (module: ProcessingModule) => {
         if (!module.content) return;
 
         setExpandingModules(prev => ({ ...prev, [module.id]: true }));
         try {
-            const scaler = IntelligentContentScaler.getInstance();
-            const expanded = await scaler.expandModule(module.title, module.content);
+            const fusionEngine = QuantumNeuralFusionEngine.getInstance();
+            const result = await fusionEngine.quantumNeuralFusion(
+                { title: module.title, content: module.content || "" },
+                "Hãy mở rộng nội dung này thành một kịch bản dạy học chi tiết 30-50 trang, thêm các hoạt động chuyển đổi số, trò chơi tương tác và tiêu chí đánh giá năng lực số theo chuẩn 2025."
+            );
 
-            if (expanded !== module.content) {
-                updateModuleContent(module.id, expanded);
-                toast({
-                    title: "Mở rộng thành công!",
-                    description: `Nội dung phần ${module.title} đã được bồi đắp chi tiết hơn.`
-                });
-            } else {
-                toast({
-                    title: "Thông báo",
-                    description: "Không có nội dung mới được bổ sung.",
-                    variant: "default"
-                });
+            if (result.plan?.content) {
+                updateModuleContent(module.id, result.plan.content);
+                addLog(`Nâng cấp hoàn tất (${result.plan.content.length} ký tự).`, 'success');
+                toast({ title: "🚀 Quantum Upgraded!", description: `Đã tối ưu hóa ${module.title} bằng Neural Fusion.` });
             }
         } catch (error: any) {
             toast({
@@ -430,6 +465,17 @@ export function ManualProcessingHub() {
 
                     <Button
                         size="lg"
+                        variant="outline"
+                        onClick={handleRunDeepAudit}
+                        disabled={isAuditing || manualModules.every(m => !m.isCompleted)}
+                        className="border-purple-300 text-purple-700 hover:bg-purple-50 shadow-sm"
+                    >
+                        {isAuditing ? <RefreshCw className="w-5 h-5 animate-spin mr-2" /> : <ShieldAlert className="w-5 h-5 mr-2" />}
+                        Kiểm định 5512 (Neural)
+                    </Button>
+
+                    <Button
+                        size="lg"
                         onClick={handleExport}
                         disabled={isExporting || manualModules.every(m => !m.isCompleted)}
                         className="bg-green-600 hover:bg-green-700 shadow-lg"
@@ -458,12 +504,85 @@ export function ManualProcessingHub() {
                         <Tabs defaultValue="structured" className="w-full">
                             <TabsList className="w-full justify-start rounded-none border-b bg-slate-50/50 px-4 h-11">
                                 <TabsTrigger value="structured" className="data-[state=active]:bg-white">Cấu trúc trích xuất</TabsTrigger>
+                                <TabsTrigger value="compliance" className="data-[state=active]:bg-white flex items-center gap-2">
+                                    <ShieldAlert className="w-3.5 h-3.5 text-purple-500" />
+                                    Báo cáo Kiểm định Neural
+                                </TabsTrigger>
                                 <TabsTrigger value="advisor" className="data-[state=active]:bg-white flex items-center gap-2">
-                                    <Wand2 className="w-3.5 h-3.5 text-purple-500" />
+                                    <Wand2 className="w-3.5 h-3.5 text-blue-500" />
                                     Cố vấn Sư phạm AI
                                 </TabsTrigger>
                                 <TabsTrigger value="raw" className="data-[state=active]:bg-white">Nội dung thô (AI Context)</TabsTrigger>
                             </TabsList>
+
+                            <TabsContent value="compliance" className="p-4 m-0 animate-in slide-in-from-right-2 duration-300">
+                                {complianceReport ? (
+                                    <div className="space-y-6">
+                                        <div className="flex flex-col md:flex-row gap-4">
+                                            <div className="flex-1 p-5 bg-gradient-to-br from-purple-50 to-white border border-purple-100 rounded-2xl shadow-sm">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <h4 className="text-lg font-bold text-purple-900 flex items-center gap-2">
+                                                        <Activity className="w-5 h-5" /> Chỉ số Chất lượng Quantum
+                                                    </h4>
+                                                    <div className="text-3xl font-black text-purple-600">
+                                                        {complianceReport.overallQuantumScore}%
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {[
+                                                        { label: "Đúng đắn Sư phạm", score: complianceReport.detailedQuantumScores.pedagogical, icon: BookOpen },
+                                                        { label: "Tuân thủ Chuẩn 5512", score: complianceReport.detailedQuantumScores.standards, icon: CheckCircle2 },
+                                                        { label: "Đổi mới & Công nghệ", score: complianceReport.detailedQuantumScores.innovation, icon: Lightbulb }
+                                                    ].map((item, idx) => (
+                                                        <div key={idx} className="space-y-1">
+                                                            <div className="flex justify-between text-xs font-medium text-slate-600">
+                                                                <span className="flex items-center gap-1.5"><item.icon className="w-3 h-3" /> {item.label}</span>
+                                                                <span>{item.score}%</span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                                <div
+                                                                    className="h-full bg-purple-500 rounded-full transition-all duration-1000"
+                                                                    style={{ width: `${item.score}%` }}
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <div className="flex-1 p-5 bg-blue-50/30 border border-blue-100 rounded-2xl">
+                                                <h4 className="text-sm font-bold text-blue-900 flex items-center gap-2 mb-3">
+                                                    <Info className="w-4 h-4" /> Lập luận Neural
+                                                </h4>
+                                                <p className="text-xs text-slate-600 leading-relaxed italic">
+                                                    "{complianceReport.quantumReasoning}"
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-5 border border-amber-100 bg-amber-50/30 rounded-2xl">
+                                            <h4 className="text-sm font-bold text-amber-900 flex items-center gap-2 mb-4">
+                                                <Zap className="w-4 h-4 text-amber-500" /> Đề xuất Cải tiến Quantum
+                                            </h4>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                {complianceReport.quantumImprovements.map((imp, idx) => (
+                                                    <div key={idx} className="flex gap-3 p-3 bg-white rounded-xl border border-amber-100 shadow-sm text-xs text-amber-800">
+                                                        <div className="h-5 w-5 rounded-full bg-amber-100 flex items-center justify-center shrink-0 font-bold">
+                                                            {idx + 1}
+                                                        </div>
+                                                        {imp}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="py-12 flex flex-col items-center justify-center text-slate-400 bg-slate-50/50 rounded-xl border-2 border-dashed border-slate-200">
+                                        <ShieldAlert className="w-12 h-12 mb-3 opacity-20" />
+                                        <p className="text-sm font-medium">Chưa có dữ liệu kiểm định.</p>
+                                        <p className="text-xs">Hãy nhấn nút "Kiểm định 5512 (Neural)" để bắt đầu phân tích sâu.</p>
+                                    </div>
+                                )}
+                            </TabsContent>
 
                             <TabsContent value="advisor" className="p-4 m-0 animate-in slide-in-from-top-2 duration-300">
                                 {structuredContent?.reasoning ? (

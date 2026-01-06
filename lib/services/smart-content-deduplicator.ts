@@ -1,3 +1,4 @@
+import { EmbeddingService } from "./embedding-service";
 
 export interface ProcessedContent {
     content: string;
@@ -14,7 +15,9 @@ export interface ProcessedContent {
 
 export class SmartContentDeduplicator {
     private static instance: SmartContentDeduplicator;
-    private similarityThreshold = 0.85;
+    private similarityThreshold = 0.88; // Tăng độ khắt khe vì dùng Semantic
+    private embeddingService = EmbeddingService.getInstance();
+    private embeddingCache = new Map<string, number[]>();
 
     public static getInstance(): SmartContentDeduplicator {
         if (!SmartContentDeduplicator.instance) {
@@ -34,14 +37,24 @@ export class SmartContentDeduplicator {
 
             if (processedHashes.has(contentHash)) continue;
 
-            // Check for similarity with already processed unique contents
+            // Step 1: Get Semantic Embedding for new content
+            const currentEmbedding = await this.embeddingService.getEmbedding(section.content);
+            this.embeddingCache.set(contentHash, currentEmbedding);
+
+            // Step 2: Check for Semantic Similarity with existing unique items
             let foundSimilar = false;
             for (let i = 0; i < uniqueContents.length; i++) {
-                const similarity = this.calculateSimilarity(normalized, uniqueContents[i].normalizedContent);
-                if (similarity > this.similarityThreshold) {
-                    uniqueContents[i] = await this.mergeContent(section, uniqueContents[i]);
-                    foundSimilar = true;
-                    break;
+                const uniqueHash = this.hashString(uniqueContents[i].normalizedContent);
+                const existingEmbedding = this.embeddingCache.get(uniqueHash);
+
+                if (existingEmbedding) {
+                    const semanticSimilarity = this.embeddingService.calculateCosineSimilarity(currentEmbedding, existingEmbedding);
+
+                    if (semanticSimilarity > this.similarityThreshold) {
+                        uniqueContents[i] = await this.mergeContent(section, uniqueContents[i]);
+                        foundSimilar = true;
+                        break;
+                    }
                 }
             }
 
