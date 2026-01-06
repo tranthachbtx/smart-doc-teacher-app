@@ -1,6 +1,7 @@
 
 import React, { useEffect, useCallback, useState } from 'react';
 import { useLessonStore, ProcessingModule } from '@/lib/store/use-lesson-store';
+import { LessonResult } from '@/lib/types';
 import { ManualWorkflowService } from '@/lib/services/manual-workflow-service';
 import { ExportService } from '@/lib/services/export-service';
 import { Button } from '@/components/ui/button';
