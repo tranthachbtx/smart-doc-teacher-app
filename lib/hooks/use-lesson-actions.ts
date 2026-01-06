@@ -4,6 +4,7 @@ import { ExportService } from '../services/export-service';
 import { ExportOptimizer } from '../services/export-optimizer';
 import { auditLessonPlan } from '../actions/gemini';
 import { surgicalMerge } from '../services/KHBHMerger';
+import { performAdvancedAudit } from '../actions/advanced-audit';
 
 export const useLessonActions = () => {
     const store = useLessonStore();
@@ -119,20 +120,25 @@ export const useLessonActions = () => {
         if (!store.lessonResult) return;
 
         store.setLoading('isAuditing', true);
+        store.setStatus('success', "🔍 Đang thực hiện kiểm định chuyên sâu (Neural Audit)...");
+
         try {
-            const result = await auditLessonPlan(
-                store.lessonResult,
-                store.selectedModel
-            );
-            if (result.success) {
-                store.setStatus('success', "🔍 Đã hoàn tất kiểm định MOET 5512");
+            const result = await performAdvancedAudit(store.lessonResult);
+            if (result.success && result.report) {
+                const report = result.report;
+                store.setStatus('success', `✅ Kiểm định hoàn tất: Score ${report.score}/100. ${report.reasoning.substring(0, 100)}...`);
+
+                // You could also open a dialog here with full report details
+                console.log("[Audit Report]", report);
+            } else {
+                store.setStatus('error', result.error || "Kiểm định không thành công");
             }
         } catch (error: any) {
             store.setStatus('error', error.message);
         } finally {
             store.setLoading('isAuditing', false);
         }
-    }, [store.lessonResult, store.lessonGrade, store.lessonAutoFilledTheme, store.setLoading, store.setStatus]);
+    }, [store.lessonResult, store.setLoading, store.setStatus]);
 
     const handleSurgicalMerge = useCallback(async () => {
         if (!store.expertGuidance || !store.lessonResult) {

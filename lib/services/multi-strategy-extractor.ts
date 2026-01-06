@@ -1,6 +1,7 @@
 
 import { parseFileLocally } from "@/lib/actions/local-parser";
 import { extractTextFromFile } from "@/lib/actions/gemini";
+import { TextCleaningService } from "./text-cleaning-service";
 
 export interface ExtractedContent {
     content: string;
@@ -40,10 +41,7 @@ export class MultiStrategyExtractor {
 
                 if (!clientRes.isScanned && clientRes.text.length > 100) {
                     console.log('[MultiStrategy] Client-side success.');
-                    return {
-                        content: clientRes.text,
-                        source: 'local_parser' // Effectively local
-                    };
+                    return this.finalizeContent(clientRes.text, 'local_parser');
                 } else {
                     console.warn('[MultiStrategy] PDF appears scanned or empty (Client). Falling back...');
                 }
@@ -62,10 +60,7 @@ export class MultiStrategyExtractor {
             });
 
             if (localRes.success && localRes.content && localRes.content.length > 50) {
-                return {
-                    content: localRes.content,
-                    source: 'local_parser'
-                };
+                return this.finalizeContent(localRes.content, 'local_parser');
             } else if (localRes.success) {
                 console.warn('[MultiStrategy] Server Local parse too short.');
             } else {
@@ -84,10 +79,7 @@ export class MultiStrategyExtractor {
             );
 
             if (geminiRes.success && geminiRes.content) {
-                return {
-                    content: geminiRes.content,
-                    source: 'gemini_vision'
-                };
+                return this.finalizeContent(geminiRes.content, 'gemini_vision');
             } else {
                 errors.push(`Gemini Vision: ${geminiRes.error}`);
             }
@@ -96,6 +88,18 @@ export class MultiStrategyExtractor {
         }
 
         // All strategies failed
-        throw new Error(`All extraction strategies failed. Details: ${errors.join(' | ')}`);
+        if (errors.length > 0) {
+            console.error('[MultiStrategy] All strategies failed:', errors);
+        }
+
+        throw new Error(`All extraction strategies failed. Details: ${errors.slice(0, 2).join(' | ')}`);
+    }
+
+    private finalizeContent(content: string, source: 'local_parser' | 'gemini_vision' | 'ocr'): ExtractedContent {
+        const cleaner = TextCleaningService.getInstance();
+        return {
+            content: cleaner.clean(content),
+            source
+        };
     }
 }

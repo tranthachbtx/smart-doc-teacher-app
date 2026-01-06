@@ -106,10 +106,15 @@ export class ContentStructureAnalyzer {
                     processedAt: new Date().toISOString()
                 }
             };
-        } catch (error) {
-            console.error("ContentStructureAnalyzer Error:", error);
+        } catch (error: any) {
+            console.warn("⚠️ [ContentStructureAnalyzer] AI Analysis failed, switching to Regex Fallback:", error.message);
             // Return a fallback structured content if AI fails
-            return this.getFallbackStructure(rawText);
+            try {
+                return this.getFallbackStructure(rawText);
+            } catch (fallbackError: any) {
+                console.error("❌ [ContentStructureAnalyzer] Fatal error in fallback logic:", fallbackError);
+                throw new Error("Không thể phân tích tài liệu ngay cả bằng phương thức dự phòng: " + fallbackError.message);
+            }
         }
     }
 

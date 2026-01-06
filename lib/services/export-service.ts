@@ -19,6 +19,8 @@ import {
   convertInchesToTwip,
   HeightRule
 } from "docx";
+import { ExportOptimizer } from "./export-optimizer";
+import { WorkerManager } from "./worker-manager";
 import type {
   LessonResult,
   AssessmentResult,
@@ -98,9 +100,11 @@ export const ExportService = {
    */
   async exportLessonToDocx(
     result: LessonResult,
-    fileName: string = "Giao_an_HDTN.docx",
-    onProgress?: (percent: number) => void
+    fileNameOrOptions?: string | { onProgress?: (percent: number) => void; onError?: (error: any) => void },
+    onProgressCallback?: (percent: number) => void
   ): Promise<{ success: boolean; method: "download" | "clipboard" }> {
+    const fileName = typeof fileNameOrOptions === 'string' ? fileNameOrOptions : "Giao_an_5512.docx";
+    const onProgress = typeof fileNameOrOptions === 'object' ? fileNameOrOptions.onProgress : onProgressCallback;
     // Start performance monitoring
     ExportOptimizer.startMonitoring();
 
@@ -355,9 +359,9 @@ export const ExportService = {
   },
 
   /**
-   * Exports a Lesson Plan to a .docx file using a template
+   * Exports a Lesson Plan to a .docx file using a template (Legacy/Alternative)
    */
-  async exportLessonToDocx(
+  async exportLessonToDocxLegacy(
     lesson: LessonResult,
     fileNameOrOptions?: string | { onProgress?: (progress: number) => void; onError?: (error: Error) => void },
     onProgressCallback?: (percent: number) => void

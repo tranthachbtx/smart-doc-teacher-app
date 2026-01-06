@@ -161,7 +161,29 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
           const preview = rawText.substring(0, 100);
 
           if (preview.includes("Hello World!")) {
-            throw new Error(`PROXY_CONFIG_ERROR: Your Gemini Proxy is returning "Hello World!" instead of forwarding the request. Please check your Cloudflare Worker / Reverse Proxy configuration.`);
+            console.warn(`[ProxyWarning] Proxy at ${proxyUrl} returned "Hello World!". Attempting fallback to direct Google API...`);
+            // Attempt fallback to direct API
+            const directEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
+            const directResponse = await fetch(directEndpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ contents: [{ parts }] })
+            });
+
+            if (directResponse.ok) {
+              const directJson = await directResponse.json();
+              const directText = directJson.candidates?.[0]?.content?.parts?.[0]?.text;
+              if (directText) {
+                lastSuccess = Date.now();
+                consecutiveShadowBans = 0;
+                return directText;
+              }
+            }
+
+            throw new Error(`PROXY_CONFIG_ERROR: Your Gemini Proxy is returning "Hello World!" instead of forwarding the request. 
+            HƯỚNG DẪN: Cloudflare Worker của bạn đang trả về trang mặc định. 
+            Vui lòng kiểm tra mã nguồn Worker để đảm bảo nó forward request đúng cách, 
+            HOẶC xóa biến GEMINI_PROXY_URL trong .env.local để dùng kết nối trực tiếp.`);
           }
 
           throw new Error(`NON_JSON_RESPONSE: Proxy returned unexpected content-type (${contentType}). Preview: "${preview}"`);

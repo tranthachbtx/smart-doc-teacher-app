@@ -9,6 +9,9 @@ export interface FilteredContent {
 }
 
 export class ContentFilter {
+    /**
+     * Lọc nội dung dựa trên loại hoạt động và giới hạn độ dài
+     */
     filterContentForActivity(
         structuredContent: StructuredContent,
         activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung',
@@ -19,8 +22,8 @@ export class ContentFilter {
             .filter(section => (section.relevance[activityType] || 0) >= 40)
             .sort((a, b) => (b.relevance[activityType] || 0) - (a.relevance[activityType] || 0));
 
-        // 2. Ưu tiên theo loại hoạt động
-        const prioritizedSections = this.prioritizeSections(relevantSections, activityType);
+        // 2. Ưu tiên theo loại hoạt động (Dùng logic V10 cải tiến)
+        const prioritizedSections = this.prioritizeByActivity(relevantSections, activityType);
 
         // 3. Trích xuất nội dung trong giới hạn độ dài
         let currentLength = 0;
@@ -28,15 +31,14 @@ export class ContentFilter {
 
         for (const section of prioritizedSections) {
             if (currentLength + section.content.length > maxContentLength && selectedSections.length > 0) {
-                // Nếu vượt quá giới hạn, chỉ thêm đoạn tóm tắt hoặc bỏ qua
                 continue;
             }
             selectedSections.push(section);
             currentLength += section.content.length;
         }
 
-        // 4. Tạo nội dung cho prompt
-        const promptContent = this.generatePromptContent(selectedSections, activityType);
+        // 4. Tạo nội dung cho prompt (Targeted format)
+        const promptContent = this.generateTargetedPromptContent(selectedSections, activityType);
 
         const totalRelevance = selectedSections.length > 0
             ? selectedSections.reduce((sum, s) => sum + s.relevance[activityType], 0) / selectedSections.length
@@ -50,7 +52,6 @@ export class ContentFilter {
         };
     }
 
-<<<<<<< HEAD
     private prioritizeByActivity(
         sections: ContentSection[],
         activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'
@@ -89,59 +90,6 @@ export class ContentFilter {
         sections.forEach((s, i) => {
             content += `[MẢNH ${i + 1}: ${s.title.toUpperCase()}] (${s.type})\n`;
             content += `${s.content}\n\n`;
-        });
-
-        return content;
-    }
-
-=======
->>>>>>> parent of 1427bc2 (V10)
-    private prioritizeSections(
-        sections: ContentSection[],
-        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'
-    ): ContentSection[] {
-        const typePriorities: Record<string, string[]> = {
-            khoi_dong: ['objective', 'activity', 'knowledge'],
-            kham_pha: ['knowledge', 'activity', 'objective'],
-            luyen_tap: ['assessment', 'activity', 'knowledge'],
-            van_dung: ['assessment', 'activity', 'resource']
-        };
-
-        const priorities = typePriorities[activityType] || [];
-
-        return [...sections].sort((a, b) => {
-            const aIndex = priorities.indexOf(a.type);
-            const bIndex = priorities.indexOf(b.type);
-
-            const aPriority = aIndex === -1 ? 99 : aIndex;
-            const bPriority = bIndex === -1 ? 99 : bIndex;
-
-            if (aPriority !== bPriority) {
-                return aPriority - bPriority;
-            }
-
-            // Cùng loại thì ưu tiên độ liên quan
-            return (b.relevance[activityType] || 0) - (a.relevance[activityType] || 0);
-        });
-    }
-
-    private generatePromptContent(
-        sections: ContentSection[],
-        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'
-    ): string {
-        const activityNames: Record<string, string> = {
-            khoi_dong: 'Khởi động',
-            kham_pha: 'Khám phá',
-            luyen_tap: 'Luyen tập',
-            van_dung: 'Vận dụng'
-        };
-
-        let content = `## 📚 DỮ LIỆU GỐC TRÍCH XUẤT CHO HOẠT ĐỘNG: ${activityNames[activityType]?.toUpperCase()}\n`;
-        content += `(Ghi chú: Đây là dữ liệu được AI lọc theo độ liên quan để tối ưu ngữ cảnh)\n\n`;
-
-        sections.forEach((section, index) => {
-            content += `--- PHẦN ${index + 1}: ${section.title} [Loại: ${section.type}] ---\n`;
-            content += `${section.content}\n\n`;
         });
 
         return content;

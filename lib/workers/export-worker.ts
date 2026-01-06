@@ -125,6 +125,26 @@ const createField = (label: string, value: string | undefined) => {
 const parseTwoColumnContent = (content: string) => {
     if (!content) return { gv: "...", hs: "..." };
 
+    // 1. Try JSON Parsing (For Manual Workflow results)
+    try {
+        const startIndex = content.indexOf("{");
+        const endIndex = content.lastIndexOf("}");
+        if (startIndex !== -1 && endIndex !== -1) {
+            const jsonString = content.substring(startIndex, endIndex + 1);
+            const jsonData = JSON.parse(jsonString);
+            if (jsonData.steps && Array.isArray(jsonData.steps)) {
+                let gv = "";
+                let hs = "";
+                jsonData.steps.forEach((step: any) => {
+                    if (step.teacher_action) gv += (gv ? "\n\n" : "") + step.teacher_action;
+                    if (step.student_action) hs += (hs ? "\n\n" : "") + step.student_action;
+                });
+                return { gv: gv || "...", hs: hs || "..." };
+            }
+        }
+    } catch (e) { /* Fallback to Regex */ }
+
+    // 2. Regex Logic (Legacy/Standard)
     const cot1Match = /\{\{cot_1\}\}/i.exec(content);
     const cot2Match = /\{\{cot_2\}\}/i.exec(content);
 

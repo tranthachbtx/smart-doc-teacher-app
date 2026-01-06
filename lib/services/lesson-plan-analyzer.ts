@@ -1,3 +1,4 @@
+import { TextCleaningService } from "./text-cleaning-service";
 
 export interface AnalyzedSection {
     title: string;
@@ -20,6 +21,9 @@ export class LessonPlanAnalyzer {
         if (!text) {
             return { topic: "", objectives: "", preparations: "", activities: [], rawText: "" };
         }
+
+        const cleaner = TextCleaningService.getInstance();
+        const cleanedText = cleaner.clean(text);
 
         // 1. Tìm Topic/Chủ đề
         let topic = "";
@@ -57,7 +61,7 @@ export class LessonPlanAnalyzer {
             objectives,
             preparations,
             activities,
-            rawText: text
+            rawText: cleanedText
         };
     }
 

@@ -285,12 +285,11 @@ export function TemplateEngine() {
       switch (mode) {
         case "lesson":
           if (!lessonResult) throw new Error("Chưa có kết quả giáo án để xuất");
+          const lessonFileName = `Giao_an_${lessonTopic || lessonAutoFilledTheme || "HDTN"}.docx`.replace(/\s+/g, "_");
           res = await ExportService.exportLessonToDocx(
             lessonResult,
-            {
-              onProgress: (p) => setSuccess(`Đang xuất file... ${Math.round(p)}%`),
-              onError: (e) => setError(e.message)
-            }
+            lessonFileName,
+            (p) => setSuccess(`Đang xuất file... ${Math.round(p)}%`)
           );
           break;
         case "meeting":
