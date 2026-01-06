@@ -22,6 +22,13 @@ export class PedagogicalRelevanceEngine {
         this.initializePatterns();
     }
 
+    private initializePatterns() {
+        this.patterns.set('khoi_dong', [/trò chơi/i, /tình huống/i, /câu hỏi gợi mở/i, /kết nối/i]);
+        this.patterns.set('kham_pha', [/kiến thức mới/i, /hình thành/i, /quan sát/i, /thảo luận/i]);
+        this.patterns.set('luyen_tap', [/thực hành/i, /bài tập/i, /vận dụng kiến thức/i, /củng cố/i]);
+        this.patterns.set('van_dung', [/thực tế/i, /dự án/i, /giải quyết vấn đề/i, /mở rộng/i]);
+    }
+
     public static getInstance(): PedagogicalRelevanceEngine {
         if (!PedagogicalRelevanceEngine.instance) {
             PedagogicalRelevanceEngine.instance = new PedagogicalRelevanceEngine();
