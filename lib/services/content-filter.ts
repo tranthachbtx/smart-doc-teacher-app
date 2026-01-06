@@ -52,7 +52,10 @@ export class ContentFilter {
         };
     }
 
-    private prioritizeByActivity(sections: ContentSection[], activityType: string): ContentSection[] {
+    private prioritizeByActivity(
+        sections: ContentSection[],
+        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'
+    ): ContentSection[] {
         const priorities: Record<string, string[]> = {
             khoi_dong: ['objective', 'activity', 'knowledge'],
             kham_pha: ['knowledge', 'activity', 'objective'],
@@ -66,11 +69,14 @@ export class ContentFilter {
             const aP = aIdx === -1 ? 99 : aIdx;
             const bP = bIdx === -1 ? 99 : bIdx;
             if (aP !== bP) return aP - bP;
-            return (b.relevance[activityType as any] || 0) - (a.relevance[activityType as any] || 0);
+            return (b.relevance[activityType] || 0) - (a.relevance[activityType] || 0);
         });
     }
 
-    private generateTargetedPromptContent(sections: ContentSection[], activityType: string): string {
+    private generateTargetedPromptContent(
+        sections: ContentSection[],
+        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'
+    ): string {
         const names: Record<string, string> = {
             khoi_dong: 'KHỞI ĐỘNG (WARM-UP)',
             kham_pha: 'KHÁM PHÁ (KNOWLEDGE FORMATION)',
@@ -120,7 +126,7 @@ export class ContentFilter {
 
     private generatePromptContent(
         sections: ContentSection[],
-        activityType: string
+        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'
     ): string {
         const activityNames: Record<string, string> = {
             khoi_dong: 'Khởi động',
@@ -129,7 +135,7 @@ export class ContentFilter {
             van_dung: 'Vận dụng'
         };
 
-        let content = `## 📚 DỮ LIỆU GỐC TRÍCH XUẤT CHO HOẠT ĐỘNG: ${activityNames[activityType]?.toUpperCase() || activityType}\n`;
+        let content = `## 📚 DỮ LIỆU GỐC TRÍCH XUẤT CHO HOẠT ĐỘNG: ${activityNames[activityType]?.toUpperCase()}\n`;
         content += `(Ghi chú: Đây là dữ liệu được AI lọc theo độ liên quan để tối ưu ngữ cảnh)\n\n`;
 
         sections.forEach((section, index) => {
