@@ -4,7 +4,7 @@ import { MultiModalAIManager } from "./multi-modal-ai-manager";
 
 export class IntelligentExportEngine {
     private static instance: IntelligentExportEngine;
-    private exportService = ExportService.getInstance();
+    private exportService = ExportService;
     private aiManager = MultiModalAIManager.getInstance();
 
     public static getInstance(): IntelligentExportEngine {
@@ -32,6 +32,6 @@ export class IntelligentExportEngine {
         // In a full implementation, we might refactor the lessonPlan object here.
 
         // 2. Delegate to the high-performance ExportService
-        await this.exportService.generateLessonPlanAction(lessonPlan);
+        await this.exportService.exportLessonToDocx(lessonPlan);
     }
 }

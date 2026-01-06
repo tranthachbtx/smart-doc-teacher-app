@@ -19,7 +19,7 @@ export interface QuantumExportResult {
  */
 export class QuantumExportEngine {
     private static instance: QuantumExportEngine;
-    private exportService = ExportService.getInstance();
+    private exportService = ExportService;
     private aiManager = MultiModalAIManager.getInstance();
 
     public static getInstance(): QuantumExportEngine {
@@ -42,7 +42,7 @@ export class QuantumExportEngine {
         `;
 
         // Thực hiện quy trình xuất bản tối cao
-        await this.exportService.generateLessonPlanAction(lessonPlan);
+        await this.exportService.exportLessonToDocx(lessonPlan);
 
         return {
             exports: [
