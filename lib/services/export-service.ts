@@ -991,7 +991,26 @@ export const ExportService = {
   parseTwoColumnContent(content: string): { gv: string; hs: string } {
     if (!content) return { gv: "...", hs: "..." };
 
-    // Regex finding indices (Case Insensitive)
+    // 1. Try JSON Parsing (For Manual Workflow results)
+    try {
+      const startIndex = content.indexOf("{");
+      const endIndex = content.lastIndexOf("}");
+      if (startIndex !== -1 && endIndex !== -1) {
+        const jsonString = content.substring(startIndex, endIndex + 1);
+        const jsonData = JSON.parse(jsonString);
+        if (jsonData.steps && Array.isArray(jsonData.steps)) {
+          let gv = "";
+          let hs = "";
+          jsonData.steps.forEach((step: any) => {
+            if (step.teacher_action) gv += (gv ? "\n\n" : "") + step.teacher_action;
+            if (step.student_action) hs += (hs ? "\n\n" : "") + step.student_action;
+          });
+          return { gv: gv || "...", hs: hs || "..." };
+        }
+      }
+    } catch (e) { /* Fallback to Regex */ }
+
+    // 2. Regex Logic (Standard/Legacy)
     const cot1Match = /\{\{cot_1\}\}/i.exec(content);
     const cot2Match = /\{\{cot_2\}\}/i.exec(content);
 
@@ -1093,59 +1112,64 @@ export const ExportService = {
    * Complex Activity Block with 2-column structure for Step D
    */
   createTwoColumnActivity(title: string, fullContent: string | undefined) {
-    if (!fullContent) return [new Paragraph({ text: "...", indent: { left: 360 } })];
+    try {
+      if (!fullContent) return [new Paragraph({ text: "...", indent: { left: 360 } })];
 
-    const results: any[] = [
-      new Paragraph({
-        spacing: { before: 240, after: 120 },
-        children: [new TextRun({ text: title, bold: true, size: 26, color: "2E59A7", underline: {} })]
-      })
-    ];
+      const results: any[] = [
+        new Paragraph({
+          spacing: { before: 240, after: 120 },
+          children: [new TextRun({ text: title, bold: true, size: 26, color: "2E59A7", underline: {} })]
+        })
+      ];
 
-    // Splitting by major steps a), b), c), d) - STRICT START OF LINE
-    const steps = fullContent.split(/(?:\r?\n|^)(?=[a-d]\))/i);
+      // Splitting by major steps a), b), c), d) - STRICT START OF LINE
+      const steps = fullContent.split(/(?:\r?\n|^)(?=[a-d]\))/i);
 
-    steps.forEach(step => {
-      const trimmedStep = step.trim();
-      if (!trimmedStep) return;
+      steps.forEach(step => {
+        const trimmedStep = step.trim();
+        if (!trimmedStep) return;
 
-      if (trimmedStep.toLowerCase().startsWith('d)')) {
-        // Handle 2-column for Step D
-        const labelEnd = trimmedStep.indexOf(':');
-        const label = labelEnd > -1 ? trimmedStep.substring(0, labelEnd) : "d) Tổ chức thực hiện";
-        const body = labelEnd > -1 ? trimmedStep.substring(labelEnd + 1).trim() : trimmedStep.substring(2).trim();
-
-        results.push(new Paragraph({
-          spacing: { before: 120, after: 60 },
-          children: [new TextRun({ text: label + ":", bold: true, size: 24, italics: true })]
-        }));
-
-        const { gv, hs } = this.parseTwoColumnContent(body);
-        results.push(this.createTwoColumnTable(gv, hs));
-      } else {
-        // Regular single column for a, b, c
-        const colonIndex = trimmedStep.indexOf(':');
-        if (colonIndex !== -1) {
-          const label = trimmedStep.substring(0, colonIndex + 1);
-          const body = trimmedStep.substring(colonIndex + 1).trim();
+        if (trimmedStep.toLowerCase().startsWith('d)')) {
+          // Handle 2-column for Step D
+          const labelEnd = trimmedStep.indexOf(':');
+          const label = labelEnd > -1 ? trimmedStep.substring(0, labelEnd) : "d) Tổ chức thực hiện";
+          const body = labelEnd > -1 ? trimmedStep.substring(labelEnd + 1).trim() : trimmedStep.substring(2).trim();
 
           results.push(new Paragraph({
-            spacing: { before: 60, after: 60 },
-            alignment: AlignmentType.JUSTIFIED,
-            indent: { firstLine: 720 },
-            children: [
-              new TextRun({ text: label, bold: true, size: 24, italics: true }),
-              new TextRun({ text: " ", size: 24 }),
-              ...this.parseMarkdownToRuns(body)
-            ]
+            spacing: { before: 120, after: 60 },
+            children: [new TextRun({ text: label + ":", bold: true, size: 24, italics: true })]
           }));
-        } else {
-          results.push(...this.renderFormattedText(trimmedStep));
-        }
-      }
-    });
 
-    return results;
+          const { gv, hs } = this.parseTwoColumnContent(body);
+          results.push(this.createTwoColumnTable(gv, hs));
+        } else {
+          // Regular single column for a, b, c
+          const colonIndex = trimmedStep.indexOf(':');
+          if (colonIndex !== -1) {
+            const label = trimmedStep.substring(0, colonIndex + 1);
+            const body = trimmedStep.substring(colonIndex + 1).trim();
+
+            results.push(new Paragraph({
+              spacing: { before: 60, after: 60 },
+              alignment: AlignmentType.JUSTIFIED,
+              indent: { firstLine: 720 },
+              children: [
+                new TextRun({ text: label, bold: true, size: 24, italics: true }),
+                new TextRun({ text: " ", size: 24 }),
+                ...this.parseMarkdownToRuns(body)
+              ]
+            }));
+          } else {
+            results.push(...this.renderFormattedText(trimmedStep));
+          }
+        }
+      });
+
+      return results;
+    } catch (err) {
+      console.error(`Error rendering activity "${title}":`, err);
+      return [new Paragraph({ text: `[Lỗi hiển thị hoạt động: ${title}]`, color: "FF0000" })];
+    }
   },
 
   /**

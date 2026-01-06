@@ -43,13 +43,12 @@ import type { ActivitySuggestions } from "@/lib/prompts/khdh-prompts";
 
 // --- 1. RESILIENCE & CIRCUIT BREAKER (v6.0 Stable) ---
 const blacklist = new Set<string>();
+let isProxyDead = false; // Self-healing: if found dead, we skip it
+let tokens = 15; // 15 requests per minute
+let lastCheck = Date.now();
 let lastSuccess = Date.now();
 const GAP_MIN = 60000;  // 1 phút tối thiểu
 const GAP_MAX = 180000; // 3 phút tối đa
-
-// Token Bucket State
-let tokens = 15;
-let lastCheck = Date.now();
 
 // Circuit Breaker State
 let consecutiveShadowBans = 0;
@@ -124,7 +123,7 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
         console.log(`[AI-TUNNEL] [${new Date().toLocaleTimeString()}] Key: ${key.slice(0, 8)}... | ${modelName} | File: ${!!file}`);
 
         // 3. NATIVE FETCH via TUNNEL (Bypass SDK Fingerprint)
-        const proxyUrl = process.env.GEMINI_PROXY_URL;
+        const proxyUrl = !isProxyDead ? process.env.GEMINI_PROXY_URL : null;
         const endpoint = proxyUrl
           ? `${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent?key=${key}`
           : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
@@ -176,14 +175,20 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
               if (directText) {
                 lastSuccess = Date.now();
                 consecutiveShadowBans = 0;
+                // Successfully healed! Don't use proxy for subsequent calls in this session
+                isProxyDead = true;
+                console.log("[AI-TUNNEL] PROXY BYPASSED PERMANENTLY for this session.");
                 return directText;
               }
+            } else {
+              const directStatus = directResponse.status;
+              const directError = await directResponse.text();
+              console.error(`[FallbackFailed] Direct API also failed (${directStatus}): ${directError.substring(0, 200)}`);
             }
 
             throw new Error(`PROXY_CONFIG_ERROR: Your Gemini Proxy is returning "Hello World!" instead of forwarding the request. 
             HƯỚNG DẪN: Cloudflare Worker của bạn đang trả về trang mặc định. 
-            Vui lòng kiểm tra mã nguồn Worker để đảm bảo nó forward request đúng cách, 
-            HOẶC xóa biến GEMINI_PROXY_URL trong .env.local để dùng kết nối trực tiếp.`);
+            Hệ thống đã thử kết nối trực tiếp nhưng thất bại. Vui lòng kiểm tra GEMINI_API_KEY trong .env.local.`);
           }
 
           throw new Error(`NON_JSON_RESPONSE: Proxy returned unexpected content-type (${contentType}). Preview: "${preview}"`);
