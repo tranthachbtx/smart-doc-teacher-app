@@ -25,7 +25,7 @@ export async function parseFileLocally(
         // 2. PDF Handling (via pdf-parse)
         if (file.mimeType === 'application/pdf') {
             try {
-                const pdfModule = await import('pdf-parse');
+                const pdfModule: any = await import('pdf-parse');
                 // Handle different module formats (CommonJS vs ESM)
                 let pdfFunc: any = pdfModule.default || pdfModule;
                 if (typeof pdfFunc !== 'function' && pdfFunc.default) {
