@@ -65,6 +65,9 @@ export default function EnhancedSmartLessonProcessor() {
     const chuDe = chuDeList.find(cd => cd.chu_de_so === Number(chuDeSo));
     if (chuDe) {
       setTopic(chuDe.ten);
+      setSelectedChuDe(chuDe);
+    } else {
+      setSelectedChuDe(null);
     }
   }, [chuDeSo, chuDeList]);
 
@@ -145,40 +148,28 @@ export default function EnhancedSmartLessonProcessor() {
     }
   };
 
-  const handleGeneratePrompts = async () => {
+  const handleGeneratePrompt = () => {
     if (!pdfContent || !databaseContext) {
       setError('Vui lòng upload PDF và tích hợp database trước khi tạo prompt');
       return;
     }
 
-    setProcessingSteps(prev => [...prev, 'Đang tạo prompts thông minh...']);
+    setProcessingSteps(prev => [...prev, 'Đang tạo prompt thông minh...']);
 
     try {
-      // Generate prompts for all 4 modules
-      const updatedModules = modules.map(module => {
-        const prompt = ManualWorkflowService.generatePromptForModule(module, {
-          topic,
-          grade,
-          fileSummary: pdfContent,
-          smartData: databaseContext
-        });
+      // Build final smart prompt using the service
+      const prompt = SmartPromptService.buildFinalSmartPrompt(databaseContext, pdfContent);
+      setGeneratedPrompt(prompt);
 
-        return {
-          ...module,
-          prompt
-        };
-      });
-
-      setModules(updatedModules);
-      setProcessingSteps(prev => [...prev, '✅ Đã tạo prompts cho 4 hoạt động']);
+      setProcessingSteps(prev => [...prev, '✅ Đã tạo prompt thông minh']);
 
       toast({
-        title: "Prompts Generated",
-        description: "Đã tạo prompts cho tất cả 4 hoạt động với database context"
+        title: "Prompt Generated",
+        description: "Đã thiết kế prompt tối ưu theo chuẩn 5512"
       });
     } catch (error) {
       console.error('Prompt generation failed:', error);
-      setError('Không thể tạo prompts. Vui lòng thử lại.');
+      setError('Không thể tạo prompt. Vui lòng thử lại.');
     }
   };
 
