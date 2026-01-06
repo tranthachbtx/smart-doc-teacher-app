@@ -31,6 +31,8 @@ export interface LessonTask {
 export interface LessonResult {
   ma_chu_de?: string;
   ten_bai?: string;
+  title?: string; // Alias for ten_bai used in some services
+  grade?: string;
   muc_tieu_kien_thuc?: string;
   muc_tieu_nang_luc?: string;
   muc_tieu_pham_chat?: string;
