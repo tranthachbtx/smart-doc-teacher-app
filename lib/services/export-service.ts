@@ -324,11 +324,12 @@ export const ExportService = {
    */
   async exportLessonToDocx(
     lesson: LessonResult,
-    options?: {
-      onProgress?: (progress: number) => void;
-      onError?: (error: Error) => void;
-    }
-  ): Promise<void> {
+    fileNameOrOptions?: string | { onProgress?: (progress: number) => void; onError?: (error: Error) => void },
+    onProgressCallback?: (percent: number) => void
+  ): Promise<{ success: boolean; method: "download" }> {
+    const fileName = typeof fileNameOrOptions === 'string' ? fileNameOrOptions : `${lesson.title || lesson.ten_bai || "Giao_an_5512"}.docx`;
+    const options = typeof fileNameOrOptions === 'object' ? fileNameOrOptions : { onProgress: onProgressCallback };
+
     try {
       console.log("[ExportService] Starting Template-Based Export 5512...");
       options?.onProgress?.(10);
@@ -557,14 +558,15 @@ export const ExportService = {
 
       options?.onProgress?.(100);
 
-      const fileName = `${lesson.title || "Giao_an_5512"}.docx`;
       this.triggerDownload(out, fileName);
 
       console.log("[ExportService] Template Export Completed Successfully");
+      return { success: true, method: "download" };
 
     } catch (error) {
       console.error("[ExportService] Template Export Failed:", error);
       options?.onError?.(error instanceof Error ? error : new Error("Unknown error"));
+      return { success: false, method: "download" };
     }
   },
 
