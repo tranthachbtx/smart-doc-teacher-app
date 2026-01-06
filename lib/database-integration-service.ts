@@ -40,39 +40,39 @@ export class DatabaseIntegrationService {
    * Lấy context đầy đủ cho giáo án từ tất cả database
    */
   async getContextForLesson(
-    grade: string, 
-    topic: string, 
+    grade: string,
+    topic: string,
     chuDeSo?: string,
     oldLessonSummary?: string
   ): Promise<LessonContext> {
     console.log(`[DatabaseService] Getting context for grade ${grade}, topic ${topic}`);
-    
+
     // Step 1: Get basic data
     const gradeInt = parseInt(grade) as 10 | 11 | 12;
     const chuDeSoNum = chuDeSo ? parseInt(chuDeSo) : undefined;
-    
+
     // Step 2: Get PPCT data
     const ppctData = chuDeSoNum ? await this.getPPCTData(gradeInt, chuDeSoNum) : null;
-    
+
     // Step 3: Get curriculum data
     const curriculumData = await this.getCurriculumData(gradeInt, topic);
-    
+
     // Step 4: Get smart prompts
     const smartPrompts = await SmartPromptService.lookupSmartData(grade, topic, chuDeSo);
-    
+
     // Step 5: Get educational context
     const educationalContext = await this.getEducationalContext(gradeInt, topic);
-    
+
     // Step 6: Get reference materials
     const referenceMaterials = await this.getReferenceMaterials(gradeInt, topic, chuDeSoNum);
-    
+
     // Step 7: Enhance with old lesson data if available
     if (oldLessonSummary) {
       educationalContext.oldLessonContext = oldLessonSummary;
     }
-    
+
     console.log(`[DatabaseService] Context retrieved successfully`);
-    
+
     return {
       grade,
       topic,
@@ -84,29 +84,31 @@ export class DatabaseIntegrationService {
       referenceMaterials
     };
   }
-  
+
   /**
    * Lấy dữ liệu PPCT
    */
   private async getPPCTData(grade: 10 | 11 | 12, chuDeSo: number): Promise<PPCTChuDe | null> {
     const ppctData = getPPCTTheoKhoi(grade);
+    if (!ppctData) return null;
+
     const chuDe = ppctData.chu_de.find(cd => cd.chu_de_so === chuDeSo);
-    
+
     if (chuDe) {
       console.log(`[DatabaseService] Found PPCT data for chuDe ${chuDeSo}`);
       return chuDe;
     }
-    
+
     console.log(`[DatabaseService] No PPCT data found for chuDe ${chuDeSo}`);
     return null;
   }
-  
+
   /**
    * Lấy dữ liệu chương trình giảng dạy
    */
   private async getCurriculumData(grade: 10 | 11 | 12, topic: string): Promise<any> {
     const chuDe = timChuDeTheoTen(grade, topic);
-    
+
     if (chuDe) {
       console.log(`[DatabaseService] Found curriculum data for topic ${topic}`);
       return {
@@ -117,11 +119,11 @@ export class DatabaseIntegrationService {
         luyYSuPham: chuDe.luu_y_su_pham
       };
     }
-    
+
     console.log(`[DatabaseService] No curriculum data found for topic ${topic}`);
     return null;
   }
-  
+
   /**
    * Lấy context giáo dục chuyên sâu
    */
@@ -153,20 +155,20 @@ export class DatabaseIntegrationService {
         kyNangSong: "Kỹ năng tự học, quản lý tài chính, khởi nghiệp"
       }
     };
-    
+
     return contexts[grade] || contexts[10];
   }
-  
+
   /**
    * Lấy tài liệu tham khảo
    */
   private async getReferenceMaterials(
-    grade: 10 | 11 | 12, 
-    topic: string, 
+    grade: 10 | 11 | 12,
+    topic: string,
     chuDeSo?: number
   ): Promise<ReferenceMaterial[]> {
     const materials: ReferenceMaterial[] = [];
-    
+
     // PPCT reference
     if (chuDeSo) {
       const ppctData = await this.getPPCTData(grade, chuDeSo);
@@ -179,7 +181,7 @@ export class DatabaseIntegrationService {
         });
       }
     }
-    
+
     // Curriculum reference
     const curriculumData = await this.getCurriculumData(grade, topic);
     if (curriculumData) {
@@ -190,7 +192,7 @@ export class DatabaseIntegrationService {
         relevance: 0.95
       });
     }
-    
+
     // Add more reference materials as needed
     materials.push({
       type: 'nanglucso',
@@ -198,29 +200,29 @@ export class DatabaseIntegrationService {
       content: 'Các năng lực số cần tích hợp: 1.1, 1.2, 2.1, 2.2, 3.1, 3.2',
       relevance: 0.8
     });
-    
+
     materials.push({
       type: 'rubric',
       title: 'Rubric đánh giá năng lực',
       content: 'Tiêu chí đánh giá theo 4 mức độ: Chưa đạt, Đạt, Tốt, Xuất sắc',
       relevance: 0.7
     });
-    
+
     return materials.sort((a, b) => b.relevance - a.relevance);
   }
-  
+
   /**
    * Tạo prompt nâng cao với đầy đủ context
    */
   createEnhancedPrompt(
-    context: LessonContext, 
+    context: LessonContext,
     oldLessonContent?: string
   ): string {
     const smartPrompt = SmartPromptService.buildFinalSmartPrompt(
-      context.smartPrompts, 
+      context.smartPrompts,
       oldLessonContent
     );
-    
+
     // Add database context enhancement
     const databaseContext = `
 ## 5. DATABASE CONTEXT ENHANCEMENT
@@ -232,7 +234,7 @@ export class DatabaseIntegrationService {
 ## 6. OLD LESSON INTEGRATION
 ${oldLessonContent ? `Nội dung giáo án cũ để tham khảo:\n${oldLessonContent.substring(0, 1000)}...\n` : 'Không có giáo án cũ.'}
 `;
-    
+
     return smartPrompt.replace('## 4. QUY CÁCH ĐẦU RA', databaseContext + '\n\n## 6. QUY CÁCH ĐẦU RA');
   }
 }

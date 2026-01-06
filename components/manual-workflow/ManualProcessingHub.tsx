@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText, AlertCircle, Search, X, BrainCircuit, Zap, ArrowRight } from 'lucide-react';
+import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText, AlertCircle, Search, X, BrainCircuit, Zap, ArrowRight, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SmartPromptService } from '@/lib/services/smart-prompt-service';
 import { LessonPlanAnalyzer } from '@/lib/services/lesson-plan-analyzer';
@@ -20,6 +20,7 @@ import { StructuredContentViewer } from '@/components/ui/structured-content-view
 import { ActivityContentBuilder } from '@/components/ui/activity-content-builder';
 import { useLessonActions } from '@/lib/hooks/use-lesson-actions';
 import { ExpertBrainInjection } from '../template-engine/ExpertBrainInjection';
+import { ContentFilter } from '@/lib/services/content-filter';
 
 export function ManualProcessingHub() {
     const {
@@ -34,7 +35,8 @@ export function ManualProcessingHub() {
         setLoading,
         setStatus,
         setExportProgress,
-        lessonResult
+        lessonResult,
+        setLessonResult
     } = useLessonStore();
 
     const { handleExportDocx, handleSurgicalMerge, handleAudit } = useLessonActions();
@@ -80,9 +82,20 @@ export function ManualProcessingHub() {
                 const modules = ManualWorkflowService.analyzeStructure(scientificText, "2");
                 setManualModules(modules);
 
+                // --- AUTOMATIC CONTENT OPTIMIZATION ---
+                setAnalyzingStatus("Đang lọc nội dung trọng tâm...");
+                const filter = new ContentFilter();
+                const newOptimizedMap: Record<string, string> = {};
+
+                modules.forEach(mod => {
+                    const filtered = filter.filterContentForActivity(structured, mod.type as any);
+                    newOptimizedMap[mod.id] = filtered.promptContent;
+                });
+                setOptimizedMap(newOptimizedMap);
+
                 toast({
-                    title: "✅ Phân tích hoàn tất!",
-                    description: `Đã cấu trúc hóa ${structured.sections.length} phần nội dung hữu ích.`
+                    title: "✅ Phân tích & Tối ưu xong!",
+                    description: `Đã cấu trúc hóa ${structured.sections.length} phần và tự động lọc dữ liệu cho từng module.`
                 });
             } else {
                 throw new Error("Không tìm thấy nội dung văn bản trong tài liệu này.");
@@ -115,24 +128,78 @@ export function ManualProcessingHub() {
         });
     };
 
+    const handleFinalizeManualWorkflow = () => {
+        // Collect all modules and update lessonResult
+        const mappedResult: any = {
+            ten_bai: lessonAutoFilledTheme,
+            grade: lessonGrade,
+            hoat_dong_khoi_dong: manualModules.find(m => m.type === 'khoi_dong')?.content || "",
+            hoat_dong_kham_pha: manualModules.find(m => m.type === 'kham_pha')?.content || "",
+            hoat_dong_luyen_tap: manualModules.find(m => m.type === 'luyen_tap')?.content || "",
+            hoat_dong_van_dung: manualModules.find(m => m.type === 'van_dung')?.content || "",
+            // Fallback empty values for other fields to satisfy validator
+            muc_tieu_kien_thuc: "Xem chi tiết trong từng hoạt động.",
+            muc_tieu_nang_luc: "Được tích hợp trong các hoạt động.",
+            muc_tieu_pham_chat: "Được tích hợp trong các hoạt động.",
+            ho_so_day_hoc: "N/A",
+            huong_dan_ve_nha: "N/A"
+        };
+
+        setLessonResult(mappedResult);
+        toast({
+            title: "Hợp nhất thành công!",
+            description: "Dữ liệu từ các Module đã được chuyển vào Giáo án chính. Bạn có thể Xuất Word ngay bây giờ.",
+        });
+    };
+
+    const handleExportWithCheck = async () => {
+        if (!lessonResult && manualModules.some(m => m.isCompleted)) {
+            handleFinalizeManualWorkflow();
+            // Wait for state
+            setTimeout(() => handleExportDocx(), 150);
+        } else {
+            handleExportDocx();
+        }
+    };
+
+    const handleAuditWithCheck = async () => {
+        if (!lessonResult && manualModules.some(m => m.isCompleted)) {
+            handleFinalizeManualWorkflow();
+            // Wait for state
+            setTimeout(() => handleAudit(), 150);
+        } else {
+            handleAudit();
+        }
+    };
+
     if (!lessonAutoFilledTheme) {
-        return <div className="text-center p-10 text-slate-500">Vui lòng nhập tên bài học hoặc tải file lên trước.</div>;
+        return (
+            <div className="text-center p-12 bg-white/40 backdrop-blur-xl rounded-[2rem] border-2 border-dashed border-blue-100/50">
+                <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mx-auto mb-4 text-blue-400">
+                    <Sparkles className="w-10 h-10" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-2">Sẵn sàng khởi tạo!</h3>
+                <p className="text-slate-500 max-w-md mx-auto">Vui lòng chọn khối và nhập tên bài học ở cột bên trái, hoặc tải file PDF giáo án cũ để bắt đầu quy trình phẫu thuật.</p>
+            </div>
+        );
     }
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-8 animate-in fade-in duration-700">
             {/* Header Steps */}
-            <div className="bg-blue-50 border border-blue-100 p-6 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4">
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-bold text-blue-800 flex items-center gap-2">
-                        <ClipboardList className="w-6 h-6" />
-                        Trung tâm Điều hành Phẫu thuật
+            <div className="premium-glass soft-pastel-skyblue p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/20 transition-all duration-1000"></div>
+
+                <div className="space-y-2 relative z-10">
+                    <h2 className="text-3xl font-black text-blue-900 flex items-center gap-3 tracking-tight">
+                        <ClipboardList className="w-10 h-10 text-blue-600 drop-shadow-sm" />
+                        TRUNG TÂM PHẪU THUẬT KHBH
                     </h2>
-                    <p className="text-blue-600 mt-1">
-                        Kết hợp Trí tuệ Nhân tạo & Chỉ thị Chuyên gia để tạo giáo án 5512 hoàn hảo.
+                    <p className="text-blue-700/80 font-medium text-lg ml-13">
+                        Kết hợp Trí tuệ Nhân tạo & Chi viện Chuyên gia (CV 5512 - NLS 2025)
                     </p>
 
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex flex-wrap items-center gap-3 mt-6">
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -142,42 +209,47 @@ export function ManualProcessingHub() {
                         />
                         <Button
                             variant="outline"
-                            size="sm"
-                            className="bg-white text-blue-700 border-blue-300 hover:bg-blue-100"
+                            size="lg"
+                            className="h-14 px-8 rounded-2xl bg-white/80 text-blue-800 border-blue-200/50 hover:bg-white hover:scale-[1.02] transition-all shadow-lg hover:shadow-blue-200/50 gap-3 group"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isAnalyzing}
                         >
-                            {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
-                            {isAnalyzing ? (analyzingStatus || "Đang phân tích...") : "Phân tích tài liệu PDF"}
+                            {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin text-blue-500" /> : <Upload className="w-5 h-5 text-blue-500 group-hover:-translate-y-1 transition-transform" />}
+                            <span className="font-bold uppercase tracking-wider text-sm">
+                                {isAnalyzing ? (analyzingStatus || "Đang phân tích...") : "Phân tích tài liệu PDF"}
+                            </span>
                         </Button>
                         {expertGuidance && (
-                            <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
-                                <FileText className="w-3 h-3 mr-1" /> Đã có tài liệu
+                            <Badge className="h-14 px-6 rounded-2xl bg-emerald-500/10 text-emerald-700 border-emerald-200/50 backdrop-blur-md flex items-center gap-3 animate-in zoom-in-95 duration-500">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                <FileText className="w-5 h-5 opacity-70" />
+                                <span className="font-bold text-sm uppercase tracking-widest">Tài liệu Sẵn sàng</span>
                             </Badge>
                         )}
                     </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-4 relative z-10">
                     <Button
                         size="lg"
                         variant="outline"
-                        onClick={handleAudit}
-                        disabled={!lessonResult}
-                        className="border-amber-200 text-amber-700 hover:bg-amber-50 shadow-sm"
+                        onClick={handleAuditWithCheck}
+                        disabled={!lessonResult && !manualModules.some(m => m.isCompleted)}
+                        className="h-16 px-8 rounded-2xl border-2 border-amber-200/50 text-amber-800 bg-amber-50/30 hover:bg-amber-100 hover:scale-[1.02] transition-all shadow-xl shadow-amber-200/20 group"
                     >
-                        <Search className="w-5 h-5 mr-2" />
-                        Kiểm định 5512
+                        <Search className="w-6 h-6 mr-3 text-amber-600 group-hover:rotate-12 transition-transform" />
+                        <span className="font-black uppercase tracking-wider">Kiểm định 5512</span>
                     </Button>
 
                     <Button
                         size="lg"
-                        onClick={handleExportDocx}
-                        disabled={isExporting || !lessonResult}
-                        className="bg-green-600 hover:bg-green-700 shadow-lg text-white"
+                        onClick={handleExportWithCheck}
+                        disabled={isExporting || (!lessonResult && !manualModules.some(m => m.isCompleted))}
+                        className="h-16 px-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-2xl shadow-emerald-200 hover:scale-[1.02] transition-all text-white group relative overflow-hidden"
                     >
-                        {isExporting ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <FileDown className="w-5 h-5 mr-2" />}
-                        Xuất Word (Tối ưu)
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+                        {isExporting ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <FileDown className="w-6 h-6 mr-3 group-hover:translate-y-1 transition-transform" />}
+                        <span className="font-black uppercase tracking-wider relative z-10">Xuất Word (Tối ưu)</span>
                     </Button>
                 </div>
             </div>
@@ -224,10 +296,19 @@ export function ManualProcessingHub() {
                                                 Prompt
                                             </Button>
                                         </CardHeader>
-                                        <CardContent>
+                                        <CardContent className="space-y-4">
+                                            {structuredContent && (
+                                                <ActivityContentBuilder
+                                                    structuredContent={structuredContent}
+                                                    activityType={module.type as any}
+                                                    onContentGenerated={(content) => {
+                                                        setOptimizedMap(prev => ({ ...prev, [module.id]: content }));
+                                                    }}
+                                                />
+                                            )}
                                             <Textarea
                                                 placeholder={`Dán kết quả AI cho phần ${module.title}...`}
-                                                className="min-h-[120px] text-xs font-mono"
+                                                className="min-h-[120px] text-xs font-mono bg-white/50 border-slate-200"
                                                 value={module.content}
                                                 onChange={(e) => updateModuleContent(module.id, e.target.value)}
                                             />

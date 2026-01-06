@@ -6,6 +6,7 @@
 import { callAIWithRetry } from './simple-ai-caller';
 import { AnalyzedPDFContent } from './enhanced-pdf-extractor';
 import { LessonContext } from './database-integration-service';
+import { SmartPromptService } from './services/smart-prompt-service';
 
 export interface StructuredLessonPlan {
   // Basic info
@@ -89,9 +90,9 @@ export class AdvancedAIProcessor {
         processing_steps: processingSteps
       } as StructuredLessonPlan;
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('[AdvancedAI] Processing failed:', error);
-      throw new Error(`AI processing failed: ${error.message}`);
+      throw new Error(`AI processing failed: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -146,8 +147,8 @@ Return a JSON object with:
         confidence: result.confidence || 0.8,
         duration: Date.now() - startTime
       };
-    } catch (error) {
-      throw new Error(`Step 1 failed: ${error.message}`);
+    } catch (error: any) {
+      throw new Error(`Step 1 failed: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -209,8 +210,8 @@ Return a JSON object with:
         confidence: result.confidence || 0.8,
         duration: Date.now() - startTime
       };
-    } catch (error) {
-      throw new Error(`Step 2 failed: ${error.message}`);
+    } catch (error: any) {
+      throw new Error(`Step 2 failed: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -267,8 +268,8 @@ Return a JSON object with:
         confidence: result.confidence || 0.8,
         duration: Date.now() - startTime
       };
-    } catch (error) {
-      throw new Error(`Step 3 failed: ${error.message}`);
+    } catch (error: any) {
+      throw new Error(`Step 3 failed: ${error.message || 'Unknown error'}`);
     }
   }
 
@@ -285,7 +286,7 @@ Return a JSON object with:
     const startTime = Date.now();
 
     // Build enhanced prompt with database integration
-    const enhancedPrompt = context.smartPrompts.buildFinalSmartPrompt(
+    const enhancedPrompt = SmartPromptService.buildFinalSmartPrompt(
       context.smartPrompts,
       oldLessonContent
     );
@@ -321,8 +322,8 @@ Ensure all activities use {{cot_1}} and {{cot_2}} markers properly.
         confidence: result.confidence || 0.9,
         duration: Date.now() - startTime
       };
-    } catch (error) {
-      throw new Error(`Step 4 failed: ${error.message}`);
+    } catch (error: any) {
+      throw new Error(`Step 4 failed: ${error.message || 'Unknown error'}`);
     }
   }
 

@@ -1115,6 +1115,23 @@ export const ExportService = {
     try {
       if (!fullContent) return [new Paragraph({ text: "...", indent: { left: 360 } })];
 
+      // ENHANCED: Direct JSON Detection for Architecture B (Manual Workflow)
+      const trimmedContent = fullContent.trim();
+      if (trimmedContent.startsWith('{') && trimmedContent.endsWith('}')) {
+        try {
+          const { gv, hs } = this.parseTwoColumnContent(trimmedContent);
+          return [
+            new Paragraph({
+              spacing: { before: 240, after: 120 },
+              children: [new TextRun({ text: title, bold: true, size: 26, color: "2E59A7", underline: {} })]
+            }),
+            this.createTwoColumnTable(gv, hs)
+          ];
+        } catch (e) {
+          console.warn("[ExportService] Content looked like JSON but failed to parse for 2-column. Falling back to regular splitting.");
+        }
+      }
+
       const results: any[] = [
         new Paragraph({
           spacing: { before: 240, after: 120 },
