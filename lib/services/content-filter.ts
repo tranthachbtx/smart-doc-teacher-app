@@ -12,34 +12,32 @@ export class ContentFilter {
     filterContentForActivity(
         structuredContent: StructuredContent,
         activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung',
-        maxContentLength: number = 4000
+        maxContentLength: number = 3000
     ): FilteredContent {
-        // 1. Primary filter by relevance score (Smart thresholding)
+        // 1. Lọc theo độ liên quan (> 40 để giữ lại các phần có ích)
         const relevantSections = structuredContent.sections
-            .filter(section => (section.relevance[activityType] || 0) >= 45)
+            .filter(section => (section.relevance[activityType] || 0) >= 40)
             .sort((a, b) => (b.relevance[activityType] || 0) - (a.relevance[activityType] || 0));
 
-        // 2. Secondary filter by content type priority (Activity-aware)
-        const prioritizedSections = this.prioritizeByActivity(relevantSections, activityType);
+        // 2. Ưu tiên theo loại hoạt động
+        const prioritizedSections = this.prioritizeSections(relevantSections, activityType);
 
-        // 3. Tertiary filter: Dynamic integration within length limits
+        // 3. Trích xuất nội dung trong giới hạn độ dài
         let currentLength = 0;
         const selectedSections: ContentSection[] = [];
 
         for (const section of prioritizedSections) {
-            // Priority allocation: Keep at least one objective and one activity if available
-            const contentLen = section.content.length;
-            if (currentLength + contentLen > maxContentLength && selectedSections.length > 2) {
+            if (currentLength + section.content.length > maxContentLength && selectedSections.length > 0) {
+                // Nếu vượt quá giới hạn, chỉ thêm đoạn tóm tắt hoặc bỏ qua
                 continue;
             }
             selectedSections.push(section);
-            currentLength += contentLen;
+            currentLength += section.content.length;
         }
 
-        // 4. Generate structured prompt content
-        const promptContent = this.generateTargetedPromptContent(selectedSections, activityType);
+        // 4. Tạo nội dung cho prompt
+        const promptContent = this.generatePromptContent(selectedSections, activityType);
 
-        // 5. Calculate weighted relevance
         const totalRelevance = selectedSections.length > 0
             ? selectedSections.reduce((sum, s) => sum + s.relevance[activityType], 0) / selectedSections.length
             : 0;
@@ -48,10 +46,11 @@ export class ContentFilter {
             sections: selectedSections,
             promptContent,
             totalRelevance,
-            coverage: Math.round((selectedSections.length / (structuredContent.sections.length || 1)) * 100)
+            coverage: (selectedSections.length / (structuredContent.sections.length || 1)) * 100
         };
     }
 
+<<<<<<< HEAD
     private prioritizeByActivity(
         sections: ContentSection[],
         activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'
@@ -95,6 +94,8 @@ export class ContentFilter {
         return content;
     }
 
+=======
+>>>>>>> parent of 1427bc2 (V10)
     private prioritizeSections(
         sections: ContentSection[],
         activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'

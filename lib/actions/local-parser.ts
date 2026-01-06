@@ -26,9 +26,17 @@ export async function parseFileLocally(
         if (file.mimeType === 'application/pdf') {
             try {
                 const pdfModule = await import('pdf-parse');
-                // @ts-ignore - Handle CommonJS/ESM interop
-                const pdf = pdfModule.default || pdfModule;
-                const data = await pdf(buffer);
+                // Handle different module formats (CommonJS vs ESM)
+                let pdfFunc: any = pdfModule.default || pdfModule;
+                if (typeof pdfFunc !== 'function' && pdfFunc.default) {
+                    pdfFunc = pdfFunc.default;
+                }
+
+                if (typeof pdfFunc !== 'function') {
+                    throw new Error(`pdf-parse is not a function. Check exports: ${Object.keys(pdfModule).join(', ')}`);
+                }
+
+                const data = await pdfFunc(buffer);
                 return {
                     success: true,
                     content: data.text,

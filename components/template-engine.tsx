@@ -1,8 +1,6 @@
 "use client";
 
-import type React from "react";
-
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -96,11 +94,13 @@ import {
   timChuDeTheoTen,
 } from "@/lib/data/kntt-curriculum-database";
 import { MeetingTab } from "@/components/template-engine/MeetingTab";
-import { LessonTab } from "@/components/template-engine/LessonTab";
 import { EventTab } from "@/components/template-engine/EventTab";
 import { AssessmentTab } from "@/components/template-engine/AssessmentTab";
 import { NCBHTab } from "@/components/template-engine/NCBHTab";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import SimpleLessonProcessor from "@/components/SimpleLessonProcessor";
+import SmartLessonProcessor from "@/components/SmartLessonProcessor";
+import EnhancedSmartLessonProcessor from "@/components/EnhancedSmartLessonProcessor";
 
 // Types imported from @/lib/types
 
@@ -1638,62 +1638,10 @@ const TemplateEngine = () => {
             />
           </TabsContent>
 
-          {/* Lesson Tab */}
+          {/* Lesson Tab - Enhanced Version with Full 4-Step Workflow */}
           <TabsContent value="lesson" className="space-y-4">
             <ErrorBoundary>
-              <LessonTab
-                lessonGrade={lessonGrade}
-                setLessonGrade={setLessonGrade}
-                selectedChuDeSo={selectedChuDeSo}
-                setSelectedChuDeSo={setSelectedChuDeSo}
-                lessonAutoFilledTheme={lessonAutoFilledTheme}
-                setLessonAutoFilledTheme={setLessonAutoFilledTheme}
-                lessonDuration={lessonDuration}
-                setLessonDuration={setLessonDuration}
-                selectedChuDe={selectedChuDe}
-                setSelectedChuDe={setSelectedChuDe}
-                setLessonMonth={setLessonMonth}
-                lessonFullPlanMode={lessonFullPlanMode}
-                setLessonFullPlanMode={setLessonFullPlanMode}
-                shdcSuggestion={shdcSuggestion}
-                setShdcSuggestion={setShdcSuggestion}
-                hdgdSuggestion={hdgdSuggestion}
-                setHdgdSuggestion={setHdgdSuggestion}
-                shlSuggestion={shlSuggestion}
-                setShlSuggestion={setShlSuggestion}
-                curriculumTasks={curriculumTasks}
-                distributeTimeForTasks={distributeTimeForTasks}
-                showCurriculumTasks={showCurriculumTasks}
-                setShowCurriculumTasks={setShowCurriculumTasks}
-                lessonTasks={lessonTasks}
-                updateLessonTask={updateLessonTask}
-                removeLessonTask={removeLessonTask}
-                addLessonTask={addLessonTask}
-                lessonCustomInstructions={lessonCustomInstructions}
-                setLessonCustomInstructions={setLessonCustomInstructions}
-                lessonResult={lessonResult}
-                setLessonResult={setLessonResult}
-                isGenerating={isGenerating}
-                onGenerate={handleGenerateLesson}
-                isExporting={isExporting}
-                onExport={() => handleExport("lesson")}
-                copyToClipboard={copyToClipboard}
-                isAuditing={isAuditing}
-                onAudit={handleAudit}
-                auditResult={auditResult}
-                auditScore={auditScore}
-                setSuccess={setSuccess}
-                setError={setError}
-                success={success}
-                error={error}
-                lessonTopic={lessonTopic}
-                selectedModel={selectedModel}
-                setSelectedModel={setSelectedModel}
-                lessonFile={lessonFile}
-                setLessonFile={setLessonFile}
-                onRefineSection={(content: string, instruction: string) => refineSection(content, instruction, selectedModel)}
-                onGenerateSection={handleGenerateLessonSection}
-              />
+              <EnhancedSmartLessonProcessor />
             </ErrorBoundary>
           </TabsContent>
           <TabsContent value="event">

@@ -1,8 +1,7 @@
+
 import { ProcessingModule } from "@/lib/store/use-lesson-store";
 import { SmartPromptData } from "./smart-prompt-service";
 import { LessonPlanAnalyzer } from "./lesson-plan-analyzer";
-import { IntelligentExtractionResult } from "./intelligent-context-engine";
-import { AggregatedContent } from "./unified-content-aggregator";
 
 export interface PromptContext {
     topic: string;
@@ -10,10 +9,7 @@ export interface PromptContext {
     fileSummary: string;
     optimizedFileSummary?: string;
     previousContext?: string;
-    previousSummary?: string; // Tóm tắt tinh gọn từ các bước trước
     smartData?: SmartPromptData;
-    intelligentData?: IntelligentExtractionResult;
-    aggregatedData?: AggregatedContent;
 }
 
 export const ManualWorkflowService = {
@@ -47,25 +43,6 @@ export const ManualWorkflowService = {
     },
 
     /**
-     * Helper to extract summary_for_next_step from AI JSON output
-     */
-    extractSummaryFromContent(content: string): string {
-        try {
-            if (!content || !content.includes('{')) return "";
-
-            // Tìm JSON trong text (phòng trường hợp AI trả kèm text giải thích)
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                const data = JSON.parse(jsonMatch[0]);
-                return data.summary_for_next_step || "";
-            }
-        } catch (e) {
-            console.warn("Failed to extract summary from content:", e);
-        }
-        return "";
-    },
-
-    /**
      * Tạo Prompt "xịn" cho từng module để user copy sang Gemini Pro Web/ChatGPT
      */
     generatePromptForModule(module: ProcessingModule, context: PromptContext): string {
@@ -75,56 +52,42 @@ export const ManualWorkflowService = {
             ? `## 🎯 DỮ LIỆU ĐÃ TỐI ƯU CHO ${module.title.toUpperCase()}\n${context.optimizedFileSummary}`
             : `## 📚 TÀI LIỆU GỐC (TRÍCH DẪN)\n${baseContent.substring(0, 3000)}...`;
 
-        const contextInjection = context.previousContext || context.previousSummary
-            ? `
-## 🔗 LIÊN KẾT NGỮ CẢNH (Contextual Chaining):
-Giáo án này đang được xây dựng theo từng bước. Đây là những gì đã được thiết kế ở các hoạt động trước:
-${context.previousSummary ? `- **Tóm tắt hoạt động trước**: ${context.previousSummary}` : ""}
-${context.previousContext ? `- **Bối cảnh bổ sung**: ${context.previousContext}` : ""}
-=> NHIỆM VỤ: Hãy đảm bảo hoạt động tiếp theo này PHẢI TIẾP NỐI LOGIC, tông giọng và kiến thức từ bối cảnh trên.
-`
+        const contextInjection = context.previousContext
+            ? `\n[CONTEXT_UPDATE]: Hoạt động trước đó đã hoàn thành. Hãy tiếp nối mạch bài học này để tạo sự logic.\nBối cảnh cũ: ${context.previousContext}\n`
             : "";
 
         let smartDataSection = "";
-
-        // 1. ARCHITECTURE 4.0: Ưu tiên Aggregated Data (Cho KHBH 30-50 trang)
-        if (context.aggregatedData) {
-            const ag = context.aggregatedData;
-            smartDataSection = `
-## 🧠 TỔNG HỢP DỮ LIỆU ĐA TẦNG (Unified PDF + Database Insights):
-- **Phân tích PDF Trình cao**: ${ag.pdfContent.map(s => `[${s.title}] (${s.type})`).join(", ")}
-- **Chỉ dẫn tâm lý/sư phạm**: ${ag.databaseInsights.studentCharacteristics}
-- **Nghiệp vụ chuyên môn**: ${ag.databaseInsights.pedagogicalNotes}
-
-${ag.scalingInstructions}
-----------------------------------
-`;
-        }
-        // 2. Tầng 2: Ưu tiên dữ liệu trích xuất thông minh (Intelligent Extraction)
-        else if (context.intelligentData) {
-            smartDataSection = `
-## 🧠 DỮ LIỆU ĐÀO SÂU CHUYÊN MÔN (Intelligent Database Extraction):
-${context.intelligentData.formattedPrompt}
-----------------------------------
-`;
-        }
-        // 3. Fallback về dữ liệu SmartData cũ
-        else if (context.smartData) {
+        if (context.smartData) {
             const sd = context.smartData;
+            // ... (Smart Data Filtering Logic remains same)
+
             // SMART FILTERING ENGINE: Chỉ đưa dữ liệu CẦN THIẾT cho từng loại hoạt động
             let specificAdvice = "";
+
             if (module.type === 'khoi_dong') {
-                specificAdvice = `- **Tâm lý lứa tuổi**: ${sd.studentCharacteristics}\n- **Chiến lược**: Hãy dùng đặc điểm tâm lý trên để thiết kế một trò chơi/tình huống mở đầu cực cuốn hút.`;
+                specificAdvice = `
+- **Tâm lý lứa tuổi**: ${sd.studentCharacteristics}
+- **Chiến lược**: Hãy dùng đặc điểm tâm lý trên để thiết kế một trò chơi/tình huống mở đầu cực cuốn hút.`;
             } else if (module.type === 'kham_pha') {
-                specificAdvice = `- **Nhiệm vụ TRỌNG TÂM (SGK)**: \n${sd.coreTasks}\n- **Công cụ số (NLS)**: \n${sd.digitalCompetency}\n- **Chiến lược**: Hãy chuyển hóa các nhiệm vụ trọng tâm trên thành chuỗi hoạt động khám phá cụ thể.`;
+                specificAdvice = `
+- **Nhiệm vụ TRỌNG TÂM (SGK)**: 
+${sd.coreTasks}
+- **Công cụ số (NLS)**: 
+${sd.digitalCompetency}
+- **Chiến lược**: Hãy chuyển hóa các nhiệm vụ trọng tâm trên thành chuỗi hoạt động khám phá cụ thể. KHÔNG sáng tạo xa rời nhiệm vụ này.`;
             } else if (module.type === 'luyen_tap') {
-                specificAdvice = `- **Mục tiêu cần đạt**: ${sd.objectives}\n- **Công cụ đánh giá**: ${sd.assessmentTools}\n- **Chiến lược**: Thiết kế hệ thống bài tập để củng cố các mục tiêu trên.`;
+                specificAdvice = `
+- **Mục tiêu cần đạt**: ${sd.objectives}
+- **Công cụ đánh giá**: ${sd.assessmentTools}
+- **Chiến lược**: Thiết kế hệ thống bài tập để củng cố các mục tiêu trên.`;
             } else if (module.type === 'van_dung') {
-                specificAdvice = `- **Lưu ý thực tiễn**: ${sd.pedagogicalNotes}\n- **Chiến lược**: Đưa ra bài toán thực tế/Dự án nhỏ kết nối với lưu ý trên.`;
+                specificAdvice = `
+- **Lưu ý thực tiễn**: ${sd.pedagogicalNotes}
+- **Chiến lược**: Đưa ra bài toán thực tế/Dự án nhỏ kết nối với lưu ý trên.`;
             }
 
             smartDataSection = `
-## 💡 CHỈ DẪN THÔNG MINH TỪ DATABASE:
+## 💡 CHỈ DẪN THÔNG MINH TỪ DATABASE (Cụ thể cho hoạt động này):
 ${specificAdvice}
 ----------------------------------
 `;

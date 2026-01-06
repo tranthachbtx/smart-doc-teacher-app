@@ -21,9 +21,9 @@ export class LessonPlanAnalyzer {
             return { topic: "", objectives: "", preparations: "", activities: [], rawText: "" };
         }
 
-        // 1. Tìm Topic/Chủ đề - Mở rộng pattern
+        // 1. Tìm Topic/Chủ đề
         let topic = "";
-        const topicMatch = text.match(/(?:CHỦ ĐỀ|BÀI|BÀI DẠY|TÊN BÀI|TÊN CHỦ ĐỀ)\s*\d*:?\s*(.*)/i);
+        const topicMatch = text.match(/(?:CHỦ ĐỀ|BÀI|BÀI DẠY|TÊN BÀI)\s*\d*:?\s*(.*)/i);
         if (topicMatch) {
             topic = topicMatch[1].trim();
         }
@@ -31,36 +31,24 @@ export class LessonPlanAnalyzer {
         // 2. Phân tách các phần lớn dựa trên số La Mã hoặc tiêu đề chuẩn
         const sections = this.splitIntoSections(text);
 
-        // Advanced Patterns for Objectives (MoET 5512)
-        const objectiveRegex = /MỤC TIÊU|YÊU CẦU CẦN ĐẠT|I\.\s*MỤC TIÊU/i;
-        const objectivesSection = sections.find(s => objectiveRegex.test(s.title));
-        let objectives = objectivesSection?.content || "";
+        const objectives = sections.find(s =>
+            /MỤC TIÊU|YÊU CẦU CẦN ĐẠT/i.test(s.title)
+        )?.content || "";
 
-        // Nếu không tìm thấy bằng split, thử dùng regex trực tiếp trên text
-        if (!objectives) {
-            const directMatch = text.match(/MỤC TIÊU\s*[\s\S]*?(?=II\.|CHUẨN BỊ|THIẾT BỊ)/i);
-            if (directMatch) objectives = directMatch[0];
-        }
+        const preparations = sections.find(s =>
+            /THIẾT BỊ DẠY HỌC|CHUẨN BỊ/i.test(s.title)
+        )?.content || "";
 
-        // Advanced Patterns for Preparations
-        const preparationRegex = /THIẾT BỊ DẠY HỌC|CHUẨN BỊ|II\.\s*THIẾT BỊ/i;
-        const preparationsSection = sections.find(s => preparationRegex.test(s.title));
-        let preparations = preparationsSection?.content || "";
-
-        if (!preparations) {
-            const directMatch = text.match(/THIẾT BỊ DẠY HỌC\s*[\s\S]*?(?=III\.|HOẠT ĐỘNG|TIẾN TRÌNH)/i);
-            if (directMatch) preparations = directMatch[0];
-        }
-
-        // 3. Tìm các Hoạt động (MoET 5512)
-        const activityRegex = /HOẠT ĐỘNG DẠY HỌC|TIẾN TRÌNH|III\.\s*CÁC HOẠT ĐỘNG|IV\.\s*CÁC HOẠT ĐỘNG/i;
-        const activitySection = sections.find(s => activityRegex.test(s.title));
+        // 3. Tìm các Hoạt động
+        const activitySection = sections.find(s =>
+            /HOẠT ĐỘNG DẠY HỌC|TIẾN TRÌNH/i.test(s.title)
+        );
 
         let activities: AnalyzedSection[] = [];
         if (activitySection) {
             activities = this.splitActivities(activitySection.content);
         } else {
-            // Fallback: Tìm hoạt động trong toàn văn bản
+            // Fallback: Tìm hoạt động trong toàn văn bản nếu không thấy mục III
             activities = this.splitActivities(text);
         }
 
@@ -103,55 +91,26 @@ export class LessonPlanAnalyzer {
     }
 
     private static splitActivities(text: string): AnalyzedSection[] {
-        // 1. Tiền xử lý: Loại bỏ rác PDF chuyên sâu
-        const cleanedText = text
-            .replace(/--- Page \d+ ---/gi, '')
-            .replace(/^Page \d+$/gm, '')
-            .replace(/^\d+$/gm, '')
-            .replace(/^(Phòng|Sở) GD&ĐT.*$/gm, '') // Lọc header hành chính
-            .replace(/^Trường:.*$/gm, '')
-            .replace(/^Họ và tên giáo viên:.*$/gm, '');
-
-        // 2. Tìm các hoạt động theo chuẩn 5512 hoặc ký tự đầu mục
-        // Nhận diện: Hoạt động X, HĐ X, A. B. C. D. (đầu dòng)
-        const splitRegex = /(?=Hoạt động\s+\d+\.?)|(?=HĐ\s*\d+\.?)|(?=^[A-D]\.\s+[A-ZĐƯĂÂÊÔƠ])/gm;
-        let activityParts = cleanedText.split(splitRegex).filter(p => p.trim().length > 30);
+        // Tìm các hoạt động theo định dạng: Hoạt động 1, Hoạt động 2... hoặc A. B. C. D.
+        // Ưu tiên Hoạt động X vì nó phổ biến trong 5512
+        let activityParts = text.split(/Hoạt động\s+\d+\.?/i).filter(p => p.trim().length > 10);
 
         if (activityParts.length <= 1) {
-            // Thử tách theo các tiểu mục 1. 2. 3. 4. nếu không thấy chữ Hoạt động
-            activityParts = cleanedText.split(/^(?=[1-4]\.\s+[A-ZĐƯĂÂÊÔƠ])/gm).filter(p => p.trim().length > 30);
+            // Thử tách theo A. B. C. D.
+            activityParts = text.split(/^[A-D]\.\s+/gm).filter(p => p.trim().length > 10);
         }
 
-        const cleanedResult = activityParts.map((part, index) => {
-            const lines = part.trim().split('\n').filter(l => l.trim().length > 0);
-            if (lines.length === 0) return null;
-
+        return activityParts.map((part, index) => {
+            const lines = part.split('\n');
+            // Cố gắng tìm tiêu đề hoạt động ở 1-2 dòng đầu
             let title = lines[0].trim();
-            // Nếu tiêu đề quá ngắn, thử gộp với dòng tiếp theo
-            if (title.length < 15 && lines.length > 1) {
-                title = (title + " - " + lines[1].trim()).trim();
-            }
-
-            // Dọn dẹp metadata rác trong tiêu đề
-            title = title.replace(/^[,.\s\)]+/, '')
-                .replace(/^(Hoạt động|HĐ)\s*\d+\.?\s*/i, '')
-                .trim();
-
-            const finalTitle = title || `Hoạt động ${index + 1}`;
+            if (title.length < 5 && lines.length > 1) title += " " + lines[1].trim();
 
             return {
-                title: finalTitle.substring(0, 100), // Không để tiêu đề quá dài
+                title: title || `Hoạt động ${index + 1}`,
                 content: part.trim()
             };
-        }).filter(item => {
-            if (!item) return false;
-            // Loại bỏ các mục quá ngắn hoặc chỉ toàn ký tự lạ
-            const isContentTooShort = item.content.length < 60;
-            const isJustNumbers = /^\d+$/.test(item.title);
-            return !isContentTooShort && !isJustNumbers;
-        }) as AnalyzedSection[];
-
-        return cleanedResult;
+        });
     }
 
     /**

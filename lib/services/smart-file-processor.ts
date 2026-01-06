@@ -26,21 +26,22 @@ export class SmartFileProcessor {
             throw new Error(`File too large (Max ${this.MAX_FILE_SIZE / 1024 / 1024}MB).`);
         }
 
-        const { HybridCacheManager } = await import('@/lib/services/hybrid-cache-manager');
-        const cacheManager = HybridCacheManager.getInstance();
+        const { SmartCacheV2 } = await import('@/lib/services/smart-cache-v2');
+        const cacheEngine = SmartCacheV2.getInstance();
 
-        if (onProgress) onProgress("Checking Hybrid Storage (L1/L2/L3)...");
+        if (onProgress) onProgress("Checking compressed cache...");
 
-        // 2. Hash & Cache (Arch 7.0 Unified)
+        // 2. Hash & Cache
         const { CachedProcessingEngine } = await import('@/lib/services/cached-processing-engine');
-        const hashEngine = CachedProcessingEngine.getInstance();
-        const hash = await hashEngine.generateFileHash(file);
+        const legacyHashEngine = CachedProcessingEngine.getInstance();
+        const hash = await legacyHashEngine.generateFileHash(file);
 
-        const cachedContent = await cacheManager.get<string>(hash);
+        const cachedContent = await cacheEngine.get(hash);
 
         if (cachedContent) {
-            console.log('[SmartFileProcessor] Hybrid Cache HIT for', file.name);
-            if (onProgress) onProgress("⚡ Instant-On: Found in Hybrid Cache!");
+            console.log('[SmartFileProcessor] Smart Cache V2 hit for', file.name);
+            if (onProgress) onProgress("⚡ Found in Smart Cache!");
+            await new Promise(r => setTimeout(r, 500));
             return { content: cachedContent, source: 'cache' };
         }
 
@@ -65,11 +66,11 @@ export class SmartFileProcessor {
         // Let's ensure if it's raw text, we ask Gemini to summarize it briefly IF it's massive.
         // For now, return as is, or optionally summarize.
 
-        // 4. Save to Hybrid Cache
+        // 4. Save to Smart Cache
         // Validate content before caching
         if (extractionResult.content && extractionResult.content.length > 50) {
             // Save async to not block UI
-            cacheManager.set(hash, extractionResult.content).catch(e => console.warn('Hybrid Cache set failed', e));
+            cacheEngine.set(hash, extractionResult.content).catch(e => console.warn('Cache set failed', e));
         } else {
             console.warn('[SmartFileProcessor] Content too short/empty. NOT caching.');
         }

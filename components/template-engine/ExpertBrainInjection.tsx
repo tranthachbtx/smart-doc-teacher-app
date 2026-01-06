@@ -79,14 +79,14 @@ export function ExpertBrainInjection({
                     <Button
                         onClick={onApply}
                         disabled={!hasStructuredContent || isProcessing}
-                        className="w-full h-14 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white font-black shadow-xl shadow-amber-200 gap-3 group overflow-hidden relative"
+                        className="w-full h-14 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white font-black shadow-xl shadow-rose-200 gap-3 group overflow-hidden relative"
                     >
                         <Zap className={`h-5 w-5 ${isProcessing ? 'animate-bounce' : 'group-hover:scale-125 transition-transform'}`} />
-                        <span>{isProcessing ? "ĐANG PHÂN TÍCH..." : "PHÂN TÍCH TỰ ĐỘNG"}</span>
+                        <span>{isProcessing ? "ĐANG PHẪU THUẬT..." : "PHẪU THUẬT & TRỘN NỘI DUNG"}</span>
                         <ArrowRight className="h-4 w-4 ml-auto opacity-50 group-hover:translate-x-1 transition-transform" />
 
                         {isProcessing && (
-                            <div className="absolute inset-x-0 bottom-0 h-1 bg-amber-400 animate-pulse"></div>
+                            <div className="absolute inset-x-0 bottom-0 h-1 bg-white/30 animate-pulse"></div>
                         )}
                     </Button>
                 </div>

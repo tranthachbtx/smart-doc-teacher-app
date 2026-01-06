@@ -1,12 +1,16 @@
-
 import * as pdfjsLib from 'pdfjs-dist';
 
+// Polyfill DOMMatrix for environments that might lack it (older browsers)
+if (typeof window !== 'undefined' && typeof (window as any).DOMMatrix === 'undefined') {
+    console.warn('[ClientPDF] DOMMatrix not found, applying polyfill...');
+    (window as any).DOMMatrix = (window as any).WebKitCSSMatrix || (window as any).MSCSSMatrix || class DOMMatrix {
+        constructor(arg: any) {
+            console.warn('[ClientPDF] Using dummy DOMMatrix polyfill. Layout might be inaccurate.');
+        }
+    };
+}
+
 // Configure Web Worker
-// Note: We need to point to the worker file in public folder or CDN
-// For Next.js, it's often easier to use the CDN for the worker to avoid build complexity
-// Use unpkg for wider compatibility or specify exact .mjs extension for PDF.js v4+
-// pdfjsLib.version might be undefined in some bundlers, safer to hardcode or use a robust pattern.
-// We will try to use the mjs version which is standard for newer PDF.js
 // Use unpkg with specific version 5.4.530 and .mjs extension
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.4.530/build/pdf.worker.min.mjs`;
 

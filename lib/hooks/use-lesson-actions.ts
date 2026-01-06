@@ -3,6 +3,7 @@ import { useLessonStore } from '../store/use-lesson-store';
 import { ExportService } from '../services/export-service';
 import { ExportOptimizer } from '../services/export-optimizer';
 import { auditLessonPlan } from '../actions/gemini';
+import { surgicalMerge } from '../services/KHBHMerger';
 
 export const useLessonActions = () => {
     const store = useLessonStore();
@@ -133,9 +134,35 @@ export const useLessonActions = () => {
         }
     }, [store.lessonResult, store.lessonGrade, store.lessonAutoFilledTheme, store.setLoading, store.setStatus]);
 
+    const handleSurgicalMerge = useCallback(async () => {
+        if (!store.expertGuidance || !store.lessonResult) {
+            store.setStatus('error', "Thiếu dữ liệu: Cần cả Giáo án gốc và Chỉ thị chuyên gia");
+            return;
+        }
+
+        store.setLoading('isGenerating', true);
+        store.setStatus('success', "🧬 Đang thực hiện phẫu thuật & trộn nội dung...");
+
+        try {
+            const result = await surgicalMerge(store.lessonResult, store.expertGuidance);
+
+            if (result.success) {
+                store.setLessonResult(result.content);
+                store.setStatus('success', `✅ ${result.auditTrail}`);
+            } else {
+                throw new Error(result.auditTrail);
+            }
+        } catch (error: any) {
+            store.setStatus('error', `Lỗi phẫu thuật: ${error.message}`);
+        } finally {
+            store.setLoading('isGenerating', false);
+        }
+    }, [store.expertGuidance, store.lessonResult, store.setLessonResult, store.setLoading, store.setStatus]);
+
     return {
         handleGenerateFullPlan,
         handleExportDocx,
         handleAudit,
+        handleSurgicalMerge,
     };
 };
