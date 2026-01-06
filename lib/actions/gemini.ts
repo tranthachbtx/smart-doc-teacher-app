@@ -43,9 +43,10 @@ import type { ActivitySuggestions } from "@/lib/prompts/khdh-prompts";
 
 // --- 1. RESILIENCE & CIRCUIT BREAKER (v6.0 Stable) ---
 const blacklist = new Set<string>();
-let lastSuccess = Date.now();
-const GAP_MIN = 60000;  // 1 phút tối thiểu
-const GAP_MAX = 180000; // 3 phút tối đa
+let lastSuccess = 0;
+let lastAttempt = 0;
+const GAP_MIN = 3000;  // 3 giây tối thiểu (Đã tối ưu để tránh timeout UI)
+const GAP_MAX = 10000; // 10 giây tối đa
 
 // Token Bucket State
 let tokens = 15;
@@ -65,10 +66,10 @@ async function physical_gap() {
 
   // Decorrelated Jitter implementation
   const jitter = Math.floor(Math.random() * (GAP_MAX - GAP_MIN)) + GAP_MIN;
-  const elapsed = Date.now() - lastSuccess;
+  const elapsed = Date.now() - lastAttempt;
   if (elapsed < jitter) {
     const wait = jitter - elapsed;
-    console.log(`[Antigravity] Jittered Gap: Waiting ${Math.round(wait / 1000)}s...`);
+    console.log(`[Antigravity] Safety Gap (Slow Mode): Waiting ${Math.round(wait / 1000)}s...`);
     await new Promise(r => setTimeout(r, wait));
   }
 }
@@ -120,6 +121,7 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
 
         // 2. Physical Gap & Circuit Breaker Check
         await physical_gap();
+        lastAttempt = Date.now();
 
         console.log(`[AI-TUNNEL] [${new Date().toLocaleTimeString()}] Key: ${key.slice(0, 8)}... | ${modelName} | File: ${!!file}`);
 
@@ -158,6 +160,10 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
           const rawText = await response.text();
+          if (rawText.toLowerCase().includes("hello world")) {
+            console.error("[CircuitBreaker] Proxy Maintenance Detected (Hello World). Cooling down 120s.");
+            circuitOpenUntil = Date.now() + 120000;
+          }
           throw new Error(`NON_JSON_RESPONSE: Proxy returned unexpected content: "${rawText.substring(0, 100)}"`);
         }
 

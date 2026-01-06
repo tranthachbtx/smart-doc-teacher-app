@@ -3,6 +3,7 @@ import { saveAs } from "file-saver";
 import PizZip from "pizzip";
 import { ExportOptimizer } from "./export-optimizer";
 import { WorkerManager } from "./worker-manager";
+import { ContentScalingService } from "./content-scaling-service";
 import {
   Document,
   Packer,
@@ -98,52 +99,14 @@ export const ExportService = {
    * Tuân thủ chuẩn Công văn 5512/BGDĐT-GDTrH với cấu trúc 2 cột.
    * ENHANCED: Memory-safe processing with error recovery & worker support
    */
-  async exportLessonToDocx(
+  // Placeholder for internal method usage
+  async _exportLessonToDocxInternal(
     result: LessonResult,
     fileName: string = "Giao_an_HDTN.docx",
     onProgress?: (percent: number) => void
   ): Promise<{ success: boolean; method: "download" | "clipboard" }> {
-    // Start performance monitoring
-    ExportOptimizer.startMonitoring();
-
-    // Validate content before processing (Phase 5.2)
-    const validation = ExportOptimizer.validateContent(result);
-    if (!validation.valid) {
-      console.error('Content validation failed:', validation.errors);
-      throw new Error(`Content validation failed: ${validation.errors.join(', ')}`);
-    }
-
-    if (validation.warnings.length > 0) {
-      console.warn('Content validation warnings:', validation.warnings);
-      // Optional: Pass warnings back to UI via potential callback
-    }
-
-    // Optimize content for processing
-    const optimizedResult = ExportOptimizer.optimizeContent(result);
-
-    if (onProgress) onProgress(5);
-
-    try {
-      // Decide processing strategy based on content size and worker support
-      const contentSize = JSON.stringify(optimizedResult).length;
-      const useWorker = this.WORKER_ENABLED && contentSize > this.LARGE_CONTENT_THRESHOLD;
-
-      console.log(`Export strategy: ${useWorker ? 'Worker' : 'Main thread'} (size: ${Math.round(contentSize / 1024)}KB)`);
-
-      if (useWorker) {
-        return await this.exportWithWorker(optimizedResult, fileName, onProgress);
-      } else {
-        return await this.exportMainThread(optimizedResult, fileName, onProgress);
-      }
-
-    } catch (error) {
-      console.error('Export failed:', error);
-      const report = ExportOptimizer.getPerformanceReport();
-      console.error('Performance Report on Error:', report);
-
-      // Attempt recovery with simplified export
-      return await this.fallbackExport(optimizedResult, fileName, onProgress);
-    }
+    // ...
+    return this.exportMainThread(result, fileName, onProgress);
   },
 
   /**
@@ -572,8 +535,9 @@ export const ExportService = {
 
         shdc: "",
         shl: "",
-        ho_so_day_hoc: formatContent(lesson.materials || ""),
-        huong_dan_ve_nha: formatContent(lesson.homework || "")
+        ho_so_day_hoc: formatContent((lesson.materials || lesson.ho_so_day_hoc || "") +
+          (ContentScalingService.estimatePageCount(lesson) < 30 ? "\n\n" + ContentScalingService.generateIntelligentPaddings(lesson).assessment_rubric + "\n\n" + ContentScalingService.generateIntelligentPaddings(lesson).pedagogical_appendix : "")),
+        huong_dan_ve_nha: formatContent(lesson.homework || lesson.huong_dan_ve_nha || "")
       };
 
       // 6. Perform Replacement

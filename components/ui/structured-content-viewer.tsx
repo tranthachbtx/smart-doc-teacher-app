@@ -5,7 +5,7 @@ import React, { useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, FileText, Target, Lightbulb, ClipboardCheck, Settings, Search } from "lucide-react";
+import { ChevronDown, FileText, Target, Lightbulb, ClipboardCheck, Settings, Search, ShieldCheck, Sparkles, Wand2 } from "lucide-react";
 import { StructuredContent, ContentSection } from "@/lib/services/content-structure-analyzer";
 
 interface StructuredContentViewerProps {
@@ -117,6 +117,18 @@ export function StructuredContentViewer({
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3 shrink-0">
+                                        {section.metadata.qualityScore !== undefined && (
+                                            <Badge
+                                                variant="outline"
+                                                className={`text-[9px] h-5 px-1 ${section.metadata.qualityScore > 80 ? 'border-green-200 text-green-600 bg-green-50' :
+                                                        section.metadata.qualityScore > 50 ? 'border-blue-200 text-blue-600 bg-blue-50' :
+                                                            'border-amber-200 text-amber-600 bg-amber-50'
+                                                    }`}
+                                            >
+                                                {section.metadata.qualityScore > 80 ? <ShieldCheck className="w-2.5 h-2.5 mr-1" /> : <Sparkles className="w-2.5 h-2.5 mr-1" />}
+                                                Q: {section.metadata.qualityScore}%
+                                            </Badge>
+                                        )}
                                         <span className="text-[10px] font-medium text-slate-400">
                                             {section.metadata.wordCount} chữ
                                         </span>
@@ -130,10 +142,18 @@ export function StructuredContentViewer({
 
                             {isExpanded && (
                                 <CardContent className="px-4 pb-4 animate-in slide-in-from-top-2 duration-300">
-                                    {/* Relevance scores */}
+                                    {/* Relevance scores & Quality Insight */}
                                     <div className="mb-4 p-3 bg-slate-50 border border-slate-100 rounded-xl">
-                                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                                            Độ liên quan gợi ý:
+                                        <div className="flex justify-between items-center mb-2">
+                                            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                                                Độ liên quan gợi ý & Phân tích sư phạm:
+                                            </div>
+                                            {section.metadata.qualityScore && section.metadata.qualityScore > 75 && (
+                                                <div className="flex items-center gap-1 text-[9px] text-green-600 font-bold">
+                                                    <Wand2 className="w-3 h-3" />
+                                                    ĐÃ LÀM SẠCH & TỐI ƯU
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="grid grid-cols-4 gap-4">
                                             {Object.entries(section.relevance).map(([activity, score]) => (

@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useLessonStore, ProcessingModule } from '@/lib/store/use-lesson-store';
 import { ManualWorkflowService } from '@/lib/services/manual-workflow-service';
 import { ExportService } from '@/lib/services/export-service';
@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText, AlertCircle, Search, X } from 'lucide-react';
+import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText, AlertCircle, Search, X, Link, Activity, Zap, Wand2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { extractTextFromFile } from '@/lib/actions/gemini';
 import { SmartPromptService } from '@/lib/services/smart-prompt-service';
@@ -17,6 +17,14 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { ContentStructureAnalyzer, StructuredContent } from '@/lib/services/content-structure-analyzer';
 import { StructuredContentViewer } from '@/components/ui/structured-content-viewer';
 import { ActivityContentBuilder } from '@/components/ui/activity-content-builder';
+import { IntelligentContextEngine, ActivityType } from '@/lib/services/intelligent-context-engine';
+import { UnifiedContentAggregator } from '@/lib/services/unified-content-aggregator';
+import { ContentScalingService } from '@/lib/services/content-scaling-service';
+import { IntelligentContentScaler } from '@/lib/services/intelligent-content-scaler';
+import { PrecisionLengthController } from '@/lib/services/precision-length-controller';
+import { IntelligentPromptOrchestrator } from '@/lib/services/intelligent-prompt-orchestrator';
+import { VirtualScroller } from '@/components/ui/virtual-scroller';
+import { ReactPerformanceManager } from '@/lib/services/react-performance-manager';
 
 export function ManualProcessingHub() {
     const {
@@ -27,6 +35,7 @@ export function ManualProcessingHub() {
         manualModules,
         setManualModules,
         updateModuleContent,
+        isGenerating,
         isExporting,
         setLoading,
         setStatus,
@@ -35,10 +44,30 @@ export function ManualProcessingHub() {
 
     const { toast } = useToast();
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
+    const [expandingModules, setExpandingModules] = React.useState<Record<string, boolean>>({});
     const [analyzingStatus, setAnalyzingStatus] = React.useState<string>("");
     const [structuredContent, setStructuredContent] = React.useState<StructuredContent | null>(null);
     const [optimizedMap, setOptimizedMap] = React.useState<Record<string, string>>({});
+    const [analysisLogs, setAnalysisLogs] = React.useState<{ msg: string, time: string, type: 'info' | 'success' | 'warn' }[]>([]);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const [lastFileHash, setLastFileHash] = React.useState<string>("");
+
+    // Performance Monitoring init
+    React.useEffect(() => {
+        const perf = ReactPerformanceManager.getInstance();
+        perf.registerComponent('ManualProcessingHub');
+    }, []);
+
+    const addLog = useCallback((msg: string, type: 'info' | 'success' | 'warn' = 'info') => {
+        setAnalysisLogs(prev => [{ msg, type, time: new Date().toLocaleTimeString() }, ...prev].slice(0, 10));
+    }, []);
+
+    // Memoize the expensive regex analysis
+    const analyzedLessonPlan = React.useMemo(() => {
+        if (!expertGuidance) return null;
+        return LessonPlanAnalyzer.analyze(expertGuidance);
+    }, [expertGuidance]);
 
     // Init modules if empty
     useEffect(() => {
@@ -48,37 +77,55 @@ export function ManualProcessingHub() {
         }
     }, [lessonAutoFilledTheme, manualModules.length, expertGuidance, setManualModules]);
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // 1. Kiểm tra Hash để tránh xử lý lặp lại cùng một file
+        const { CachedProcessingEngine } = await import('@/lib/services/cached-processing-engine');
+        const hashEngine = CachedProcessingEngine.getInstance();
+        const currentHash = await hashEngine.generateFileHash(file);
+
+        if (currentHash === lastFileHash && expertGuidance) {
+            console.log('[ManualHub] File này vừa được xử lý, bỏ qua để tối ưu.');
+            toast({ title: "Thông báo", description: "Tài liệu này đã được tải lên và xử lý." });
+            return;
+        }
+
+        setLastFileHash(currentHash);
         setIsAnalyzing(true);
         setAnalyzingStatus("Đang khởi tạo...");
-
-        // Reset file input value to allow re-uploading the same file if needed (e.g. after error)
-        // fileInputRef.current!.value = ''; // Optional, but good practice
+        setAnalysisLogs([]);
+        addLog(`Bắt đầu xử lý file: ${file.name}`, 'info');
 
         try {
-            // Lazy import to avoid circular dependencies if any, though here it is fine.
             const { SmartFileProcessor } = await import('@/lib/services/smart-file-processor');
             const processor = SmartFileProcessor.getInstance();
 
             const result = await processor.processFile(file, (status) => {
                 setAnalyzingStatus(status);
+                addLog(status, 'info');
             });
 
             if (result.content && result.content.trim().length > 0) {
-                // 1. Phân tích cấu trúc sâu bằng AI (NEW)
+                addLog(`Đã trích xuất văn bản (${result.content.length} ký tự). Nguồn: ${result.source}`, 'success');
+
+                // 2. Phân tích cấu trúc sâu bằng AI (Singleton Optimized)
                 setAnalyzingStatus("AI đang cấu trúc hóa nội dung...");
-                const analyzer = new ContentStructureAnalyzer();
+                addLog("Đang gửi yêu cầu phân tích cấu trúc đến AI...", 'info');
+
+                const analyzer = ContentStructureAnalyzer.getInstance();
                 const structured = await analyzer.analyzePDFContent(result.content);
                 setStructuredContent(structured);
+                addLog(`Cấu trúc hóa hoàn tất: Tìm thấy ${structured.sections.length} khối nội dung.`, 'success');
 
-                // 2. Chuyển đổi thành text khoa học cho context mặc định
+                // 3. Chuyển đổi thành text khoa học cho context mặc định
+                addLog("Đang định dạng lại dữ liệu sư phạm chuyên sâu...", 'info');
                 const scientificText = LessonPlanAnalyzer.formatForPrompt(LessonPlanAnalyzer.analyze(result.content));
                 setExpertGuidance(scientificText);
 
-                // 3. Khởi tạo các Modules
+                // 4. Khởi tạo các Modules
+                addLog("Đang khởi tạo 4 bước hoạt động (Chuẩn 5512)...", 'info');
                 const modules = ManualWorkflowService.analyzeStructure(scientificText, "2");
                 setManualModules(modules);
 
@@ -93,45 +140,104 @@ export function ManualProcessingHub() {
                             : `Đã cấu trúc hóa ${structured.sections.length} phần nội dung hữu ích.`)
                 });
             } else {
-                console.warn('[ManualHub] Content empty despite success flag.');
-                throw new Error("Không tìm thấy nội dung văn bản trong tài liệu này. Vui lòng kiểm tra lại file.");
+                throw new Error("Không tìm thấy nội dung văn bản trong tài liệu này.");
             }
         } catch (error: any) {
             console.error('[ManualHub] Error:', error);
+            addLog(`LỖI: ${error.message}`, 'warn');
             toast({ title: "Lỗi phân tích", description: error.message, variant: "destructive" });
         } finally {
             setIsAnalyzing(false);
             setAnalyzingStatus("");
+            addLog("Quy trình hoàn tất.", 'success');
+        }
+    }, [lastFileHash, lessonGrade, lessonAutoFilledTheme, expertGuidance, setManualModules, setExpertGuidance, setStructuredContent, toast]);
+
+    const handleAutoGenerateFull = async () => {
+        if (!lessonAutoFilledTheme || !expertGuidance) {
+            toast({
+                title: "Thiếu dữ liệu",
+                description: "Vui lòng nhập chủ đề và tài liệu trước khi chạy AI tự động.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        setLoading('isGenerating', true);
+        setAnalyzingStatus("Đang khởi động Orchestrator...");
+        addLog("BẮT ĐẦU: Quy trình 4-Prompt tự động (Architecture 6.0)", 'success');
+
+        try {
+            const orchestrator = IntelligentPromptOrchestrator.getInstance();
+            const result = await orchestrator.generateFullLesson(
+                lessonAutoFilledTheme,
+                lessonGrade,
+                expertGuidance,
+                (status, progress) => {
+                    setAnalyzingStatus(status);
+                    setExportProgress(progress);
+                    addLog(status, 'info');
+                }
+            );
+
+            if (result.success && result.modules) {
+                // Cập nhật toàn bộ module vào store
+                setManualModules(result.modules);
+                toast({
+                    title: "Thành công!",
+                    description: "Đã tự động tạo xong toàn bộ 4 hoạt động dạy học.",
+                });
+                addLog("HOÀN TẤT: Toàn bộ bài dạy đã được xây dựng thành công.", 'success');
+            } else {
+                throw new Error(result.error || "Lỗi quy trình tự động");
+            }
+        } catch (error: any) {
+            console.error('[Orchestration] Error:', error);
+            toast({ title: "Lỗi AI", description: error.message, variant: "destructive" });
+            addLog(`LỖI AI: ${error.message}`, 'warn');
+        } finally {
+            setLoading('isGenerating', false);
+            setAnalyzingStatus("");
+            setExportProgress(0);
         }
     };
 
     const handleCopyPrompt = async (module: ProcessingModule) => {
-        // Get previous context
-        const currentIndex = manualModules.findIndex(m => m.id === module.id);
-        const prevModule = currentIndex > 0 ? manualModules[currentIndex - 1] : undefined;
-
         let prevContext = undefined;
-        if (prevModule && prevModule.isCompleted) {
-            try {
-                // Try extracting smart summary from JSON
-                const jsonClean = prevModule.content.substring(prevModule.content.indexOf("{"), prevModule.content.lastIndexOf("}") + 1);
-                const jsonData = JSON.parse(jsonClean);
-                if (jsonData.summary_for_next_step) {
-                    prevContext = `Tóm tắt hoạt động trước (${prevModule.title}): ${jsonData.summary_for_next_step}`;
+        let prevSummary = "";
+        const moduleIndex = manualModules.findIndex(m => m.id === module.id);
+        if (moduleIndex > 0) {
+            const prevModule = manualModules[moduleIndex - 1];
+            if (prevModule.isCompleted && prevModule.content) {
+                // Sử dụng Helper từ Service để trích xuất tóm tắt thông minh
+                prevSummary = ManualWorkflowService.extractSummaryFromContent(prevModule.content);
+
+                // Fallback nếu không có tóm tắt trong JSON
+                if (!prevSummary) {
+                    prevContext = `Hoạt động trước: ${prevModule.title}. Nội dung tóm tắt: ${prevModule.content.substring(0, 300)}...`;
                 } else {
-                    throw new Error("No summary field");
+                    // If a smart summary exists, use it as the primary context
+                    prevContext = `Tóm tắt hoạt động trước (${prevModule.title}): ${prevSummary}`;
                 }
-            } catch (e) {
-                // Fallback to raw text truncation
-                prevContext = `Hoạt động trước: ${prevModule.title}. Nội dung tóm tắt: ${prevModule.content.substring(0, 200)}...`;
             }
         }
-
         // Notify user about system lookup
         toast({ title: "Đang tối ưu...", description: "Hệ thống đang tra cứu dữ liệu chuyên môn..." });
 
         // Lookup Smart Data (Async)
         const smartData = await SmartPromptService.lookupSmartData(lessonGrade, lessonAutoFilledTheme);
+
+        // Architecture 4.0: Unified Aggregation for 30-50 Page scale
+        const aggregator = UnifiedContentAggregator.getInstance();
+        const aggregatedData = aggregator.aggregate(
+            structuredContent || {
+                title: "", grade: lessonGrade, subject: "", sections: [],
+                metadata: { totalWordCount: 0, sectionCount: 0, processedAt: "" }
+            },
+            smartData,
+            module.type as ActivityType,
+            45 // Target 45 pages total
+        );
 
         const prompt = ManualWorkflowService.generatePromptForModule(module, {
             topic: lessonAutoFilledTheme,
@@ -139,7 +245,9 @@ export function ManualProcessingHub() {
             fileSummary: expertGuidance || "Nội dung sách giáo khoa...",
             optimizedFileSummary: optimizedMap[module.id],
             previousContext: prevContext,
-            smartData: smartData
+            previousSummary: prevSummary,
+            smartData: smartData,
+            aggregatedData: aggregatedData
         });
 
         navigator.clipboard.writeText(prompt);
@@ -164,30 +272,40 @@ export function ManualProcessingHub() {
     const handleExport = async () => {
         setLoading('isExporting', true);
         try {
-            // 1. Construct LessonResult from Modules
-            const lessonResult = {
-                title: lessonAutoFilledTheme,
+            // 1. Construct LessonResult (Baseline)
+            const baselineResult: LessonResult = {
+                ten_bai: lessonAutoFilledTheme,
                 grade: lessonGrade,
-                objectives: { knowledge: "Xem nội dung chi tiết", skills: "", qualities: "" },
-                preparations: { teacher: "", student: "" },
-                activities: manualModules.map(m => ({
-                    title: m.title,
-                    content: m.content, // ExportService will parse GV/HS from this
-                    full_content: m.content
-                }))
+                muc_tieu_kien_thuc: "Xem nội dung chi tiết trong các hoạt động",
+                muc_tieu_nang_luc: "",
+                muc_tieu_pham_chat: "",
+                hs_chuan_bi: "",
+                gv_chuan_bi: "",
+                hoat_dong_khoi_dong: manualModules.find(m => m.type === 'khoi_dong')?.content || "",
+                hoat_dong_kham_pha: manualModules.find(m => m.type === 'kham_pha')?.content || "",
+                hoat_dong_luyen_tap: manualModules.find(m => m.type === 'luyen_tap')?.content || "",
+                hoat_dong_van_dung: manualModules.find(m => m.type === 'van_dung')?.content || "",
+                ho_so_day_hoc: "",
+                huong_dan_ve_nha: ""
             };
 
-            // 2. Call Export Service
+            // 2. Architecture 6.0: Precision Length Achievement
+            setAnalyzingStatus("Đang tinh chỉnh độ dài chuẩn 30-50 trang...");
+            const precisionController = PrecisionLengthController.getInstance();
+            const precisionResult = await precisionController.achieveTargetLength(baselineResult, 45);
+
+            // 3. Call Export Service with final precise content
             await ExportService.exportLessonToDocx(
-                lessonResult as any,
-                {
-                    onProgress: (p) => setExportProgress(p),
-                    onError: (e) => setStatus('error', e.message)
-                }
+                precisionResult.content as any,
+                `Giao_an_Chuyen_gia_${lessonAutoFilledTheme}.docx`,
+                (p) => setExportProgress(p)
             );
 
             setStatus('success', "Xuất file thành công!");
-            toast({ title: "Thành công!", description: "File Word đã được tải xuống." });
+            toast({
+                title: "Thành công!",
+                description: `File Word (${precisionResult.actualPages} trang) đã được tải xuống.`
+            });
 
         } catch (error: any) {
             setStatus('error', error.message);
@@ -197,12 +315,70 @@ export function ManualProcessingHub() {
         }
     };
 
-    if (!lessonAutoFilledTheme) {
-        return <div className="text-center p-10 text-slate-500">Vui lòng nhập tên bài học hoặc tải file lên trước.</div>;
-    }
+    const handleExpandModule = async (module: ProcessingModule) => {
+        if (!module.content) return;
 
-    return (
+        setExpandingModules(prev => ({ ...prev, [module.id]: true }));
+        try {
+            const scaler = IntelligentContentScaler.getInstance();
+            const expanded = await scaler.expandModule(module.title, module.content);
+
+            if (expanded !== module.content) {
+                updateModuleContent(module.id, expanded);
+                toast({
+                    title: "Mở rộng thành công!",
+                    description: `Nội dung phần ${module.title} đã được bồi đắp chi tiết hơn.`
+                });
+            } else {
+                toast({
+                    title: "Thông báo",
+                    description: "Không có nội dung mới được bổ sung.",
+                    variant: "default"
+                });
+            }
+        } catch (error: any) {
+            toast({
+                title: "Lỗi mở rộng",
+                description: error.message,
+                variant: "destructive"
+            });
+        } finally {
+            setExpandingModules(prev => ({ ...prev, [module.id]: false }));
+        }
+    };
+
+    // Calculate Export Readiness
+    const currentEstimatedPages = manualModules.reduce((acc, m) => acc + (m.content?.split(/\s+/).length || 0), 0) / 350;
+    const roundedPages = Math.max(1, Math.round(currentEstimatedPages));
+    const needsExpansion = roundedPages < 30;
+
+    // Final Stabilized UI Return (Phase 2)
+    const renderUI = React.useMemo(() => (
         <div className="space-y-8 animate-in fade-in duration-500">
+            <div className="flex justify-between items-center bg-white/50 p-4 rounded-xl backdrop-blur-sm border border-slate-200">
+                <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-bold text-slate-800">Trung tâm Điều phối Giao án (Expert Mode)</h2>
+                    <Badge variant={roundedPages >= 30 ? "default" : "secondary"} className="bg-blue-100 text-blue-700 border-blue-200">
+                        Ước tính: {roundedPages} trang ({Math.round(currentEstimatedPages * 350)} từ)
+                    </Badge>
+                    {needsExpansion && (
+                        <div className="flex items-center text-xs text-amber-600 gap-1 animate-pulse">
+                            <AlertCircle className="w-3 h-3" />
+                            Cần thêm nội dung để đạt mục tiêu 30-50 trang
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Live Status & Analysis Console - Isolated Component to prevent Lag */}
+            {isAnalyzing && (
+                <AnalysisConsole
+                    isAnalyzing={isAnalyzing}
+                    analyzingStatus={analyzingStatus}
+                    logs={analysisLogs}
+                />
+            )}
+
             {/* Header Steps */}
             <div className="bg-blue-50 border border-blue-100 p-6 rounded-xl flex flex-col md:flex-row justify-between items-center gap-4">
                 <div className="space-y-2">
@@ -241,15 +417,27 @@ export function ManualProcessingHub() {
                     </div>
                 </div>
 
-                <Button
-                    size="lg"
-                    onClick={handleExport}
-                    disabled={isExporting || manualModules.every(m => !m.isCompleted)}
-                    className="bg-green-600 hover:bg-green-700 shadow-lg"
-                >
-                    {isExporting ? <RefreshCw className="w-5 h-5 animate-spin mr-2" /> : <FileDown className="w-5 h-5 mr-2" />}
-                    Tổng hợp & Xuất Word
-                </Button>
+                <div className="flex gap-4">
+                    <Button
+                        size="lg"
+                        onClick={handleAutoGenerateFull}
+                        disabled={isGenerating || !lessonAutoFilledTheme}
+                        className="bg-blue-600 hover:bg-blue-700 shadow-lg"
+                    >
+                        {isGenerating ? <RefreshCw className="w-5 h-5 animate-spin mr-2" /> : <Wand2 className="w-5 h-5 mr-2" />}
+                        Tự động tạo toàn bộ (AI Orchestrator)
+                    </Button>
+
+                    <Button
+                        size="lg"
+                        onClick={handleExport}
+                        disabled={isExporting || manualModules.every(m => !m.isCompleted)}
+                        className="bg-green-600 hover:bg-green-700 shadow-lg"
+                    >
+                        {isExporting ? <RefreshCw className="w-5 h-5 animate-spin mr-2" /> : <FileDown className="w-5 h-5 mr-2" />}
+                        Tổng hợp & Xuất Word
+                    </Button>
+                </div>
             </div>
 
             {/* Visual Analysis Viewer (Nơi hiển thị kết quả phân tích PDF trực quan) */}
@@ -270,22 +458,111 @@ export function ManualProcessingHub() {
                         <Tabs defaultValue="structured" className="w-full">
                             <TabsList className="w-full justify-start rounded-none border-b bg-slate-50/50 px-4 h-11">
                                 <TabsTrigger value="structured" className="data-[state=active]:bg-white">Cấu trúc trích xuất</TabsTrigger>
+                                <TabsTrigger value="advisor" className="data-[state=active]:bg-white flex items-center gap-2">
+                                    <Wand2 className="w-3.5 h-3.5 text-purple-500" />
+                                    Cố vấn Sư phạm AI
+                                </TabsTrigger>
                                 <TabsTrigger value="raw" className="data-[state=active]:bg-white">Nội dung thô (AI Context)</TabsTrigger>
                             </TabsList>
 
+                            <TabsContent value="advisor" className="p-4 m-0 animate-in slide-in-from-top-2 duration-300">
+                                {structuredContent?.reasoning ? (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between bg-purple-50 p-4 rounded-xl border border-purple-100">
+                                            <div className="space-y-1">
+                                                <div className="text-sm font-bold text-purple-900 flex items-center gap-2">
+                                                    <Activity className="w-4 h-4" />
+                                                    Điểm tuân thủ MoET 5512
+                                                </div>
+                                                <div className="text-2xl font-black text-purple-800">
+                                                    {structuredContent.reasoning.score}/100
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {Object.entries(structuredContent.reasoning.compliance).map(([key, val]) => (
+                                                    <Badge key={key} variant={val ? "default" : "outline"} className={val ? "bg-green-500" : "text-slate-400"}>
+                                                        {key === 'objectives' ? 'Mục tiêu' : key === 'preparations' ? 'Chuẩn bị' : key === 'activities' ? 'Hoạt động' : 'Đánh giá'}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                                                <h4 className="text-sm font-bold text-blue-800 flex items-center gap-2 mb-3">
+                                                    <Zap className="w-4 h-4" /> Gợi ý "Phẫu thuật" Giáo án
+                                                </h4>
+                                                <ul className="space-y-2">
+                                                    {structuredContent.reasoning.suggestions.map((s: string, i: number) => (
+                                                        <li key={i} className="text-xs text-blue-700 flex gap-2">
+                                                            <span className="shrink-0">•</span>
+                                                            {s}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                            <div className="p-4 bg-green-50/50 rounded-xl border border-green-100">
+                                                <h4 className="text-sm font-bold text-green-800 flex items-center gap-2 mb-3">
+                                                    <Search className="w-4 h-4" /> Nhận định Sư phạm
+                                                </h4>
+                                                <ul className="space-y-2">
+                                                    {structuredContent.reasoning.pedagogicalInsights.map((s: string, i: number) => (
+                                                        <li key={i} className="text-xs text-green-700 flex gap-2">
+                                                            <span className="shrink-0">•</span>
+                                                            {s}
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-[10px] text-slate-400 italic text-right mt-2">
+                                            * Dự báo thời gian thực hiện: {structuredContent.reasoning.estimatedDeliveryTime}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12 space-y-3">
+                                        <Loader2 className="w-8 h-8 text-slate-300 animate-spin mx-auto" />
+                                        <p className="text-slate-400 text-sm">Đang phân tích chuyên sâu...</p>
+                                    </div>
+                                )}
+                            </TabsContent>
+
                             <TabsContent value="structured" className="p-4 m-0">
                                 {(() => {
-                                    const analyzed = LessonPlanAnalyzer.analyze(expertGuidance);
+                                    if (!analyzedLessonPlan) return null;
                                     return (
                                         <div className="space-y-6">
                                             {structuredContent ? (
                                                 <StructuredContentViewer
                                                     structuredContent={structuredContent}
-                                                    onSectionSelect={(section, act) => {
-                                                        toast({
-                                                            title: "Đã ghi nhận!",
-                                                            description: `Đã chọn phần "${section.title}" cho hoạt động ${act}.`
-                                                        });
+                                                    onSectionSelect={(section, actKey) => {
+                                                        const actMap: Record<string, number> = {
+                                                            'khoi_dong': 0,
+                                                            'kham_pha': 1,
+                                                            'luyen_tap': 2,
+                                                            'van_dung': 3
+                                                        };
+                                                        const index = actMap[actKey];
+                                                        if (index !== undefined && manualModules[index]) {
+                                                            const existing = manualModules[index].content || "";
+                                                            const added = section.content;
+                                                            // Avoid duplicate additions
+                                                            if (existing.includes(added.substring(0, 50))) {
+                                                                toast({
+                                                                    title: "Nội dung đã tồn tại",
+                                                                    description: "Đoạn văn này dường như đã được thêm vào trước đó.",
+                                                                    variant: "default"
+                                                                });
+                                                                return;
+                                                            }
+                                                            const newContent = existing ? `${existing}\n\n${added}` : added;
+                                                            updateModuleContent(manualModules[index].id, newContent);
+                                                            toast({
+                                                                title: "🚀 Ánh xạ thành công!",
+                                                                description: `Đã đưa nội dung vào "${manualModules[index].title}".`,
+                                                            });
+                                                        }
                                                     }}
                                                 />
                                             ) : (
@@ -296,7 +573,7 @@ export function ManualProcessingHub() {
                                                                 <CheckCircle className="w-4 h-4 text-green-500" /> Mục tiêu bài học
                                                             </h4>
                                                             <div className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600 min-h-[100px] border border-slate-100 whitespace-pre-wrap">
-                                                                {analyzed.objectives || "Không tìm thấy dữ liệu mục tiêu cụ thể."}
+                                                                {analyzedLessonPlan.objectives || "Không tìm thấy dữ liệu mục tiêu cụ thể."}
                                                             </div>
                                                         </div>
                                                         <div className="space-y-2">
@@ -304,18 +581,18 @@ export function ManualProcessingHub() {
                                                                 <CheckCircle className="w-4 h-4 text-blue-500" /> Thiết bị dạy học
                                                             </h4>
                                                             <div className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600 min-h-[100px] border border-slate-100 whitespace-pre-wrap">
-                                                                {analyzed.preparations || "Không tìm thấy dữ liệu chuẩn bị cụ thể."}
+                                                                {analyzedLessonPlan.preparations || "Không tìm thấy dữ liệu chuẩn bị cụ thể."}
                                                             </div>
                                                         </div>
                                                     </div>
 
                                                     <div className="space-y-2">
                                                         <h4 className="text-sm font-bold text-slate-700 flex items-center gap-2 border-b pb-1">
-                                                            <ClipboardList className="w-4 h-4 text-purple-500" /> Các hoạt động dạy học được trích xuất ({analyzed.activities.length})
+                                                            <ClipboardList className="w-4 h-4 text-purple-500" /> Các hoạt động dạy học được trích xuất ({analyzedLessonPlan.activities.length})
                                                         </h4>
                                                         <Accordion type="single" collapsible className="w-full">
-                                                            {analyzed.activities.length > 0 ? (
-                                                                analyzed.activities.map((act, i) => (
+                                                            {analyzedLessonPlan.activities.length > 0 ? (
+                                                                analyzedLessonPlan.activities.map((act: any, i: number) => (
                                                                     <AccordionItem value={`act-${i}`} key={i} className="border-slate-100">
                                                                         <AccordionTrigger className="hover:no-underline py-2 text-sm font-medium">
                                                                             <span className="text-left">{act.title}</span>
@@ -365,8 +642,13 @@ export function ManualProcessingHub() {
                                     {module.isCompleted && <CheckCircle className="w-5 h-5 text-green-600" />}
                                     {module.title}
                                 </CardTitle>
-                                <CardDescription>
-                                    Bước {manualModules.indexOf(module) + 1} / {manualModules.length}
+                                <CardDescription className="flex items-center gap-2">
+                                    <span>Bước {manualModules.indexOf(module) + 1} / {manualModules.length}</span>
+                                    {manualModules.indexOf(module) > 0 && manualModules[manualModules.indexOf(module) - 1].isCompleted && (
+                                        <Badge variant="outline" className="h-5 px-1.5 text-[10px] border-blue-200 text-blue-600 bg-blue-50 flex items-center gap-1">
+                                            <Link className="w-2.5 h-2.5" /> Context Linked
+                                        </Badge>
+                                    )}
                                 </CardDescription>
                             </div>
                             <div className="flex gap-2">
@@ -382,6 +664,18 @@ export function ManualProcessingHub() {
                             </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                            {/* Context Preview (Architecture 7.0) */}
+                            {manualModules.indexOf(module) > 0 && manualModules[manualModules.indexOf(module) - 1].isCompleted && (
+                                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 text-xs text-blue-800 flex items-start gap-2">
+                                    <Activity className="w-4 h-4 mt-0.5 text-blue-500 shrink-0" />
+                                    <div>
+                                        <span className="font-bold">Ngữ cảnh từ {manualModules[manualModules.indexOf(module) - 1].title}:</span>
+                                        <p className="mt-1 italic line-clamp-2">
+                                            {ManualWorkflowService.extractSummaryFromContent(manualModules[manualModules.indexOf(module) - 1].content) || "Đã sẵn sàng kế thừa logic và nội dung từ bước trước."}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                             {structuredContent && (
                                 <ActivityContentBuilder
                                     structuredContent={structuredContent}
@@ -398,11 +692,27 @@ export function ManualProcessingHub() {
                                 onChange={(e) => updateModuleContent(module.id, e.target.value)}
                             />
                             <div className="flex justify-between items-center mt-2">
-                                <div>
+                                <div className="flex items-center gap-2">
                                     {module.content && (
                                         isValidJSON(module.content)
                                             ? <Badge variant="outline" className="text-green-600 bg-green-50 border-green-200 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Valid JSON</Badge>
                                             : <Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-200 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> Text Mode (Khuyến nghị dùng JSON)</Badge>
+                                    )}
+                                    {module.content && module.content.split(/\s+/).length < 600 && (
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-7 px-2 text-[10px] text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200"
+                                            onClick={() => handleExpandModule(module)}
+                                            disabled={expandingModules[module.id]}
+                                        >
+                                            {expandingModules[module.id] ? (
+                                                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                            ) : (
+                                                <Zap className="w-3 h-3 mr-1 fill-amber-500 text-amber-500" />
+                                            )}
+                                            Nâng cấp & Mở rộng (30-50 trang)
+                                        </Button>
                                     )}
                                 </div>
                                 <Badge variant={module.isCompleted ? "default" : "secondary"} className={module.isCompleted ? "bg-green-600" : ""}>
@@ -414,5 +724,90 @@ export function ManualProcessingHub() {
                 ))}
             </div>
         </div>
-    );
+    ), [
+        roundedPages, currentEstimatedPages, needsExpansion, isAnalyzing, analyzingStatus,
+        handleFileUpload, handleAutoGenerateFull, isGenerating, lessonAutoFilledTheme, handleExport,
+        isExporting, manualModules, expertGuidance, setExpertGuidance, structuredContent, expandingModules,
+        handleExpandModule, handleCopyPrompt, updateModuleContent, toast, optimizedMap, fileInputRef,
+        analyzedLessonPlan
+    ]);
+
+    // Measure Render Quality
+    const startTime = React.useRef(performance.now());
+    React.useEffect(() => {
+        const renderTime = performance.now() - startTime.current;
+        ReactPerformanceManager.getInstance().recordRender('ManualProcessingHub', renderTime);
+        startTime.current = performance.now();
+    });
+
+    if (!lessonAutoFilledTheme) {
+        return <div className="text-center p-10 text-slate-500">Vui lòng nhập tên bài học hoặc tải file lên trước.</div>;
+    }
+
+    return renderUI;
 }
+
+/**
+ * Isolated Analysis Console to prevent heavy parent re-renders
+ */
+const AnalysisConsole = React.memo(({ isAnalyzing, analyzingStatus, logs }: any) => {
+    return (
+        <Card className="border-blue-200 bg-slate-950 overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
+            <CardHeader className="bg-slate-900 border-b border-slate-800 py-3">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-blue-400 font-bold text-sm">
+                        <div className="flex gap-1.5 mr-2">
+                            <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                        </div>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span className="uppercase tracking-widest text-[10px]">Processing System Live Feed</span>
+                    </div>
+                    <div className="text-xs text-slate-500 font-mono">
+                        Status: {analyzingStatus}
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="p-4 bg-slate-950">
+                <div className="h-[200px] custom-scrollbar font-mono text-xs">
+                    <VirtualScroller
+                        items={logs}
+                        itemHeight={24}
+                        containerHeight={200}
+                        renderItem={(log, i) => (
+                            <div key={i} className="flex gap-3 h-[24px] items-center animate-in slide-in-from-left-2 duration-200">
+                                <span className="text-slate-600 shrink-0 w-[70px]">[{log.time}]</span>
+                                <span className={
+                                    log.type === 'success' ? 'text-green-400' :
+                                        log.type === 'warn' ? 'text-red-400' : 'text-blue-400'
+                                }>
+                                    {log.type === 'success' && '✓ '}
+                                    {log.type === 'warn' && '⚠ '}
+                                    {log.type === 'info' && '● '}
+                                    {log.msg}
+                                </span>
+                            </div>
+                        )}
+                    />
+                    {logs.length === 0 && (
+                        <div className="text-slate-700 italic text-center py-4">
+                            Cơ sở dữ liệu đang được đồng bộ...
+                        </div>
+                    )}
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-800 flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                        <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+                        <span className="text-[10px] text-blue-300/60 uppercase tracking-tighter">Architecture 7.1.1: Optimized 60FPS</span>
+                    </div>
+                    <Badge className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[10px]">
+                        Stable Capacity
+                    </Badge>
+                </div>
+            </CardContent>
+        </Card>
+    );
+});
+
+AnalysisConsole.displayName = 'AnalysisConsole';
