@@ -92,6 +92,21 @@ async function callAI(
   file?: { mimeType: string, data: string },
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
+  const allKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3]
+    .filter((k): k is string => !!k)
+    .map(k => k.trim().replace(/^["']|["']$/g, ""));
+
+  const availableKeys = allKeys.filter(k => !blacklist.has(k));
+
+  if (availableKeys.length === 0) {
+    throw new Error("SHADOW_BAN_CRITICAL: All keys exhausted. Please change IP.");
+  }
+
+  // Phase 3: Simple Rate Limiting Check
+  if (!AIResilienceService.canMakeRequest()) {
+    console.warn("[Resilience] Rate limit hit. Waiting 2s...");
+    await new Promise(r => setTimeout(r, 2000));
+  }
 
   let lastError = "";
 
