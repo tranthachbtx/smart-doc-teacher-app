@@ -1,6 +1,6 @@
 
 import { AdvancedAIProcessor, StructuredLessonPlan } from "@/lib/advanced-ai-processor";
-import { analyzedPDFExtractor } from "@/lib/enhanced-pdf-extractor";
+import { enhancedPDFExtractor } from "@/lib/enhanced-pdf-extractor";
 import { SmartPromptData } from "./smart-prompt-service";
 import { ProcessingModule } from "@/lib/store/use-lesson-store";
 

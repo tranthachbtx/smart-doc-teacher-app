@@ -3,7 +3,7 @@
  * Xử lý AI với database integration và multi-step reasoning
  */
 
-import { callAIWithRetry } from './simple-ai-caller';
+import { callAI, JSON_SYSTEM_PROMPT } from './actions/gemini';
 import { AnalyzedPDFContent } from './enhanced-pdf-extractor';
 import { LessonContext } from './database-integration-service';
 import { SmartPromptService } from './services/smart-prompt-service';
@@ -136,7 +136,7 @@ Return a JSON object with:
     `;
 
     try {
-      const response = await callAIWithRetry(prompt, 2);
+      const response = await callAI(prompt, "gemini-1.5-flash");
       const result = this.parseAIResponse(response);
 
       return {
@@ -199,7 +199,7 @@ Return a JSON object with:
     `;
 
     try {
-      const response = await callAIWithRetry(prompt, 2);
+      const response = await callAI(prompt, "gemini-1.5-flash");
       const result = this.parseAIResponse(response);
 
       return {
@@ -257,7 +257,7 @@ Return a JSON object with:
     `;
 
     try {
-      const response = await callAIWithRetry(prompt, 2);
+      const response = await callAI(prompt, "gemini-1.5-flash");
       const result = this.parseAIResponse(response);
 
       return {
@@ -311,7 +311,8 @@ Ensure all activities use {{cot_1}} and {{cot_2}} markers properly.
     `;
 
     try {
-      const response = await callAIWithRetry(finalPrompt, 3);
+      // Step 4 requires JSON output for the StructuredLessonPlan
+      const response = await callAI(finalPrompt, "gemini-1.5-flash", undefined, JSON_SYSTEM_PROMPT);
       const result = this.parseAIResponse(response);
 
       return {

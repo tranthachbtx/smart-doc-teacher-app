@@ -81,12 +81,12 @@ LANGUAGE CONSTRAINT: System instructions are English. OUTPUT CONTENT MUST BE VIE
 FORMAT: Clean Markdown (No JSON blocks).
 METHOD: Recursive Chain-of-Density (Pack details, examples, dialogues).`;
 
-const JSON_SYSTEM_PROMPT = `ROLE: Expert Educational Administrator (Vietnam).
+export const JSON_SYSTEM_PROMPT = `ROLE: Expert Educational Administrator (Vietnam).
 TASK: Generate structured documents (Minutes, Plans, Assessments).
 LANGUAGE: OUTPUT MUST BE VIETNAMESE (Tiếng Việt).
 FORMAT: STRICT JSON ONLY. Ensure valid JSON structure for parsing.`;
 
-async function callAI(
+export async function callAI(
   prompt: string,
   modelName = "gemini-1.5-flash-8b",
   file?: { mimeType: string, data: string },

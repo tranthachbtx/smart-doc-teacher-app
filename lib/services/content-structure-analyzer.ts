@@ -1,6 +1,5 @@
 import { generateAIContent } from "@/lib/actions/gemini";
 import { LessonPlanAnalyzer } from "./lesson-plan-analyzer";
-import { enhancedPDFExtractor } from "@/lib/enhanced-pdf-extractor";
 
 export interface ContentSection {
     id: string;
