@@ -74,29 +74,24 @@ async function physical_gap() {
 
 // --- 2. CORE ENGINE (TUNNEL-FETCH MODE v6.0) ---
 
-async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: { mimeType: string, data: string }): Promise<string> {
-  const allKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3]
-    .filter((k): k is string => !!k)
-    .map(k => k.trim().replace(/^["']|["']$/g, ""));
+const DEFAULT_LESSON_SYSTEM_PROMPT = `ROLE: Expert Curriculum Developer (K12 Vietnam).
+TASK: Generate high-density lesson plans compliant with MOET 5512. 
+CONTEXT: If a file is attached, it is an OLD LESSON PLAN for optimization.
+LANGUAGE CONSTRAINT: System instructions are English. OUTPUT CONTENT MUST BE VIETNAMESE (Tiếng Việt).
+FORMAT: Clean Markdown (No JSON blocks).
+METHOD: Recursive Chain-of-Density (Pack details, examples, dialogues).`;
 
-  const availableKeys = allKeys.filter(k => !blacklist.has(k));
+const JSON_SYSTEM_PROMPT = `ROLE: Expert Educational Administrator (Vietnam).
+TASK: Generate structured documents (Minutes, Plans, Assessments).
+LANGUAGE: OUTPUT MUST BE VIETNAMESE (Tiếng Việt).
+FORMAT: STRICT JSON ONLY. Ensure valid JSON structure for parsing.`;
 
-  if (availableKeys.length === 0) {
-    throw new Error("SHADOW_BAN_CRITICAL: All keys exhausted. Please change IP.");
-  }
-
-  // Phase 3: Simple Rate Limiting Check
-  if (!AIResilienceService.canMakeRequest()) {
-    console.warn("[Resilience] Rate limit hit. Waiting 2s...");
-    await new Promise(r => setTimeout(r, 2000));
-  }
-
-  const system = `ROLE: Expert Curriculum Developer (K12 Vietnam).
-  TASK: Generate high-density lesson plans compliant with MOET 5512. 
-  CONTEXT: If a file is attached, it is an OLD LESSON PLAN for optimization.
-  LANGUAGE CONSTRAINT: System instructions are English. OUTPUT CONTENT MUST BE VIETNAMESE (Tiếng Việt).
-  FORMAT: Clean Markdown (No JSON blocks).
-  METHOD: Recursive Chain-of-Density (Pack details, examples, dialogues).`;
+async function callAI(
+  prompt: string,
+  modelName = "gemini-1.5-flash-8b",
+  file?: { mimeType: string, data: string },
+  systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
+): Promise<string> {
 
   let lastError = "";
 
@@ -128,7 +123,7 @@ async function callAI(prompt: string, modelName = "gemini-1.5-flash-8b", file?: 
           ? `${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent?key=${key}`
           : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
 
-        const parts: any[] = [{ text: `${system}\n\nPROMPT:\n${prompt}` }];
+        const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
         if (file && file.data) {
           parts.push({
             inlineData: {
@@ -375,7 +370,7 @@ function checkpoint_load(pName: string, id: string) {
 
 export async function generateMeetingMinutes(m: string, s: string, c: string, conc: string, model?: string): Promise<ActionResult<MeetingResult>> {
   try {
-    const t = await callAI(getMeetingPrompt(m, s, c, conc, "", ""), model);
+    const t = await callAI(getMeetingPrompt(m, s, c, conc, "", ""), model, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseMeetingResult(t) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
@@ -416,21 +411,21 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
 export async function generateEvent(g: string, t: string, i?: string, budget?: string, checklist?: string, evaluation?: string, model?: string): Promise<ActionResult<EventResult>> {
   try {
     const extra = `\n\nNGÂN SÁCH: ${budget || "Tối ưu hóa"}\nDANH MỤC CẦN CHUẨN BỊ: ${checklist || "Tự đề xuất"}\nTIÊU CHÍ ĐÁNH GIÁ: ${evaluation || "Tự đề xuất"}`;
-    const text = await callAI(getEventPrompt(g, t, undefined) + (i ? `\n\nCHỈ DẪN BỔ SUNG:\n${i}` : "") + extra, model);
+    const text = await callAI(getEventPrompt(g, t, undefined) + (i ? `\n\nCHỈ DẪN BỔ SUNG:\n${i}` : "") + extra, model, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseEventResult(text) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
 export async function generateNCBH(g: string, t: string, i?: string, m?: string): Promise<ActionResult<NCBHResult>> {
   try {
-    const text = await callAI(`${NCBH_ROLE}\n${NCBH_TASK}\n${g}, ${t}, ${i || ""}`, m);
+    const text = await callAI(`${NCBH_ROLE}\n${NCBH_TASK}\n${g}, ${t}, ${i || ""}`, m, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseNCBHResult(text) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
 export async function generateAssessmentPlan(g: string, tr: string, ty: string, to: string, model?: string): Promise<ActionResult<AssessmentResult>> {
   try {
-    const text = await callAI(getAssessmentPrompt(g, tr, ty, to), model);
+    const text = await callAI(getAssessmentPrompt(g, tr, ty, to), model, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseAssessmentResult(text) };
   } catch (e: any) { return { success: false, error: e.message }; }
 }

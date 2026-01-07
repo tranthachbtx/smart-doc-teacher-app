@@ -1,5 +1,6 @@
 
 import { ContentSection, StructuredContent } from "./content-structure-analyzer";
+import { TextCleaningService } from "./text-cleaning-service";
 
 export interface FilteredContent {
     sections: ContentSection[];
@@ -84,12 +85,19 @@ export class ContentFilter {
             van_dung: 'VẬN DỤNG (APPLICATION)'
         };
 
+        const cleaner = TextCleaningService.getInstance();
         let content = `## 🎯 DỮ LIỆU ĐÃ TỐI ƯU CHO HOẠT ĐỘNG: ${names[activityType] || activityType}\n`;
         content += `> Hướng dẫn: Đây là các mảnh kiến thức được trích xuất từ tài liệu gốc, lọc theo mức độ liên quan cao nhất.\n\n`;
 
         sections.forEach((s, i) => {
-            content += `[MẢNH ${i + 1}: ${s.title.toUpperCase()}] (${s.type})\n`;
-            content += `${s.content}\n\n`;
+            const sanitizedTitle = cleaner.clean(s.title).toUpperCase();
+            const sanitizedContent = cleaner.clean(s.content);
+
+            // Skip if the resulting content is too short or just a marker
+            if (sanitizedContent.length < 30 || sanitizedTitle.match(/PAGE\s+\d+/i)) return;
+
+            content += `[MẢNH ${i + 1}: ${sanitizedTitle}] (${s.type})\n`;
+            content += `${sanitizedContent}\n\n`;
         });
 
         return content;

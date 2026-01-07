@@ -50,11 +50,37 @@ export class TextCleaningService {
     }
 
     private removeDocumentJunk(text: string): string {
-        return text
-            .replace(/^Trang\s+\d+(\/\d+)?$/gmi, "")        // Trang 1/10
-            .replace(/^Page\s+\d+(\s+of\s+\d+)?$/gmi, "")   // Page 1 of 5
-            .replace(/^- \d+ -$/gm, "")                     // - 1 -
-            .replace(/^[0-9]+\s*$/gm, "");                  // Dòng chỉ chứa số trang
+        const lines = text.split('\n');
+        const cleanedLines: string[] = [];
+
+        // Logic phục hồi từ Kiến trúc 18.0: Nhận dạng cấu trúc trước khi xóa rác
+        const hasTOC = /mục lục|table of contents|nội dung/i.test(text.substring(0, 5000));
+
+        for (const line of lines) {
+            let skip = false;
+            const trimmed = line.trim();
+
+            // 1. Nhận diện Page Markers (Architecture 18.0)
+            if (/^(Trang\s+\d+|Page\s+\d+|[0-9]+\s*$|^- \d+ -$)/i.test(trimmed)) {
+                // Nếu không phải trong mục lục, ta có thể an tâm xóa các đánh dấu trang đơn lẻ
+                if (!hasTOC || trimmed.length < 15) skip = true;
+            }
+
+            // 2. Nhận diện Headers lặp lại (Architecture 19.0 logic)
+            if (/C\s*H\s*Ủ\s*Đ\s*Ề\s*\d+:.*?\(\d+\s*tiết\)/gi.test(trimmed)) skip = true;
+            if (/YÊU CẦU CẦN ĐẠT MỤC CỦA CHỦ ĐỀ/gi.test(trimmed)) skip = true;
+            if (/Ngày soạn:…\/…\/…/g.test(trimmed)) skip = true;
+            if (/Ngày dạy:…\/…\/…/g.test(trimmed)) skip = true;
+
+            // 3. Xử lý OCR noise đặc thù
+            const sanitized = trimmed.replace(/,\s*\d+\s*\)\.?/g, "");
+
+            if (!skip && sanitized.length > 0) {
+                cleanedLines.push(sanitized);
+            }
+        }
+
+        return cleanedLines.join('\n');
     }
 
     private fixVietnameseEncoding(text: string): string {

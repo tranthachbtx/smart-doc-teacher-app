@@ -1638,10 +1638,10 @@ const TemplateEngine = () => {
             />
           </TabsContent>
 
-          {/* Lesson Tab - Enhanced Version with Full 4-Step Workflow */}
+          {/* Lesson Tab - Enhanced Version */}
           <TabsContent value="lesson" className="space-y-4">
             <ErrorBoundary>
-              <EnhancedSmartLessonProcessor />
+              <SmartLessonProcessor />
             </ErrorBoundary>
           </TabsContent>
           <TabsContent value="event">

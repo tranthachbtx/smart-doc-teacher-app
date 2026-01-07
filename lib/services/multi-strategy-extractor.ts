@@ -2,6 +2,7 @@
 import { parseFileLocally } from "@/lib/actions/local-parser";
 import { extractTextFromFile } from "@/lib/actions/gemini";
 import { TextCleaningService } from "./text-cleaning-service";
+import { enhancedPDFExtractor } from "@/lib/enhanced-pdf-extractor";
 
 export interface ExtractedContent {
     content: string;
@@ -32,6 +33,20 @@ export class MultiStrategyExtractor {
         // STRATEGY 1: Client-Side PDF Parser (Browser Main Thread / Worker)
         // Fastest, Zero Network Latency for Text PDFs.
         if (file.type === 'application/pdf') {
+            try {
+                console.log('[MultiStrategy] Attempting Enhanced PDF Extraction (Arch 18.0)...');
+                const enhancedRes = await enhancedPDFExtractor.extractAndAnalyzePDF(file);
+
+                if (enhancedRes.sections.length > 0 || enhancedRes.rawText.length > 500) {
+                    console.log(`[MultiStrategy] Enhanced extraction success. Found ${enhancedRes.sections.length} sections.`);
+                    // We return the raw text cleaned, but the system can now leverage enhancedRes if needed later
+                    return this.finalizeContent(enhancedRes.rawText, 'local_parser');
+                }
+            } catch (e: any) {
+                console.warn(`[MultiStrategy] Enhanced PDF Extraction failed: ${e.message}`);
+                errors.push(`Enhanced PDF: ${e.message}`);
+            }
+
             try {
                 console.log('[MultiStrategy] Attempting Client-Side PDF Parse...');
                 // Dynamic import to ensure it runs only in browser

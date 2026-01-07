@@ -86,8 +86,8 @@ export class ChunkedPDFProcessor {
                 onProgress(Math.round(((i + 1) / chunks.length) * 100));
             }
 
-            // Processing delay to avoid rate limits
-            if (i > 0) await new Promise(r => setTimeout(r, 1500));
+            // Removed delay to optimize processing speed as per user request
+            // if (i > 0) await new Promise(r => setTimeout(r, 1500));
 
             try {
                 // We send the chunk. 

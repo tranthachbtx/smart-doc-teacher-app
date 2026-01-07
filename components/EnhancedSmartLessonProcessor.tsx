@@ -30,6 +30,7 @@ import {
 import { getChuDeListByKhoi, type PPCTChuDe } from '@/lib/data/ppct-database';
 import { SmartPromptService } from '@/lib/services/smart-prompt-service';
 import { ManualWorkflowService } from '@/lib/services/manual-workflow-service';
+import { ProfessionalContentProcessor } from '@/lib/services/professional-content-processor';
 import { useToast } from '@/hooks/use-toast';
 
 export default function EnhancedSmartLessonProcessor() {
@@ -148,28 +149,44 @@ export default function EnhancedSmartLessonProcessor() {
     }
   };
 
-  const handleGeneratePrompt = () => {
+  const handleGeneratePrompts = async () => {
     if (!pdfContent || !databaseContext) {
       setError('Vui lòng upload PDF và tích hợp database trước khi tạo prompt');
       return;
     }
-
-    setProcessingSteps(prev => [...prev, 'Đang tạo prompt thông minh...']);
-
+    
+    setProcessingSteps(prev => [...prev, 'Đang tạo prompts thông minh...']);
+    
     try {
-      // Build final smart prompt using the service
-      const prompt = SmartPromptService.buildFinalSmartPrompt(databaseContext, pdfContent);
-      setGeneratedPrompt(prompt);
-
-      setProcessingSteps(prev => [...prev, '✅ Đã tạo prompt thông minh']);
-
+      // Process content with ProfessionalContentProcessor
+      const processedContent = ProfessionalContentProcessor.extractActivityContent(pdfContent);
+      
+      // Generate optimized prompts for all 4 modules
+      const updatedModules = modules.map(module => {
+        const optimizedContent = ProfessionalContentProcessor.optimizeForActivity(module.type, processedContent);
+        const prompt = ProfessionalContentProcessor.generateOptimizedPrompt(
+          module.type,
+          optimizedContent,
+          databaseContext
+        );
+        
+        return {
+          ...module,
+          prompt,
+          optimizedContent
+        };
+      });
+      
+      setModules(updatedModules);
+      setProcessingSteps(prev => [...prev, '✅ Đã tạo prompts tối ưu cho 4 hoạt động']);
+      
       toast({
-        title: "Prompt Generated",
-        description: "Đã thiết kế prompt tối ưu theo chuẩn 5512"
+        title: "Optimized Prompts Generated",
+        description: "Đã tạo prompts chuyên nghiệp với nội dung được tinh lọc"
       });
     } catch (error) {
       console.error('Prompt generation failed:', error);
-      setError('Không thể tạo prompt. Vui lòng thử lại.');
+      setError('Không thể tạo prompts. Vui lòng thử lại.');
     }
   };
 
@@ -460,7 +477,7 @@ export default function EnhancedSmartLessonProcessor() {
                       </div>
                     </div>
 
-                    <Button onClick={handleGeneratePrompt} className="w-full">
+                    <Button onClick={handleGeneratePrompts} className="w-full">
                       <Brain className="w-4 h-4 mr-2" />
                       Tạo Prompt thông minh
                     </Button>

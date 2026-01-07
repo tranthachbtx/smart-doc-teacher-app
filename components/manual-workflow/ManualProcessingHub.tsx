@@ -113,7 +113,7 @@ export function ManualProcessingHub() {
 
         const smartData = await SmartPromptService.lookupSmartData(lessonGrade, lessonAutoFilledTheme);
 
-        const prompt = ManualWorkflowService.generatePromptForModule(module, {
+        const prompt = await ManualWorkflowService.generatePromptForModule(module, {
             topic: lessonAutoFilledTheme,
             grade: lessonGrade,
             fileSummary: expertGuidance || "Nội dung sách giáo khoa...",
@@ -191,13 +191,6 @@ export function ManualProcessingHub() {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/20 transition-all duration-1000"></div>
 
                 <div className="space-y-2 relative z-10">
-                    <h2 className="text-3xl font-black text-blue-900 flex items-center gap-3 tracking-tight">
-                        <ClipboardList className="w-10 h-10 text-blue-600 drop-shadow-sm" />
-                        TRUNG TÂM PHẪU THUẬT KHBH
-                    </h2>
-                    <p className="text-blue-700/80 font-medium text-lg ml-13">
-                        Kết hợp Trí tuệ Nhân tạo & Chi viện Chuyên gia (CV 5512 - NLS 2025)
-                    </p>
 
                     <div className="flex flex-wrap items-center gap-3 mt-6">
                         <input

@@ -2,6 +2,8 @@
 import { ProcessingModule } from "@/lib/store/use-lesson-store";
 import { SmartPromptData } from "./smart-prompt-service";
 import { LessonPlanAnalyzer } from "./lesson-plan-analyzer";
+import { ProfessionalContentProcessor } from "./professional-content-processor";
+import { LegacyResilienceAdapter } from "./legacy-resilience-adapter";
 
 export interface PromptContext {
     topic: string;
@@ -45,12 +47,13 @@ export const ManualWorkflowService = {
     /**
      * Tạo Prompt "xịn" cho từng module để user copy sang Gemini Pro Web/ChatGPT
      */
-    generatePromptForModule(module: ProcessingModule, context: PromptContext): string {
+    async generatePromptForModule(module: ProcessingModule, context: PromptContext): Promise<string> {
         // Use optimized summary if available, otherwise fallback to validated base summary
         const baseContent = context.optimizedFileSummary || ManualWorkflowService.validateAndCleanFileSummary(context.fileSummary);
-        const finalFileSummary = context.optimizedFileSummary
-            ? `## 🎯 DỮ LIỆU ĐÃ TỐI ƯU CHO ${module.title.toUpperCase()}\n${context.optimizedFileSummary}`
-            : `## 📚 TÀI LIỆU GỐC (TRÍCH DẪN)\n${baseContent.substring(0, 3000)}...`;
+
+        // Process content with ProfessionalContentProcessor
+        const processedContent = ProfessionalContentProcessor.extractActivityContent(baseContent);
+        const optimizedContent = ProfessionalContentProcessor.optimizeForActivity(module.type, processedContent);
 
         const contextInjection = context.previousContext
             ? `\n[CONTEXT_UPDATE]: Hoạt động trước đó đã hoàn thành. Hãy tiếp nối mạch bài học này để tạo sự logic.\nBối cảnh cũ: ${context.previousContext}\n`
@@ -93,68 +96,43 @@ ${specificAdvice}
 `;
         }
 
-        const basePrompt = `Bạn là một Giáo viên xuất sắc, chuyên gia sư phạm hiện đại. Dựa trên thông tin sau:
-- Môn học/Chủ đề: ${context.topic}
-- Lớp: ${context.grade}
-- Tài liệu nghiên cứu:
-"""
-${finalFileSummary}
-"""
-${smartDataSection}
-${contextInjection}
+        // Use ProfessionalContentProcessor for optimized prompt generation
+        return (await ProfessionalContentProcessor.generateOptimizedPrompt(
+            module.type,
+            optimizedContent,
+            context.smartData
+        )) + contextInjection + smartDataSection;
+    },
 
-Hãy viết chi tiết nội dung cho **${module.title}** theo chuẩn giáo án Công văn 5512.
+    /**
+     * Generate optimized prompt using ProfessionalContentProcessor
+     */
+    async generateOptimizedPromptForModule(module: ProcessingModule, context: PromptContext): Promise<string> {
+        // Process content with ProfessionalContentProcessor
+        const processedContent = ProfessionalContentProcessor.extractActivityContent(context.fileSummary);
+        const optimizedContent = ProfessionalContentProcessor.optimizeForActivity(module.type, processedContent);
 
-🎯 PHẠM VI TẬP TRUNG (FOCUS SCOPE):
-Nhiệm vụ của bạn CHỈ LÀ thiết kế nội dung cho: "**${module.title}**".
-- Hãy LỌC ra những thông tin liên quan đến hoạt động này từ "Tài liệu gốc" ở trên.
-- TUYỆT ĐỐI KHÔNG viết nội dung của các hoạt động khác vào đây.
-- Nếu Dữ liệu nghiên cứu nhắc đến hoạt động sau, hãy để dành nó, ĐỪNG VIẾT VÀO BÂY GIỜ.
-Yêu cầu đặc biệt:
-1. Phong cách GEN Z: Ngôn ngữ gần gũi, ví dụ thực tế, bắt trend nhưng vẫn chuẩn mực sư phạm.
-2. Phương pháp dạy học tích cực: Sử dụng các kỹ thuật như "Mảnh ghép", "Khăn trải bàn", "Phòng tranh", hoặc Gamification.
-3. Tích hợp AI (Miền 6): Đề xuất cách học sinh dùng AI để giải quyết nhiệm vụ (nếu phù hợp).
+        // Generate optimized prompt (Now Async)
+        return await ProfessionalContentProcessor.generateOptimizedPrompt(
+            module.type,
+            optimizedContent,
+            context.smartData,
+            context.previousContext ? { summary: context.previousContext } : null
+        );
+    },
 
-⚠️ QUAN TRỌNG: ĐỊNH DẠNG ĐẦU RA (Standardized Output Protocol)
-Tuyệt đối KHÔNG trả về text tự do. Hãy trả về duy nhất một chuỗi JSON hợp lệ theo format sau:
-{
-"module_title": "Tên chi tiết hoạt động",
-"duration": "15 phút",
-"summary_for_next_step": "Tóm tắt ngắn gọn (2-3 câu) nội dung hoạt động này để làm ngữ cảnh cho bước sau.",
-"steps": [
-{
-  "step_type": "transfer" | "perform" | "report" | "conclude", 
-  "teacher_action": "Nội dung cột GV (Markdown). Chú ý Escape dấu ngoặc kép: \\\"Lời thoại\\\"",
-  "student_action": "Nội dung cột HS"
-}
-]
-}
-
-🚫 LƯU Ý KỸ THUẬT (Technical Constraints):
-1. **Valid JSON**: Không được thiếu dấu phẩy, không thừa dấu phẩy cuối mảng.
-2. **Escape Characters**:
-- Dấu ngoặc kép (") trong văn bản phải viết là \\" (Ví dụ: GV nói: \\"Chào các em\\").
-- Dấu gạch chéo (\\) trong LaTeX ($...$) phải viết là \\\\ (Ví dụ: $\\\\frac{1}{2}$).
-3. **Markdown**: Có thể dùng in đậm (**text**), xuống dòng (\\n).`;
-
-        let specificPrompt = "";
-        switch (module.type) {
-            case 'khoi_dong':
-                specificPrompt = `\n\nĐặc thù Hoạt động Khởi động: \n- Mục tiêu: Tạo tâm thế, kích thích tò mò.\n - Gợi ý: Dùng trò chơi, video ngắn, tình huống gây cấn.`;
-                break;
-            case 'kham_pha':
-                specificPrompt = `\n\nĐặc thù Hoạt động Hình thành kiến thức: \n - Mục tiêu: Giúp HS chiếm lĩnh kiến thức mới.\n - Gợi ý: Chia nhỏ thành các bước chuyển giao nhiệm vụ rõ ràng.Dùng sơ đồ tư duy.`;
-                break;
-            case 'luyen_tap':
-                specificPrompt = `\n\nĐặc thù Hoạt động Luyện tập: \n - Mục tiêu: Củng cố kiến thức.\n - Gợi ý: Hệ thống câu hỏi trắc nghiệm, bài tập thực tế.`;
-                break;
-            case 'van_dung':
-                specificPrompt = `\n\nĐặc thù Hoạt động Vận dụng: \n - Mục tiêu: Giải quyết vấn đề thực tiễn.\n - Gợi ý: Dự án nhỏ(Project based), liên hệ thực tế.`;
-                break;
-            default:
-                specificPrompt = "";
-        }
-
-        return basePrompt + specificPrompt;
+    /**
+     * RESTORED ARCHITECTURE 18.0 ROBUST MODE
+     * Uses multi-step reasoning to generate high-quality initial draft.
+     */
+    async generateRobustModules(text: string, context: PromptContext): Promise<ProcessingModule[]> {
+        const adapter = LegacyResilienceAdapter.getInstance();
+        const result = await adapter.processDocumentRobustly(
+            text,
+            context.smartData!,
+            context.topic,
+            context.grade
+        );
+        return result.modules;
     }
 };

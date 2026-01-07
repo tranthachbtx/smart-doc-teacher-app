@@ -59,18 +59,19 @@ export class AIResponseParser {
 
     let cleaned = text.trim();
 
-    // 1. Remove Markdown code block syntax
+    // 1. Remove Markdown code block syntax if present
     cleaned = cleaned.replace(/^```(?:json)?/gm, '').replace(/```$/gm, '');
 
     // 2. Extract content between the first { and the last }
+    // This handles cases where AI adds chatter before or after the JSON block
     const firstBrace = cleaned.indexOf('{');
     const lastBrace = cleaned.lastIndexOf('}');
 
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
       cleaned = cleaned.substring(firstBrace, lastBrace + 1);
     }
 
-    return cleaned;
+    return cleaned.trim();
   }
 
   /**
