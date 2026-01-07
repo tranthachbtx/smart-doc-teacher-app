@@ -4,6 +4,7 @@
 // Critical to bypass 10s Serverless Timeout on Hobby Plan
 // MEMO: To enable Edge Runtime, add "export const runtime = 'edge';" to app/page.tsx instead.
 
+import { DEFAULT_LESSON_SYSTEM_PROMPT, JSON_SYSTEM_PROMPT } from "@/lib/prompts/system-prompts";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { HDTN_CURRICULUM } from "@/lib/hdtn-curriculum";
 import { getPPCTChuDe } from "@/lib/data/ppct-database";
@@ -73,18 +74,6 @@ async function physical_gap() {
 }
 
 // --- 2. CORE ENGINE (TUNNEL-FETCH MODE v6.0) ---
-
-const DEFAULT_LESSON_SYSTEM_PROMPT = `ROLE: Expert Curriculum Developer (K12 Vietnam).
-TASK: Generate high-density lesson plans compliant with MOET 5512. 
-CONTEXT: If a file is attached, it is an OLD LESSON PLAN for optimization.
-LANGUAGE CONSTRAINT: System instructions are English. OUTPUT CONTENT MUST BE VIETNAMESE (Tiếng Việt).
-FORMAT: Clean Markdown (No JSON blocks).
-METHOD: Recursive Chain-of-Density (Pack details, examples, dialogues).`;
-
-export const JSON_SYSTEM_PROMPT = `ROLE: Expert Educational Administrator (Vietnam).
-TASK: Generate structured documents (Minutes, Plans, Assessments).
-LANGUAGE: OUTPUT MUST BE VIETNAMESE (Tiếng Việt).
-FORMAT: STRICT JSON ONLY. Ensure valid JSON structure for parsing.`;
 
 export async function callAI(
   prompt: string,

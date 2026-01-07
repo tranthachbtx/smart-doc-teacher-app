@@ -3,7 +3,8 @@
  * Xử lý AI với database integration và multi-step reasoning
  */
 
-import { callAI, JSON_SYSTEM_PROMPT } from './actions/gemini';
+import { callAI } from './actions/gemini';
+import { JSON_SYSTEM_PROMPT } from './prompts/system-prompts';
 import { AnalyzedPDFContent } from './enhanced-pdf-extractor';
 import { LessonContext } from './database-integration-service';
 import { SmartPromptService } from './services/smart-prompt-service';
