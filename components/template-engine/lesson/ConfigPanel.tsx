@@ -37,7 +37,7 @@ export const ConfigPanel = React.memo(() => {
 
                 <div className="space-y-5">
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Khối lớp (Grade)</Label>
+                        <Label htmlFor="lesson-grade-select" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Khối lớp (Grade)</Label>
                         <Select
                             value={store.lessonGrade}
                             onValueChange={(value) => {
@@ -45,8 +45,9 @@ export const ConfigPanel = React.memo(() => {
                                 // Reset related fields when grade changes
                                 useLessonStore.setState({ selectedChuDeSo: "", lessonAutoFilledTheme: "" });
                             }}
+                            name="lessonGrade"
                         >
-                            <SelectTrigger className="h-12 rounded-2xl bg-white/50 dark:bg-slate-900/50 border-white dark:border-slate-800 shadow-sm">
+                            <SelectTrigger id="lesson-grade-select" className="h-12 rounded-2xl bg-white/50 dark:bg-slate-900/50 border-white dark:border-slate-800 shadow-sm">
                                 <SelectValue placeholder="Chọn khối..." />
                             </SelectTrigger>
                             <SelectContent className="premium-glass rounded-2xl">
@@ -58,7 +59,7 @@ export const ConfigPanel = React.memo(() => {
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Chủ đề (PPCT Month)</Label>
+                        <Label htmlFor="lesson-theme-select" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Chủ đề (PPCT Month)</Label>
                         <Select
                             value={store.selectedChuDeSo}
                             onValueChange={(value) => {
@@ -75,8 +76,9 @@ export const ConfigPanel = React.memo(() => {
                                 }
                             }}
                             disabled={!store.lessonGrade}
+                            name="lessonTheme"
                         >
-                            <SelectTrigger className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm focus:ring-4 focus:ring-indigo-50">
+                            <SelectTrigger id="lesson-theme-select" className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm focus:ring-4 focus:ring-indigo-50">
                                 <SelectValue placeholder={store.lessonGrade ? "Chọn chủ đề..." : "Chọn khối trước"} />
                             </SelectTrigger>
                             <SelectContent className="bg-white dark:bg-slate-900 rounded-3xl p-2 shadow-2xl border-indigo-100 max-h-[400px]">

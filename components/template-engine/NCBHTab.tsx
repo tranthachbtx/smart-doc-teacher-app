@@ -59,9 +59,9 @@ export function NCBHTab({
             <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Khối</Label>
-                        <Select value={ncbhGrade} onValueChange={setNcbhGrade}>
-                            <SelectTrigger>
+                        <Label htmlFor="ncbh-grade-select">Khối</Label>
+                        <Select value={ncbhGrade} onValueChange={setNcbhGrade} name="ncbhGrade">
+                            <SelectTrigger id="ncbh-grade-select">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -72,9 +72,9 @@ export function NCBHTab({
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label>Chủ đề (Tháng)</Label>
-                        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                            <SelectTrigger>
+                        <Label htmlFor="ncbh-month-select">Chủ đề (Tháng)</Label>
+                        <Select value={selectedMonth} onValueChange={setSelectedMonth} name="ncbhMonth">
+                            <SelectTrigger id="ncbh-month-select">
                                 <SelectValue placeholder="Chọn chủ đề..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -89,15 +89,16 @@ export function NCBHTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label>Tên bài học nghiên cứu</Label>
+                    <Label htmlFor="ncbh-topic-select">Tên bài học nghiên cứu</Label>
                     <Select
                         value={filteredPpctItems.some(item => item.theme === ncbhTopic) ? ncbhTopic : (ncbhTopic ? "Tự nhập" : "")}
                         onValueChange={(v) => {
                             if (v !== "Tự nhập") setNcbhTopic(v);
                             else if (ncbhTopic === "") setNcbhTopic("");
                         }}
+                        name="ncbhTopic"
                     >
-                        <SelectTrigger>
+                        <SelectTrigger id="ncbh-topic-select">
                             <SelectValue placeholder="Chọn bài dạy từ PPCT..." />
                         </SelectTrigger>
                         <SelectContent>
@@ -112,6 +113,8 @@ export function NCBHTab({
 
                     {(ncbhTopic === "" || !filteredPpctItems.some(item => item.theme === ncbhTopic)) && (
                         <Textarea
+                            id="ncbh-topic-custom"
+                            name="ncbhTopicCustom"
                             placeholder="VD: Giao tiếp tự tin trong các mối quan hệ (Cánh Diều/Kết nối Tri thức)..."
                             value={ncbhTopic}
                             onChange={(e) => setNcbhTopic(e.target.value)}
@@ -121,8 +124,10 @@ export function NCBHTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label>Ghi chú/Tình huống quan sát (nếu có)</Label>
+                    <Label htmlFor="ncbh-instructions">Ghi chú/Tình huống quan sát (nếu có)</Label>
                     <Textarea
+                        id="ncbh-instructions"
+                        name="ncbhInstructions"
                         placeholder="VD: Em Nam tổ 2 gục đầu khi thảo luận nhóm. Một số học sinh lúng túng khi xử lý tình huống sắm vai..."
                         value={ncbhCustomInstructions}
                         onChange={(e) => setNcbhCustomInstructions(e.target.value)}

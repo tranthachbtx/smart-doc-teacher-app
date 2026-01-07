@@ -59,12 +59,13 @@ export function AssessmentTab({
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label>Khối lớp</Label>
+                            <Label htmlFor="assessment-grade-select">Khối lớp</Label>
                             <Select
                                 value={assessmentGrade}
                                 onValueChange={setAssessmentGrade}
+                                name="assessmentGrade"
                             >
-                                <SelectTrigger>
+                                <SelectTrigger id="assessment-grade-select">
                                     <SelectValue placeholder="Chọn khối" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -76,12 +77,13 @@ export function AssessmentTab({
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Kỳ đánh giá</Label>
+                            <Label htmlFor="assessment-term-select">Kỳ đánh giá</Label>
                             <Select
                                 value={assessmentTerm}
                                 onValueChange={setAssessmentTerm}
+                                name="assessmentTerm"
                             >
-                                <SelectTrigger>
+                                <SelectTrigger id="assessment-term-select">
                                     <SelectValue placeholder="Chọn kỳ" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -94,12 +96,13 @@ export function AssessmentTab({
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Loại sản phẩm</Label>
+                            <Label htmlFor="assessment-product-select">Loại sản phẩm</Label>
                             <Select
                                 value={assessmentProductType}
                                 onValueChange={setAssessmentProductType}
+                                name="assessmentProductType"
                             >
-                                <SelectTrigger>
+                                <SelectTrigger id="assessment-product-select">
                                     <SelectValue placeholder="Chọn loại sản phẩm" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -120,8 +123,10 @@ export function AssessmentTab({
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Chủ đề / Nội dung trọng tâm</Label>
+                            <Label htmlFor="assessment-topic-input">Chủ đề / Nội dung trọng tâm</Label>
                             <Input
+                                id="assessment-topic-input"
+                                name="assessmentTopic"
                                 value={assessmentTopic}
                                 onChange={(e) => setAssessmentTopic(e.target.value)}
                                 placeholder="VD: Chủ đề 3 - Xây dựng tình bạn..."
@@ -129,13 +134,14 @@ export function AssessmentTab({
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Mẫu văn bản (Tùy chọn)</Label>
+                            <Label htmlFor="assessment-template-upload">Mẫu văn bản (Tùy chọn)</Label>
                             <div className="flex gap-2 items-center">
                                 <Input
                                     type="file"
                                     accept=".docx"
                                     className="hidden"
                                     id="assessment-template-upload"
+                                    name="assessmentTemplate"
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
                                         if (file) onTemplateUpload(file);

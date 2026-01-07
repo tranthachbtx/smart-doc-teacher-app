@@ -272,7 +272,7 @@ export function TemplateEngine() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Đã xảy ra lỗi");
     } finally {
-      setIsGenerating(false);
+      setGeneratingMode(null);
     }
   };
 
