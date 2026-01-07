@@ -59,7 +59,7 @@ export function SmartPromptBuilder({ grade, topicName, chuDeSo, fileSummary }: S
             // Auto-fill fields
             setObjectives(result.objectives);
             setStudentCharacteristics(result.studentCharacteristics);
-            setCoreTasks(result.coreTasks);
+            setCoreTasks(Object.values(result.coreMissions).join("\n\n"));
             setShdcSuggestions(result.shdc_shl_suggestions);
             setDigitalCompetency(result.digitalCompetency);
             setAssessmentTools(result.assessmentTools);
@@ -90,7 +90,12 @@ export function SmartPromptBuilder({ grade, topicName, chuDeSo, fileSummary }: S
             topicName,
             objectives,
             studentCharacteristics,
-            coreTasks,
+            coreMissions: {
+                khoiDong: coreTasks.split("\n\n")[0] || "",
+                khamPha: coreTasks.split("\n\n")[1] || "",
+                luyenTap: coreTasks.split("\n\n")[2] || "",
+                vanDung: coreTasks.split("\n\n")[3] || ""
+            },
             shdc_shl_suggestions: shdcSuggestions,
             digitalCompetency,
             assessmentTools,
