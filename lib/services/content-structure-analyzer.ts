@@ -33,7 +33,7 @@ export interface StructuredContent {
 }
 
 export class ContentStructureAnalyzer {
-    async analyzePDFContent(rawText: string): Promise<StructuredContent> {
+    async analyzePDFContent(rawText: string, model: string = "gemini-1.5-flash-latest"): Promise<StructuredContent> {
         // 1. Initial AI analysis for structure
         const structurePrompt = `
         Bạn là chuyên gia phân tích dữ liệu giáo dục. Hãy phân tích nội dung giáo án sau và bóc tách thành các phần nhỏ có ý nghĩa sư phạm.
@@ -75,7 +75,7 @@ export class ContentStructureAnalyzer {
         `;
 
         try {
-            const aiResponse = await generateAIContent(structurePrompt, "gemini-1.5-flash");
+            const aiResponse = await generateAIContent(structurePrompt, model);
 
             if (!aiResponse.success || !aiResponse.content) {
                 throw new Error("AI analysis failed: " + aiResponse.error);
@@ -141,7 +141,7 @@ export class ContentStructureAnalyzer {
                 title: "Mục tiêu bài học (Robust)",
                 type: "objective",
                 content: analyzed.objectives,
-                relevance: { khoi_dong: 90, kham_pha: 10, luyen_tap: 10, van_dung: 10 },
+                relevance: { khoi_dong: 100, kham_pha: 40, luyen_tap: 0, van_dung: 0 },
                 metadata: { pageNumbers: [], wordCount: analyzed.objectives.split(/\s+/).length, complexity: 'medium' }
             });
         }
@@ -153,7 +153,7 @@ export class ContentStructureAnalyzer {
                 title: "Thiết bị dạy học/Chuẩn bị",
                 type: "resource",
                 content: analyzed.preparations,
-                relevance: { khoi_dong: 50, kham_pha: 50, luyen_tap: 20, van_dung: 20 },
+                relevance: { khoi_dong: 60, kham_pha: 60, luyen_tap: 0, van_dung: 0 },
                 metadata: { pageNumbers: [], wordCount: analyzed.preparations.split(/\s+/).length, complexity: 'low' }
             });
         }
@@ -166,10 +166,10 @@ export class ContentStructureAnalyzer {
                 type: "activity",
                 content: act.content,
                 relevance: {
-                    khoi_dong: index === 0 ? 80 : 20,
-                    kham_pha: 70,
-                    luyen_tap: index > 1 ? 80 : 30,
-                    van_dung: 40
+                    khoi_dong: index === 0 ? 100 : 0,
+                    kham_pha: index === 1 ? 100 : (index === 0 ? 30 : 20),
+                    luyen_tap: index === 2 ? 100 : 0,
+                    van_dung: index >= 3 ? 100 : 0
                 },
                 metadata: { pageNumbers: [], wordCount: act.content.split(/\s+/).length, complexity: 'medium' }
             });

@@ -497,7 +497,7 @@ export async function generateAIContent(prompt: string, model?: string): Promise
 /**
  * REFINE SECTION: Tinh chỉnh một đoạn nội dung cụ thể
  */
-export async function onRefineSection(content: string, instruction: string, model: string = "gemini-1.5-flash"): Promise<ActionResult> {
+export async function onRefineSection(content: string, instruction: string, model: string = "gemini-1.5-flash-latest"): Promise<ActionResult> {
   const prompt = `
     VAI TRÒ: Chuyên gia biên soạn giáo án.
     YÊU CẦU: Một giáo viên đang cần bạn tinh chỉnh đoạn nội dung dưới đây.
@@ -526,7 +526,7 @@ export async function extractTextFromFile(
   prompt: string = "Hãy tóm tắt nội dung chính của tài liệu này để làm tư liệu soạn bài. Liệt kê các hoạt động chính."
 ): Promise<ActionResult> {
   try {
-    const text = await callAI(prompt, "gemini-1.5-flash", file);
+    const text = await callAI(prompt, "gemini-1.5-flash-latest", file);
     return { success: true, content: text };
   } catch (e: any) {
     return { success: false, error: e.message };

@@ -48,12 +48,16 @@ export const ManualWorkflowService = {
      * Tạo Prompt "xịn" cho từng module để user copy sang Gemini Pro Web/ChatGPT
      */
     async generatePromptForModule(module: ProcessingModule, context: PromptContext): Promise<string> {
-        // Use optimized summary if available, otherwise fallback to validated base summary
-        const baseContent = context.optimizedFileSummary || ManualWorkflowService.validateAndCleanFileSummary(context.fileSummary);
+        // High-Precision Logic: Use pre-optimized content if available, otherwise process the raw summary
+        let optimizedContent = "";
 
-        // Process content with ProfessionalContentProcessor
-        const processedContent = ProfessionalContentProcessor.extractActivityContent(baseContent);
-        const optimizedContent = ProfessionalContentProcessor.optimizeForActivity(module.type, processedContent);
+        if (context.optimizedFileSummary) {
+            optimizedContent = context.optimizedFileSummary;
+        } else {
+            const baseContent = ManualWorkflowService.validateAndCleanFileSummary(context.fileSummary);
+            const processedContent = ProfessionalContentProcessor.extractActivityContent(baseContent);
+            optimizedContent = ProfessionalContentProcessor.optimizeForActivity(module.type, processedContent);
+        }
 
         const contextInjection = context.previousContext
             ? `\n[CONTEXT_UPDATE]: Hoạt động trước đó đã hoàn thành. Hãy tiếp nối mạch bài học này để tạo sự logic.\nBối cảnh cũ: ${context.previousContext}\n`

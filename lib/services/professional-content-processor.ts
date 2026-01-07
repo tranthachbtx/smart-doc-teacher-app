@@ -10,23 +10,23 @@ import { PedagogicalRelevanceEngine } from "./pedagogical-relevance-engine";
 import { TextCleaningService } from "./text-cleaning-service";
 
 export interface ActivityContent {
-  khoiDong: {
+  khoi_dong: {
     mucTieu: string[];
     hoatDong: string[];
     thietBi: string[];
   };
-  khamPha: {
+  kham_pha: {
     mucTieu: string[];
     kiemThuc: string[];
     hoatDong: string[];
     thietBi: string[];
   };
-  luyenTap: {
+  luyen_tap: {
     mucTieu: string[];
     baiTap: string[];
     hoatDong: string[];
   };
-  vanDung: {
+  van_dung: {
     mucTieu: string[];
     duAn: string[];
     hoatDong: string[];
@@ -34,19 +34,19 @@ export interface ActivityContent {
 }
 
 export const ACTIVITY_PATTERNS = {
-  khoiDong: [
+  khoi_dong: [
     /hoạt động 1/i, /khởi động/i, /mở đầu/i, /giới thiệu/i, /đặt vấn đề/i,
     /trò chơi/i, /vấn đề/i, /khơi gợi/i, /warm[-]?up/i, /ice[-]?breaker/i
   ],
-  khamPha: [
+  kham_pha: [
     /hoạt động 2/i, /khám phá/i, /hình thành/i, /kiến thức mới/i, /xây dựng/i,
     /thuyết trình/i, /thảo luận/i, /phân tích/i, /nghiên cứu/i, /tìm hiểu/i
   ],
-  luyenTap: [
+  luyen_tap: [
     /hoạt động 3/i, /luyện tập/i, /thực hành/i, /bài tập/i, /củng cố/i,
     /làm bài/i, /trắc nghiệm/i, /rèn luyện/i
   ],
-  vanDung: [
+  van_dung: [
     /hoạt động 4/i, /vận dụng/i, /mở rộng/i, /sáng tạo/i, /dự án/i,
     /thực tế/i, /liên hệ/i, /giải quyết/i, /ứng dụng/i
   ]
@@ -83,10 +83,10 @@ export class ProfessionalContentProcessor {
   static extractActivityContent(rawContent: string): ActivityContent {
     const lines = rawContent.split('\n');
     const content: ActivityContent = {
-      khoiDong: { mucTieu: [], hoatDong: [], thietBi: [] },
-      khamPha: { mucTieu: [], kiemThuc: [], hoatDong: [], thietBi: [] },
-      luyenTap: { mucTieu: [], baiTap: [], hoatDong: [] },
-      vanDung: { mucTieu: [], duAn: [], hoatDong: [] }
+      khoi_dong: { mucTieu: [], hoatDong: [], thietBi: [] },
+      kham_pha: { mucTieu: [], kiemThuc: [], hoatDong: [], thietBi: [] },
+      luyen_tap: { mucTieu: [], baiTap: [], hoatDong: [] },
+      van_dung: { mucTieu: [], duAn: [], hoatDong: [] }
     };
 
     let currentSection = '';
@@ -127,7 +127,7 @@ export class ProfessionalContentProcessor {
       // Add content only if we are inside a tracked activity/section pair
       if (currentActivity && currentSection) {
         const activityKey = currentActivity as keyof ActivityContent;
-        const sectionKey = currentSection as keyof typeof content.khoiDong;
+        const sectionKey = currentSection as keyof typeof content.khoi_dong;
 
         // Prevent duplication: skip if this line is just a marker we've already matched
         const isMarker = Object.values(SECTION_PATTERNS).flat().some(p => p.test(trimmedLine)) ||
@@ -154,46 +154,46 @@ export class ProfessionalContentProcessor {
     const optimized = [];
 
     switch (activity) {
-      case 'khoiDong':
+      case 'khoi_dong':
         optimized.push('## 🎯 MỤC TIÊU KHỞI ĐỘNG');
-        optimized.push(...this.extractKeyPoints(content.khoiDong.mucTieu, 3));
+        optimized.push(...this.extractKeyPoints(content.khoi_dong.mucTieu, 3));
         optimized.push('\n## 🎮 HOẠT ĐỘNG KHỞI ĐỘNG');
-        optimized.push(...this.extractKeyPoints(content.khoiDong.hoatDong, 2));
-        if (content.khoiDong.thietBi.length > 0) {
+        optimized.push(...this.extractKeyPoints(content.khoi_dong.hoatDong, 2));
+        if (content.khoi_dong.thietBi.length > 0) {
           optimized.push('\n## 🛠️ THIẾT BỊ');
-          optimized.push(...this.extractKeyPoints(content.khoiDong.thietBi, 2));
+          optimized.push(...this.extractKeyPoints(content.khoi_dong.thietBi, 2));
         }
         break;
 
-      case 'khamPha':
+      case 'kham_pha':
         optimized.push('## 🎯 MỤC TIÊU KHÁM PHÁ');
-        optimized.push(...this.extractKeyPoints(content.khamPha.mucTieu, 3));
+        optimized.push(...this.extractKeyPoints(content.kham_pha.mucTieu, 3));
         optimized.push('\n## 📚 KIẾN THỨC CẦN HÌNH THÀNH');
-        optimized.push(...this.extractKeyPoints(content.khamPha.kiemThuc, 4));
+        optimized.push(...this.extractKeyPoints(content.kham_pha.kiemThuc, 4));
         optimized.push('\n## 🔬 HOẠT ĐỘNG KHÁM PHÁ');
-        optimized.push(...this.extractKeyPoints(content.khamPha.hoatDong, 3));
-        if (content.khamPha.thietBi.length > 0) {
+        optimized.push(...this.extractKeyPoints(content.kham_pha.hoatDong, 3));
+        if (content.kham_pha.thietBi.length > 0) {
           optimized.push('\n## 🛠️ THIẾT BỊ');
-          optimized.push(...this.extractKeyPoints(content.khamPha.thietBi, 2));
+          optimized.push(...this.extractKeyPoints(content.kham_pha.thietBi, 2));
         }
         break;
 
-      case 'luyenTap':
+      case 'luyen_tap':
         optimized.push('## 🎯 MỤC TIÊU LUYỆN TẬP');
-        optimized.push(...this.extractKeyPoints(content.luyenTap.mucTieu, 2));
+        optimized.push(...this.extractKeyPoints(content.luyen_tap.mucTieu, 2));
         optimized.push('\n## 📝 BÀI TẬP LUYỆN TẬP');
-        optimized.push(...this.extractKeyPoints(content.luyenTap.baiTap, 3));
+        optimized.push(...this.extractKeyPoints(content.luyen_tap.baiTap, 3));
         optimized.push('\n## 🛠️ HOẠT ĐỘNG LUYỆN TẬP');
-        optimized.push(...this.extractKeyPoints(content.luyenTap.hoatDong, 2));
+        optimized.push(...this.extractKeyPoints(content.luyen_tap.hoatDong, 2));
         break;
 
-      case 'vanDung':
+      case 'van_dung':
         optimized.push('## 🎯 MỤC TIÊU VẬN DỤNG');
-        optimized.push(...this.extractKeyPoints(content.vanDung.mucTieu, 2));
+        optimized.push(...this.extractKeyPoints(content.van_dung.mucTieu, 2));
         optimized.push('\n## 🚀 DỰ ÁN VẬN DỤNG');
-        optimized.push(...this.extractKeyPoints(content.vanDung.duAn, 3));
+        optimized.push(...this.extractKeyPoints(content.van_dung.duAn, 3));
         optimized.push('\n## 🌟 HOẠT ĐỘNG VẬN DỤNG');
-        optimized.push(...this.extractKeyPoints(content.vanDung.hoatDong, 2));
+        optimized.push(...this.extractKeyPoints(content.van_dung.hoatDong, 2));
         break;
     }
 
@@ -258,7 +258,7 @@ ${quantumInsight}
 
 ## 🎮 YÊU CẦU NÂNG CAO (CRITICAL DIRECTIVES):
 1. **Phân tích sâu nhiệm vụ**: Thay vì viết "GV giao nhiệm vụ", hãy diễn giải rõ: Nhiệm vụ đó là gì? Tại sao giao nhiệm vụ đó? HS sẽ gặp khó khăn gì và GV định hướng ra sao? (Viết thật dài phần này).
-2. **Kỹ thuật sư phạm La bàn**: Sử dụng các phương pháp: ${activity === 'khoiDong' ? 'Gamification/Kích hoạt tư duy' : activity === 'khamPha' ? 'Nội soi kiến thức/Thảo luận đa chiều' : 'Ứng dụng thực tiễn/Tối ưu hóa năng lực'}.
+2. **Kỹ thuật sư phạm La bàn**: Sử dụng các phương pháp: ${activity === 'khoi_dong' ? 'Gamification/Kích hoạt tư duy' : activity === 'kham_pha' ? 'Nội soi kiến thức/Thảo luận đa chiều' : 'Ứng dụng thực tiễn/Tối ưu hóa năng lực'}.
 3. **Mạch logic 5512**: Diễn giải cực kỳ chi tiết 4 bước: 
    - *Chuyển giao*: GV sử dụng học liệu gì? Cách đặt vấn đề mang tính chiến lược.
    - *Thực hiện*: HS cá nhân/nhóm làm gì? GV quan sát và hỗ trợ những "điểm nghẽn" nào? 
@@ -290,10 +290,10 @@ Trả về duy nhất JSON:
    */
   private static getActivityTitle(activity: string): string {
     const titles = {
-      khoiDong: 'HOẠT ĐỘNG 1: KHỞI ĐỘNG',
-      khamPha: 'HOẠT ĐỘNG 2: KHÁM PHÁ',
-      luyenTap: 'HOẠT ĐỘNG 3: LUYỆN TẬP',
-      vanDung: 'HOẠT ĐỘNG 4: VẬN DỤNG'
+      khoi_dong: 'HOẠT ĐỘNG 1: KHỞI ĐỘNG',
+      kham_pha: 'HOẠT ĐỘNG 2: KHÁM PHÁ',
+      luyen_tap: 'HOẠT ĐỘNG 3: LUYỆN TẬP',
+      van_dung: 'HOẠT ĐỘNG 4: VẬN DỤNG'
     };
     return titles[activity as keyof typeof titles] || activity;
   }
@@ -303,10 +303,10 @@ Trả về duy nhất JSON:
    */
   private static getActivityDuration(activity: string): string {
     const durations = {
-      khoiDong: '5-7 phút',
-      khamPha: '15-20 phút',
-      luyenTap: '10-15 phút',
-      vanDung: '5-10 phút'
+      khoi_dong: '5-7 phút',
+      kham_pha: '15-20 phút',
+      luyen_tap: '10-15 phút',
+      van_dung: '5-10 phút'
     };
     return durations[activity as keyof typeof durations] || '10 phút';
   }
@@ -316,22 +316,22 @@ Trả về duy nhất JSON:
    */
   private static getActivityRequirements(activity: string): string {
     const requirements = {
-      khoiDong: `- Tạo tâm thế hứng thú, kích thích tò mò
+      khoi_dong: `- Tạo tâm thế hứng thú, kích thích tò mò
 - Dùng trò chơi/tình huống mở đầu gần gũi
 - Kết nối với chủ đề "Bảo vệ thế giới tự nhiên"
 - Thiết kế tương tác cao, tất cả HS tham gia`,
 
-      khamPha: `- Hình thành kiến thức mới về bảo vệ thế giới tự nhiên
+      kham_pha: `- Hình thành kiến thức mới về bảo vệ thế giới tự nhiên
 - Thiết kế chuỗi hoạt động chuyển giao nhiệm vụ rõ ràng
 - Tích hợp công cụ số (TT 02/2025)
 - Sử dụng phương pháp dạy học tích cực`,
 
-      luyenTap: `- Củng cố kiến thức đã học
+      luyen_tap: `- Củng cố kiến thức đã học
 - Thiết kế hệ thống bài tập đa dạng
 - Tích hợp công cụ đánh giá nhanh
 - Giao tiếp và hợp tác nhóm`,
 
-      vanDung: `- Giải quyết vấn đề thực tiễn
+      van_dung: `- Giải quyết vấn đề thực tiễn
 - Thiết kế dự án nhỏ liên hệ thực tế
 - Tích hợp AI và công nghệ số
 - Lan tỏa giá trị bảo vệ môi trường`
@@ -346,22 +346,22 @@ Trả về duy nhất JSON:
     if (!smartData) return 'Không có dữ liệu chuyên môn.';
 
     const advice = {
-      khoiDong: `- **Tâm lý lứa tuổi**: ${smartData.studentCharacteristics}
+      khoi_dong: `- **Tâm lý lứa tuổi**: ${smartData.studentCharacteristics}
 - **Nghiệm vụ cốt lõi**: ${smartData.coreMissions.khoiDong}
 - **Chiến lược**: Hãy dùng đặc điểm tâm lý trên để thiết kế một trò chơi/tình huống mở đầu cực cuốn hút.`,
 
-      khamPha: `- **Nhiệm vụ TRỌNG TÂM (SGK)**: 
+      kham_pha: `- **Nhiệm vụ TRỌNG TÂM (SGK)**: 
 ${smartData.coreMissions.khamPha}
 - **Công cụ số (NLS)**: 
 ${smartData.digitalCompetency}
 - **Chiến lược**: Hãy chuyển hóa các nhiệm vụ trọng tâm trên thành chuỗi hoạt động khám phá cụ thể. KHÔNG sáng tạo xa rời nhiệm vụ này.`,
 
-      luyenTap: `- **Mục tiêu cần đạt**: ${smartData.objectives}
+      luyen_tap: `- **Mục tiêu cần đạt**: ${smartData.objectives}
 - **Nhiệm vụ rèn luyện**: ${smartData.coreMissions.luyenTap}
 - **Công cụ đánh giá**: ${smartData.assessmentTools}
 - **Chiến lược**: Thiết kế hệ thống bài tập để củng cố các mục tiêu trên.`,
 
-      vanDung: `- **Lưu ý thực tiễn**: ${smartData.pedagogicalNotes}
+      van_dung: `- **Lưu ý thực tiễn**: ${smartData.pedagogicalNotes}
 - **Nhiệm vụ thực tế**: ${smartData.coreMissions.vanDung}
 - **Chiến lược**: Đưa ra bài toán thực tế/Dự án nhỏ kết nối với lưu ý trên.`
     };

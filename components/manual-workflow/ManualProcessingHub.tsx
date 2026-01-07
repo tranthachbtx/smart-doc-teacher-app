@@ -76,7 +76,7 @@ export function ManualProcessingHub() {
             if (result.content && result.content.trim().length > 0) {
                 setAnalyzingStatus("AI đang cấu trúc hóa nội dung...");
                 const analyzer = new ContentStructureAnalyzer();
-                const structured = await analyzer.analyzePDFContent(result.content);
+                const structured = await analyzer.analyzePDFContent(result.content, store.selectedModel);
                 setStructuredContent(structured);
 
                 const scientificText = LessonPlanAnalyzer.formatForPrompt(LessonPlanAnalyzer.analyze(result.content));
