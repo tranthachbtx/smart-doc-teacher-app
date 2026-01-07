@@ -238,44 +238,49 @@ export class ProfessionalContentProcessor {
     }
 
     const activityTitle = this.getActivityTitle(activity).toUpperCase();
-    const basePrompt = `Bạn là SIÊU TRÍ TUỆ SƯ PHẠM & CHUYÊN GIA BIÊN SOẠN GIÁO ÁN CAO CẤP. 
-Nhiệm vụ: Thiết kế chi tiết ${activityTitle} theo chuẩn Công văn 5512/BGDĐT.
+    const basePrompt = `Bạn là SIÊU TRÍ TUỆ SƯ PHẠM & KIẾN TRÚC SƯ GIÁO DỤC CAO CẤP. 
+Nhiệm vụ: Thiết kế ${activityTitle} theo triết lý "GIÁO ÁN LÀ LA BÀN" (Compass-Style Lesson Plan) chuẩn Công văn 5512.
 
-## 🎯 DỮ LIỆU ĐÃ TỐI ƯU CHO HOẠT ĐỘNG: ${activityTitle}
-> Hướng dẫn: Đây là các mảnh kiến thức được trích xuất từ tài liệu gốc (SGK/Tài liệu tham khảo), đã lọc theo mức độ liên quan cao nhất cho riêng hoạt động này.
+## 🏮 TRIẾT LÝ THIẾT KẾ (COMPASS PHILOSOPHY):
+- **Không kịch bản hóa**: Tránh sa đà vào lời thoại "GV nói - HS thưa" vụn vặt.
+- **Tập trung định hướng**: Diễn giải chi tiết các "Nút thắt sư phạm", chiến lược tổ chức, cách thức xử lý tình huống và mạch kiến thức chuyên sâu.
+- **Độ dày tri thức**: Để giáo án đạt 30-50 trang, bạn PHẢI đào sâu vào nội dung chuyên môn, các bước hướng dẫn tư duy và hệ thống câu hỏi gợi mở mang tính chiến lược.
+
+## 🎯 DỮ LIỆU ĐÃ TỐI ƯU TỪ HỆ THỐNG:
 ${optimizedContent}
 
 ## 📊 PHÂN TÍCH PEDAGOGICAL (RELEVANCE):
 ${relevance.reasoning}
 
-## 💡 HỆ THỐNG TRÍ THỨC (DATABASE):
+## 💡 HỆ THỐNG TRÍ THỨC (DATABASE CHIẾN LƯỢC):
 ${this.getSmartDataAdvice(activity, smartData)}
 ${quantumInsight}
 
-## 🎮 YÊU CẦU NÂNG CAO (CRITICAL):
-1. **Độ chi tiết tối đa**: Để giáo án đạt 30-50 trang, bạn PHẢI diễn giải cực kỳ chi tiết từng bước.
-2. **Lời thoại (Verbatim Script)**: Cung cấp chính xác giáo viên sẽ nói gì (VD: "Chào các em, hôm nay...") và dự kiến học sinh sẽ trả lời ra sao.
-3. **Kỹ thuật sư phạm**: Áp dụng các kỹ thuật như: ${activity === 'khoiDong' ? 'Gamification, KWL' : activity === 'khamPha' ? 'Khăn trải bàn, Mảnh ghép' : 'Think-Pair-Share'}.
-4. **Chuẩn 5512**: Chia rõ 4 bước: Chuyển giao nhiệm vụ -> Thực hiện -> Báo cáo, thảo luận -> Kết luận, chốt kiến thức.
+## 🎮 YÊU CẦU NÂNG CAO (CRITICAL DIRECTIVES):
+1. **Phân tích sâu nhiệm vụ**: Thay vì viết "GV giao nhiệm vụ", hãy diễn giải rõ: Nhiệm vụ đó là gì? Tại sao giao nhiệm vụ đó? HS sẽ gặp khó khăn gì và GV định hướng ra sao? (Viết thật dài phần này).
+2. **Kỹ thuật sư phạm La bàn**: Sử dụng các phương pháp: ${activity === 'khoiDong' ? 'Gamification/Kích hoạt tư duy' : activity === 'khamPha' ? 'Nội soi kiến thức/Thảo luận đa chiều' : 'Ứng dụng thực tiễn/Tối ưu hóa năng lực'}.
+3. **Mạch logic 5512**: Diễn giải cực kỳ chi tiết 4 bước: 
+   - *Chuyển giao*: GV sử dụng học liệu gì? Cách đặt vấn đề mang tính chiến lược.
+   - *Thực hiện*: HS cá nhân/nhóm làm gì? GV quan sát và hỗ trợ những "điểm nghẽn" nào? 
+   - *Báo cáo*: Cách thức tổ chức trình bày và tranh biện.
+   - *Kết luận*: Chốt kiến thức then chốt và mở rộng tầm nhìn cho HS.
 
 ## 📋 ĐỊNH DẠNG ĐẦU RA (JSON):
-Trả về duy nhất một chuỗi JSON hợp lệ với cấu trúc:
+Trả về duy nhất JSON:
 {
   "module_title": "${this.getActivityTitle(activity)} - [Tên hoạt động sáng tạo]",
   "duration": "${this.getActivityDuration(activity)}",
-  "summary_for_next_step": "Tóm tắt chi tiết (4-5 câu) để làm nền tảng cho bước kế tiếp.",
+  "summary_for_next_step": "Tóm tắt chiến lược (5-6 câu) về mạch logic của hoạt động này.",
   "steps": [
     {
       "step_type": "transfer" | "perform" | "report" | "conclude", 
-      "teacher_action": "Nội dung cột GV (Markdown). Hãy viết thật dài và chi tiết.",
-      "student_action": "Nội dung cột HS. Mô tả kỹ các sản phẩm/câu trả lời của học sinh."
+      "teacher_action": "Nội dung cột GV (Markdown). Viết chi tiết các chiến lược tổ chức và chỉ dẫn sư phạm chuyên sâu.",
+      "student_action": "Nội dung cột HS. Mô tả kỹ các sản phẩm, cách thức tư duy và kết quả đầu ra của học sinh."
     }
   ]
 }
 
-⚠️ LƯU Ý KỸ THUẬT:
-- KHÔNG sử dụng các từ chung chung như "GV hướng dẫn", hãy viết RÕ GV hướng dẫn điều gì, nói câu gì.
-- Escape dấu ngoặc kép (") thành \\" và xuống dòng thành \\n.`;
+⚠️ LƯU Ý: Tuyệt đối không viết lời thoại sáo rỗng. Hãy viết những hướng dẫn sư phạm "đắt giá" và giàu hàm lượng tri thức.`;
 
     return basePrompt;
   }

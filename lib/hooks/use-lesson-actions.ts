@@ -81,7 +81,7 @@ export const useLessonActions = () => {
             console.error('Export error details:', {
                 error: error.message,
                 stack: error.stack,
-                lessonResultSize: store.lessonResult ? JSON.stringify(store.lessonResult).length : 0,
+                lessonResultSize: store.lesson.result ? JSON.stringify(store.lesson.result).length : 0,
                 timestamp: new Date().toISOString()
             });
 
