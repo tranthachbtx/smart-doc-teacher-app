@@ -22,6 +22,7 @@ export interface ProcessingModule {
 interface AppState {
     // Global UI Status
     generatingMode: string | null;
+    isGenerating: boolean;
     isExporting: boolean;
     isAuditing: boolean;
     exportProgress: number;
@@ -89,7 +90,7 @@ interface AppState {
     };
 
     // Actions
-    setLoading: (key: 'isExporting' | 'isAuditing', value: boolean) => void;
+    setLoading: (key: 'isExporting' | 'isAuditing' | 'isGenerating', value: boolean) => void;
     setGeneratingMode: (mode: string | null) => void;
     setSuccess: (msg: string | null) => void;
     setError: (msg: string | null) => void;
@@ -121,6 +122,7 @@ export const useAppStore = create<AppState>()(
         (set) => ({
             // Initial Global States
             generatingMode: null,
+            isGenerating: false,
             isExporting: false,
             isAuditing: false,
             exportProgress: 0,
