@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useCallback } from 'react';
-import { useLessonStore, ProcessingModule } from '@/lib/store/use-lesson-store';
+import { useAppStore, ProcessingModule } from '@/lib/store/use-app-store';
 import { LessonResult } from '@/lib/types';
 import { ManualWorkflowService } from '@/lib/services/manual-workflow-service';
 import { ExportService } from '@/lib/services/export-service';
@@ -23,21 +23,24 @@ import { ExpertBrainInjection } from '../template-engine/ExpertBrainInjection';
 import { ContentFilter } from '@/lib/services/content-filter';
 
 export function ManualProcessingHub() {
+    const store = useAppStore();
+    const { lesson } = store;
     const {
-        lessonAutoFilledTheme,
-        lessonGrade,
+        theme: lessonAutoFilledTheme,
+        grade: lessonGrade,
         expertGuidance,
-        setExpertGuidance,
         manualModules,
-        setManualModules,
-        updateModuleContent,
-        isExporting,
-        setLoading,
-        setStatus,
-        setExportProgress,
-        lessonResult,
-        setLessonResult
-    } = useLessonStore();
+        result: lessonResult
+    } = lesson;
+
+    const setExpertGuidance = (v: string) => store.updateLessonField('expertGuidance', v);
+    const setManualModules = (v: ProcessingModule[]) => store.updateLessonField('manualModules', v);
+    const updateModuleContent = (id: string, content: string) => {
+        store.updateLessonField('manualModules', manualModules.map(m =>
+            m.id === id ? { ...m, content, isCompleted: !!content.trim() } : m
+        ));
+    };
+    const setLessonResult = (v: LessonResult | null) => store.setLessonResult(v);
 
     const { handleExportDocx, handleSurgicalMerge, handleAudit } = useLessonActions();
     const { toast } = useToast();

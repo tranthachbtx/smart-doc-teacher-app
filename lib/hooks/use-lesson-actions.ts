@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useLessonStore } from '../store/use-lesson-store';
+import { useAppStore } from '../store/use-app-store';
 import { ExportService } from '../services/export-service';
 import { ExportOptimizer } from '../services/export-optimizer';
 import { auditLessonPlan } from '../actions/gemini';
@@ -7,30 +7,31 @@ import { surgicalMerge } from '../services/KHBHMerger';
 import { performAdvancedAudit } from '../actions/advanced-audit';
 
 export const useLessonActions = () => {
-    const store = useLessonStore();
+    const store = useAppStore();
+    const { lesson } = store;
 
     const handleGenerateFullPlan = useCallback(async () => {
-        if (!store.lessonAutoFilledTheme) {
-            store.setStatus('error', "Vui lòng chọn hoặc nhập chủ đề bài học");
+        if (!lesson.theme) {
+            store.setError("Vui lòng chọn hoặc nhập chủ đề bài học");
             return;
         }
 
         store.setLoading('isGenerating', true);
-        store.setStatus('success', "🚀 Đang khởi tạo tiến trình AI...");
+        store.setSuccess("🚀 Đang khởi tạo tiến trình AI...");
 
         try {
             // Pipeline logic will be managed here
-            store.setStatus('success', "✅ Giáo án đã được tạo thành công!");
+            store.setSuccess("✅ Giáo án đã được tạo thành công!");
         } catch (error: any) {
-            store.setStatus('error', error.message);
+            store.setError(error.message);
         } finally {
             store.setLoading('isGenerating', false);
         }
-    }, [store.lessonAutoFilledTheme, store.setLoading, store.setStatus]);
+    }, [lesson.theme, store]);
 
     const handleExportDocx = useCallback(async () => {
-        if (!store.lessonResult) {
-            store.setStatus('error', "Không có dữ liệu giáo án để xuất");
+        if (!lesson.result) {
+            store.setError("Không có dữ liệu giáo án để xuất");
             return;
         }
 
@@ -39,13 +40,14 @@ export const useLessonActions = () => {
 
         try {
             // Pre-export validation & Risk Prediction (Phase 5.1)
-            const risk = ExportOptimizer.predictExportRisk(store.lessonResult);
+            const risk = ExportOptimizer.predictExportRisk(lesson.result);
             if (risk.riskLevel !== 'low') {
                 console.warn(`Export Risk (${risk.riskLevel}): ${risk.message}`);
-                store.setStatus(risk.riskLevel === 'high' ? 'error' : 'success', risk.message || "");
+                if (risk.riskLevel === 'high') store.setError(risk.message || "");
+                else store.setSuccess(risk.message || "");
             }
 
-            const fileName = `Giao_an_${store.lessonAutoFilledTheme || store.lessonResult.ten_bai || "HDTN"}.docx`.replace(/\s+/g, "_");
+            const fileName = `Giao_an_${lesson.theme || lesson.result.ten_bai || "HDTN"}.docx`.replace(/\s+/g, "_");
 
             // Enhanced progress tracking
             const startTime = Date.now();
@@ -60,14 +62,14 @@ export const useLessonActions = () => {
             };
 
             const result = await ExportService.exportLessonToDocx(
-                store.lessonResult,
+                lesson.result,
                 fileName,
                 progressCallback
             );
 
             if (result.success) {
                 const totalTime = Date.now() - startTime;
-                store.setStatus('success', `💾 Đã tải xuống file Word! (${totalTime}ms)`);
+                store.setSuccess(`💾 Đã tải xuống file Word! (${totalTime}ms)`);
 
                 // Log success metrics
                 console.log(`Export completed successfully in ${totalTime}ms`);
@@ -98,13 +100,13 @@ export const useLessonActions = () => {
                 errorMessage += error.message || "Lỗi không xác định";
             }
 
-            store.setStatus('error', errorMessage);
+            store.setError(errorMessage);
 
             // Optional: Report error to analytics (Phase 3.1)
             if (typeof window !== 'undefined' && 'gtag' in window) {
                 (window as any).gtag('event', 'export_error', {
                     error_message: error.message,
-                    content_size: store.lessonResult ? JSON.stringify(store.lessonResult).length : 0
+                    content_size: lesson.result ? JSON.stringify(lesson.result).length : 0
                 });
             }
 
@@ -112,58 +114,58 @@ export const useLessonActions = () => {
             store.setLoading('isExporting', false);
             // Clear success message after 5 seconds, error after 10 seconds
             const clearTime = store.success ? 5000 : 10000;
-            setTimeout(() => store.setStatus('success', null), clearTime);
+            setTimeout(() => store.setSuccess(null), clearTime);
         }
-    }, [store.lessonResult, store.lessonAutoFilledTheme, store.lessonGrade, store.setLoading, store.setStatus, store.setExportProgress, store.success]);
+    }, [lesson.result, lesson.theme, store]);
 
     const handleAudit = useCallback(async () => {
-        if (!store.lessonResult) return;
+        if (!lesson.result) return;
 
         store.setLoading('isAuditing', true);
-        store.setStatus('success', "🔍 Đang thực hiện kiểm định chuyên sâu (Neural Audit)...");
+        store.setSuccess("🔍 Đang thực hiện kiểm định chuyên sâu (Neural Audit)...");
 
         try {
-            const result = await performAdvancedAudit(store.lessonResult);
+            const result = await performAdvancedAudit(lesson.result);
             if (result.success && result.report) {
                 const report = result.report;
-                store.setStatus('success', `✅ Kiểm định hoàn tất: Score ${report.score}/100. ${report.reasoning.substring(0, 100)}...`);
+                store.setSuccess(`✅ Kiểm định hoàn tất: Score ${report.score}/100. ${report.reasoning.substring(0, 100)}...`);
 
                 // You could also open a dialog here with full report details
                 console.log("[Audit Report]", report);
             } else {
-                store.setStatus('error', result.error || "Kiểm định không thành công");
+                store.setError(result.error || "Kiểm định không thành công");
             }
         } catch (error: any) {
-            store.setStatus('error', error.message);
+            store.setError(error.message);
         } finally {
             store.setLoading('isAuditing', false);
         }
-    }, [store.lessonResult, store.setLoading, store.setStatus]);
+    }, [lesson.result, store]);
 
     const handleSurgicalMerge = useCallback(async () => {
-        if (!store.expertGuidance || !store.lessonResult) {
-            store.setStatus('error', "Thiếu dữ liệu: Cần cả Giáo án gốc và Chỉ thị chuyên gia");
+        if (!lesson.expertGuidance || !lesson.result) {
+            store.setError("Thiếu dữ liệu: Cần cả Giáo án gốc và Chỉ thị chuyên gia");
             return;
         }
 
         store.setLoading('isGenerating', true);
-        store.setStatus('success', "🧬 Đang thực hiện phẫu thuật & trộn nội dung...");
+        store.setSuccess("🧬 Đang thực hiện phẫu thuật & trộn nội dung...");
 
         try {
-            const result = await surgicalMerge(store.lessonResult, store.expertGuidance);
+            const result = await surgicalMerge(lesson.result, lesson.expertGuidance);
 
             if (result.success) {
                 store.setLessonResult(result.content);
-                store.setStatus('success', `✅ ${result.auditTrail}`);
+                store.setSuccess(`✅ ${result.auditTrail}`);
             } else {
                 throw new Error(result.auditTrail);
             }
         } catch (error: any) {
-            store.setStatus('error', `Lỗi phẫu thuật: ${error.message}`);
+            store.setError(`Lỗi phẫu thuật: ${error.message}`);
         } finally {
             store.setLoading('isGenerating', false);
         }
-    }, [store.expertGuidance, store.lessonResult, store.setLessonResult, store.setLoading, store.setStatus]);
+    }, [lesson.expertGuidance, lesson.result, store]);
 
     return {
         handleGenerateFullPlan,

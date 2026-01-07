@@ -21,7 +21,12 @@ export interface SmartPromptData {
     topicName: string;
     objectives: string;
     studentCharacteristics: string;
-    coreTasks: string;
+    coreMissions: {
+        khoiDong: string;
+        khamPha: string;
+        luyenTap: string;
+        vanDung: string;
+    };
     shdc_shl_suggestions: string;
     digitalCompetency: string;
     assessmentTools: string;
@@ -51,7 +56,12 @@ export const SmartPromptService = {
         // 1. Get Curriculum Data (Detailed)
         const chuDe = timChuDeTheoTen(gradeInt, topicName);
         let curriculumContext = "";
-        let coreTasks = "";
+        const coreMissions = {
+            khoiDong: "Chuẩn bị tâm thế, kết nối kiến thức cũ.",
+            khamPha: "Hình thành kiến thức và kỹ năng mới.",
+            luyenTap: "Củng cố và rèn luyện thông qua bài tập.",
+            vanDung: "Ứng dụng vào thực tiễn cuộc sống."
+        };
 
         if (chuDe) {
             curriculumContext = `
@@ -61,14 +71,18 @@ MỤC TIÊU TỔNG QUÁT: ${chuDe.muc_tieu.join("; ")}
 KẾT QUẢ CẦN ĐẠT: ${chuDe.ket_qua_can_dat?.join("; ") || "Theo quy định chương trình GDPT 2018"}
 `;
 
-            // Generate detailed tasks text
-            coreTasks = chuDe.hoat_dong.map(hd => {
-                const tasks = hd.nhiem_vu.map(n => `- ${n.ten}: ${n.mo_ta} (Sản phẩm: ${n.san_pham_du_kien || "Kết quả thảo luận/báo cáo"})`).join("\n");
-                return `[HĐ ${hd.so_thu_tu}: ${hd.ten}]\n${hd.mo_ta}\n${tasks}\n* Lưu ý: ${hd.luu_y_su_pham || "Thúc đẩy học sinh tích cực trải nghiệm."}`;
-            }).join("\n\n");
+            // Map activities to specific 5512 stages
+            chuDe.hoat_dong.forEach((hd, index) => {
+                const tasksText = hd.nhiem_vu.map(n => `- ${n.ten}: ${n.mo_ta} (Sản phẩm: ${n.san_pham_du_kien || "Kết quả thảo luận/báo cáo"})`).join("\n");
+                const fullContent = `[HĐ ${hd.so_thu_tu}: ${hd.ten}]\n${hd.mo_ta}\n${tasksText}\n* Lưu ý: ${hd.luu_y_su_pham || "Thúc đẩy học sinh tích cực trải nghiệm."}`;
+
+                if (index === 0) coreMissions.khoiDong = fullContent;
+                else if (index === 1) coreMissions.khamPha = fullContent;
+                else if (index === 2) coreMissions.luyenTap = fullContent;
+                else if (index === 3) coreMissions.vanDung = fullContent;
+            });
         } else {
             curriculumContext = "Không tìm thấy dữ liệu chương trình cụ thể cho chủ đề: " + topicName;
-            coreTasks = "Phân bổ thời gian gợi ý: 10% Khởi động, 50% Khám phá, 25% Luyện tập, 15% Vận dụng.";
         }
 
         // 2. Get Student Characteristics (Psychology)
@@ -105,7 +119,7 @@ Gợi ý sư phạm: Tập trung vào các hoạt động thực hành, trải n
             topicName,
             objectives: curriculumContext,
             studentCharacteristics,
-            coreTasks,
+            coreMissions,
             shdc_shl_suggestions: shdcShlContext,
             digitalCompetency: nlsContext,
             assessmentTools: assessmentContext,
@@ -152,7 +166,7 @@ Gợi ý sư phạm: Tập trung vào các hoạt động thực hành, trải n
 - Đặc điểm học sinh: ${clean(data.studentCharacteristics)}
 - Chủ đề: ${data.topicName}
 - Mục tiêu đạt được (Chuyên môn): ${clean(data.objectives)}
-- Nhiệm vụ trọng tâm (SGK & PPCT): ${clean(data.coreTasks)}
+- Nhiệm vụ chủ chốt: ${clean(Object.values(data.coreMissions).join("\n\n"))}
 - Năng lực số & Công cụ (TT 02/2025): ${clean(data.digitalCompetency)}
 - Gợi ý SHDC & SHL: ${clean(data.shdc_shl_suggestions)}
 - Công cụ Đánh giá & Phụ lục: ${clean(data.assessmentTools)}

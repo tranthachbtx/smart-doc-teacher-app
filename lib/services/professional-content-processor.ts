@@ -35,24 +35,20 @@ export interface ActivityContent {
 
 export const ACTIVITY_PATTERNS = {
   khoiDong: [
-    /khởi động/i, /mở đầu/i, /giới thiệu/i, /đặt vấn đề/i,
-    /trò chơi/i, /video/i, /tình huống/i, /khơi gợi/i,
-    /warm[-]?up/i, /ice[-]?breaker/i, /mở đầu/i
+    /hoạt động 1/i, /khởi động/i, /mở đầu/i, /giới thiệu/i, /đặt vấn đề/i,
+    /trò chơi/i, /vấn đề/i, /khơi gợi/i, /warm[-]?up/i, /ice[-]?breaker/i
   ],
   khamPha: [
-    /khám phá/i, /hình thành/i, /kiến thức mới/i, /xây dựng/i,
-    /thuyết trình/i, /thảo luận/i, /phân tích/i, /nghiên cứu/i,
-    /tìm hiểu/i, /khám phá/i, /phát hiện/i
+    /hoạt động 2/i, /khám phá/i, /hình thành/i, /kiến thức mới/i, /xây dựng/i,
+    /thuyết trình/i, /thảo luận/i, /phân tích/i, /nghiên cứu/i, /tìm hiểu/i
   ],
   luyenTap: [
-    /luyện tập/i, /thực hành/i, /bài tập/i, /củng cố/i,
-    /làm bài/i, /trắc nghiệm/i, /thực tế/i, /vận dụng/i,
-    /thực hiện/i, /rèn luyện/i
+    /hoạt động 3/i, /luyện tập/i, /thực hành/i, /bài tập/i, /củng cố/i,
+    /làm bài/i, /trắc nghiệm/i, /rèn luyện/i
   ],
   vanDung: [
-    /vận dụng/i, /mở rộng/i, /sáng tạo/i, /dự án/i,
-    /thực tế/i, /liên hệ/i, /giải quyết/i, /ứng dụng/i,
-    /mở rộng/i, /sáng tạo/i
+    /hoạt động 4/i, /vận dụng/i, /mở rộng/i, /sáng tạo/i, /dự án/i,
+    /thực tế/i, /liên hệ/i, /giải quyết/i, /ứng dụng/i
   ]
 };
 
@@ -97,34 +93,54 @@ export class ProfessionalContentProcessor {
     let currentActivity = '';
 
     const cleaner = TextCleaningService.getInstance();
+    let currentSection = '';
+    let currentActivity = '';
+
     for (const line of lines) {
       const sanitized = cleaner.clean(line);
       const trimmedLine = sanitized.trim();
 
       if (!trimmedLine || trimmedLine.length < 5) continue;
 
-      // Phân loại section
-      for (const [section, patterns] of Object.entries(SECTION_PATTERNS)) {
-        if (patterns.some(pattern => pattern.test(trimmedLine))) {
-          currentSection = section;
-          break;
-        }
-      }
-
-      // Phân loại hoạt động
+      // Check for strong activity headers first (Isolation Guard)
+      let foundNewActivity = false;
       for (const [activity, patterns] of Object.entries(ACTIVITY_PATTERNS)) {
-        if (patterns.some(pattern => pattern.test(trimmedLine))) {
+        // Only trigger if line is short (header-like) or matches "Hoạt động X" explicitly
+        if (patterns.slice(0, 2).some(p => p.test(trimmedLine)) ||
+          (trimmedLine.length < 50 && patterns.some(p => p.test(trimmedLine)))) {
           currentActivity = activity;
+          currentSection = ''; // Reset section when moving to new activity
+          foundNewActivity = true;
           break;
         }
       }
 
-      // Thêm nội dung vào đúng category
-      if (currentActivity && currentSection && trimmedLine.length > 10) {
+      // If not a new activity, check for section markers
+      if (!foundNewActivity) {
+        for (const [section, patterns] of Object.entries(SECTION_PATTERNS)) {
+          if (patterns.some(pattern => pattern.test(trimmedLine))) {
+            currentSection = section;
+            break;
+          }
+        }
+      }
+
+      // Add content only if we are inside a tracked activity/section pair
+      if (currentActivity && currentSection && trimmedLine.length > 5) {
         const activityKey = currentActivity as keyof ActivityContent;
-        if (content[activityKey] &&
-          content[activityKey][currentSection as keyof typeof content[typeof activityKey]]) {
-          content[activityKey][currentSection as keyof typeof content[typeof activityKey]].push(trimmedLine);
+        const sectionKey = currentSection as keyof typeof content.khoiDong;
+
+        // Prevent duplication: skip if this line is just a marker we've already matched
+        const isMarker = Object.values(SECTION_PATTERNS).flat().some(p => p.test(trimmedLine)) ||
+          Object.values(ACTIVITY_PATTERNS).flat().some(p => p.test(trimmedLine));
+
+        if (!isMarker) {
+          if (content[activityKey] && (content[activityKey] as any)[sectionKey]) {
+            // Basic deduplication for same activity
+            if (!(content[activityKey] as any)[sectionKey].includes(trimmedLine)) {
+              (content[activityKey] as any)[sectionKey].push(trimmedLine);
+            }
+          }
         }
       }
     }
@@ -324,19 +340,22 @@ Trả về duy nhất một chuỗi JSON hợp lệ với cấu trúc:
 
     const advice = {
       khoiDong: `- **Tâm lý lứa tuổi**: ${smartData.studentCharacteristics}
+- **Nghiệm vụ cốt lõi**: ${smartData.coreMissions.khoiDong}
 - **Chiến lược**: Hãy dùng đặc điểm tâm lý trên để thiết kế một trò chơi/tình huống mở đầu cực cuốn hút.`,
 
       khamPha: `- **Nhiệm vụ TRỌNG TÂM (SGK)**: 
-${smartData.coreTasks}
+${smartData.coreMissions.khamPha}
 - **Công cụ số (NLS)**: 
 ${smartData.digitalCompetency}
-- **Chiến lược**: Hãy chuyển hóa các nhiệm vụ trọng tâm trên thành chuỗi hoạt động khám phá cụ thể.`,
+- **Chiến lược**: Hãy chuyển hóa các nhiệm vụ trọng tâm trên thành chuỗi hoạt động khám phá cụ thể. KHÔNG sáng tạo xa rời nhiệm vụ này.`,
 
       luyenTap: `- **Mục tiêu cần đạt**: ${smartData.objectives}
+- **Nhiệm vụ rèn luyện**: ${smartData.coreMissions.luyenTap}
 - **Công cụ đánh giá**: ${smartData.assessmentTools}
 - **Chiến lược**: Thiết kế hệ thống bài tập để củng cố các mục tiêu trên.`,
 
       vanDung: `- **Lưu ý thực tiễn**: ${smartData.pedagogicalNotes}
+- **Nhiệm vụ thực tế**: ${smartData.coreMissions.vanDung}
 - **Chiến lược**: Đưa ra bài toán thực tế/Dự án nhỏ kết nối với lưu ý trên.`
     };
 

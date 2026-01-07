@@ -79,7 +79,7 @@ import type {
   ActionResult,
   TemplateData
 } from "@/lib/types";
-import type { PPCTChuDe } from "@/lib/data/ppct-database";
+import { useAppStore } from "@/lib/store/use-app-store";
 import { saveTemplate } from "@/lib/template-storage";
 import { ExportService } from "@/lib/services/export-service";
 
@@ -88,70 +88,13 @@ import { ExportService } from "@/lib/services/export-service";
 // ========================================
 
 export function TemplateEngine() {
-  // --- Tab Management ---
+  const store = useAppStore();
+  const { lesson, meeting, event, assessment, ncbh } = store;
+
+  // --- Tab Management (Keep local for immediate UI) ---
   const [activeMode, setActiveMode] = useState<string>("lesson");
-  const [useManualWorkflow, setUseManualWorkflow] = useState(true); // Default to Expert Mode
-
-  // --- Meeting State ---
-  const [selectedSession, setSelectedSession] = useState<string>("1");
-  const [meetingKeyContent, setMeetingKeyContent] = useState<string>("");
-  const [meetingConclusion, setMeetingConclusion] = useState<string>("");
-  const [meetingResult, setMeetingResult] = useState<MeetingResult | null>(null);
-
-  // --- Lesson State ---
-  const [lessonGrade, setLessonGrade] = useState<string>("10");
-  const [selectedChuDeSo, setSelectedChuDeSo] = useState<string>("");
-  const [lessonAutoFilledTheme, setLessonAutoFilledTheme] = useState<string>("");
-  const [lessonDuration, setLessonDuration] = useState<string>("2 tiết");
-  const [selectedChuDe, setSelectedChuDe] = useState<PPCTChuDe | null>(null);
-  const [shdcSuggestion, setShdcSuggestion] = useState<string>("");
-  const [hdgdSuggestion, setHdgdSuggestion] = useState<string>("");
-  const [shlSuggestion, setShlSuggestion] = useState<string>("");
-  const [curriculumTasks, setCurriculumTasks] = useState<LessonTask[]>([]);
-  const [showCurriculumTasks, setShowCurriculumTasks] = useState<boolean>(false);
-  const [lessonTasks, setLessonTasks] = useState<LessonTask[]>([]);
-  const [lessonCustomInstructions, setLessonCustomInstructions] = useState<string>("");
-  const [lessonResult, setLessonResult] = useState<LessonResult | null>(null);
-  const [lessonFullPlanMode, setLessonFullPlanMode] = useState<boolean>(true);
-
-  // --- Event State ---
-  const [selectedGradeEvent, setSelectedGradeEvent] = useState<string>("10");
-  const [selectedEventMonth, setSelectedEventMonth] = useState<string>("9");
-  const [autoFilledTheme, setAutoFilledTheme] = useState<string>("");
-  const [eventType, setEventType] = useState<string>("chuyên đề");
-  const [eventBudget, setEventBudget] = useState<string>("tối ưu");
-  const [eventChecklist, setEventChecklist] = useState<string>("");
-  const [eventEvaluation, setEventEvaluation] = useState<string>("");
-  const [eventResult, setEventResult] = useState<EventResult | null>(null);
-  const [eventCustomInstructions, setEventCustomInstructions] = useState<string>("");
-
-  // --- NCBH State ---
-  const [selectedMonth, setSelectedMonth] = useState<string>("9");
-  const [ncbhGrade, setNcbhGrade] = useState<string>("10");
-  const [ncbhTopic, setNcbhTopic] = useState<string>("");
-  const [ncbhCustomInstructions, setNcbhCustomInstructions] = useState<string>("");
-  const [ncbhResult, setNcbhResult] = useState<NCBHResult | null>(null);
-
-  // --- Assessment State ---
-  const [assessmentGrade, setAssessmentGrade] = useState<string>("10");
-  const [assessmentTerm, setAssessmentTerm] = useState<string>("giữa kỳ");
-  const [assessmentProductType, setAssessmentProductType] = useState<string>("bài kiểm tra");
-  const [assessmentTopic, setAssessmentTopic] = useState<string>("");
-  const [assessmentTemplate, setAssessmentTemplate] = useState<TemplateData | null>(null);
-  const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
-
-  // --- Common State ---
-  const [generatingMode, setGeneratingMode] = useState<string | null>(null);
-  const [isExporting, setIsExporting] = useState<boolean>(false);
-  const [isAuditing, setIsAuditing] = useState<boolean>(false);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [auditResult, setAuditResult] = useState<string | null>(null);
-  const [auditScore, setAuditScore] = useState<number>(0);
-  const [selectedModel, setSelectedModel] = useState<string>("gemini-2.0-flash");
-  const [lessonTopic, setLessonTopic] = useState<string>("");
+  const [useManualWorkflow, setUseManualWorkflow] = useState(true);
   const [templateManagerOpen, setTemplateManagerOpen] = useState<boolean>(false);
-  const [lessonFile, setLessonFile] = useState<{ mimeType: string; data: string; name: string } | null>(null);
 
   // --- Effects ---
   useEffect(() => {
@@ -179,89 +122,89 @@ export function TemplateEngine() {
   };
 
   const handleGenerate = async (mode: string) => {
-    setGeneratingMode(mode);
-    setError(null);
-    setSuccess(null);
+    store.setGeneratingMode(mode);
+    store.setError(null);
+    store.setSuccess(null);
 
     try {
       switch (mode) {
         case "meeting":
           const meetingRes = await generateMeetingMinutes(
-            selectedMonth,
-            selectedSession,
-            meetingKeyContent,
-            meetingConclusion,
-            selectedModel
+            meeting.month,
+            meeting.session,
+            meeting.keyContent,
+            meeting.conclusion,
+            store.selectedModel
           );
           if (meetingRes.success && meetingRes.data) {
-            setMeetingResult(meetingRes.data);
-            setSuccess("Đã tạo biên bản họp thành công!");
+            store.updateMeetingField('result', meetingRes.data);
+            store.setSuccess("Đã tạo biên bản họp thành công!");
           } else {
             throw new Error(meetingRes.error);
           }
           break;
         case "lesson":
-          const effectiveTopic = lessonTopic || lessonAutoFilledTheme;
+          const effectiveTopicLabel = lesson.theme;
           const lessonRes = await generateLessonPlan(
-            lessonGrade,
-            effectiveTopic,
-            lessonDuration,
-            lessonCustomInstructions,
-            lessonTasks.filter(t => t.selected).map(t => `${t.name}: ${t.content}`),
-            Number(selectedChuDeSo).toString(),
-            JSON.stringify({ shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion }),
-            lessonFile || undefined,
-            selectedModel
+            lesson.grade,
+            effectiveTopicLabel,
+            lesson.duration,
+            lesson.customInstructions,
+            lesson.tasks.filter(t => t.selected).map(t => `${t.name}: ${t.content}`),
+            Number(lesson.chuDeSo).toString(),
+            JSON.stringify({ shdc: lesson.shdcSuggestion, hdgd: lesson.hdgdSuggestion, shl: lesson.shlSuggestion }),
+            lesson.file || undefined,
+            store.selectedModel
           );
           if (lessonRes.success && lessonRes.data) {
-            setLessonResult(lessonRes.data);
-            setSuccess("Đã tạo kế hoạch bài dạy thành công!");
+            store.setLessonResult(lessonRes.data);
+            store.setSuccess("Đã tạo kế hoạch bài dạy thành công!");
           } else {
             throw new Error(lessonRes.error);
           }
           break;
         case "event":
           const eventRes = await generateEventScript(
-            selectedGradeEvent,
-            autoFilledTheme,
-            eventCustomInstructions,
-            eventBudget,
-            eventChecklist,
-            eventEvaluation,
-            selectedModel
+            event.grade,
+            event.theme,
+            event.instructions,
+            event.budget,
+            event.checklist,
+            "", // evaluation placeholder
+            store.selectedModel
           );
           if (eventRes.success && eventRes.data) {
-            setEventResult(eventRes.data);
-            setSuccess("Đã tạo kịch bản ngoại khóa thành công!");
+            store.updateEventField('result', eventRes.data);
+            store.setSuccess("Đã tạo kịch bản ngoại khóa thành công!");
           } else {
             throw new Error(eventRes.error);
           }
           break;
         case "ncbh":
           const ncbhRes = await generateNCBHAction(
-            ncbhGrade,
-            ncbhTopic,
-            ncbhCustomInstructions,
-            selectedModel
+            ncbh.grade,
+            ncbh.topic,
+            ncbh.instructions,
+            store.selectedModel
           );
           if (ncbhRes.success && ncbhRes.data) {
-            setNcbhResult(ncbhRes.data);
-            setSuccess("Đã tạo nghiên cứu bài học thành công!");
+            store.updateNcbhField('result', ncbhRes.data);
+            store.setSuccess("Đã tạo nghiên cứu bài học thành công!");
           } else {
             throw new Error(ncbhRes.error);
           }
           break;
         case "assessment":
           const assessRes = await generateAssessmentPlan(
-            assessmentGrade,
-            assessmentTerm,
-            assessmentProductType,
-            assessmentTopic,
-            selectedModel
+            assessment.grade,
+            assessment.term,
+            assessment.productType,
+            assessment.topic,
+            store.selectedModel
           );
           if (assessRes.success && assessRes.data) {
-            setAssessmentResult(assessRes.data);
-            setSuccess("Đã tạo kế hoạch kiểm tra đánh giá thành công!");
+            store.updateAssessmentField('result', assessRes.data);
+            store.setSuccess("Đã tạo kế hoạch kiểm tra đánh giá thành công!");
           } else {
             throw new Error(assessRes.error);
           }
@@ -270,62 +213,62 @@ export function TemplateEngine() {
           throw new Error("Unknown mode");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đã xảy ra lỗi");
+      store.setError(err instanceof Error ? err.message : "Đã xảy ra lỗi");
     } finally {
-      setGeneratingMode(null);
+      store.setGeneratingMode(null);
     }
   };
 
   const handleExport = async (mode: string) => {
-    setIsExporting(true);
+    store.setLoading('isExporting', true);
     try {
-      setSuccess("Đang tạo file Word...");
+      store.setSuccess("Đang tạo file Word...");
 
       let res;
       switch (mode) {
         case "lesson":
-          if (!lessonResult) throw new Error("Chưa có kết quả giáo án để xuất");
-          const lessonFileName = `Giao_an_${lessonTopic || lessonAutoFilledTheme || "HDTN"}.docx`.replace(/\s+/g, "_");
+          if (!lesson.result) throw new Error("Chưa có kết quả giáo án để xuất");
+          const lessonFileName = `Giao_an_${lesson.theme || "HDTN"}.docx`.replace(/\s+/g, "_");
           res = await ExportService.exportLessonToDocx(
-            lessonResult,
+            lesson.result,
             lessonFileName,
-            (p) => setSuccess(`Đang xuất file... ${Math.round(p)}%`)
+            (p) => store.setSuccess(`Đang xuất file... ${Math.round(p)}%`)
           );
           break;
         case "meeting":
-          if (!meetingResult) throw new Error("Chưa có kết quả biên bản để xuất");
+          if (!meeting.result) throw new Error("Chưa có kết quả biên bản để xuất");
           res = await ExportService.exportMeeting(
-            meetingResult,
+            meeting.result,
             null,
-            selectedMonth,
-            selectedSession
+            meeting.month,
+            meeting.session
           );
           break;
         case "event":
-          if (!eventResult) throw new Error("Chưa có kết quả kịch bản để xuất");
+          if (!event.result) throw new Error("Chưa có kết quả kịch bản để xuất");
           res = await ExportService.exportEvent(
-            eventResult,
+            event.result,
             null,
-            { grade: selectedGradeEvent, month: selectedEventMonth }
+            { grade: event.grade, month: event.month }
           );
           break;
         case "ncbh":
-          if (!ncbhResult) throw new Error("Chưa có kết quả NCBH để xuất");
+          if (!ncbh.result) throw new Error("Chưa có kết quả NCBH để xuất");
           res = await ExportService.exportNCBH(
-            ncbhResult,
+            ncbh.result,
             null,
-            { grade: ncbhGrade, month: selectedMonth }
+            { grade: ncbh.grade, month: ncbh.month }
           );
           break;
         case "assessment":
-          if (!assessmentResult) throw new Error("Chưa có kết quả đánh giá để xuất");
+          if (!assessment.result) throw new Error("Chưa có kết quả đánh giá để xuất");
           res = await ExportService.exportAssessmentPlan(
-            assessmentResult,
+            assessment.result,
             null,
             {
-              grade: assessmentGrade,
-              term: assessmentTerm,
-              productType: assessmentProductType
+              grade: assessment.grade,
+              term: assessment.term,
+              productType: assessment.productType
             }
           );
           break;
@@ -334,75 +277,72 @@ export function TemplateEngine() {
       }
 
       if (res?.success) {
-        setSuccess("Đã xuất file Word thành công!");
+        store.setSuccess("Đã xuất file Word thành công!");
       }
     } catch (err) {
       console.error("Export Error:", err);
-      setError(err instanceof Error ? err.message : "Xuất file thất bại");
+      store.setError(err instanceof Error ? err.message : "Xuất file thất bại");
     } finally {
-      setIsExporting(false);
+      store.setLoading('isExporting', false);
     }
   };
 
   const handleAudit = async () => {
-    setIsAuditing(true);
+    store.setLoading('isAuditing', true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      setAuditResult("Đánh giá hoàn thành! Giáo án đạt chuẩn 5512.");
-      setAuditScore(85);
+      store.updateLessonField('auditResult', "Đánh giá hoàn thành! Giáo án đạt chuẩn 5512.");
+      store.updateLessonField('auditScore', 85);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đánh giá thất bại");
+      store.setError(err instanceof Error ? err.message : "Đánh giá thất bại");
     } finally {
-      setIsAuditing(false);
+      store.setLoading('isAuditing', false);
     }
   };
 
   const handleRefineSection = async (content: string, instruction: string, model?: string): Promise<ActionResult> => {
-    setGeneratingMode("refine");
+    store.setGeneratingMode("refine");
     try {
       const prompt = `Bạn là một biên tập viên giáo dục chuyên nghiệp. Hãy chỉnh sửa nội dung sau đây dựa trên yêu cầu.\n\nNỘI DUNG GỐC:\n${content}\n\nYÊU CẦU CHỈNH SỬA: ${instruction}\n\nLưu ý: Chỉ trả về nội dung đã chỉnh sửa, không kèm lời dẫn.`;
-      const res = await generateAIContent(prompt, model || selectedModel);
+      const res = await generateAIContent(prompt, model || store.selectedModel);
       return res;
     } catch (err: any) {
       return { success: false, error: err.message };
     } finally {
-      setGeneratingMode(null);
+      store.setGeneratingMode(null);
     }
   };
 
   const handleGenerateSection = async (section: any, context: any, stepInstruction?: string): Promise<ActionResult> => {
-    setGeneratingMode("section");
+    store.setGeneratingMode("section");
     try {
-      const effectiveTopic = lessonTopic || lessonAutoFilledTheme;
+      const effectiveTopic = lesson.theme;
       const result = await generateLessonSection(
-        lessonGrade,
+        lesson.grade,
         effectiveTopic,
         section,
         typeof context === 'string' ? context : JSON.stringify(context || ""),
-        lessonDuration,
-        lessonCustomInstructions,
-        lessonTasks.filter(t => t.selected).map(t => `${t.name}: ${t.content}`),
-        Number(selectedChuDeSo).toString(),
-        JSON.stringify({ shdc: shdcSuggestion, hdgd: hdgdSuggestion, shl: shlSuggestion }),
-        selectedModel,
-        lessonFile || undefined,
+        lesson.duration,
+        lesson.customInstructions,
+        lesson.tasks.filter(t => t.selected).map(t => `${t.name}: ${t.content}`),
+        Number(lesson.chuDeSo).toString(),
+        JSON.stringify({ shdc: lesson.shdcSuggestion, hdgd: lesson.hdgdSuggestion, shl: lesson.shlSuggestion }),
+        store.selectedModel,
+        lesson.file || undefined,
         stepInstruction
       );
 
       if (result.success && result.data) {
-        setLessonResult((prev: LessonResult | null) => {
-          if (!prev) return result.data as LessonResult;
-          return {
-            ...prev,
-            ...result.data
-          } as LessonResult;
+        store.setLessonResult({
+          ...(lesson.result || {} as any),
+          ...result.data
         });
       }
       return result;
     } catch (err: any) {
       return { success: false, error: err.message };
     } finally {
-      setGeneratingMode(null);
+      store.setGeneratingMode(null);
     }
   };
 
@@ -410,134 +350,122 @@ export function TemplateEngine() {
     // Logic placeholder
   };
 
-  const updateLessonTask = (id: string, field: any, value: any) => {
-    setLessonTasks(prev => prev.map(task =>
-      task.id === id ? { ...task, [field]: value } : task
-    ));
-  };
-
-  const removeLessonTask = (id: string) => {
-    setLessonTasks(prev => prev.filter(task => task.id !== id));
-  };
-
-  const addLessonTask = () => {
-    const newTask: LessonTask = {
-      id: Date.now().toString(),
-      name: "Task mới",
-      content: "",
-    };
-    setLessonTasks(prev => [...prev, newTask]);
-  };
-
   const onTemplateUpload = async (file: File) => {
     try {
       const buffer = await file.arrayBuffer();
       await saveTemplate("assessment", file.name, buffer);
-      setAssessmentTemplate({ name: file.name, data: buffer });
-      setSuccess(`Đã tải lên mẫu "${file.name}"`);
+      store.updateAssessmentField('template', { name: file.name, data: buffer });
+      store.setSuccess(`Đã tải lên mẫu "${file.name}"`);
     } catch (err: any) {
-      setError(`Lỗi tải mẫu: ${err.message}`);
+      store.setError(`Lỗi tải mẫu: ${err.message}`);
     }
   };
 
   // --- Props for Engines ---
   const meetingEngineProps: MeetingEngineProps = {
-    selectedMonth,
-    setSelectedMonth,
-    selectedSession,
-    setSelectedSession,
-    meetingKeyContent,
-    setMeetingKeyContent,
-    meetingConclusion,
-    setMeetingConclusion,
-    meetingResult,
-    setMeetingResult,
-    isGenerating: generatingMode === "meeting",
+    selectedMonth: meeting.month,
+    setSelectedMonth: (v) => store.updateMeetingField('month', v),
+    selectedSession: meeting.session,
+    setSelectedSession: (v) => store.updateMeetingField('session', v),
+    meetingKeyContent: meeting.keyContent,
+    setMeetingKeyContent: (v) => store.updateMeetingField('keyContent', v),
+    meetingConclusion: meeting.conclusion,
+    setMeetingConclusion: (v) => store.updateMeetingField('conclusion', v),
+    meetingResult: meeting.result,
+    setMeetingResult: (v) => store.updateMeetingField('result', v),
+    isGenerating: store.generatingMode === "meeting",
     onGenerate: () => handleGenerate("meeting"),
-    isExporting,
+    isExporting: store.isExporting,
     onExport: () => handleExport("meeting"),
     copyToClipboard,
   };
 
   const lessonEngineProps: LessonEngineProps = {
-    lessonGrade,
-    setLessonGrade,
-    selectedChuDeSo,
-    setSelectedChuDeSo,
-    lessonAutoFilledTheme,
-    setLessonAutoFilledTheme,
-    lessonDuration,
-    setLessonDuration,
-    selectedChuDe,
-    setSelectedChuDe,
-    setLessonMonth: setSelectedMonth,
-    shdcSuggestion,
-    setShdcSuggestion,
-    hdgdSuggestion,
-    setHdgdSuggestion,
-    shlSuggestion,
-    setShlSuggestion,
-    curriculumTasks,
+    lessonGrade: lesson.grade,
+    setLessonGrade: store.setLessonGrade,
+    selectedChuDeSo: lesson.chuDeSo,
+    setSelectedChuDeSo: (v) => store.updateLessonField('chuDeSo', v),
+    lessonAutoFilledTheme: lesson.theme,
+    setLessonAutoFilledTheme: store.setLessonTheme,
+    lessonDuration: lesson.duration,
+    setLessonDuration: (v) => store.updateLessonField('duration', v),
+    selectedChuDe: null, // Legacy, can be derived or removed if unused
+    setSelectedChuDe: () => { },
+    setLessonMonth: (v) => store.updateLessonField('month', v),
+    shdcSuggestion: lesson.shdcSuggestion,
+    setShdcSuggestion: (v) => store.updateLessonField('shdcSuggestion', v),
+    hdgdSuggestion: lesson.hdgdSuggestion,
+    setHdgdSuggestion: (v) => store.updateLessonField('hdgdSuggestion', v),
+    shlSuggestion: lesson.shlSuggestion,
+    setShlSuggestion: (v) => store.updateLessonField('shlSuggestion', v),
+    curriculumTasks: [],
     distributeTimeForTasks,
-    showCurriculumTasks,
-    setShowCurriculumTasks,
-    lessonTasks,
-    updateLessonTask,
-    removeLessonTask,
-    addLessonTask,
-    lessonCustomInstructions,
-    setLessonCustomInstructions,
-    lessonResult,
-    setLessonResult,
-    isGenerating: generatingMode === "lesson" || generatingMode === "section" || generatingMode === "refine",
+    showCurriculumTasks: false,
+    setShowCurriculumTasks: () => { },
+    lessonTasks: lesson.tasks,
+    updateLessonTask: (id, field, value) => {
+      store.updateLessonField('tasks', lesson.tasks.map(t => t.id === id ? { ...t, [field]: value } : t));
+    },
+    removeLessonTask: (id) => {
+      store.updateLessonField('tasks', lesson.tasks.filter(t => t.id !== id));
+    },
+    addLessonTask: () => {
+      const newTask: LessonTask = { id: Date.now().toString(), name: "Task mới", content: "" };
+      store.updateLessonField('tasks', [...lesson.tasks, newTask]);
+    },
+    lessonCustomInstructions: lesson.customInstructions,
+    setLessonCustomInstructions: (v) => store.updateLessonField('customInstructions', v),
+    lessonResult: lesson.result,
+    setLessonResult: store.setLessonResult,
+    isGenerating: store.generatingMode === "lesson" || store.generatingMode === "section" || store.generatingMode === "refine",
     onGenerate: () => handleGenerate("lesson"),
-    isExporting,
+    isExporting: store.isExporting,
     onExport: () => handleExport("lesson"),
     copyToClipboard,
-    isAuditing,
+    isAuditing: store.isAuditing,
     onAudit: handleAudit,
-    auditResult,
-    auditScore,
-    setSuccess,
-    setError,
-    success,
-    error,
-    lessonTopic,
-    setLessonTopic,
-    selectedModel,
-    setSelectedModel,
-    lessonFile,
-    setLessonFile,
+    auditResult: lesson.auditResult,
+    auditScore: lesson.auditScore,
+    setSuccess: store.setSuccess,
+    setError: store.setError,
+    success: store.success,
+    error: store.error,
+    lessonTopic: lesson.theme,
+    setLessonTopic: store.setLessonTheme,
+    selectedModel: store.selectedModel,
+    setSelectedModel: store.setSelectedModel,
+    lessonFile: lesson.file,
+    setLessonFile: (v) => store.updateLessonField('file', v),
     onRefineSection: handleRefineSection,
     onGenerateSection: handleGenerateSection,
-    lessonFullPlanMode,
-    setLessonFullPlanMode,
+    lessonFullPlanMode: true,
+    setLessonFullPlanMode: () => { },
   };
 
   const eventEngineProps: EventEngineProps = {
-    selectedGradeEvent,
-    setSelectedGradeEvent,
-    selectedEventMonth,
-    setSelectedEventMonth,
-    autoFilledTheme,
-    setAutoFilledTheme,
-    eventType,
-    setEventType,
-    eventBudget,
-    setEventBudget,
-    eventChecklist,
-    setEventChecklist,
-    eventEvaluation,
-    setEventEvaluation,
-    eventResult,
-    setEventResult,
-    isGenerating: generatingMode === "event",
+    selectedGradeEvent: event.grade,
+    setSelectedGradeEvent: (v) => store.updateEventField('grade', v),
+    selectedEventMonth: event.month,
+    setSelectedEventMonth: (v) => store.updateEventField('month', v),
+    autoFilledTheme: event.theme,
+    setAutoFilledTheme: (v) => store.updateEventField('theme', v),
+    eventType: "chuyên đề", // default
+    setEventType: () => { },
+    eventBudget: event.budget,
+    setEventBudget: (v) => store.updateEventField('budget', v),
+    eventChecklist: event.checklist,
+    setEventChecklist: (v) => store.updateEventField('checklist', v),
+    eventEvaluation: "",
+    setEventEvaluation: () => { },
+    eventResult: event.result,
+    setEventResult: (v) => store.updateEventField('result', v),
+    isGenerating: store.generatingMode === "event",
     onGenerate: () => handleGenerate("event"),
-    isExporting,
+    isExporting: store.isExporting,
     onExport: () => handleExport("event"),
     copyToClipboard,
-    eventCustomInstructions,
-    setEventCustomInstructions,
+    eventCustomInstructions: event.instructions,
+    setEventCustomInstructions: (v) => store.updateEventField('instructions', v),
   };
 
   // --- Render ---
@@ -637,19 +565,19 @@ export function TemplateEngine() {
 
           <TabsContent value="ncbh">
             <NCBHTab
-              selectedMonth={selectedMonth}
-              setSelectedMonth={setSelectedMonth}
-              ncbhGrade={ncbhGrade}
-              setNcbhGrade={setNcbhGrade}
-              ncbhTopic={ncbhTopic}
-              setNcbhTopic={setNcbhTopic}
-              ncbhCustomInstructions={ncbhCustomInstructions}
-              setNcbhCustomInstructions={setNcbhCustomInstructions}
-              ncbhResult={ncbhResult}
-              setNcbhResult={setNcbhResult}
-              isGenerating={generatingMode === "ncbh"}
+              selectedMonth={ncbh.month}
+              setSelectedMonth={(v) => store.updateNcbhField('month', v)}
+              ncbhGrade={ncbh.grade}
+              setNcbhGrade={(v) => store.updateNcbhField('grade', v)}
+              ncbhTopic={ncbh.topic}
+              setNcbhTopic={(v) => store.updateNcbhField('topic', v)}
+              ncbhCustomInstructions={ncbh.instructions}
+              setNcbhCustomInstructions={(v) => store.updateNcbhField('instructions', v)}
+              ncbhResult={ncbh.result}
+              setNcbhResult={(v) => store.updateNcbhField('result', v)}
+              isGenerating={store.generatingMode === "ncbh"}
               onGenerate={() => handleGenerate("ncbh")}
-              isExporting={isExporting}
+              isExporting={store.isExporting}
               onExport={() => handleExport("ncbh")}
               copyToClipboard={copyToClipboard}
               ppctData={[]}
@@ -658,20 +586,20 @@ export function TemplateEngine() {
 
           <TabsContent value="assessment">
             <AssessmentTab
-              assessmentGrade={assessmentGrade}
-              setAssessmentGrade={setAssessmentGrade}
-              assessmentTerm={assessmentTerm}
-              setAssessmentTerm={setAssessmentTerm}
-              assessmentProductType={assessmentProductType}
-              setAssessmentProductType={setAssessmentProductType}
-              assessmentTopic={assessmentTopic}
-              setAssessmentTopic={setAssessmentTopic}
-              assessmentTemplate={assessmentTemplate}
+              assessmentGrade={assessment.grade}
+              setAssessmentGrade={(v) => store.updateAssessmentField('grade', v)}
+              assessmentTerm={assessment.term}
+              setAssessmentTerm={(v) => store.updateAssessmentField('term', v)}
+              assessmentProductType={assessment.productType}
+              setAssessmentProductType={(v) => store.updateAssessmentField('productType', v)}
+              assessmentTopic={assessment.topic}
+              setAssessmentTopic={(v) => store.updateAssessmentField('topic', v)}
+              assessmentTemplate={assessment.template}
               onTemplateUpload={onTemplateUpload}
-              assessmentResult={assessmentResult}
-              isGenerating={generatingMode === "assessment"}
+              assessmentResult={assessment.result}
+              isGenerating={store.generatingMode === "assessment"}
               onGenerate={() => handleGenerate("assessment")}
-              isExporting={isExporting}
+              isExporting={store.isExporting}
               onExport={() => handleExport("assessment")}
             />
           </TabsContent>
@@ -682,17 +610,17 @@ export function TemplateEngine() {
         </Tabs>
 
         {/* Status Messages */}
-        {success && (
+        {store.success && (
           <div className="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
             <CheckCircle className="w-5 h-5" />
-            {success}
+            {store.success}
           </div>
         )}
 
-        {error && (
+        {store.error && (
           <div className="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
             <AlertCircle className="w-5 h-5" />
-            {error}
+            {store.error}
           </div>
         )}
       </div>

@@ -64,30 +64,18 @@ export const ManualWorkflowService = {
             const sd = context.smartData;
             // ... (Smart Data Filtering Logic remains same)
 
-            // SMART FILTERING ENGINE: Chỉ đưa dữ liệu CẦN THIẾT cho từng loại hoạt động
-            let specificAdvice = "";
+            // SMART FILTERING ENGINE: Sử dụng dữ liệu đã được gán nhãn cho từng hoạt động
+            const mission = sd.coreMissions[module.type === 'khoi_dong' ? 'khoiDong' :
+                module.type === 'kham_pha' ? 'khamPha' :
+                    module.type === 'luyen_tap' ? 'luyenTap' : 'vanDung'];
 
-            if (module.type === 'khoi_dong') {
-                specificAdvice = `
-- **Tâm lý lứa tuổi**: ${sd.studentCharacteristics}
-- **Chiến lược**: Hãy dùng đặc điểm tâm lý trên để thiết kế một trò chơi/tình huống mở đầu cực cuốn hút.`;
-            } else if (module.type === 'kham_pha') {
-                specificAdvice = `
-- **Nhiệm vụ TRỌNG TÂM (SGK)**: 
-${sd.coreTasks}
-- **Công cụ số (NLS)**: 
-${sd.digitalCompetency}
-- **Chiến lược**: Hãy chuyển hóa các nhiệm vụ trọng tâm trên thành chuỗi hoạt động khám phá cụ thể. KHÔNG sáng tạo xa rời nhiệm vụ này.`;
-            } else if (module.type === 'luyen_tap') {
-                specificAdvice = `
-- **Mục tiêu cần đạt**: ${sd.objectives}
-- **Công cụ đánh giá**: ${sd.assessmentTools}
-- **Chiến lược**: Thiết kế hệ thống bài tập để củng cố các mục tiêu trên.`;
-            } else if (module.type === 'van_dung') {
-                specificAdvice = `
-- **Lưu ý thực tiễn**: ${sd.pedagogicalNotes}
-- **Chiến lược**: Đưa ra bài toán thực tế/Dự án nhỏ kết nối với lưu ý trên.`;
-            }
+            specificAdvice = `
+## 🛡️ EXCLUSIVE DIRECTIVE (QUAN TRỌNG):
+- CHỈ tập trung vào giai đoạn: ${module.title.toUpperCase()}.
+- TUYỆT ĐỐI không lặp lại nội dung đã thuộc về các giai đoạn khác.
+- DỰA TRÊN NGHIỆM VỤ CỐT LÕI SAU:
+${mission}
+`;
 
             smartDataSection = `
 ## 💡 CHỈ DẪN THÔNG MINH TỪ DATABASE (Cụ thể cho hoạt động này):

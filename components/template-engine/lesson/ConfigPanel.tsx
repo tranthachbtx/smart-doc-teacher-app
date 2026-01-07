@@ -11,15 +11,16 @@ import {
 } from "@/components/ui/select";
 import { BookOpen } from "lucide-react";
 import { getChuDeListByKhoi, type PPCTChuDe } from "@/lib/data/ppct-database";
-import { useLessonStore } from "@/lib/store/use-lesson-store";
+import { useAppStore } from "@/lib/store/use-app-store";
 
 export const ConfigPanel = React.memo(() => {
-    const store = useLessonStore();
+    const store = useAppStore();
+    const { lesson } = store;
 
     // Local derived state for UI only
-    const chuDeList = getChuDeListByKhoi(store.lessonGrade);
+    const chuDeList = getChuDeListByKhoi(lesson.grade);
     const selectedChuDe = chuDeList.find(
-        (cd) => cd.chu_de_so === Number.parseInt(store.selectedChuDeSo)
+        (cd) => cd.chu_de_so === Number.parseInt(lesson.chuDeSo)
     );
 
     return (
@@ -39,11 +40,12 @@ export const ConfigPanel = React.memo(() => {
                     <div className="space-y-2">
                         <Label htmlFor="lesson-grade-select" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Khối lớp (Grade)</Label>
                         <Select
-                            value={store.lessonGrade}
+                            value={lesson.grade}
                             onValueChange={(value) => {
                                 store.setLessonGrade(value);
                                 // Reset related fields when grade changes
-                                useLessonStore.setState({ selectedChuDeSo: "", lessonAutoFilledTheme: "" });
+                                store.updateLessonField('chuDeSo', "");
+                                store.updateLessonField('theme', "");
                             }}
                             name="lessonGrade"
                         >
@@ -61,28 +63,26 @@ export const ConfigPanel = React.memo(() => {
                     <div className="space-y-2">
                         <Label htmlFor="lesson-theme-select" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Chủ đề (PPCT Month)</Label>
                         <Select
-                            value={store.selectedChuDeSo}
+                            value={lesson.chuDeSo}
                             onValueChange={(value) => {
                                 const chuDe = chuDeList.find(
                                     (cd) => cd.chu_de_so === Number.parseInt(value)
                                 );
                                 if (chuDe) {
-                                    useLessonStore.setState({
-                                        selectedChuDeSo: value,
-                                        lessonAutoFilledTheme: chuDe.ten,
-                                        lessonDuration: chuDe.tong_tiet.toString(),
-                                        lessonMonth: value
-                                    });
+                                    store.updateLessonField('chuDeSo', value);
+                                    store.updateLessonField('theme', chuDe.ten);
+                                    store.updateLessonField('duration', chuDe.tong_tiet.toString());
+                                    store.updateLessonField('month', value);
                                 }
                             }}
-                            disabled={!store.lessonGrade}
+                            disabled={!lesson.grade}
                             name="lessonTheme"
                         >
                             <SelectTrigger id="lesson-theme-select" className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm focus:ring-4 focus:ring-indigo-50">
-                                <SelectValue placeholder={store.lessonGrade ? "Chọn chủ đề..." : "Chọn khối trước"} />
+                                <SelectValue placeholder={lesson.grade ? "Chọn chủ đề..." : "Chọn khối trước"} />
                             </SelectTrigger>
                             <SelectContent className="bg-white dark:bg-slate-900 rounded-3xl p-2 shadow-2xl border-indigo-100 max-h-[400px]">
-                                {store.lessonGrade &&
+                                {lesson.grade &&
                                     chuDeList.map((chuDe) => (
                                         <SelectItem
                                             key={chuDe.chu_de_so}

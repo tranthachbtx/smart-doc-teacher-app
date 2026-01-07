@@ -9,7 +9,7 @@ import {
     Sparkles,
     Loader2
 } from "lucide-react";
-import { useLessonStore } from "@/lib/store/use-lesson-store";
+import { useAppStore } from "@/lib/store/use-app-store";
 import { useLessonActions } from "@/lib/hooks/use-lesson-actions";
 import { ConfigPanel } from "./lesson/ConfigPanel";
 import { ManualProcessingHub } from "../manual-workflow/ManualProcessingHub";
@@ -21,16 +21,10 @@ import type { LessonEngineProps } from "@/lib/types";
 
 export const LessonTab = React.memo((props: Partial<LessonEngineProps>) => {
     // Individual selectors for fine-grained re-renders
-    const lessonGrade = useLessonStore(s => s.lessonGrade);
-    const lessonAutoFilledTheme = useLessonStore(s => s.lessonAutoFilledTheme);
-    const selectedChuDeSo = useLessonStore(s => s.selectedChuDeSo);
-    const lessonFile = useLessonStore(s => s.lessonFile);
-    const lessonResult = useLessonStore(s => s.lessonResult);
-    const expertGuidance = useLessonStore(s => s.expertGuidance);
-    const setExpertGuidance = useLessonStore(s => s.setExpertGuidance);
-    const isGenerating = useLessonStore(s => s.isGenerating);
-    const success = useLessonStore(s => s.success);
-    const error = useLessonStore(s => s.error);
+    const lesson = useAppStore(s => s.lesson);
+    const success = useAppStore(s => s.success);
+    const error = useAppStore(s => s.error);
+    const { grade: lessonGrade, theme: lessonAutoFilledTheme, file: lessonFile, result: lessonResult } = lesson;
 
     const { handleGenerateFullPlan, handleExportDocx, handleAudit } = useLessonActions();
 
