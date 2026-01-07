@@ -180,7 +180,7 @@ export function MeetingTab({
                                         variant="ghost"
                                         size="sm"
                                         onClick={() =>
-                                            copyToClipboard(meetingResult.noi_dung_chinh)
+                                            copyToClipboard(meetingResult.noi_dung_chinh || "")
                                         }
                                     >
                                         <Copy className="w-4 h-4" />
@@ -207,7 +207,7 @@ export function MeetingTab({
                                         variant="ghost"
                                         size="sm"
                                         onClick={() =>
-                                            copyToClipboard(meetingResult.uu_diem)
+                                            copyToClipboard(meetingResult.uu_diem || "")
                                         }
                                     >
                                         <Copy className="w-4 h-4" />
@@ -234,7 +234,7 @@ export function MeetingTab({
                                         variant="ghost"
                                         size="sm"
                                         onClick={() =>
-                                            copyToClipboard(meetingResult.han_che)
+                                            copyToClipboard(meetingResult.han_che || "")
                                         }
                                     >
                                         <Copy className="w-4 h-4" />
@@ -261,7 +261,7 @@ export function MeetingTab({
                                         variant="ghost"
                                         size="sm"
                                         onClick={() =>
-                                            copyToClipboard(meetingResult.y_kien_dong_gop)
+                                            copyToClipboard(meetingResult.y_kien_dong_gop || "")
                                         }
                                     >
                                         <Copy className="w-4 h-4" />
@@ -288,7 +288,7 @@ export function MeetingTab({
                                         variant="ghost"
                                         size="sm"
                                         onClick={() =>
-                                            copyToClipboard(meetingResult.ke_hoach_thang_toi)
+                                            copyToClipboard(meetingResult.ke_hoach_thang_toi || "")
                                         }
                                     >
                                         <Copy className="w-4 h-4" />

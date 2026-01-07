@@ -245,7 +245,7 @@ export function ManualProcessingHub() {
                     >
                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
                         {isExporting ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <FileDown className="w-6 h-6 mr-3 group-hover:translate-y-1 transition-transform" />}
-                        <span className="font-black uppercase tracking-wider relative z-10">Xuất Word (Tối ưu)</span>
+                        <span className="font-black uppercase tracking-wider relative z-10">Xuất WORD</span>
                     </Button>
                 </div>
             </div>
