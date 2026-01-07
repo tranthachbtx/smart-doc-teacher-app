@@ -49,12 +49,13 @@ export function MeetingTab({
             <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Chọn Tháng</Label>
+                        <Label htmlFor="meeting-month-select">Chọn Tháng</Label>
                         <Select
                             value={selectedMonth}
                             onValueChange={setSelectedMonth}
+                            name="meetingMonth"
                         >
-                            <SelectTrigger>
+                            <SelectTrigger id="meeting-month-select">
                                 <SelectValue placeholder="Chọn tháng..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -68,12 +69,13 @@ export function MeetingTab({
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Lần họp</Label>
+                        <Label htmlFor="meeting-session-select">Lần họp</Label>
                         <Select
                             value={selectedSession}
                             onValueChange={setSelectedSession}
+                            name="meetingSession"
                         >
-                            <SelectTrigger>
+                            <SelectTrigger id="meeting-session-select">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -108,8 +110,10 @@ export function MeetingTab({
                 )}
 
                 <div className="space-y-2">
-                    <Label>Nội dung trọng tâm (tùy chọn)</Label>
+                    <Label htmlFor="meeting-key-content">Nội dung trọng tâm (tùy chọn)</Label>
                     <Textarea
+                        id="meeting-key-content"
+                        name="meetingKeyContent"
                         placeholder="VD: Triển khai hoạt động 20/11, tổ chức sinh hoạt chuyên môn theo nghiên cứu bài học, phân công giáo viên dự giờ, thảo luận về phương pháp dạy học tích cực..."
                         value={meetingKeyContent}
                         onChange={(e) => setMeetingKeyContent(e.target.value)}
@@ -123,8 +127,10 @@ export function MeetingTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label>Kết luận cuộc họp (tùy chọn)</Label>
+                    <Label htmlFor="meeting-conclusion">Kết luận cuộc họp (tùy chọn)</Label>
                     <Textarea
+                        id="meeting-conclusion"
+                        name="meetingConclusion"
                         placeholder="Nhập nội dung kết luận cuộc họp nếu có sẵn..."
                         value={meetingConclusion}
                         onChange={(e) => setMeetingConclusion(e.target.value)}

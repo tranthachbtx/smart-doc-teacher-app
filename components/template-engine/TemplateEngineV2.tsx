@@ -141,7 +141,7 @@ export function TemplateEngine() {
   const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
 
   // --- Common State ---
-  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [generatingMode, setGeneratingMode] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState<boolean>(false);
   const [isAuditing, setIsAuditing] = useState<boolean>(false);
   const [success, setSuccess] = useState<string | null>(null);
@@ -179,7 +179,7 @@ export function TemplateEngine() {
   };
 
   const handleGenerate = async (mode: string) => {
-    setIsGenerating(true);
+    setGeneratingMode(mode);
     setError(null);
     setSuccess(null);
 
@@ -358,7 +358,7 @@ export function TemplateEngine() {
   };
 
   const handleRefineSection = async (content: string, instruction: string, model?: string): Promise<ActionResult> => {
-    setIsGenerating(true);
+    setGeneratingMode("refine");
     try {
       const prompt = `Bạn là một biên tập viên giáo dục chuyên nghiệp. Hãy chỉnh sửa nội dung sau đây dựa trên yêu cầu.\n\nNỘI DUNG GỐC:\n${content}\n\nYÊU CẦU CHỈNH SỬA: ${instruction}\n\nLưu ý: Chỉ trả về nội dung đã chỉnh sửa, không kèm lời dẫn.`;
       const res = await generateAIContent(prompt, model || selectedModel);
@@ -366,12 +366,12 @@ export function TemplateEngine() {
     } catch (err: any) {
       return { success: false, error: err.message };
     } finally {
-      setIsGenerating(false);
+      setGeneratingMode(null);
     }
   };
 
   const handleGenerateSection = async (section: any, context: any, stepInstruction?: string): Promise<ActionResult> => {
-    setIsGenerating(true);
+    setGeneratingMode("section");
     try {
       const effectiveTopic = lessonTopic || lessonAutoFilledTheme;
       const result = await generateLessonSection(
@@ -402,7 +402,7 @@ export function TemplateEngine() {
     } catch (err: any) {
       return { success: false, error: err.message };
     } finally {
-      setIsGenerating(false);
+      setGeneratingMode(null);
     }
   };
 
@@ -452,7 +452,7 @@ export function TemplateEngine() {
     setMeetingConclusion,
     meetingResult,
     setMeetingResult,
-    isGenerating,
+    isGenerating: generatingMode === "meeting",
     onGenerate: () => handleGenerate("meeting"),
     isExporting,
     onExport: () => handleExport("meeting"),
@@ -489,7 +489,7 @@ export function TemplateEngine() {
     setLessonCustomInstructions,
     lessonResult,
     setLessonResult,
-    isGenerating,
+    isGenerating: generatingMode === "lesson" || generatingMode === "section" || generatingMode === "refine",
     onGenerate: () => handleGenerate("lesson"),
     isExporting,
     onExport: () => handleExport("lesson"),
@@ -531,7 +531,7 @@ export function TemplateEngine() {
     setEventEvaluation,
     eventResult,
     setEventResult,
-    isGenerating,
+    isGenerating: generatingMode === "event",
     onGenerate: () => handleGenerate("event"),
     isExporting,
     onExport: () => handleExport("event"),
@@ -647,7 +647,7 @@ export function TemplateEngine() {
               setNcbhCustomInstructions={setNcbhCustomInstructions}
               ncbhResult={ncbhResult}
               setNcbhResult={setNcbhResult}
-              isGenerating={isGenerating}
+              isGenerating={generatingMode === "ncbh"}
               onGenerate={() => handleGenerate("ncbh")}
               isExporting={isExporting}
               onExport={() => handleExport("ncbh")}
@@ -669,7 +669,7 @@ export function TemplateEngine() {
               assessmentTemplate={assessmentTemplate}
               onTemplateUpload={onTemplateUpload}
               assessmentResult={assessmentResult}
-              isGenerating={isGenerating}
+              isGenerating={generatingMode === "assessment"}
               onGenerate={() => handleGenerate("assessment")}
               isExporting={isExporting}
               onExport={() => handleExport("assessment")}

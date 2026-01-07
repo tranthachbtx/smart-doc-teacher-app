@@ -65,7 +65,7 @@ export function EventTab({
                 {/* Input Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label>Chọn Khối</Label>
+                        <Label htmlFor="event-grade-select">Chọn Khối</Label>
                         <Select
                             value={selectedGradeEvent}
                             onValueChange={(value) => {
@@ -74,8 +74,9 @@ export function EventTab({
                                 setAutoFilledTheme("");
                                 setSelectedChuDe(null);
                             }}
+                            name="eventGrade"
                         >
-                            <SelectTrigger>
+                            <SelectTrigger id="event-grade-select">
                                 <SelectValue placeholder="Chọn khối..." />
                             </SelectTrigger>
                             <SelectContent>
@@ -87,7 +88,7 @@ export function EventTab({
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Chọn Chủ Đề</Label>
+                        <Label htmlFor="event-topic-select">Chọn Chủ Đề</Label>
                         <Select
                             value={selectedEventMonth}
                             onValueChange={(value) => {
@@ -101,8 +102,9 @@ export function EventTab({
                                 }
                             }}
                             disabled={!selectedGradeEvent}
+                            name="eventMonth"
                         >
-                            <SelectTrigger>
+                            <SelectTrigger id="event-topic-select">
                                 <SelectValue placeholder={selectedGradeEvent ? "Chọn chủ đề..." : "Chọn khối trước"} />
                             </SelectTrigger>
                             <SelectContent>
@@ -133,12 +135,14 @@ export function EventTab({
 
                 {/* Event Duration */}
                 <div className="space-y-2">
-                    <Label className="flex items-center gap-2">
+                    <Label htmlFor="event-duration-input" className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-purple-600" />
                         Thời lượng hoạt động
                     </Label>
                     <div className="flex items-center gap-2">
                         <Input
+                            id="event-duration-input"
+                            name="eventDuration"
                             type="number"
                             min="15"
                             max="240"
@@ -193,8 +197,10 @@ export function EventTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label>Dự toán kinh phí (tùy chọn)</Label>
+                    <Label htmlFor="event-budget-textarea">Dự toán kinh phí (tùy chọn)</Label>
                     <Textarea
+                        id="event-budget-textarea"
+                        name="eventBudget"
                         placeholder="Nhập dự toán kinh phí nếu cần...&#10;VD: Banner: 500.000đ, Phần thưởng: 1.000.000đ..."
                         value={eventBudget}
                         onChange={(e) => setEventBudget(e.target.value)}
@@ -206,8 +212,10 @@ export function EventTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label>Checklist chuẩn bị (tùy chọn)</Label>
+                    <Label htmlFor="event-checklist-textarea">Checklist chuẩn bị (tùy chọn)</Label>
                     <Textarea
+                        id="event-checklist-textarea"
+                        name="eventChecklist"
                         placeholder="Nhập các công việc cần chuẩn bị...&#10;VD: In ấn tài liệu, Chuẩn bị phòng họp..."
                         value={eventChecklist}
                         onChange={(e) => setEventChecklist(e.target.value)}
@@ -216,8 +224,10 @@ export function EventTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label>Yêu cầu bổ sung</Label>
+                    <Label htmlFor="event-instructions-textarea">Yêu cầu bổ sung</Label>
                     <Textarea
+                        id="event-instructions-textarea"
+                        name="eventInstructions"
                         placeholder="Nhập yêu cầu chi tiết hoặc điều chỉnh về nội dung kế hoạch..."
                         value={eventCustomInstructions}
                         onChange={(e) => setEventCustomInstructions(e.target.value)}
