@@ -8,12 +8,17 @@ export interface ActionResult<T = any> {
 }
 
 export interface MeetingResult {
-  noi_dung_chinh: string;
-  uu_diem: string;
-  han_che: string;
-  y_kien_dong_gop: string;
-  ke_hoach_thang_toi: string;
+  title?: string;
+  noi_dung_chinh?: string;
+  uu_diem?: string;
+  han_che?: string;
+  y_kien_dong_gop?: string;
+  ke_hoach_thang_toi?: string;
   ket_luan_cuoc_hop?: string;
+  content?: string;
+  summary?: string;
+  conclusion?: string;
+  metadata?: any;
 }
 
 export interface LessonTask {
@@ -117,6 +122,7 @@ export interface SagaJob {
 }
 
 export interface EventResult {
+  title?: string;
   ten_ke_hoach?: string; // Alias for ten_chu_de in display logic
   ten_chu_de?: string;
   thoi_gian?: string;
@@ -125,6 +131,9 @@ export interface EventResult {
   so_luong?: string;
   muc_tieu?: string | any;
   noi_dung?: string | string[];
+  summary?: string;
+  content?: string;
+  conclusion?: string;
   tien_trinh?: Array<{ thoi_gian: string; hoat_dong: string }>;
   nang_luc?: string;
   pham_chat?: string;
@@ -134,9 +143,11 @@ export interface EventResult {
   du_toan_kinh_phi?: string[];
   checklist_chuan_bi?: string[];
   danh_gia_sau_hoat_dong?: string;
+  metadata?: any;
 }
 
 export interface NCBHResult {
+  title?: string;
   ten_bai?: string;
   ly_do_chon?: string;
   muc_tieu?: string;
@@ -146,12 +157,22 @@ export interface NCBHResult {
   nhan_xet_nguoi_du?: string;
   nguyen_nhan_giai_phap?: string;
   bai_hoc_kinh_nghiem?: string;
+  objectives?: string;
+  methodology?: string;
+  observationFocus?: string;
+  analysisPoints?: string;
+  metadata?: any;
 }
 
 export interface AssessmentResult {
-  ten_ke_hoach: string;
+  title?: string;
+  ten_ke_hoach?: string;
   muc_tieu?: string | string[];
   noi_dung_nhiem_vu?: string | object;
+  purpose?: string;
+  matrix?: string;
+  structure?: string;
+  rubric_text?: string;
   nhiem_vu?: Array<{
     ten_nhiem_vu?: string;
     yeu_cau?: string;
@@ -175,6 +196,7 @@ export interface AssessmentResult {
     rubric?: Array<any>;
   };
   loi_khuyen?: string | object;
+  metadata?: any;
 }
 
 export type TemplateData = {

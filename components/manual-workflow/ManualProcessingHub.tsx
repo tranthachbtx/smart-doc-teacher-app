@@ -24,7 +24,7 @@ import { ContentFilter } from '@/lib/services/content-filter';
 
 export function ManualProcessingHub() {
     const store = useAppStore();
-    const { lesson } = store;
+    const { lesson, isExporting } = store;
     const {
         theme: lessonAutoFilledTheme,
         grade: lessonGrade,

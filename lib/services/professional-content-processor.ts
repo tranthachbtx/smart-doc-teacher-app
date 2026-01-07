@@ -93,8 +93,6 @@ export class ProfessionalContentProcessor {
     let currentActivity = '';
 
     const cleaner = TextCleaningService.getInstance();
-    let currentSection = '';
-    let currentActivity = '';
 
     for (const line of lines) {
       const sanitized = cleaner.clean(line);

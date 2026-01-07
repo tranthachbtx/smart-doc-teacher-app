@@ -69,7 +69,7 @@ export const ManualWorkflowService = {
                 module.type === 'kham_pha' ? 'khamPha' :
                     module.type === 'luyen_tap' ? 'luyenTap' : 'vanDung'];
 
-            specificAdvice = `
+            const specificAdvice = `
 ## 🛡️ EXCLUSIVE DIRECTIVE (QUAN TRỌNG):
 - CHỈ tập trung vào giai đoạn: ${module.title.toUpperCase()}.
 - TUYỆT ĐỐI không lặp lại nội dung đã thuộc về các giai đoạn khác.

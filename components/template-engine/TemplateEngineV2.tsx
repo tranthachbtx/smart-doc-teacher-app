@@ -89,7 +89,7 @@ import { ExportService } from "@/lib/services/export-service";
 
 export function TemplateEngine() {
   const store = useAppStore();
-  const { lesson, meeting, event, assessment, ncbh } = store;
+  const { lesson, meeting, event, assessment, ncbh, error, success, setError, setSuccess } = store;
 
   // --- Tab Management (Keep local for immediate UI) ---
   const [activeMode, setActiveMode] = useState<string>("lesson");

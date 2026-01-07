@@ -91,6 +91,11 @@ export async function callAI(
     throw new Error("SHADOW_BAN_CRITICAL: All keys exhausted. Please change IP.");
   }
 
+  // Multi-Proxy Pool Parsing
+  const rawProxyUrl = process.env.GEMINI_PROXY_URL || "";
+  const proxyPool = rawProxyUrl.split(',').map(u => u.trim()).filter(u => u.length > 0);
+  let currentProxyIndex = 0;
+
   // Phase 3: Simple Rate Limiting Check
   if (!AIResilienceService.canMakeRequest()) {
     console.warn("[Resilience] Rate limit hit. Waiting 2s...");
@@ -100,9 +105,8 @@ export async function callAI(
   let lastError = "";
 
   for (const key of availableKeys) {
-    let retryWait = 2000; // Base 2s
+    let retryWait = 2000;
 
-    // Try multiple attempts per key
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         // 1. Token Bucket Throttling (Strict 15 RPM)
@@ -119,13 +123,17 @@ export async function callAI(
         // 2. Physical Gap & Circuit Breaker Check
         await physical_gap();
 
-        console.log(`[AI-TUNNEL] [${new Date().toLocaleTimeString()}] Key: ${key.slice(0, 8)}... | ${modelName} | File: ${!!file}`);
+        // Proxy Rotation Logic
+        let proxyToUse = null;
+        if (!isProxyDead && proxyPool.length > 0) {
+          proxyToUse = proxyPool[currentProxyIndex % proxyPool.length];
+        }
 
-        // 3. NATIVE FETCH via TUNNEL (Bypass SDK Fingerprint)
-        const proxyUrl = !isProxyDead ? process.env.GEMINI_PROXY_URL : null;
-        const endpoint = proxyUrl
-          ? `${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent?key=${key}`
+        const endpoint = proxyToUse
+          ? `${proxyToUse.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent?key=${key}`
           : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
+
+        console.log(`[AI-TUNNEL] Key: ${key.slice(0, 8)} | Model: ${modelName} | Proxy: ${proxyToUse || 'Direct'}`);
 
         const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
         if (file && file.data) {
@@ -141,7 +149,7 @@ export async function callAI(
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-antigravity-proxy": "v6.0",
+            "x-antigravity-proxy": "v21.0",
           },
           body: JSON.stringify({
             contents: [{ parts }]
@@ -154,46 +162,32 @@ export async function callAI(
         }
 
         const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          const rawText = await response.text();
-          const preview = rawText.substring(0, 100);
+        const rawText = await response.text();
 
-          if (preview.includes("Hello World!")) {
-            console.warn(`[ProxyWarning] Proxy at ${proxyUrl} returned "Hello World!". Attempting fallback to direct Google API...`);
-            // Attempt fallback to direct API
-            const directEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
-            const directResponse = await fetch(directEndpoint, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ contents: [{ parts }] })
-            });
+        // 🟢 HEALING: Detection of "Hello World!" (Broken Proxy)
+        if (rawText.includes("Hello World!")) {
+          console.warn(`[ProxyWarning] ${proxyToUse} returned "Hello World!".`);
 
-            if (directResponse.ok) {
-              const directJson = await directResponse.json();
-              const directText = directJson.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (directText) {
-                lastSuccess = Date.now();
-                consecutiveShadowBans = 0;
-                // Successfully healed! Don't use proxy for subsequent calls in this session
-                isProxyDead = true;
-                console.log("[AI-TUNNEL] PROXY BYPASSED PERMANENTLY for this session.");
-                return directText;
-              }
-            } else {
-              const directStatus = directResponse.status;
-              const directError = await directResponse.text();
-              console.error(`[FallbackFailed] Direct API also failed (${directStatus}): ${directError.substring(0, 200)}`);
-            }
-
-            throw new Error(`PROXY_CONFIG_ERROR: Your Gemini Proxy is returning "Hello World!" instead of forwarding the request. 
-            HƯỚNG DẪN: Cloudflare Worker của bạn đang trả về trang mặc định. 
-            Hệ thống đã thử kết nối trực tiếp nhưng thất bại. Vui lòng kiểm tra GEMINI_API_KEY trong .env.local.`);
+          // Try next proxy if available
+          if (proxyPool.length > currentProxyIndex + 1) {
+            console.log(`[Healing] Rotating to next proxy...`);
+            currentProxyIndex++;
+            attempt--; // Don't count this as a real attempt
+            continue;
           }
 
-          throw new Error(`NON_JSON_RESPONSE: Proxy returned unexpected content-type (${contentType}). Preview: "${preview}"`);
+          // Fallback to direct connection
+          console.warn(`[Healing] All proxies broken. Switching to Direct Google API...`);
+          isProxyDead = true;
+          attempt--; // Don't count this as a real attempt
+          continue;
         }
 
-        const json = await response.json();
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error(`NON_JSON_RESPONSE: Received ${contentType}. Body: ${rawText.substring(0, 50)}`);
+        }
+
+        const json = JSON.parse(rawText);
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
 
         if (!text) throw new Error("EMPTY_RESPONSE_JSON");
@@ -244,7 +238,13 @@ export async function callAI(
   }
 
   // ALL KEYS FAILED
-  throw new Error(`ALL_KEYS_FAILED. Last error: ${lastError}`);
+  const recoveryGuide = `
+  🛠️ HƯỚNG DẪN KHẮC PHỤC (DEVOPS GUIDE):
+  1. Kiểm tra GEMINI_API_KEY trong file .env.local (Đảm bảo không có dấu cách thừa).
+  2. Nếu dùng Proxy: Hãy cập nhật Cloudflare Worker với mã nguồn Antigravity mới nhất.
+  3. Liên hệ Admin nếu tiếp tục lỗi ALL_KEYS_FAILED: ${lastError}`;
+
+  throw new Error(`ALL_KEYS_FAILED. ${recoveryGuide}`);
 }
 
 // --- 3. IMPROVED JSON PARSER (v2.0) ---
@@ -376,7 +376,16 @@ export async function generateMeetingMinutes(m: string, s: string, c: string, co
   try {
     const t = await callAI(getMeetingPrompt(m, s, c, conc, "", ""), model, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseMeetingResult(t) };
-  } catch (e: any) { return { success: false, error: e.message }; }
+  } catch (e: any) {
+    console.error(`[MeetingFail] AI Failed: ${e.message}. Triggering ARCH 21.0 Fallback...`);
+    // ARCHITECTURE 21.0: Offline Fallback for Meeting Minutes
+    try {
+      const fallbackData = AIResilienceService.getMeetingFallback(c); // Use context as raw source
+      return { success: true, data: fallbackData };
+    } catch (fallbackError: any) {
+      return { success: false, error: `${e.message} | Fallback fail: ${fallbackError.message}` };
+    }
+  }
 }
 
 export async function generateLesson(g: string, t: string, d?: string, c?: string, tasks?: string[], m?: string, s?: string, f?: { mimeType: string, data: string, name: string }, model?: string): Promise<ActionResult<LessonResult>> {
@@ -417,21 +426,45 @@ export async function generateEvent(g: string, t: string, i?: string, budget?: s
     const extra = `\n\nNGÂN SÁCH: ${budget || "Tối ưu hóa"}\nDANH MỤC CẦN CHUẨN BỊ: ${checklist || "Tự đề xuất"}\nTIÊU CHÍ ĐÁNH GIÁ: ${evaluation || "Tự đề xuất"}`;
     const text = await callAI(getEventPrompt(g, t, undefined) + (i ? `\n\nCHỈ DẪN BỔ SUNG:\n${i}` : "") + extra, model, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseEventResult(text) };
-  } catch (e: any) { return { success: false, error: e.message }; }
+  } catch (e: any) {
+    console.error(`[EventFail] AI Failed: ${e.message}. Triggering ARCH 22.0 Fallback...`);
+    try {
+      const fallbackData = AIResilienceService.getEventFallback(g, t, i || "", budget || "", checklist || "", evaluation || "");
+      return { success: true, data: fallbackData };
+    } catch (fallbackError: any) {
+      return { success: false, error: `${e.message} | Fallback fail: ${fallbackError.message}` };
+    }
+  }
 }
 
 export async function generateNCBH(g: string, t: string, i?: string, m?: string): Promise<ActionResult<NCBHResult>> {
   try {
     const text = await callAI(`${NCBH_ROLE}\n${NCBH_TASK}\n${g}, ${t}, ${i || ""}`, m, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseNCBHResult(text) };
-  } catch (e: any) { return { success: false, error: e.message }; }
+  } catch (e: any) {
+    console.error(`[NCBHFail] AI Failed: ${e.message}. Triggering ARCH 22.0 Fallback...`);
+    try {
+      const fallbackData = AIResilienceService.getNcbhFallback(g, t, i || "");
+      return { success: true, data: fallbackData };
+    } catch (fallbackError: any) {
+      return { success: false, error: `${e.message} | Fallback fail: ${fallbackError.message}` };
+    }
+  }
 }
 
 export async function generateAssessmentPlan(g: string, tr: string, ty: string, to: string, model?: string): Promise<ActionResult<AssessmentResult>> {
   try {
     const text = await callAI(getAssessmentPrompt(g, tr, ty, to), model, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseAssessmentResult(text) };
-  } catch (e: any) { return { success: false, error: e.message }; }
+  } catch (e: any) {
+    console.error(`[AssessmentFail] AI Failed: ${e.message}. Triggering ARCH 22.0 Fallback...`);
+    try {
+      const fallbackData = AIResilienceService.getAssessmentFallback(g, tr, ty, to);
+      return { success: true, data: fallbackData };
+    } catch (fallbackError: any) {
+      return { success: false, error: `${e.message} | Fallback fail: ${fallbackError.message}` };
+    }
+  }
 }
 
 // API Key Status Check

@@ -62,4 +62,40 @@ export class AIResilienceService {
 
         return fallbacks[section] || "Nội dung đang được cập nhật...";
     }
+
+    /**
+     * Meeting Fallback: Phân tích biên bản không cần AI
+     */
+    static getMeetingFallback(rawText: string) {
+        console.warn(`[Resilience] Triggering Offline Meeting Analysis...`);
+        const { MeetingMinuteAnalyzer } = require("./meeting-minute-analyzer");
+        return MeetingMinuteAnalyzer.analyze(rawText);
+    }
+
+    /**
+     * Event Fallback: Tạo kế hoạch ngoại khóa không cần AI
+     */
+    static getEventFallback(grade: string, topic: string, instructions: string, budget: string, checklist: string, evaluation: string) {
+        console.warn(`[Resilience] Triggering Offline Event Analysis...`);
+        const { EventPlanAnalyzer } = require("./event-plan-analyzer");
+        return EventPlanAnalyzer.analyze(grade, topic, instructions, budget, checklist, evaluation);
+    }
+
+    /**
+     * NCBH Fallback: Tạo kế hoạch NCBH không cần AI
+     */
+    static getNcbhFallback(grade: string, topic: string, instructions: string) {
+        console.warn(`[Resilience] Triggering Offline NCBH Analysis...`);
+        const { NCBHAnalyzer } = require("./ncbh-analyzer");
+        return NCBHAnalyzer.analyze(grade, topic, instructions);
+    }
+
+    /**
+     * Assessment Fallback: Tạo kế hoạch đánh giá không cần AI
+     */
+    static getAssessmentFallback(grade: string, term: string, type: string, topic: string) {
+        console.warn(`[Resilience] Triggering Offline Assessment Analysis...`);
+        const { AssessmentPlanAnalyzer } = require("./assessment-plan-analyzer");
+        return AssessmentPlanAnalyzer.analyze(grade, term, type, topic);
+    }
 }
