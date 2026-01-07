@@ -1,5 +1,5 @@
 
-import { ProcessingModule } from "@/lib/store/use-lesson-store";
+import { ProcessingModule } from "@/lib/store/use-app-store";
 import { SmartPromptData } from "./smart-prompt-service";
 import { LessonPlanAnalyzer } from "./lesson-plan-analyzer";
 import { ProfessionalContentProcessor } from "./professional-content-processor";

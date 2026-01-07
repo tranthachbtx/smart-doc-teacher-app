@@ -3,7 +3,7 @@
  * Hệ thống tinh lọc và phân tích nội dung chuyên nghiệp
  */
 
-import { ProcessingModule } from "@/lib/store/use-lesson-store";
+import { ProcessingModule } from "@/lib/store/use-app-store";
 import { SmartPromptData } from "./smart-prompt-service";
 import { QuantumNeuralFusionEngine } from "./quantum-neural-fusion-engine";
 import { PedagogicalRelevanceEngine } from "./pedagogical-relevance-engine";
@@ -103,9 +103,10 @@ export class ProfessionalContentProcessor {
       // Check for strong activity headers first (Isolation Guard)
       let foundNewActivity = false;
       for (const [activity, patterns] of Object.entries(ACTIVITY_PATTERNS)) {
-        // Only trigger if line is short (header-like) or matches "Hoạt động X" explicitly
-        if (patterns.slice(0, 2).some(p => p.test(trimmedLine)) ||
-          (trimmedLine.length < 50 && patterns.some(p => p.test(trimmedLine)))) {
+        // IMPROVED HEADER DETECTION: Start of line matches "Hoạt động X" or strong markers
+        const isStrongHeader = patterns.slice(0, 2).some(p => p.test(trimmedLine)) && trimmedLine.length < 60;
+
+        if (isStrongHeader) {
           currentActivity = activity;
           currentSection = ''; // Reset section when moving to new activity
           foundNewActivity = true;
@@ -116,7 +117,7 @@ export class ProfessionalContentProcessor {
       // If not a new activity, check for section markers
       if (!foundNewActivity) {
         for (const [section, patterns] of Object.entries(SECTION_PATTERNS)) {
-          if (patterns.some(pattern => pattern.test(trimmedLine))) {
+          if (patterns.some(pattern => pattern.test(trimmedLine)) && trimmedLine.length < 100) {
             currentSection = section;
             break;
           }
@@ -124,7 +125,7 @@ export class ProfessionalContentProcessor {
       }
 
       // Add content only if we are inside a tracked activity/section pair
-      if (currentActivity && currentSection && trimmedLine.length > 5) {
+      if (currentActivity && currentSection) {
         const activityKey = currentActivity as keyof ActivityContent;
         const sectionKey = currentSection as keyof typeof content.khoiDong;
 
@@ -132,9 +133,9 @@ export class ProfessionalContentProcessor {
         const isMarker = Object.values(SECTION_PATTERNS).flat().some(p => p.test(trimmedLine)) ||
           Object.values(ACTIVITY_PATTERNS).flat().some(p => p.test(trimmedLine));
 
-        if (!isMarker) {
+        if (!isMarker && trimmedLine.length > 3) {
           if (content[activityKey] && (content[activityKey] as any)[sectionKey]) {
-            // Basic deduplication for same activity
+            // Intelligent deduplication and line merging
             if (!(content[activityKey] as any)[sectionKey].includes(trimmedLine)) {
               (content[activityKey] as any)[sectionKey].push(trimmedLine);
             }
@@ -204,12 +205,13 @@ export class ProfessionalContentProcessor {
    */
   private static extractKeyPoints(content: string[], maxPoints: number): string[] {
     const cleaner = TextCleaningService.getInstance();
+    // INCREASED DENSITY: Allow more points and more text if available to support 30-50 page goal
     return content
       .map(line => cleaner.clean(line))
-      .filter(line => line.length > 20)
-      .filter(line => !line.match(/^\s*[IVX]+\.|^\s*\d+\.|^\s*[A-Z]\./)) // Loại bỏ số thứ tự
+      .filter(line => line.length > 15)
+      .filter(line => !line.match(/^\s*[IVX]+\$|^\s*\d+\$|^\s*[A-Z]\$/)) // Slightly less restrictive numbering filter
       .map(line => line.replace(/^\s*[-*•]\s*/, '')) // Loại bỏ bullet
-      .slice(0, maxPoints)
+      .slice(0, Math.max(maxPoints, 8)) // Increased from maxPoints to support more detail
       .map(line => `• ${line}`);
   }
 
@@ -232,46 +234,48 @@ export class ProfessionalContentProcessor {
     let quantumInsight = "";
     if (currentPlan) {
       const fusion = await fusionEngine.quantumNeuralFusion(currentPlan, optimizedContent);
-      quantumInsight = `\n## ⚛️ QUANTUM REASONING (v11.0):\n${fusion.quantumReasoning}\n- Confidence: ${(fusion.confidence * 100).toFixed(1)}%\n- Fidelity: ${(fusion.metadata.fidelity * 100).toFixed(1)}%`;
+      quantumInsight = `\n## ⚛️ QUANTUM NEURAL REASONING (v23.0):\n${fusion.quantumReasoning}\n- Confidence: ${(fusion.confidence * 100).toFixed(1)}%\n- Fidelity: ${(fusion.metadata.fidelity * 100).toFixed(1)}%`;
     }
 
-    const basePrompt = `Bạn là SIÊU TRÍ TUỆ SƯ PHẠM. Hãy thiết kế ${this.getActivityTitle(activity)} theo chuẩn 5512.
+    const activityTitle = this.getActivityTitle(activity).toUpperCase();
+    const basePrompt = `Bạn là SIÊU TRÍ TUỆ SƯ PHẠM & CHUYÊN GIA BIÊN SOẠN GIÁO ÁN CAO CẤP. 
+Nhiệm vụ: Thiết kế chi tiết ${activityTitle} theo chuẩn Công văn 5512/BGDĐT.
 
-## 🎯 NỘI DUNG TỐI ƯU CHO ${this.getActivityTitle(activity).toUpperCase()}:
+## 🎯 DỮ LIỆU ĐÃ TỐI ƯU CHO HOẠT ĐỘNG: ${activityTitle}
+> Hướng dẫn: Đây là các mảnh kiến thức được trích xuất từ tài liệu gốc (SGK/Tài liệu tham khảo), đã lọc theo mức độ liên quan cao nhất cho riêng hoạt động này.
 ${optimizedContent}
 
-## 📊 KẾT QUẢ PHÂN TÍCH PEDAGOGICAL (RELEVANCE):
+## 📊 PHÂN TÍCH PEDAGOGICAL (RELEVANCE):
 ${relevance.reasoning}
 
-## 💡 CHỈ DẪN THÔNG MINH TỪ DATABASE:
+## 💡 HỆ THỐNG TRÍ THỨC (DATABASE):
 ${this.getSmartDataAdvice(activity, smartData)}
 ${quantumInsight}
 
-## 🎮 YÊU CẦU ĐẶC THÙ:
-${this.getActivityRequirements(activity)}
-...
+## 🎮 YÊU CẦU NÂNG CAO (CRITICAL):
+1. **Độ chi tiết tối đa**: Để giáo án đạt 30-50 trang, bạn PHẢI diễn giải cực kỳ chi tiết từng bước.
+2. **Lời thoại (Verbatim Script)**: Cung cấp chính xác giáo viên sẽ nói gì (VD: "Chào các em, hôm nay...") và dự kiến học sinh sẽ trả lời ra sao.
+3. **Kỹ thuật sư phạm**: Áp dụng các kỹ thuật như: ${activity === 'khoiDong' ? 'Gamification, KWL' : activity === 'khamPha' ? 'Khăn trải bàn, Mảnh ghép' : 'Think-Pair-Share'}.
+4. **Chuẩn 5512**: Chia rõ 4 bước: Chuyển giao nhiệm vụ -> Thực hiện -> Báo cáo, thảo luận -> Kết luận, chốt kiến thức.
 
-## 📋 ĐỊNH DẠNG ĐẦU RA:
+## 📋 ĐỊNH DẠNG ĐẦU RA (JSON):
 Trả về duy nhất một chuỗi JSON hợp lệ với cấu trúc:
 {
   "module_title": "${this.getActivityTitle(activity)} - [Tên hoạt động sáng tạo]",
   "duration": "${this.getActivityDuration(activity)}",
-  "summary_for_next_step": "Tóm tắt ngắn gọn (2-3 câu) nội dung hoạt động này để làm ngữ cảnh cho bước sau.",
+  "summary_for_next_step": "Tóm tắt chi tiết (4-5 câu) để làm nền tảng cho bước kế tiếp.",
   "steps": [
     {
       "step_type": "transfer" | "perform" | "report" | "conclude", 
-      "teacher_action": "Nội dung cột GV (Markdown). Chú ý Escape dấu ngoặc kép: \\"Lời thoại\\"",
-      "student_action": "Nội dung cột HS"
+      "teacher_action": "Nội dung cột GV (Markdown). Hãy viết thật dài và chi tiết.",
+      "student_action": "Nội dung cột HS. Mô tả kỹ các sản phẩm/câu trả lời của học sinh."
     }
   ]
 }
 
 ⚠️ LƯU Ý KỸ THUẬT:
-1. **Valid JSON**: Không được thiếu dấu phẩy, không thừa dấu phẩy cuối mảng.
-2. **Escape Characters**: Dấu ngoặc kép (") phải viết là \\", dấu gạch chéo (\\) phải viết là \\\\
-3. **Markdown**: Có thể dùng in đậm (**text**), xuống dòng (\\n).
-4. **2 Columns**: Phân tách rõ nội dung GV và HS.
-5. **5512 Compliance**: Tuân thủ chuẩn giáo án Công văn 5512.`;
+- KHÔNG sử dụng các từ chung chung như "GV hướng dẫn", hãy viết RÕ GV hướng dẫn điều gì, nói câu gì.
+- Escape dấu ngoặc kép (") thành \\" và xuống dòng thành \\n.`;
 
     return basePrompt;
   }

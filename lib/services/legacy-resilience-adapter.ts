@@ -2,7 +2,7 @@
 import { AdvancedAIProcessor, StructuredLessonPlan } from "@/lib/advanced-ai-processor";
 import { enhancedPDFExtractor } from "@/lib/enhanced-pdf-extractor";
 import { SmartPromptData } from "./smart-prompt-service";
-import { ProcessingModule } from "@/lib/store/use-lesson-store";
+import { ProcessingModule } from "@/lib/store/use-app-store";
 
 /**
  * 🧱 LEGACY RESILIENCE ADAPTER
