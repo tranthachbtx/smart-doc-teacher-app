@@ -34,6 +34,7 @@ import {
   parseAssessmentResult,
   parseResilient
 } from "@/lib/utils/ai-response-parser";
+import { PedagogicalOrchestrator } from "@/lib/services/pedagogical-orchestrator";
 
 import type { ActivitySuggestions } from "@/lib/prompts/khdh-prompts";
 
@@ -251,68 +252,84 @@ export async function callAI(
     }
   }
 
-  // --- HYBRID PROVIDER FALLBACK (v7.0) ---
-  const openAIKey = process.env.OPENAI_API_KEY;
-  if (openAIKey && openAIKey.length > 20) {
-    try {
-      console.log(`[Antigravity] ⚡ Gemini failed (${lastError}). Falling back to OpenAI (GPT-4o-mini)...`);
-      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openAIKey.trim()}`
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: [
-            { role: "system", content: systemContent },
-            { role: "user", content: prompt }
-          ],
-          temperature: 0.7
-        })
-      });
 
-      if (resp.ok) {
-        const data = await resp.json();
-        const resultText = data.choices[0].message.content;
-        console.log("[Antigravity] ✅ OpenAI Fallback SUCCESS!");
-        return resultText;
-      } else {
-        const errorData = await resp.text();
-        console.error(`[OpenAI-Fallback] Failed: ${resp.status} - ${errorData}`);
-      }
-    } catch (e: any) {
-      console.error(`[OpenAI-Fallback] Runtime Error: ${e.message}`);
+  // --- LAYER 2: NEURAL FAILOVER (HIGH-FIDELITY OVERRIDE) ---
+  const failoverProviders = [
+    {
+      name: "OpenAI",
+      url: "https://api.openai.com/v1/chat/completions",
+      key: process.env.OPENAI_API_KEY,
+      model: "gpt-4o-mini"
+    },
+    {
+      name: "Groq",
+      url: "https://api.groq.com/openai/v1/chat/completions",
+      key: process.env.GROQ_API_KEY,
+      model: "llama-3.1-70b-versatile"
+    },
+    {
+      name: "Anthropic",
+      url: "https://api.anthropic.com/v1/messages",
+      key: process.env.ANTHROPIC_API_KEY,
+      model: "claude-3-haiku-20240307"
     }
-  }
+  ];
 
-  const groqKey = process.env.GROQ_API_KEY;
-  if (groqKey && groqKey.length > 20) {
-    try {
-      console.log("[Antigravity] ⚡ All others failed. Charging Groq (Llama-3.1-70b)...");
-      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${groqKey.trim()}`
-        },
-        body: JSON.stringify({
-          model: "llama-3.1-70b-versatile",
-          messages: [
-            { role: "system", content: systemContent },
-            { role: "user", content: prompt }
-          ]
-        })
-      });
+  for (const provider of failoverProviders) {
+    if (provider.key && provider.key.length > 20) {
+      try {
+        console.log(`[NeuralFailover] Attempting ${provider.name} (${provider.model})...`);
 
-      if (resp.ok) {
-        const data = await resp.json();
-        const resultText = data.choices[0].message.content;
-        console.log("[Antigravity] ✅ Groq Fallback SUCCESS!");
-        return resultText;
+        let body: any;
+        let headers: Record<string, string> = {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${provider.key.trim()}`
+        };
+
+        if (provider.name === "Anthropic") {
+          headers = {
+            "Content-Type": "application/json",
+            "x-api-key": provider.key.trim(),
+            "anthropic-version": "2023-06-01"
+          };
+          body = {
+            model: provider.model,
+            system: systemContent,
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 4096
+          };
+        } else {
+          body = {
+            model: provider.model,
+            messages: [
+              { role: "system", content: systemContent },
+              { role: "user", content: prompt }
+            ],
+            temperature: 0.7
+          };
+        }
+
+        const resp = await fetch(provider.url, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(body)
+        });
+
+        if (resp.ok) {
+          const data = await resp.json();
+          const resultText = provider.name === "Anthropic"
+            ? data.content[0].text
+            : data.choices[0].message.content;
+
+          console.log(`[NeuralFailover] ✅ ${provider.name} SUCCESS! System integrity maintained.`);
+          return resultText;
+        } else {
+          const err = await resp.text();
+          console.warn(`[NeuralFailover] ${provider.name} failed: ${resp.status} - ${err.substring(0, 100)}`);
+        }
+      } catch (e: any) {
+        console.error(`[NeuralFailover] ${provider.name} Runtime Error: ${e.message}`);
       }
-    } catch (e: any) {
-      console.error(`[Groq-Fallback] Runtime Error: ${e.message}`);
     }
   }
 
@@ -490,7 +507,16 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
       )
       : getLessonIntegrationPrompt(g, t);
     const text = await callAI(p, model, f);
-    return { success: true, data: parseLessonResult(text) };
+    let data = parseLessonResult(text);
+
+    // 🎯 ARCHITECTURE 18.0: REFLECTION LAYER
+    if (data && data.hoat_dong_day_hoc) {
+      console.log('[GeminiServer] Applying 18.0 Reflection Layer...');
+      const orchestrator = PedagogicalOrchestrator.getInstance();
+      data = await orchestrator.reflectAndImprove(data);
+    }
+
+    return { success: true, data };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 

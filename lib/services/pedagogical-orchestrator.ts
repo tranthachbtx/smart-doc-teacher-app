@@ -1,5 +1,6 @@
 
 import { MultiModalAIManager } from "./multi-modal-ai-manager";
+import { CurriculumService } from "./curriculum-service";
 
 // --- Interfaces (Consolidated) ---
 
@@ -46,9 +47,11 @@ export interface RelevanceResult {
 export class PedagogicalOrchestrator {
     private static instance: PedagogicalOrchestrator;
     private aiManager: MultiModalAIManager;
+    private curriculumService: CurriculumService;
 
     private constructor() {
         this.aiManager = MultiModalAIManager.getInstance();
+        this.curriculumService = CurriculumService.getInstance();
     }
 
     public static getInstance(): PedagogicalOrchestrator {
@@ -64,30 +67,77 @@ export class PedagogicalOrchestrator {
 
     async auditLesson(lessonResult: any): Promise<PedagogicalAuditReport> {
         const prompt = `
-        BẠN LÀ CHUYÊN GIA KIỂM ĐỊNH SƯ PHẠM CAO CẤP (PEDAGOGICAL AUDITOR V7).
+        BẠN LÀ CHUYÊN GIA KIỂM ĐỊNH SƯ PHẠM CAO CẤP (PEDAGOGICAL AUDITOR V18).
         
-        NHIỆM VỤ: Đánh giá Kế hoạch bài dạy (KHBD) dựa trên các tiêu chí chuyên môn khắt khe.
+        NHIỆM VỤ: Đánh giá Kế hoạch bài dạy (KHBD) dựa trên các tiêu chí chuyên môn khắt khe nhất của Bộ Giáo dục (Thông tư 5512).
         
         TIÊU CHÍ CHẤM ĐIỂM (Thang điểm 100):
-        1. **MoET 5512 Compliance**: Đúng cấu trúc 4 bước (Chuyển giao, Thực hiện, Báo cáo, Kết luận).
-        2. **Pedagogical Logic**: Tính mạch lạc giữa Mục tiêu - Hoạt động - Sản phẩm.
-        3. **Digital Innovation**: Mức độ tích hợp công nghệ hiệu quả.
-        4. **Student Centricity**: Lấy học sinh làm trung tâm.
+        1. **MoET 5512 Compliance (40đ)**: 
+           - Đúng 4 bước: Chuyển giao -> Thực hiện -> Báo cáo -> Kết luận.
+           - BẮT BUỘC có marker {{cot_1}} và {{cot_2}} trong phần "Tổ chức thực hiện".
+           - Có đủ mục tiêu: Kiến thức, Năng lực, Phẩm chất.
+        2. **Pedagogical Logic (30đ)**: Sự kết nối mục tiêu -> hoạt động -> sản phẩm.
+        3. **Digital Innovation (15đ)**: Tích hợp thiết bị số, học liệu điện tử.
+        4. **Student Centricity (15đ)**: Học sinh là chủ thể, giáo viên là người điều phối.
         
         DỮ LIỆU KHBD:
         ${JSON.stringify(lessonResult, null, 2)}
         
+        NGỮ CẢNH CHƯƠNG TRÌNH GDPT 2018:
+        ${this.injectCurriculumContext(lessonResult)}
+
         YÊU CẦU ĐẦU RA (JSON):
         {
             "overallScore": number,
             "criteriaScores": { "moet5512": number, "pedagogicalLogic": number, "digitalInnovation": number, "studentCentricity": number },
-            "professionalReasoning": "Lập luận chuyên môn sâu sắc",
-            "actionableImprovements": ["Gợi ý 1", "Gợi ý 2"]
+            "professionalReasoning": "Lập luận chuyên môn cực kỳ chi tiết, chỉ rõ lỗi ở đâu",
+            "actionableImprovements": ["Gợi ý sửa cụ thể 1", "Gợi ý sửa cụ thể 2"]
         }
         `;
 
-        const result = await this.aiManager.processContent({ text: "Audit Level: Professional" }, prompt, 'deep');
+        const result = await this.aiManager.processContent({ text: "Audit Level: Maximum Precision" }, prompt, 'deep');
         return this.safeParseJSON(result.content);
+    }
+
+    /**
+     * 🎯 REFLECTION LAYER (SELF-CORRECTION)
+     * AI tự kiểm tra và sửa lỗi trước khi hiển thị kết quả.
+     */
+    async reflectAndImprove(lessonPlan: any): Promise<any> {
+        console.log('[Orchestrator] Starting Reflection Cycle...');
+
+        // Step 1: Internal Audit
+        const audit = await this.auditLesson(lessonPlan);
+
+        if (audit.overallScore >= 92) {
+            console.log(`[Orchestrator] Quality high enough (${audit.overallScore}/100). No reflection needed.`);
+            return lessonPlan;
+        }
+
+        console.log(`[Orchestrator] Quality below threshold (${audit.overallScore}/100). Initiating Self-Correction...`);
+
+        // Step 2: Self-Correction
+        const correctionPrompt = `
+        BẠN LÀ CHUYÊN GIA SỬA LỖI SƯ PHẠM (PEDAGOGICAL REFINER).
+        Dựa trên kết quả Audit dưới đây, hãy nâng cấp KHBD này lên cấp độ xuất sắc (100 điểm).
+        
+        KẾT QUẢ AUDIT XẤU:
+        - Điểm tổng: ${audit.overallScore}
+        - Lý luận lỗi: ${audit.professionalReasoning}
+        - Cần cải thiện: ${audit.actionableImprovements.join('. ')}
+        
+        NỘI DUNG GỐC CẦN SỬA:
+        ${JSON.stringify(lessonPlan, null, 2)}
+        
+        YÊU CẦU: Trả về JSON KHBD đã được hoàn thiện, sửa đổi tất cả các lỗi đã nêu. 
+        ĐẶC BIỆT: Phải đảm bảo có đầy đủ marker {{cot_1}} và {{cot_2}} để hệ thống xuất file Word 2 cột chính xác.
+        GIỮ NGUYÊN cấu trúc JSON cũ.
+        `;
+
+        const refinerResult = await this.aiManager.processContent({ text: "Self-Correction Phase" }, correctionPrompt, 'deep');
+        const refinedPlan = this.safeParseJSON(refinerResult.content);
+
+        return refinedPlan || lessonPlan;
     }
 
     // ========================================
@@ -189,6 +239,37 @@ export class PedagogicalOrchestrator {
         }
 
         return summary;
+    }
+
+    // --- Context Injection Engine ---
+    private injectCurriculumContext(metadata: any): string {
+        const grade = metadata.grade;
+        let month = metadata.month || new Date().getMonth() + 1;
+
+        // If theme is provided, try to find it
+        if (metadata.topic || metadata.ten_bai) {
+            const theme = this.curriculumService.identifyThemeFromText(metadata.topic || metadata.ten_bai, grade);
+            if (theme) {
+                const pedagogical = this.curriculumService.getPedagogicalContext(theme.grade, theme.theme.ma);
+                return `
+                - Chủ đề chuẩn: ${theme.theme.ten}
+                - Mục tiêu KNTT: ${theme.theme.muc_tieu.join(', ')}
+                - Lưu ý sư phạm: ${pedagogical?.luuY?.trong_tam.join('. ')}
+                - Gợi ý tích hợp: ${pedagogical?.tichHop?.ke_hoach_day_hoc.join('. ')}
+                - Đặc điểm tâm lý: ${pedagogical?.dacDiemTamLy?.join('. ')}
+                `;
+            }
+        }
+
+        // Fallback to month-based themes
+        if (grade) {
+            const themes = this.curriculumService.getThemesByMonth(grade, month);
+            if (themes.length > 0) {
+                return `Gợi ý chủ đề tháng ${month}: ${themes.map(t => t.ten).join(', ')}`;
+            }
+        }
+
+        return "Không tìm thấy ngữ cảnh cụ thể trong Database.";
     }
 
     // --- Helper ---

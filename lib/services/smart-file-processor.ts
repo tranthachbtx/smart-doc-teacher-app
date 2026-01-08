@@ -1,5 +1,5 @@
 
-import { CachedProcessingEngine } from "./cached-processing-engine";
+
 import { extractTextFromFile } from "@/lib/actions/gemini";
 
 export class SmartFileProcessor {
@@ -19,7 +19,8 @@ export class SmartFileProcessor {
     public async processFile(
         file: File,
         onProgress?: (stage: string) => void
-    ): Promise<{ content: string; source: 'cache' | 'api' }> {
+    ): Promise<{ content: string; source: 'cache' | 'api'; analyzed?: any }> {
+        console.log(`[SmartFileProcessor] Initiating 9.1 High-Performance Pipeline for ${file.name}`);
 
         // 1. Validation
         if (file.size > this.MAX_FILE_SIZE) {
@@ -29,12 +30,10 @@ export class SmartFileProcessor {
         const { SmartCacheV2 } = await import('@/lib/services/smart-cache-v2');
         const cacheEngine = SmartCacheV2.getInstance();
 
-        if (onProgress) onProgress("Checking compressed cache...");
+        if (onProgress) onProgress("🔐 Layering Security & Checking Cache...");
 
         // 2. Hash & Cache
-        const { CachedProcessingEngine } = await import('@/lib/services/cached-processing-engine');
-        const legacyHashEngine = CachedProcessingEngine.getInstance();
-        const hash = await legacyHashEngine.generateFileHash(file);
+        const hash = await this.generateFileHash(file);
 
         const cachedContent = await cacheEngine.get(hash);
 
@@ -54,11 +53,20 @@ export class SmartFileProcessor {
 
         if (onProgress) onProgress("Analyzing content (Client PDF / Local / Cloud AI)...");
 
-        // Lazy load extractor
         const { MultiStrategyExtractor } = await import('@/lib/services/multi-strategy-extractor');
         const extractor = MultiStrategyExtractor.getInstance();
 
         const extractionResult = await extractor.extract(file, base64Data);
+
+        if (onProgress) onProgress("🧠 Offloading Pedagogical Analysis to Background Worker...");
+
+        // --- 9.1 PERFORMANCE: WORKER OFFLOAD ---
+        let analyzed = null;
+        try {
+            analyzed = await this.runWorkerAnalysis(extractionResult.content, file.name);
+        } catch (e) {
+            console.warn('[SmartFileProcessor] Worker analysis failed, falling back to main thread.', e);
+        }
 
         // If the result comes from 'local_parser', we might want to SUMMARIZE it if it's too long,
         // because manual workflow expects a "Summary/Guidance", not raw 20 page text.
@@ -75,7 +83,47 @@ export class SmartFileProcessor {
             console.warn('[SmartFileProcessor] Content too short/empty. NOT caching.');
         }
 
-        return { content: extractionResult.content, source: 'api' };
+        return {
+            content: extractionResult.content,
+            source: 'api',
+            analyzed
+        };
+    }
+
+    private async runWorkerAnalysis(content: string, fileName: string): Promise<any> {
+        return new Promise((resolve, reject) => {
+            try {
+                const worker = new Worker(new URL('../workers/smart-processor.worker.ts', import.meta.url));
+                worker.onmessage = (e) => {
+                    if (e.data.success) {
+                        resolve(e.data.result);
+                    } else {
+                        reject(new Error(e.data.error));
+                    }
+                    worker.terminate();
+                };
+                worker.onerror = (e) => {
+                    reject(e);
+                    worker.terminate();
+                };
+                worker.postMessage({ type: 'PROCESS_TEXT_ANALYSIS', data: content, fileName });
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    private async generateFileHash(file: File): Promise<string> {
+        if (typeof window === 'undefined') return file.name; // Fallback
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        } catch (e) {
+            console.warn('[SmartFileProcessor] Hashing failed', e);
+            return `${file.name}_${file.size}_${file.lastModified}`;
+        }
     }
 
     private fileToBase64(file: File): Promise<string> {

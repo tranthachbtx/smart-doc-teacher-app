@@ -1,5 +1,5 @@
 import { generateAIContent } from "@/lib/actions/gemini";
-import { LessonPlanAnalyzer } from "./lesson-plan-analyzer";
+
 
 export interface ContentSection {
     id: string;
@@ -128,70 +128,21 @@ export class ContentStructureAnalyzer {
     }
 
     private async getEnhancedFallbackStructure(rawText: string): Promise<StructuredContent> {
-        // Create a fake file-like object for enhancedPDFExtractor (it mainly needs raw access to text if used standalone)
-        // Note: enhancedPDFExtractor normally takes a File, but we can mock or use its internal methods
-        // Since we already have rawText, we can use LessonPlanAnalyzer for basic structure OR 
-        // better yet, use the enhanced logic directly if we can adapt it.
-
-        // For now, let's keep LessonPlanAnalyzer as the base but "enhance" it with metadata logic
-        const analyzed = LessonPlanAnalyzer.analyze(rawText);
+        // V7: Simplified fallback without LessonPlanAnalyzer
         const sections: ContentSection[] = [];
 
-        // 1. Add Objectives
-        if (analyzed.objectives) {
-            sections.push({
-                id: `enhanced_obj_${Date.now()}`,
-                title: "Mục tiêu bài học (Robust)",
-                type: "objective",
-                content: analyzed.objectives,
-                relevance: { khoi_dong: 100, kham_pha: 40, luyen_tap: 0, van_dung: 0 },
-                metadata: { pageNumbers: [], wordCount: analyzed.objectives.split(/\s+/).length, complexity: 'medium' }
-            });
-        }
-
-        // 2. Add Preparations
-        if (analyzed.preparations) {
-            sections.push({
-                id: `enhanced_prep_${Date.now()}`,
-                title: "Thiết bị dạy học/Chuẩn bị",
-                type: "resource",
-                content: analyzed.preparations,
-                relevance: { khoi_dong: 60, kham_pha: 60, luyen_tap: 0, van_dung: 0 },
-                metadata: { pageNumbers: [], wordCount: analyzed.preparations.split(/\s+/).length, complexity: 'low' }
-            });
-        }
-
-        // 3. Add Activities
-        analyzed.activities.forEach((act, index) => {
-            sections.push({
-                id: `enhanced_act_${Date.now()}_${index}`,
-                title: act.title,
-                type: "activity",
-                content: act.content,
-                relevance: {
-                    khoi_dong: index === 0 ? 100 : 0,
-                    kham_pha: index === 1 ? 100 : (index === 0 ? 30 : 20),
-                    luyen_tap: index === 2 ? 100 : 0,
-                    van_dung: index >= 3 ? 100 : 0
-                },
-                metadata: { pageNumbers: [], wordCount: act.content.split(/\s+/).length, complexity: 'medium' }
-            });
+        // Add a single knowledge section as backup
+        sections.push({
+            id: `fallback_raw_${Date.now()}`,
+            title: "Nội dung trích xuất (V7 Fallback)",
+            type: "knowledge",
+            content: rawText.substring(0, 8000),
+            relevance: { khoi_dong: 25, kham_pha: 25, luyen_tap: 25, van_dung: 25 },
+            metadata: { pageNumbers: [], wordCount: rawText.length / 5, complexity: 'medium' }
         });
 
-        // 4. Default knowledge section if everything else is empty
-        if (sections.length === 0) {
-            sections.push({
-                id: "enhanced_raw",
-                title: "Nội dung trích xuất (Architecture 18.0 Mode)",
-                type: "knowledge",
-                content: rawText.substring(0, 5000),
-                relevance: { khoi_dong: 50, kham_pha: 50, luyen_tap: 50, van_dung: 50 },
-                metadata: { pageNumbers: [], wordCount: rawText.length / 5, complexity: 'medium' }
-            });
-        }
-
         return {
-            title: analyzed.topic || "Tài liệu trích xuất (Enhanced Fallback)",
+            title: "Tài liệu trích xuất (Enhanced Fallback)",
             grade: "Chưa rõ",
             subject: "Chưa rõ",
             sections: sections,

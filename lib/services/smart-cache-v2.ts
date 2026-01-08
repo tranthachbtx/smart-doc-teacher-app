@@ -1,18 +1,21 @@
 
 /**
- * Smart Cache V2 with Compression
+ * Smart Cache V2 with Compression & Security Vault
+ */
+
+import { SecurityVault } from "./security-vault";
  * Improvements:
- * - GZIP Compression for storage efficiency (localStorage 5MB limit).
- * - Metadata tracking (original size vs compressed size).
+ * - GZIP Compression for storage efficiency(localStorage 5MB limit).
+ * - Metadata tracking(original size vs compressed size).
  */
 
 export interface CacheEntryV2 {
-    data: string; // Base64 encoded compressed string
-    timestamp: number;
-    originalSize: number;
-    compressedSize: number;
-    checksum: string; // Simple length-based checksum for now
-}
+        data: string; // Base64 encoded compressed string
+        timestamp: number;
+        originalSize: number;
+        compressedSize: number;
+        checksum: string; // Simple length-based checksum for now
+    }
 
 export class SmartCacheV2 {
     private static instance: SmartCacheV2;
@@ -181,11 +184,14 @@ export class SmartCacheV2 {
 
         const compressedData = await this.compress(content);
 
+        // 🛡️ SECURITY LAYER: Encrypt before storage
+        const encryptedData = await SecurityVault.getInstance().encrypt(compressedData);
+
         this.cache.set(key, {
-            data: compressedData,
+            data: encryptedData,
             timestamp: Date.now(),
             originalSize: content.length,
-            compressedSize: compressedData.length,
+            compressedSize: encryptedData.length,
             checksum: content.length.toString()
         });
 
@@ -208,7 +214,10 @@ export class SmartCacheV2 {
         this.cache.set(key, entry);
         this.saveToStorage();
 
+        // 🛡️ SECURITY LAYER: Decrypt after retrieval
+        const decryptedData = await SecurityVault.getInstance().decrypt(entry.data);
+
         // Decompress
-        return await this.decompress(entry.data);
+        return await this.decompress(decryptedData);
     }
 }

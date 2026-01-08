@@ -1,5 +1,5 @@
-
 import { saveAs } from "file-saver";
+import { IntegrityService } from './integrity-service';
 import {
     Document,
     Packer,
@@ -380,7 +380,11 @@ export class DocumentExportSystem {
         return { cot1: content, cot2: "..." };
     }
 
-    private triggerDownload(blob: Blob, fileName: string) {
+    private async triggerDownload(blob: Blob, fileName: string) {
+        // 💎 INTEGRITY SEAL (ISO 25010 COMPLIANCE)
+        const seal = await IntegrityService.seal(blob, fileName);
+        console.log(`[Integrity] 🛡️ DOCUMENT SEALED: ${seal.checksum} at ${seal.timestamp}`);
+
         saveAs(blob, fileName);
     }
 }
