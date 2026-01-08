@@ -21,6 +21,7 @@ import { ActivityContentBuilder } from '@/components/ui/activity-content-builder
 import { useLessonActions } from '@/lib/hooks/use-lesson-actions';
 import { ExpertBrainInjection } from '../template-engine/ExpertBrainInjection';
 import { ContentFilter } from '@/lib/services/content-filter';
+import { ProfessionalContentProcessor } from '@/lib/services/professional-content-processor';
 
 export function ManualProcessingHub() {
     const store = useAppStore();
@@ -57,6 +58,28 @@ export function ManualProcessingHub() {
             setManualModules(initialModules);
         }
     }, [lessonAutoFilledTheme, manualModules.length, expertGuidance, setManualModules]);
+
+    // Restore from Session Memory (processedContext)
+    useEffect(() => {
+        if (store.lesson.processedContext && !structuredContent) {
+            const ctx = store.lesson.processedContext;
+            console.log("[ManualProcessingHub] Restoring session context from store...");
+            setStructuredContent(ctx.structured);
+            setExpertGuidance(ctx.scientificText);
+            setOptimizedMap(ctx.optimizedMap);
+
+            // If manual modules are empty, re-analyze structure from restored text
+            if (manualModules.length === 0) {
+                const modules = ManualWorkflowService.analyzeStructure(ctx.scientificText, "2");
+                setManualModules(modules);
+            }
+
+            toast({
+                title: "🔄 Đã khôi phục dữ liệu!",
+                description: "Hệ thống đã tự động khôi phục dữ liệu phân tích từ phiên trước."
+            });
+        }
+    }, [store.lesson.processedContext]); // Run once when context exists or changes
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];

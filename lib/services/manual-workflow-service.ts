@@ -93,7 +93,9 @@ ${specificAdvice}
             ? {
                 instructions: (context.optimizedFileSummary as any).semanticTags?.instructions,
                 tasks: (context.optimizedFileSummary as any).semanticTags?.studentTasks,
-                knowledge: (context.optimizedFileSummary as any).semanticTags?.knowledgeCores
+                knowledge: (context.optimizedFileSummary as any).semanticTags?.knowledgeCores,
+                products: (context.optimizedFileSummary as any).semanticTags?.products,
+                assessment: (context.optimizedFileSummary as any).semanticTags?.assessment
             }
             : null;
 

@@ -39,6 +39,8 @@ export interface ActivityContent {
     instructions: string[];
     studentTasks: string[];
     knowledgeCores: string[];
+    products: string[];
+    assessment: string[];
   };
 }
 
@@ -113,7 +115,7 @@ export class ProfessionalContentProcessor {
       shl: [],
       learningAssets: [],
       legacyMappingNotes: [],
-      semanticTags: { instructions: [], studentTasks: [], knowledgeCores: [] }
+      semanticTags: { instructions: [], studentTasks: [], knowledgeCores: [], products: [], assessment: [] }
     };
 
     let currentSection = '';
@@ -140,6 +142,8 @@ export class ProfessionalContentProcessor {
       if (semanticType === 'instruction') content.semanticTags.instructions.push(trimmedLine);
       else if (semanticType === 'task') content.semanticTags.studentTasks.push(trimmedLine);
       else if (semanticType === 'knowledge') content.semanticTags.knowledgeCores.push(trimmedLine);
+      else if (semanticType === 'product') content.semanticTags.products.push(trimmedLine);
+      else if (semanticType === 'assessment') content.semanticTags.assessment.push(trimmedLine);
 
       // --- ASSET & LEGACY EXTRACTION ---
       ASSET_PATTERNS.forEach(regex => {
@@ -343,12 +347,24 @@ export class ProfessionalContentProcessor {
   }
 
   /**
-   * Helper: Phân loại bản chất sư phạm của dòng văn bản
+   * Helper: Phân loại bản chất sư phạm chuyên sâu (V4.0 Intelligence)
    */
-  private static categorizeSemanticLine(line: string): 'instruction' | 'task' | 'knowledge' | 'unknown' {
-    if (/(yêu cầu|hướng dẫn|giúp|hỗ trợ|điều phối|tổ chức|mời|quan sát|lưu ý)/i.test(line)) return 'instruction';
-    if (/(thực hiện|làm|viết|vẽ|trình bày|báo cáo|thảo luận|trả lời|hoàn thành|sản phẩm)/i.test(line)) return 'task';
-    if (/(khái niệm|định nghĩa|quy tắc|nguyên tắc|kiến thức|nội dung chính|chốt)/i.test(line)) return 'knowledge';
+  private static categorizeSemanticLine(line: string): 'instruction' | 'task' | 'knowledge' | 'assessment' | 'product' | 'unknown' {
+    // 1. Chỉ dẫn sư phạm (Teacher Directives)
+    if (/(yêu cầu|hướng dẫn|giúp|hỗ trợ|điều phối|tổ chức|mời|quan sát|lưu ý|giải thích|minh họa|đứng tại|quan sát)/i.test(line)) return 'instruction';
+
+    // 2. Nhiệm vụ học sinh & Thinking Routines (Student Tasks)
+    if (/(thực hiện|làm|viết|vẽ|trình bày|báo cáo|thảo luận|trả lời|hoàn thành|suy nghĩ|liên tưởng|quan sát - suy ngẫm|đặt câu hỏi)/i.test(line)) return 'task';
+
+    // 3. Trọng tâm kiến thức (Knowledge Core)
+    if (/(khái niệm|định nghĩa|quy tắc|nguyên tắc|kiến thức|nội dung chính|chốt|kết luận|tầm quan trọng|ý nghĩa)/i.test(line)) return 'knowledge';
+
+    // 4. Sản phẩm học tập (Product Out)
+    if (/(sản phẩm|kết quả|bản vẽ|bài viết|video|bài báo cáo|phiếu bài tập|pht|poster|sơ đồ)/i.test(line)) return 'product';
+
+    // 5. Đánh giá & Tiêu chí (Assessment)
+    if (/(đánh giá|nhận xét|tiêu chí|rubric|thang đo|khen ngợi|góp ý|phản hồi)/i.test(line)) return 'assessment';
+
     return 'unknown';
   }
 
@@ -394,6 +410,8 @@ ${semanticContext ? `## 🧠 SEMANTIC PEDAGOGICAL MAP (CHIẾN LƯỢC):
 - **Chỉ dẫn sư phạm**: ${semanticContext.instructions?.slice(0, 5).join('; ') || 'Tự đề xuất'}
 - **Nhiệm vụ học sinh**: ${semanticContext.tasks?.slice(0, 5).join('; ') || 'Tự đề xuất'}
 - **Trọng tâm kiến thức**: ${semanticContext.knowledge?.slice(0, 5).join('; ') || 'Bám sát PDF'}
+- **Sản phẩm học tập**: ${semanticContext.products?.slice(0, 5).join('; ') || 'Dựa vào hoạt động'}
+- **Tiêu chí đánh giá**: ${semanticContext.assessment?.slice(0, 5).join('; ') || 'Bám sát yêu cầu cần đạt'}
 ` : ''}
 
 ## 📊 PHÂN TÍCH PEDAGOGICAL (RELEVANCE):
