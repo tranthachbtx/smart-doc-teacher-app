@@ -61,6 +61,7 @@ import {
   generateNCBH as generateNCBHAction,
   generateAIContent
 } from "@/lib/actions/gemini";
+import { performAdvancedAudit } from "@/lib/actions/advanced-audit";
 import { MeetingEngine, type MeetingEngineProps } from "./MeetingEngine";
 import { LessonEngine, type LessonEngineProps } from "./LessonEngine";
 import { EventEngine, type EventEngineProps } from "./EventEngine";
@@ -288,11 +289,24 @@ export function TemplateEngine() {
   };
 
   const handleAudit = async () => {
+    if (!lesson.result) {
+      store.setError("Không có dữ liệu giáo án để kiểm định.");
+      return;
+    }
+
     store.setLoading('isAuditing', true);
+    store.setSuccess("🔍 Đang thực hiện kiểm định chuyên sâu (Pedagogical Audit V5)...");
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      store.updateLessonField('auditResult', "Đánh giá hoàn thành! Giáo án đạt chuẩn 5512.");
-      store.updateLessonField('auditScore', 85);
+      const result = await performAdvancedAudit(lesson.result);
+      if (result.success && result.report) {
+        const report = result.report;
+        store.updateLessonField('auditResult', report.professionalReasoning);
+        store.updateLessonField('auditScore', report.overallScore);
+        store.setSuccess(`✅ Kiểm định hoàn tất! Điểm: ${report.overallScore}/100`);
+      } else {
+        throw new Error(result.error || "Kiểm định không thành công");
+      }
     } catch (err) {
       store.setError(err instanceof Error ? err.message : "Đánh giá thất bại");
     } finally {

@@ -77,11 +77,11 @@ export class PedagogicalRelevanceEngine {
             return {
                 activities,
                 confidence: 90,
-                reasoning: "Phân tích Neural sâu dựa trên ngữ cảnh MoET 5512",
+                reasoning: "Phân tích sư phạm chuyên sâu dựa trên ngữ cảnh MoET 5512",
                 suggestions: []
             };
         } catch (error) {
-            console.error("[PedagogicalRelevanceEngine] Neural Pass Failed, falling back to basic analysis.");
+            console.error("[PedagogicalRelevanceEngine] Expert Pass Failed, falling back to basic analysis.");
             return this.calculateBasicScore(content);
         }
     }

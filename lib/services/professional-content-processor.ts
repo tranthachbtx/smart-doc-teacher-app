@@ -5,8 +5,7 @@
 
 import { ProcessingModule } from "@/lib/store/use-app-store";
 import { SmartPromptData } from "./smart-prompt-service";
-import { QuantumNeuralFusionEngine } from "./quantum-neural-fusion-engine";
-import { PedagogicalRelevanceEngine } from "./pedagogical-relevance-engine";
+import { PedagogicalOrchestrator } from "./pedagogical-orchestrator";
 import { TextCleaningService } from "./text-cleaning-service";
 
 export interface ActivityContent {
@@ -379,19 +378,18 @@ export class ProfessionalContentProcessor {
     skipNeural: boolean = false,
     semanticContext?: any
   ): Promise<string> {
-    const fusionEngine = QuantumNeuralFusionEngine.getInstance();
-    const relevanceEngine = PedagogicalRelevanceEngine.getInstance();
+    const orchestrator = PedagogicalOrchestrator.getInstance();
 
-    // 1. Phân tích độ liên quan chuyên sâu MoET 5512 (Optional Neural Pass)
+    // 1. Phân tích độ liên quan chuyên sâu MoET 5512 (V7 Unified Pass)
     const relevance = skipNeural
-      ? await relevanceEngine.calculateBasicScore(optimizedContent)
-      : await relevanceEngine.calculateRelevanceScore(optimizedContent);
+      ? { activities: [], confidence: 50, reasoning: "Basic Pass" }
+      : await orchestrator.analyzeRelevance(optimizedContent);
 
-    // 2. Logic Quantum Reasoning
-    let quantumInsight = "";
+    // 2. Logic Pedagogical Reasoning
+    let pedagogicalInsight = "";
     if (currentPlan) {
-      const fusion = await fusionEngine.quantumNeuralFusion(currentPlan, optimizedContent);
-      quantumInsight = `\n## ⚛️ QUANTUM NEURAL REASONING (v23.0):\n${fusion.quantumReasoning}\n- Confidence: ${(fusion.confidence * 100).toFixed(1)}%\n- Fidelity: ${(fusion.metadata.fidelity * 100).toFixed(1)}%`;
+      const fusion = await orchestrator.fuseSuggestions(currentPlan, optimizedContent);
+      pedagogicalInsight = `\n## 💡 PEDAGOGICAL REASONING (v7.0):\n${fusion.reasoning}\n- Confidence: ${(fusion.confidence * 100).toFixed(1)}%\n- Fidelity: ${(fusion.metadata.pedagogicalFidelity * 100).toFixed(1)}%`;
     }
 
     const activityTitle = this.getActivityTitle(activity).toUpperCase();
@@ -419,7 +417,7 @@ ${relevance.reasoning}
 
 ## 💡 HỆ THỐNG TRÍ THỨC (DATABASE CHIẾN LƯỢC - THAM KHẢO):
 ${this.getSmartDataAdvice(activity, smartData)}
-${quantumInsight}
+${pedagogicalInsight}
 
 ## 🎮 YÊU CẦU NÂNG CAO (CRITICAL DIRECTIVES):
 1. **TRUNG THỰC VỚI DỮ LIỆU PDF**: Đây là yêu cầu tiên quyết. Sử dụng 100% ngữ liệu từ PDF (mục 🎯) làm xương sống. 

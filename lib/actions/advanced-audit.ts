@@ -1,21 +1,18 @@
-
-"use server";
-
-import { NeuralComplianceAuditor, ComplianceReport } from "@/lib/services/neural-compliance-auditor";
+import { PedagogicalOrchestrator, PedagogicalAuditReport } from "@/lib/services/pedagogical-orchestrator";
 
 /**
- * 🔍 ADVANCED NEURAL AUDIT - SERVER ACTION
- * Provides high-fidelity pedagogical auditing using the advanced engine.
+ * 🔍 ADVANCED PEDAGOGICAL AUDIT - SERVER ACTION (V7)
+ * Provides high-fidelity pedagogical auditing using the V7 Orchestrator.
  */
-export async function performAdvancedAudit(lessonResult: any): Promise<{ success: boolean; report?: ComplianceReport; error?: string }> {
-    console.log("[AdvancedAudit] Initiating deep pedagogical audit...");
+export async function performAdvancedAudit(lessonResult: any): Promise<{ success: boolean; report?: PedagogicalAuditReport; error?: string }> {
+    console.log("[AdvancedAudit] Initiating High-Fidelity Pedagogical Audit V7...");
 
     try {
-        const auditor = NeuralComplianceAuditor.getInstance();
-        const report = await auditor.deepAudit(lessonResult);
+        const orchestrator = PedagogicalOrchestrator.getInstance();
+        const report = await orchestrator.auditLesson(lessonResult);
 
         return {
-            success: report.score > 0,
+            success: (report?.overallScore || 0) > 0,
             report
         };
     } catch (error: any) {
