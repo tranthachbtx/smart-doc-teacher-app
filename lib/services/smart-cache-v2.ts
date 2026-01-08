@@ -1,21 +1,17 @@
-
 /**
- * Smart Cache V2 with Compression & Security Vault
- */
-
-import { SecurityVault } from "./security-vault";
+ * Smart Cache V2 with Compression
  * Improvements:
- * - GZIP Compression for storage efficiency(localStorage 5MB limit).
- * - Metadata tracking(original size vs compressed size).
+ * - GZIP Compression for storage efficiency (localStorage 5MB limit).
+ * - Metadata tracking (original size vs compressed size).
  */
 
 export interface CacheEntryV2 {
-        data: string; // Base64 encoded compressed string
-        timestamp: number;
-        originalSize: number;
-        compressedSize: number;
-        checksum: string; // Simple length-based checksum for now
-    }
+    data: string; // Base64 encoded compressed string
+    timestamp: number;
+    originalSize: number;
+    compressedSize: number;
+    checksum: string; // Simple length-based checksum for now
+}
 
 export class SmartCacheV2 {
     private static instance: SmartCacheV2;
@@ -65,17 +61,15 @@ export class SmartCacheV2 {
                 if (this.cache.size > 0) {
                     const oldest = this.cache.keys().next().value;
                     this.cache.delete(oldest!);
-                    // Try saving again recursively? For now just skip.
                 }
             }
         }
     }
 
     // --- Compression Utils (Browser Native CompressionStream) ---
-    // Note: Fallback to simple string if CompressionStream not supported (older browsers)
 
     private async compress(input: string): Promise<string> {
-        if (typeof CompressionStream === 'undefined') return input; // Fallback
+        if (typeof CompressionStream === 'undefined') return input;
 
         try {
             const stream = new CompressionStream('gzip');
@@ -94,7 +88,6 @@ export class SmartCacheV2 {
                 chunks.push(value);
             }
 
-            // Combine chunks
             const totalLength = chunks.reduce((acc, c) => acc + c.length, 0);
             const result = new Uint8Array(totalLength);
             let offset = 0;
@@ -103,10 +96,7 @@ export class SmartCacheV2 {
                 offset += chunk.length;
             }
 
-            // Convert Uint8Array to Base64
-            // We use a safe way for large strings
             return this.bytesToBase64(result);
-
         } catch (e) {
             console.error('[SmartCacheV2] Compression failed', e);
             return input;
@@ -135,12 +125,12 @@ export class SmartCacheV2 {
                 if (done) break;
                 result += decoder.decode(value, { stream: true });
             }
-            result += decoder.decode(); // flush
+            result += decoder.decode();
 
             return result;
         } catch (e) {
             console.error('[SmartCacheV2] Decompression failed', e);
-            return input; // Fallback (maybe it wasn't compressed)
+            return input;
         }
     }
 
@@ -174,9 +164,8 @@ export class SmartCacheV2 {
     // --- Public API ---
 
     public async set(key: string, content: string): Promise<void> {
-        // Enforce LRU size limit
         if (this.cache.has(key)) {
-            this.cache.delete(key); // Refresh order
+            this.cache.delete(key);
         } else if (this.cache.size >= this.MAX_ENTRIES) {
             const lruKey = this.cache.keys().next().value;
             if (lruKey) this.cache.delete(lruKey);
@@ -184,14 +173,11 @@ export class SmartCacheV2 {
 
         const compressedData = await this.compress(content);
 
-        // 🛡️ SECURITY LAYER: Encrypt before storage
-        const encryptedData = await SecurityVault.getInstance().encrypt(compressedData);
-
         this.cache.set(key, {
-            data: encryptedData,
+            data: compressedData,
             timestamp: Date.now(),
             originalSize: content.length,
-            compressedSize: encryptedData.length,
+            compressedSize: compressedData.length,
             checksum: content.length.toString()
         });
 
@@ -202,7 +188,6 @@ export class SmartCacheV2 {
         const entry = this.cache.get(key);
         if (!entry) return null;
 
-        // TTL Check
         if (Date.now() - entry.timestamp > this.TTL) {
             this.cache.delete(key);
             this.saveToStorage();
@@ -214,10 +199,6 @@ export class SmartCacheV2 {
         this.cache.set(key, entry);
         this.saveToStorage();
 
-        // 🛡️ SECURITY LAYER: Decrypt after retrieval
-        const decryptedData = await SecurityVault.getInstance().decrypt(entry.data);
-
-        // Decompress
-        return await this.decompress(decryptedData);
+        return await this.decompress(entry.data);
     }
 }
