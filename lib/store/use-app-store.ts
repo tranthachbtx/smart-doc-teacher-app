@@ -48,6 +48,7 @@ interface AppState {
         customInstructions: string;
         auditResult: string | null;
         auditScore: number;
+        processedContext: any | null; // Cache for analyzed PDF structure
     };
 
     // Meeting Slice
@@ -148,6 +149,7 @@ export const useAppStore = create<AppState>()(
                 customInstructions: "",
                 auditResult: null,
                 auditScore: 0,
+                processedContext: null,
             },
 
             // Initial Meeting State
@@ -205,7 +207,7 @@ export const useAppStore = create<AppState>()(
                 lesson: { ...s.lesson, [field]: value }
             })),
             resetLesson: () => set((s) => ({
-                lesson: { ...s.lesson, result: null, manualModules: [], auditResult: null, auditScore: 0 }
+                lesson: { ...s.lesson, result: null, manualModules: [], auditResult: null, auditScore: 0, processedContext: null }
             })),
 
             // Meeting Actions

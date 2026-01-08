@@ -88,13 +88,23 @@ ${specificAdvice}
 `;
         }
 
+        // Prepare Semantic Context (Step 2 Implementation)
+        const semanticContext = context.optimizedFileSummary && typeof context.optimizedFileSummary === 'object'
+            ? {
+                instructions: (context.optimizedFileSummary as any).semanticTags?.instructions,
+                tasks: (context.optimizedFileSummary as any).semanticTags?.studentTasks,
+                knowledge: (context.optimizedFileSummary as any).semanticTags?.knowledgeCores
+            }
+            : null;
+
         // Use ProfessionalContentProcessor for optimized prompt generation
         return (await ProfessionalContentProcessor.generateOptimizedPrompt(
             module.type,
-            optimizedContent,
+            typeof optimizedContent === 'string' ? optimizedContent : JSON.stringify(optimizedContent),
             context.smartData,
             null,
-            true // skipNeural: TRUE for manual prompt generation
+            true, // skipNeural: TRUE for manual prompt generation
+            semanticContext
         )) + contextInjection + smartDataSection;
     },
 

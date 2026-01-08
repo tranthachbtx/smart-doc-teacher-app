@@ -35,6 +35,11 @@ export interface ActivityContent {
   shl?: string[];
   learningAssets: string[];
   legacyMappingNotes: string[];
+  semanticTags: {
+    instructions: string[];
+    studentTasks: string[];
+    knowledgeCores: string[];
+  };
 }
 
 export const ASSET_PATTERNS = [
@@ -107,7 +112,8 @@ export class ProfessionalContentProcessor {
       shdc: [],
       shl: [],
       learningAssets: [],
-      legacyMappingNotes: []
+      legacyMappingNotes: [],
+      semanticTags: { instructions: [], studentTasks: [], knowledgeCores: [] }
     };
 
     let currentSection = '';
@@ -128,6 +134,12 @@ export class ProfessionalContentProcessor {
       const trimmedLine = sanitized.trim();
 
       if (!trimmedLine || trimmedLine.length < 5) continue;
+
+      // --- DEEP SEMANTIC TAGGING ---
+      const semanticType = this.categorizeSemanticLine(trimmedLine);
+      if (semanticType === 'instruction') content.semanticTags.instructions.push(trimmedLine);
+      else if (semanticType === 'task') content.semanticTags.studentTasks.push(trimmedLine);
+      else if (semanticType === 'knowledge') content.semanticTags.knowledgeCores.push(trimmedLine);
 
       // --- ASSET & LEGACY EXTRACTION ---
       ASSET_PATTERNS.forEach(regex => {
@@ -331,6 +343,16 @@ export class ProfessionalContentProcessor {
   }
 
   /**
+   * Helper: Phân loại bản chất sư phạm của dòng văn bản
+   */
+  private static categorizeSemanticLine(line: string): 'instruction' | 'task' | 'knowledge' | 'unknown' {
+    if (/(yêu cầu|hướng dẫn|giúp|hỗ trợ|điều phối|tổ chức|mời|quan sát|lưu ý)/i.test(line)) return 'instruction';
+    if (/(thực hiện|làm|viết|vẽ|trình bày|báo cáo|thảo luận|trả lời|hoàn thành|sản phẩm)/i.test(line)) return 'task';
+    if (/(khái niệm|định nghĩa|quy tắc|nguyên tắc|kiến thức|nội dung chính|chốt)/i.test(line)) return 'knowledge';
+    return 'unknown';
+  }
+
+  /**
    * Tạo prompt tối ưu cho từng hoạt động sử dụng Quantum Neural Fusion
    */
   static async generateOptimizedPrompt(
@@ -338,7 +360,8 @@ export class ProfessionalContentProcessor {
     optimizedContent: string,
     smartData?: SmartPromptData,
     currentPlan?: any,
-    skipNeural: boolean = false
+    skipNeural: boolean = false,
+    semanticContext?: any
   ): Promise<string> {
     const fusionEngine = QuantumNeuralFusionEngine.getInstance();
     const relevanceEngine = PedagogicalRelevanceEngine.getInstance();
@@ -366,6 +389,12 @@ Nhiệm vụ: Thiết kế ${activityTitle} theo triết lý "GIÁO ÁN LÀ LA B
 
 ## 🎯 DỮ LIỆU ĐÃ TỐI ƯU TỪ HỆ THỐNG:
 ${optimizedContent}
+
+${semanticContext ? `## 🧠 SEMANTIC PEDAGOGICAL MAP (CHIẾN LƯỢC):
+- **Chỉ dẫn sư phạm**: ${semanticContext.instructions?.slice(0, 5).join('; ') || 'Tự đề xuất'}
+- **Nhiệm vụ học sinh**: ${semanticContext.tasks?.slice(0, 5).join('; ') || 'Tự đề xuất'}
+- **Trọng tâm kiến thức**: ${semanticContext.knowledge?.slice(0, 5).join('; ') || 'Bám sát PDF'}
+` : ''}
 
 ## 📊 PHÂN TÍCH PEDAGOGICAL (RELEVANCE):
 ${relevance.reasoning}

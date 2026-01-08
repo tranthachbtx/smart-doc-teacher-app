@@ -62,6 +62,12 @@ export function ManualProcessingHub() {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Step 3: Session-Based Context Memory (Check and Warn)
+        if (store.lesson.processedContext) {
+            const confirmNew = window.confirm("Bạn đã có dữ liệu phân tích từ lần trước. Tải file mới sẽ xóa dữ liệu cũ. Tiếp tục?");
+            if (!confirmNew) return;
+        }
+
         setIsAnalyzing(true);
         setAnalyzingStatus("Đang khởi tạo...");
 
@@ -85,16 +91,31 @@ export function ManualProcessingHub() {
                 const modules = ManualWorkflowService.analyzeStructure(scientificText, "2");
                 setManualModules(modules);
 
-                // --- AUTOMATIC CONTENT OPTIMIZATION ---
-                setAnalyzingStatus("Đang lọc nội dung trọng tâm...");
+                // --- STEP 1 & 2: PEDAGOGICAL SLICING & DEEP TAGGING ---
+                setAnalyzingStatus("Đang bóc tách bản chất sư phạm (Deep Tagging)...");
+                const processedContent = ProfessionalContentProcessor.extractActivityContent(result.content);
+
                 const filter = new ContentFilter();
-                const newOptimizedMap: Record<string, string> = {};
+                const newOptimizedMap: Record<string, any> = {};
 
                 modules.forEach(mod => {
                     const filtered = filter.filterContentForActivity(structured, mod.type as any);
-                    newOptimizedMap[mod.id] = filtered.promptContent;
+                    // Combine filtered prompt text with semantic tags for that specific module's slice
+                    newOptimizedMap[mod.id] = {
+                        promptContent: filtered.promptContent,
+                        semanticTags: processedContent.semanticTags
+                    };
                 });
+
                 setOptimizedMap(newOptimizedMap);
+
+                // Save to Global Store for Session Resilience
+                store.updateLessonField('processedContext', {
+                    structured,
+                    scientificText,
+                    optimizedMap: newOptimizedMap,
+                    processedContent // Contains assets and semantic tags
+                });
 
                 toast({
                     title: "✅ Phân tích & Tối ưu xong!",
@@ -121,7 +142,7 @@ export function ManualProcessingHub() {
                 topic: lessonAutoFilledTheme,
                 grade: lessonGrade,
                 fileSummary: expertGuidance || "Nội dung sách giáo khoa...",
-                optimizedFileSummary: optimizedMap[module.id],
+                optimizedFileSummary: optimizedMap[module.id] || (store.lesson.processedContext?.optimizedMap?.[module.id]),
                 smartData: smartData
             });
 
