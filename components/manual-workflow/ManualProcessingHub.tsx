@@ -4,7 +4,7 @@ import React, { useEffect, useCallback } from 'react';
 import { useAppStore, ProcessingModule } from '@/lib/store/use-app-store';
 import { LessonResult } from '@/lib/types';
 import { ManualWorkflowService } from '@/lib/services/manual-workflow-service';
-import { ExportService } from '@/lib/services/export-service';
+import { PedagogicalOrchestrator } from '@/lib/services/pedagogical-orchestrator';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Copy, FileDown, CheckCircle, RefreshCw, ClipboardList, Upload, Loader2, FileText, AlertCircle, Search, X, BrainCircuit, Zap, ArrowRight, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SmartPromptService } from '@/lib/services/smart-prompt-service';
-import { LessonPlanAnalyzer } from '@/lib/services/lesson-plan-analyzer';
+// Redundant Analyzer Removed
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { ContentStructureAnalyzer, StructuredContent } from '@/lib/services/content-structure-analyzer';
@@ -108,7 +108,7 @@ export function ManualProcessingHub() {
                 const structured = await analyzer.analyzePDFContent(result.content, store.selectedModel);
                 setStructuredContent(structured);
 
-                const scientificText = LessonPlanAnalyzer.formatForPrompt(LessonPlanAnalyzer.analyze(result.content));
+                const scientificText = PedagogicalOrchestrator.simplifyScientificText(result.content);
                 setExpertGuidance(scientificText);
 
                 const modules = ManualWorkflowService.analyzeStructure(scientificText, "2");

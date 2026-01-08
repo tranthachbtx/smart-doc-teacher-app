@@ -61,7 +61,7 @@ import {
   type TemplateType,
 } from "@/lib/template-storage";
 import { useTemplateGeneration } from "@/hooks/use-template-generation";
-import { ExportService } from "@/lib/services/export-service";
+import { DocumentExportSystem } from "@/lib/services/document-export-system";
 import type {
   MeetingResult,
   LessonResult,
@@ -897,21 +897,16 @@ const TemplateEngine = () => {
       // For Assessment, we always create the Word file directly (skip docxtemplater)
       // because auto-generated templates don't work well with docxtemplater
       // and user-uploaded templates may have malformed placeholders
-      const result = await ExportService.exportAssessmentPlan(
+      const result = await DocumentExportSystem.getInstance().exportAssessmentPlan(
         assessmentResult,
-        null, // Always pass null to force direct file creation
         {
           grade: assessmentGrade,
-          term: assessmentTerm,
-          productType: assessmentProductType,
-          topic: assessmentTopic
+          term: assessmentTerm
         }
       );
 
-      if (result.success) {
-        setSuccess(result.method === "download" ? "Đã tải xuống file Word!" : "Đã copy nội dung!");
-      } else {
-        // Fallback
+      if (result) {
+        setSuccess("Đã tải xuống file Word!");
       }
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
@@ -1038,15 +1033,11 @@ const TemplateEngine = () => {
           return;
         }
 
-        // Use effective template searching (session -> default -> built-in)
-        const templateToUse = await getEffectiveTemplate("meeting");
-
-        result = await ExportService.exportMeeting(
+        const worked = await DocumentExportSystem.getInstance().exportMeeting(
           meetingResult,
-          templateToUse,
-          selectedMonth,
-          selectedSession
+          selectedMonth
         );
+        result = { success: worked, method: "download" };
       } else if (type === "lesson") {
         if (!lessonResult) {
           setError("Chưa có nội dung tích hợp. Vui lòng tạo nội dung trước.");
@@ -1054,26 +1045,10 @@ const TemplateEngine = () => {
           return;
         }
 
-        const templateToUse = await getEffectiveTemplate("lesson");
 
-        result = await ExportService.exportLesson(lessonResult, templateToUse, {
-          grade: lessonGrade,
-          topic: lessonTopic || lessonAutoFilledTheme,
-          month: lessonMonth,
-          duration: lessonFullPlanMode
-            ? `${lessonDuration} tiết`
-            : lessonDuration,
-          fullPlanMode: lessonFullPlanMode,
-          reviewMode: lessonReviewMode,
-          tasks: lessonTasks,
-          ppctData,
-          autoFilledTheme: lessonAutoFilledTheme,
-          suggestions: {
-            shdc: shdcSuggestion,
-            hdgd: hdgdSuggestion,
-            shl: shlSuggestion,
-          },
-        });
+
+        const worked = await DocumentExportSystem.getInstance().exportLesson(lessonResult);
+        result = { success: worked, method: "download" };
       } else if (type === "event") {
         if (!eventResult) {
           setError("Chưa có kịch bản ngoại khóa. Vui lòng tạo nội dung trước.");
@@ -1081,15 +1056,13 @@ const TemplateEngine = () => {
           return;
         }
 
-        const templateToUse = await getEffectiveTemplate("event");
 
-        result = await ExportService.exportEvent(eventResult, templateToUse, {
+
+        const worked = await DocumentExportSystem.getInstance().exportEvent(eventResult, {
           grade: selectedGradeEvent,
           month: selectedEventMonth,
-          budget: eventBudget,
-          checklist: eventChecklist,
-          autoFilledTheme: autoFilledTheme,
         });
+        result = { success: worked, method: "download" };
       } else if (type === "ncbh") {
         if (!ncbhResult) {
           setError("Chưa có nội dung NCBH. Vui lòng tạo nội dung trước.");
@@ -1097,13 +1070,13 @@ const TemplateEngine = () => {
           return;
         }
 
-        const templateToUse = await getEffectiveTemplate("ncbh");
 
-        result = await ExportService.exportNCBH(ncbhResult, templateToUse, {
+
+        const worked = await DocumentExportSystem.getInstance().exportNCBH(ncbhResult, {
           grade: ncbhGrade,
           month: selectedMonth,
-          topic: ncbhTopic,
         });
+        result = { success: worked, method: "download" };
       } else if (type === "assessment") {
         if (!assessmentResult) {
           setError("Chưa có nội dung kế hoạch kiểm tra. Vui lòng tạo nội dung trước.");
@@ -1111,14 +1084,13 @@ const TemplateEngine = () => {
           return;
         }
 
-        const templateToUse = await getEffectiveTemplate("assessment");
 
-        result = await ExportService.exportAssessmentPlan(assessmentResult, templateToUse, {
+
+        const worked = await DocumentExportSystem.getInstance().exportAssessmentPlan(assessmentResult, {
           grade: assessmentGrade,
           term: assessmentTerm,
-          productType: assessmentProductType,
-          topic: assessmentTopic,
         });
+        result = { success: worked, method: "download" };
       }
 
       if (result.method === "download") {

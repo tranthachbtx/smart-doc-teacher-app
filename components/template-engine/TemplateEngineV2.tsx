@@ -82,7 +82,7 @@ import type {
 } from "@/lib/types";
 import { useAppStore } from "@/lib/store/use-app-store";
 import { saveTemplate } from "@/lib/template-storage";
-import { ExportService } from "@/lib/services/export-service";
+import { DocumentExportSystem } from "@/lib/services/document-export-system";
 
 // ========================================
 // MAIN TEMPLATE ENGINE COMPONENT
@@ -222,63 +222,42 @@ export function TemplateEngine() {
 
   const handleExport = async (mode: string) => {
     store.setLoading('isExporting', true);
+    const exportSystem = DocumentExportSystem.getInstance();
     try {
-      store.setSuccess("Đang tạo file Word...");
+      store.setSuccess("Đang tạo file Word chuyên nghiệp...");
 
-      let res;
+      let success = false;
       switch (mode) {
         case "lesson":
           if (!lesson.result) throw new Error("Chưa có kết quả giáo án để xuất");
-          const lessonFileName = `Giao_an_${lesson.theme || "HDTN"}.docx`.replace(/\s+/g, "_");
-          res = await ExportService.exportLessonToDocx(
-            lesson.result,
-            lessonFileName,
-            (p) => store.setSuccess(`Đang xuất file... ${Math.round(p)}%`)
-          );
+          success = await exportSystem.exportLesson(lesson.result, {
+            onProgress: (p) => store.setSuccess(`Đang xuất file... ${Math.round(p)}%`)
+          });
           break;
         case "meeting":
           if (!meeting.result) throw new Error("Chưa có kết quả biên bản để xuất");
-          res = await ExportService.exportMeeting(
-            meeting.result,
-            null,
-            meeting.month,
-            meeting.session
-          );
+          success = await exportSystem.exportMeeting(meeting.result, meeting.month);
           break;
         case "event":
           if (!event.result) throw new Error("Chưa có kết quả kịch bản để xuất");
-          res = await ExportService.exportEvent(
-            event.result,
-            null,
-            { grade: event.grade, month: event.month }
-          );
+          success = await exportSystem.exportEvent(event.result, { grade: event.grade, month: event.month });
           break;
         case "ncbh":
           if (!ncbh.result) throw new Error("Chưa có kết quả NCBH để xuất");
-          res = await ExportService.exportNCBH(
-            ncbh.result,
-            null,
-            { grade: ncbh.grade, month: ncbh.month }
-          );
+          success = await exportSystem.exportNCBH(ncbh.result, { grade: ncbh.grade, month: ncbh.month });
           break;
         case "assessment":
           if (!assessment.result) throw new Error("Chưa có kết quả đánh giá để xuất");
-          res = await ExportService.exportAssessmentPlan(
-            assessment.result,
-            null,
-            {
-              grade: assessment.grade,
-              term: assessment.term,
-              productType: assessment.productType
-            }
-          );
+          success = await exportSystem.exportAssessmentPlan(assessment.result, { grade: assessment.grade, term: assessment.term });
           break;
         default:
-          throw new Error(`Chế độ xuất "${mode}" chưa được hỗ trợ`);
+          throw new Error(`Chế độ xuất "${mode}" chưa được hỗ trợ trong phiên bản tinh gọn.`);
       }
 
-      if (res?.success) {
+      if (success) {
         store.setSuccess("Đã xuất file Word thành công!");
+      } else {
+        throw new Error("Quá trình xuất file gặp sự cố kỹ thuật.");
       }
     } catch (err) {
       console.error("Export Error:", err);

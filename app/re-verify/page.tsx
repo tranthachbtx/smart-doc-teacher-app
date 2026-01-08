@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { ExportService } from '@/lib/services/export-service';
+import { DocumentExportSystem } from '@/lib/services/document-export-system';
 import { LessonResult } from '@/lib/types';
 
 export default function ReVerificationPage() {
@@ -30,15 +30,13 @@ export default function ReVerificationPage() {
                 huong_dan_ve_nha: "Bài tập."
             };
 
-            const result = await ExportService.exportLessonToDocx(
-                testData,
-                "KIỂM TRA TIẾNG VIỆT VÀ KÝ TỰ ĐẶC BIỆT @#$.docx",
-                () => { }
+            const result = await DocumentExportSystem.getInstance().exportLesson(
+                testData
             );
 
-            if (result.success) {
+            if (result) {
                 setStatus('success');
-                setMessage('✅ THÀNH CÔNG! File "FILE_WORD_CHINH_THUC.docx" đã được tải xuống.');
+                setMessage('✅ THÀNH CÔNG! File Word đã được tải xuống.');
             }
 
         } catch (error: any) {

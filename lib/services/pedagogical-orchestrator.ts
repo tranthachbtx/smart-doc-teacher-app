@@ -163,6 +163,34 @@ export class PedagogicalOrchestrator {
         return this.safeParseJSON(result.content);
     }
 
+    /**
+     * Legacy Analyzer Bridge (V7 Efficiency)
+     * Replaces LessonPlanAnalyzer mapping for Manual Workflow.
+     */
+    public static simplifyScientificText(text: string): string {
+        if (!text) return "";
+        // Extract key pedagogical markers
+        const markers = [
+            { key: "Kiến thức", regex: /(kiến thức|nội dung chính|trọng tâm):?\s*([^.|\n]*)/i },
+            { key: "Năng lực", regex: /(năng lực|kỹ năng|phẩm chất):?\s*([^.|\n]*)/i },
+            { key: "Phương pháp", regex: /(phương pháp|kĩ thuật|hình thức):?\s*([^.|\n]*)/i }
+        ];
+
+        let summary = "--- PHÂN TÍCH KHOA HỌC ---\n";
+        markers.forEach(m => {
+            const match = text.match(m.regex);
+            if (match && match[2]) {
+                summary += `${m.key}: ${match[2].trim()}\n`;
+            }
+        });
+
+        if (summary.length < 50) {
+            summary += text.substring(0, 500) + "...";
+        }
+
+        return summary;
+    }
+
     // --- Helper ---
     private safeParseJSON(text: string): any {
         try {

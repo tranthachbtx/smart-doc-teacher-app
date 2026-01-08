@@ -456,14 +456,8 @@ export async function generateMeetingMinutes(m: string, s: string, c: string, co
     const t = await callAI(getMeetingPrompt(m, s, c, conc, "", ""), model, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseMeetingResult(t) };
   } catch (e: any) {
-    console.error(`[MeetingFail] AI Failed: ${e.message}. Triggering ARCH 21.0 Fallback...`);
-    // ARCHITECTURE 21.0: Offline Fallback for Meeting Minutes
-    try {
-      const fallbackData = AIResilienceService.getMeetingFallback(c); // Use context as raw source
-      return { success: true, data: fallbackData };
-    } catch (fallbackError: any) {
-      return { success: false, error: `${e.message} | Fallback fail: ${fallbackError.message}` };
-    }
+    console.error(`[MeetingFail] AI Failed: ${e.message}`);
+    return { success: false, error: `${e.message} | V7 Failure: AI drafting failed.` };
   }
 }
 
@@ -506,13 +500,7 @@ export async function generateEvent(g: string, t: string, i?: string, budget?: s
     const text = await callAI(getEventPrompt(g, t, undefined) + (i ? `\n\nCHỈ DẪN BỔ SUNG:\n${i}` : "") + extra, model, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseEventResult(text) };
   } catch (e: any) {
-    console.error(`[EventFail] AI Failed: ${e.message}. Triggering ARCH 22.0 Fallback...`);
-    try {
-      const fallbackData = AIResilienceService.getEventFallback(g, t, i || "", budget || "", checklist || "", evaluation || "");
-      return { success: true, data: fallbackData };
-    } catch (fallbackError: any) {
-      return { success: false, error: `${e.message} | Fallback fail: ${fallbackError.message}` };
-    }
+    return { success: false, error: `${e.message} | V7 Failure: Event draft failed.` };
   }
 }
 
@@ -521,13 +509,7 @@ export async function generateNCBH(g: string, t: string, i?: string, m?: string)
     const text = await callAI(`${NCBH_ROLE}\n${NCBH_TASK}\n${g}, ${t}, ${i || ""}`, m, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseNCBHResult(text) };
   } catch (e: any) {
-    console.error(`[NCBHFail] AI Failed: ${e.message}. Triggering ARCH 22.0 Fallback...`);
-    try {
-      const fallbackData = AIResilienceService.getNcbhFallback(g, t, i || "");
-      return { success: true, data: fallbackData };
-    } catch (fallbackError: any) {
-      return { success: false, error: `${e.message} | Fallback fail: ${fallbackError.message}` };
-    }
+    return { success: false, error: `${e.message} | V7 Failure: NCBH draft failed.` };
   }
 }
 
@@ -536,13 +518,7 @@ export async function generateAssessmentPlan(g: string, tr: string, ty: string, 
     const text = await callAI(getAssessmentPrompt(g, tr, ty, to), model, undefined, JSON_SYSTEM_PROMPT);
     return { success: true, data: parseAssessmentResult(text) };
   } catch (e: any) {
-    console.error(`[AssessmentFail] AI Failed: ${e.message}. Triggering ARCH 22.0 Fallback...`);
-    try {
-      const fallbackData = AIResilienceService.getAssessmentFallback(g, tr, ty, to);
-      return { success: true, data: fallbackData };
-    } catch (fallbackError: any) {
-      return { success: false, error: `${e.message} | Fallback fail: ${fallbackError.message}` };
-    }
+    return { success: false, error: `${e.message} | V7 Failure: Assessment draft failed.` };
   }
 }
 

@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useAppStore } from '../store/use-app-store';
-import { ExportService } from '../services/export-service';
-import { ExportOptimizer } from '../services/export-optimizer';
+import { DocumentExportSystem } from '../services/document-export-system';
 import { auditLessonPlan } from '../actions/gemini';
 import { surgicalMerge } from '../services/KHBHMerger';
 import { performAdvancedAudit } from '../actions/advanced-audit';
@@ -39,14 +38,6 @@ export const useLessonActions = () => {
         store.setExportProgress(0);
 
         try {
-            // Pre-export validation & Risk Prediction (Phase 5.1)
-            const risk = ExportOptimizer.predictExportRisk(lesson.result);
-            if (risk.riskLevel !== 'low') {
-                console.warn(`Export Risk (${risk.riskLevel}): ${risk.message}`);
-                if (risk.riskLevel === 'high') store.setError(risk.message || "");
-                else store.setSuccess(risk.message || "");
-            }
-
             const fileName = `Giao_an_${lesson.theme || lesson.result.ten_bai || "HDTN"}.docx`.replace(/\s+/g, "_");
 
             // Enhanced progress tracking
@@ -61,13 +52,12 @@ export const useLessonActions = () => {
                 }
             };
 
-            const result = await ExportService.exportLessonToDocx(
+            const result = await DocumentExportSystem.getInstance().exportLesson(
                 lesson.result,
-                fileName,
-                progressCallback
+                { onProgress: progressCallback }
             );
 
-            if (result.success) {
+            if (result) {
                 const totalTime = Date.now() - startTime;
                 store.setSuccess(`💾 Đã tải xuống file Word! (${totalTime}ms)`);
 
@@ -128,7 +118,7 @@ export const useLessonActions = () => {
             const result = await performAdvancedAudit(lesson.result);
             if (result.success && result.report) {
                 const report = result.report;
-                store.setSuccess(`✅ Kiểm định hoàn tất: Score ${report.score}/100. ${report.reasoning.substring(0, 100)}...`);
+                store.setSuccess(`✅ Kiểm định hoàn tất: Score ${report.overallScore}/100. ${report.professionalReasoning?.substring(0, 100)}...`);
 
                 // You could also open a dialog here with full report details
                 console.log("[Audit Report]", report);

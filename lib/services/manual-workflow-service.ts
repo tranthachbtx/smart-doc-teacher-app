@@ -1,9 +1,7 @@
 
 import { ProcessingModule } from "@/lib/store/use-app-store";
 import { SmartPromptData } from "./smart-prompt-service";
-import { LessonPlanAnalyzer } from "./lesson-plan-analyzer";
 import { ProfessionalContentProcessor } from "./professional-content-processor";
-import { LegacyResilienceAdapter } from "./legacy-resilience-adapter";
 
 export interface PromptContext {
     topic: string;
@@ -19,7 +17,7 @@ export const ManualWorkflowService = {
      * Phân tích cấu trúc bài học từ nội dung văn bản.
      */
     analyzeStructure(text: string, duration: string): ProcessingModule[] {
-        const analyzed = LessonPlanAnalyzer.analyze(text);
+        // V7: Basic structure for manual workflow
 
         // Nếu có các hoạt động được trích xuất, ta có thể tạo các module tương ứng
         // Tuy nhiên, để linh hoạt theo chuẩn 5512 (4 bước), ta vẫn giữ 4 module chính,
@@ -129,17 +127,7 @@ ${specificAdvice}
     },
 
     /**
-     * RESTORED ARCHITECTURE 18.0 ROBUST MODE
-     * Uses multi-step reasoning to generate high-quality initial draft.
+     * V7 Note: Robust generation is now handled directly by PedagogicalOrchestrator
+     * in the automatic workflow. Manual workflow uses generatePromptForModule.
      */
-    async generateRobustModules(text: string, context: PromptContext): Promise<ProcessingModule[]> {
-        const adapter = LegacyResilienceAdapter.getInstance();
-        const result = await adapter.processDocumentRobustly(
-            text,
-            context.smartData!,
-            context.topic,
-            context.grade
-        );
-        return result.modules;
-    }
 };
