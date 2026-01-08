@@ -7,7 +7,7 @@
 import { useAppStore } from './use-app-store';
 
 // Mock hook that behaves like the old one but uses the new store
-export const useLessonStore = (selector?: (state: any) => any) => {
+export const useLessonStore: any = (selector?: (state: any) => any) => {
     const store = useAppStore();
 
     // Nếu có selector, chúng ta cần giả lập cấu trúc cũ
@@ -45,4 +45,31 @@ export const useLessonStore = (selector?: (state: any) => any) => {
     useAppStore.setState((s) => ({
         lesson: { ...s.lesson, ...state }
     }));
+};
+
+// Map getState for unit tests
+(useLessonStore as any).getState = () => {
+    const store = useAppStore.getState();
+    return {
+        ...store.lesson,
+        lessonGrade: store.lesson.grade,
+        lessonResult: store.lesson.result,
+        isGenerating: store.generatingMode === 'lesson',
+        success: store.success,
+        error: store.error,
+        isExporting: store.isExporting,
+        setLoading: store.setLoading,
+        setLessonGrade: store.setLessonGrade,
+        setLessonResult: store.setLessonResult,
+        setStatus: (type: 'success' | 'error', msg: string | null) => {
+            if (type === 'success') useAppStore.setState({ success: msg });
+            else useAppStore.setState({ error: msg });
+        },
+        resetAll: () => useAppStore.setState((s) => ({
+            lesson: { ...s.lesson, result: null, tasks: [], expertGuidance: '', auditResult: null, auditScore: 0 },
+            error: null,
+            success: null,
+            generatingMode: null
+        }))
+    };
 };

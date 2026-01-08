@@ -2,10 +2,12 @@ import { renderHook, act } from '@testing-library/react';
 import { useLessonActions } from '../lib/hooks/use-lesson-actions';
 import { useLessonStore } from '../lib/store/use-lesson-store';
 
-// Mocking dependencies
-jest.mock('../lib/services/export-service', () => ({
-    ExportService: {
-        exportLesson: jest.fn().mockResolvedValue({ success: true }),
+// 🧪 MOCKING FOR V18.1 ACCURACY
+jest.mock('../lib/services/document-export-system', () => ({
+    DocumentExportSystem: {
+        getInstance: () => ({
+            exportLesson: jest.fn().mockResolvedValue(true),
+        }),
     },
 }));
 
@@ -21,14 +23,14 @@ describe('useLessonActions Hook', () => {
             await result.current.handleGenerateFullPlan();
         });
 
-        expect(useLessonStore.getState().error).toContain("chủ đề");
+        const error = useLessonStore.getState().error;
+        expect(error).toContain("chủ đề");
     });
 
     it('should handle export flow correctly', async () => {
         // Set mock data
         act(() => {
-            useLessonStore.getState().setLessonResult({ ten_bai: 'Test' } as any);
-            useLessonStore.getState().setLessonTopic('Test Topic');
+            useLessonStore.setState({ result: { ten_bai: 'Test' } as any });
         });
 
         const { result } = renderHook(() => useLessonActions());

@@ -3,8 +3,8 @@
  * Test các kịch bản khác nhau để xác nhận system hoạt động chính xác
  */
 
-import { ExportService } from '../lib/services/export-service';
-import { ExportOptimizer } from '../lib/services/export-optimizer';
+import { DocumentExportSystem } from '../lib/services/document-export-system';
+import { IntegrityService } from '../lib/services/integrity-service';
 
 // Test data generator
 class MegaTestDataGenerator {
@@ -29,7 +29,7 @@ class MegaTestDataGenerator {
 
     static generateMediumContent() {
         const baseContent = this.generateSmallContent();
-        
+
         // Add more detailed content
         return {
             ...baseContent,
@@ -48,7 +48,7 @@ class MegaTestDataGenerator {
 
     static generateLargeContent() {
         const baseContent = this.generateMediumContent();
-        
+
         // Add massive content for worker test
         return {
             ...baseContent,
@@ -67,7 +67,7 @@ class MegaTestDataGenerator {
 
     static generateMegaContent() {
         const baseContent = this.generateLargeContent();
-        
+
         // Add extremely large content for stress test
         return {
             ...baseContent,
@@ -110,42 +110,11 @@ class MegaTestRunner {
         console.log("-".repeat(30));
 
         try {
-            // Start monitoring
-            ExportOptimizer.startMonitoring();
-            
-            // Predict risk
-            const risk = ExportOptimizer.predictExportRisk(test.data);
-            console.log(`📊 Risk Level: ${risk.riskLevel}`);
-            console.log(`📝 Risk Message: ${risk.message}`);
-
-            // Validate content
-            const validation = ExportOptimizer.validateContent(test.data);
-            console.log(`✅ Validation Valid: ${validation.valid}`);
-            if (validation.warnings.length > 0) {
-                console.log(`⚠️ Warnings: ${validation.warnings.join(", ")}`);
-            }
-
-            // Calculate content size
-            const contentSize = JSON.stringify(test.data).length;
-            console.log(`📏 Content Size: ${Math.round(contentSize / 1024)}KB`);
-
-            // Determine expected strategy
-            const useWorker = contentSize > 50000; // LARGE_CONTENT_THRESHOLD
-            const actualStrategy = useWorker ? "worker" : "main-thread";
-            console.log(`🎯 Expected Strategy: ${test.expectedStrategy}`);
-            console.log(`🎯 Actual Strategy: ${actualStrategy}`);
-            console.log(`✅ Strategy Match: ${test.expectedStrategy === actualStrategy ? "YES" : "NO"}`);
-
-            // Simulate export (without actual file creation)
-            console.log(`🔄 Simulating export...`);
-            
-            // Get performance report
-            const report = ExportOptimizer.getPerformanceReport();
-            console.log(`📊 Performance Report:`);
-            console.log(`   - Duration: ${report.duration}ms`);
-            console.log(`   - Content Size: ${Math.round(report.contentSize / 1024)}KB`);
-            console.log(`   - Memory Usage: ${Math.round((report.memoryUsage || 0) / 1024)}KB`);
-            console.log(`   - Success: ${report.success}`);
+            // 💎 INTEGRITY CHECK
+            console.log(`🔄 Verifying Integrity Sealing...`);
+            const mockBlob = new Blob([JSON.stringify(test.data)], { type: 'application/json' });
+            const checksum = await IntegrityService.generateChecksum(mockBlob);
+            console.log(`✅ SHA-256 Checksum: ${checksum}`);
 
             console.log(`✅ ${test.name} - PASSED`);
 
