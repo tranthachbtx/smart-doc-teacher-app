@@ -10,6 +10,7 @@ import { useAppStore } from './use-app-store';
 export interface LegacyLessonState {
     lessonGrade: string;
     lessonAutoFilledTheme: string;
+    lessonTopic: string;
     selectedChuDeSo: string;
     lessonDuration: string;
     lessonMonth: string;
@@ -18,6 +19,7 @@ export interface LegacyLessonState {
     lessonResult: any;
     isGenerating: boolean;
     isExporting: boolean;
+    exportProgress: number;
     success: string | null;
     error: string | null;
     setLoading: (key: any, value: boolean) => void;
@@ -25,6 +27,11 @@ export interface LegacyLessonState {
     setLessonResult: (result: any) => void;
     setExpertGuidance: (v: string) => void;
     setStatus: (type: 'success' | 'error', msg: string | null) => void;
+    updateLessonResultField: (field: string, value: any) => void;
+    setLessonTopic: (v: string) => void;
+    setLessonMonth: (v: string) => void;
+    setLessonDuration: (v: string) => void;
+    setSelectedChuDeSo: (v: string) => void;
     // Bridge for direct state updates in tests
     result?: any;
 }
@@ -44,6 +51,7 @@ const useLessonStoreHook = (selector?: (state: LegacyLessonState) => any) => {
         ...store.lesson,
         lessonGrade: store.lesson.grade,
         lessonAutoFilledTheme: store.lesson.theme,
+        lessonTopic: store.lesson.theme,
         selectedChuDeSo: store.lesson.chuDeSo,
         lessonDuration: store.lesson.duration,
         lessonMonth: store.lesson.month,
@@ -52,6 +60,7 @@ const useLessonStoreHook = (selector?: (state: LegacyLessonState) => any) => {
         lessonResult: store.lesson.result,
         isGenerating: store.generatingMode === 'lesson',
         isExporting: store.isExporting,
+        exportProgress: store.exportProgress,
         success: store.success,
         error: store.error,
         setLoading: store.setLoading,
@@ -61,7 +70,15 @@ const useLessonStoreHook = (selector?: (state: LegacyLessonState) => any) => {
         setStatus: (type: 'success' | 'error', msg: string | null) => {
             if (type === 'success') store.setSuccess(msg);
             else store.setError(msg);
-        }
+        },
+        updateLessonResultField: (field: string, value: any) => {
+            const currentResult = store.lesson.result || {};
+            store.updateLessonField('result', { ...currentResult, [field]: value });
+        },
+        setLessonTopic: (v: string) => store.updateLessonField('theme', v),
+        setLessonMonth: (v: string) => store.updateLessonField('month', v),
+        setLessonDuration: (v: string) => store.updateLessonField('duration', v),
+        setSelectedChuDeSo: (v: string) => store.updateLessonField('chuDeSo', v)
     };
 
     if (selector) {
@@ -84,6 +101,7 @@ const useLessonStoreHook = (selector?: (state: LegacyLessonState) => any) => {
         ...store.lesson,
         lessonGrade: store.lesson.grade,
         lessonAutoFilledTheme: store.lesson.theme,
+        lessonTopic: store.lesson.theme,
         selectedChuDeSo: store.lesson.chuDeSo,
         lessonDuration: store.lesson.duration,
         lessonMonth: store.lesson.month,
@@ -92,6 +110,7 @@ const useLessonStoreHook = (selector?: (state: LegacyLessonState) => any) => {
         lessonResult: store.lesson.result,
         isGenerating: store.generatingMode === 'lesson',
         isExporting: store.isExporting,
+        exportProgress: store.exportProgress,
         success: store.success,
         error: store.error,
         setLoading: store.setLoading,
@@ -101,7 +120,15 @@ const useLessonStoreHook = (selector?: (state: LegacyLessonState) => any) => {
         setStatus: (type: 'success' | 'error', msg: string | null) => {
             if (type === 'success') useAppStore.setState({ success: msg });
             else useAppStore.setState({ error: msg });
-        }
+        },
+        updateLessonResultField: (field: string, value: any) => {
+            const currentResult = store.lesson.result || {};
+            useAppStore.getState().updateLessonField('result', { ...currentResult, [field]: value });
+        },
+        setLessonTopic: (v: string) => useAppStore.getState().updateLessonField('theme', v),
+        setLessonMonth: (v: string) => useAppStore.getState().updateLessonField('month', v),
+        setLessonDuration: (v: string) => useAppStore.getState().updateLessonField('duration', v),
+        setSelectedChuDeSo: (v: string) => useAppStore.getState().updateLessonField('chuDeSo', v)
     };
 
     return {
