@@ -48,8 +48,8 @@ let isProxyDead = false; // Self-healing: if found dead, we skip it
 let tokens = 15; // 15 requests per minute
 let lastCheck = Date.now();
 let lastSuccess = Date.now();
-const GAP_MIN = 60000;  // 1 phút tối thiểu
-const GAP_MAX = 180000; // 3 phút tối đa
+const GAP_MIN = 30000;  // 30s tối thiểu
+const GAP_MAX = 60000;  // 60s tối đa
 
 // Circuit Breaker State
 let consecutiveShadowBans = 0;
@@ -77,7 +77,7 @@ async function physical_gap() {
 
 export async function callAI(
   prompt: string,
-  modelName = "gemini-1.5-flash-8b",
+  modelName = "gemini-1.5-flash",
   file?: { mimeType: string, data: string },
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
@@ -87,8 +87,8 @@ export async function callAI(
 
   const availableKeys = allKeys.filter(k => !blacklist.has(k));
 
-  if (availableKeys.length === 0) {
-    throw new Error("SHADOW_BAN_CRITICAL: All keys exhausted. Please change IP.");
+  if (availableKeys.length === 0 && allKeys.length > 0) {
+    console.warn("[Antigravity] All Gemini keys are temporarily blacklisted. Checking hybrid fallbacks...");
   }
 
   // Multi-Proxy Pool Parsing
@@ -102,19 +102,21 @@ export async function callAI(
     await new Promise(r => setTimeout(r, 2000));
   }
 
-  let lastError = "";
+  let lastError = availableKeys.length === 0 ? "GEMINI_KEYS_BLACKLISTED" : "";
 
   for (const key of availableKeys) {
-    let retryWait = 2000;
+    let retryWait = 1000;
+    let consecutiveShadowBansForKey = 0; // RESET PER KEY (Arch 18.0 Logic)
 
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
-        // 1. Token Bucket Throttling (Strict 15 RPM)
+        // 1. Token Bucket Throttling (Strict 30 RPM for Hybrid)
         const now = Date.now();
-        tokens = Math.min(15, tokens + (now - lastCheck) * (15 / 60000));
+        const timeDiff = (now - lastCheck) / 60000;
+        tokens = Math.min(30, tokens + timeDiff * 30);
         lastCheck = now;
         if (tokens < 1) {
-          const throttleWait = 5000;
+          const throttleWait = 3000;
           console.log(`[Throttling] RPM Limit reached. Cooling ${throttleWait / 1000}s...`);
           await new Promise(r => setTimeout(r, throttleWait));
         }
@@ -129,90 +131,102 @@ export async function callAI(
           proxyToUse = proxyPool[currentProxyIndex % proxyPool.length];
         }
 
-        const endpoint = proxyToUse
-          ? `${proxyToUse.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent?key=${key}`
-          : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
+        const apiVersions = ["v1beta", "v1"];
+        let lastResp: any = null;
 
-        console.log(`[AI-TUNNEL] Key: ${key.slice(0, 8)} | Model: ${modelName} | Proxy: ${proxyToUse || 'Direct'}`);
+        for (const version of apiVersions) {
+          const endpoint = proxyToUse
+            ? `${proxyToUse.replace(/\/$/, '')}/${version}/models/${modelName}:generateContent?key=${key}`
+            : `https://generativelanguage.googleapis.com/${version}/models/${modelName}:generateContent?key=${key}`;
 
-        const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
-        if (file && file.data) {
-          parts.push({
-            inlineData: {
-              mimeType: file.mimeType || "application/pdf",
-              data: file.data
-            }
+          console.log(`[AI-TUNNEL] Key: ${key.slice(0, 8)} | Model: ${modelName} | API: ${version} | Proxy: ${proxyToUse || 'Direct'}`);
+
+          const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
+          if (file && file.data) {
+            parts.push({
+              inlineData: {
+                mimeType: file.mimeType || "application/pdf",
+                data: file.data
+              }
+            });
+          }
+
+          const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-antigravity-proxy": "v21.0",
+            },
+            body: JSON.stringify({
+              contents: [{ parts }]
+            })
           });
-        }
 
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-antigravity-proxy": "v21.0",
-          },
-          body: JSON.stringify({
-            contents: [{ parts }]
-          })
-        });
-
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(`${response.status} - ${errText}`);
-        }
-
-        const contentType = response.headers.get("content-type");
-        const rawText = await response.text();
-
-        // 🟢 HEALING: Detection of "Hello World!" (Broken Proxy)
-        if (rawText.includes("Hello World!")) {
-          console.warn(`[ProxyWarning] ${proxyToUse} returned "Hello World!".`);
-
-          // Try next proxy if available
-          if (proxyPool.length > currentProxyIndex + 1) {
-            console.log(`[Healing] Rotating to next proxy...`);
-            currentProxyIndex++;
-            attempt--; // Don't count this as a real attempt
+          if (!response.ok) {
+            const errText = await response.text();
+            lastError = `Gemini_${version}_${response.status}: ${errText.substring(0, 100)}`;
+            console.warn(`[Gemini-Error] Version: ${version} | Status: ${response.status}`);
             continue;
           }
 
-          // Fallback to direct connection
-          console.warn(`[Healing] All proxies broken. Switching to Direct Google API...`);
-          isProxyDead = true;
-          attempt--; // Don't count this as a real attempt
-          continue;
-        }
+          const rawText = await response.text();
 
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error(`NON_JSON_RESPONSE: Received ${contentType}. Body: ${rawText.substring(0, 50)}`);
-        }
+          // 🟢 HEALING: Detection of "Hello World!" (Broken Proxy)
+          if (rawText.includes("Hello World!")) {
+            console.warn(`[ProxyWarning] ${proxyToUse} returned "Hello World!".`);
+            if (proxyPool.length > currentProxyIndex + 1) {
+              currentProxyIndex++;
+              attempt--;
+              break; // Thử lại với proxy mới
+            }
+            continue; // Thử version tiếp theo
+          }
 
-        const json = JSON.parse(rawText);
-        const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+          const json = JSON.parse(rawText);
+          const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
 
-        if (!text) throw new Error("EMPTY_RESPONSE_JSON");
+          if (!text) {
+            lastError = "EMPTY_RESPONSE_JSON";
+            continue;
+          }
 
-        // SUCCESS: Reset Circuit
-        lastSuccess = Date.now();
-        consecutiveShadowBans = 0;
-        return text;
+          // SUCCESS: Reset Circuit
+          lastSuccess = Date.now();
+          consecutiveShadowBansForKey = 0;
+          return text;
+        } // Hết vòng lặp apiVersions
+
+        throw new Error(lastError || "VERSION_LOOP_FAILED");
 
       } catch (e: any) {
         const errorMsg = e.message || "";
         const status = parseInt(errorMsg.split(' - ')[0]) || 500;
         lastError = errorMsg;
 
-        // 3. SHADOW BAN DETECTION (404/403)
-        if (status === 404 || status === 403 || errorMsg.includes("404") || errorMsg.includes("403")) {
-          consecutiveShadowBans++;
-          console.error(`[CRITICAL] Shadow Ban Detected (${status}). Key: ${key.slice(0, 8)}...`);
+        // 3. ERROR CATEGORIZATION & SHADOW BAN DETECTION
+        const isModelNotFoundError = status === 404 && (errorMsg.includes("not found") || errorMsg.includes("not supported"));
 
-          if (consecutiveShadowBans >= 5) {
-            console.log("[CircuitBreaker] TRIPPED. IP/Key Protected. Cooling 65s.");
-            circuitOpenUntil = Date.now() + 65000;
+        if (!isModelNotFoundError && (status === 404 || status === 403 || errorMsg.includes("404") || errorMsg.includes("403"))) {
+          consecutiveShadowBansForKey++; // Fix: use local counter
+          console.error(`[CRITICAL] Shadow Ban Detected (${status}). Key: ${key.slice(0, 8)}... (${consecutiveShadowBansForKey}/5)`);
+
+          if (consecutiveShadowBansForKey >= 5) {
+            console.log("[CircuitBreaker] TRIPPED for specific key. Cooling 65s.");
             blacklist.add(key);
           }
           break; // Next key
+        }
+
+        // 3.5 MODEL FALLBACK (if 404 is specifically about the model)
+        if (isModelNotFoundError) {
+          const fallbacks = ["gemini-1.5-flash", "gemini-pro", "gemini-1.5-flash-8b", "gemini-1.0-pro"];
+          const currentIndex = fallbacks.indexOf(modelName);
+          const nextModel = fallbacks[currentIndex + 1];
+
+          if (nextModel) {
+            console.warn(`[ModelFallback] Model ${modelName} returned 404. Trying ${nextModel}...`);
+            return await callAI(prompt, nextModel, file, systemContent);
+          }
         }
 
         // 4. RATE LIMIT (429)
@@ -234,6 +248,71 @@ export async function callAI(
         console.error(`[Fatal] ${status} on key ${key.slice(0, 8)}...`);
         break;
       }
+    }
+  }
+
+  // --- HYBRID PROVIDER FALLBACK (v7.0) ---
+  const openAIKey = process.env.OPENAI_API_KEY;
+  if (openAIKey && openAIKey.length > 20) {
+    try {
+      console.log(`[Antigravity] ⚡ Gemini failed (${lastError}). Falling back to OpenAI (GPT-4o-mini)...`);
+      const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openAIKey.trim()}`
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemContent },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.7
+        })
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const resultText = data.choices[0].message.content;
+        console.log("[Antigravity] ✅ OpenAI Fallback SUCCESS!");
+        return resultText;
+      } else {
+        const errorData = await resp.text();
+        console.error(`[OpenAI-Fallback] Failed: ${resp.status} - ${errorData}`);
+      }
+    } catch (e: any) {
+      console.error(`[OpenAI-Fallback] Runtime Error: ${e.message}`);
+    }
+  }
+
+  const groqKey = process.env.GROQ_API_KEY;
+  if (groqKey && groqKey.length > 20) {
+    try {
+      console.log("[Antigravity] ⚡ All others failed. Charging Groq (Llama-3.1-70b)...");
+      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${groqKey.trim()}`
+        },
+        body: JSON.stringify({
+          model: "llama-3.1-70b-versatile",
+          messages: [
+            { role: "system", content: systemContent },
+            { role: "user", content: prompt }
+          ]
+        })
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        const resultText = data.choices[0].message.content;
+        console.log("[Antigravity] ✅ Groq Fallback SUCCESS!");
+        return resultText;
+      }
+    } catch (e: any) {
+      console.error(`[Groq-Fallback] Runtime Error: ${e.message}`);
     }
   }
 
@@ -526,7 +605,7 @@ export async function extractTextFromFile(
   prompt: string = "Hãy tóm tắt nội dung chính của tài liệu này để làm tư liệu soạn bài. Liệt kê các hoạt động chính."
 ): Promise<ActionResult> {
   try {
-    const text = await callAI(prompt, "gemini-1.5-flash-latest", file);
+    const text = await callAI(prompt, "gemini-1.5-flash", file);
     return { success: true, content: text };
   } catch (e: any) {
     return { success: false, error: e.message };

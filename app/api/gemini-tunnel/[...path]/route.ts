@@ -9,7 +9,7 @@ const GEMINI_KEYS = [
 // Smart Mock Response Generator - Context-Aware
 function generateSmartMockResponse(prompt: string): string {
     const lowerPrompt = prompt.toLowerCase();
-    
+
     // Sinh hoạt dưới cờ
     if (lowerPrompt.includes('sinh hoạt dưới cờ') || lowerPrompt.includes('shdc')) {
         return `[COT_1]
@@ -29,7 +29,7 @@ Nội dung sinh hoạt (15 phút)
 
 STUDENT_GIST: Đã hoàn thành sinh hoạt dưới cờ với chủ đề ý thức học tập`;
     }
-    
+
     // Sinh hoạt lớp
     if (lowerPrompt.includes('sinh hoạt lớp') || lowerPrompt.includes('shl')) {
         return `**SINH HOẠT LỚP (15 phút)**
@@ -71,7 +71,7 @@ STUDENT_GIST: Đã hoàn thành sinh hoạt dưới cờ với chủ đề ý th
 
 STUDENT_GIST: Đã hoàn thành sinh hoạt lớp về xây dựng thói quen học tập tốt với các hoạt động thảo luận, chia sẻ và kế hoạch cụ thể`;
     }
-    
+
     // Hồ sơ dạy học
     if (lowerPrompt.includes('hồ sơ dạy học') || lowerPrompt.includes('phiếu học tập')) {
         return `**HỒ SƠ DẠY HỌC - BÀI: [Tên bài học]**
@@ -191,7 +191,7 @@ STUDENT_GIST: Đã hoàn thành sinh hoạt lớp về xây dựng thói quen h�
 
 STUDENT_GIST: Đã hoàn thành hồ sơ dạy học đầy đủ với 2 phiếu học tập, rubric đánh giá chi tiết và tài liệu tham khảo số`;
     }
-    
+
     // Hoạt động vận dụng
     if (lowerPrompt.includes('hoạt động vận dụng') || lowerPrompt.includes('dự án')) {
         return `[COT_1]
@@ -253,7 +253,7 @@ Kết nối với bài học (5 phút)
 
 STUDENT_GIST: Đã hoàn thành hoạt động vận dụng dự án thực tế với quy trình từ nghiên cứu đến báo cáo và đánh giá chi tiết`;
     }
-    
+
     // Hướng dẫn về nhà
     if (lowerPrompt.includes('hướng dẫn về nhà') || lowerPrompt.includes('bài tập') || lowerPrompt.includes('huong_dan_ve_nha')) {
         return `**HƯỚNG DẪN VỀ NHÀ**
@@ -281,7 +281,7 @@ STUDENT_GIST: Đã hoàn thành hoạt động vận dụng dự án thực tế
 
 STUDENT_GIST: Đã hoàn thành hướng dẫn về nhà chi tiết`;
     }
-    
+
     // Default response for other sections
     return `[COT_1]
 Chuẩn bị hoạt động (5 phút)
@@ -318,12 +318,16 @@ export async function POST(req: NextRequest, { params }: any) {
             return NextResponse.json({ error: "No text content found" }, { status: 400 });
         }
 
-        // --- STRATEGY 1: GEMINI CLOUDFLARE PROXY (Primary) ---
+        // Determine model from path or fallback
+        const pathParts = (params?.path || []) as string[];
+        const modelFromPath = pathParts.find(p => p.includes("gemini-"))?.split(':')[0] || "gemini-2.0-flash";
+        const modelToUse = modelFromPath;
+
         const proxyUrl = process.env.GEMINI_PROXY_URL || process.env.NEXT_PUBLIC_GEMINI_PROXY_URL;
         if (proxyUrl && !proxyUrl.includes("example.com")) {
             try {
-                console.log("[Tunnel] 🛰️ Attempting Cloudflare Proxy...");
-                const response = await fetch(`${proxyUrl.replace(/\/$/, '')}/v1beta/models/gemini-2.0-flash:generateContent`, {
+                console.log(`[Tunnel] 🛰️ Attempting Cloudflare Proxy for ${modelToUse}...`);
+                const response = await fetch(`${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelToUse}:generateContent`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body),
@@ -348,7 +352,7 @@ export async function POST(req: NextRequest, { params }: any) {
             console.log(`[Tunnel] 💎 Attempting Direct Gemini (${GEMINI_KEYS.length} keys)...`);
             for (const key of GEMINI_KEYS) {
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelToUse}:generateContent?key=${key}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(body),
@@ -425,10 +429,10 @@ export async function POST(req: NextRequest, { params }: any) {
 
         // --- FINAL SAFETY NET: SMART MOCK MODE (Context-Aware) ---
         console.error("[Tunnel] 💀 ALL PROVIDERS FAILED. Triggering Smart Mock Response.");
-        
+
         // Generate context-aware mock response
         const mockResponse = generateSmartMockResponse(prompt);
-        
+
         return NextResponse.json({
             candidates: [{
                 content: {

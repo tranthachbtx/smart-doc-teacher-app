@@ -76,7 +76,7 @@ export async function callAIProxy(prompt: string, model: string = "gemini-2.0-fl
     console.log(`[Saga] Routing via Tunnel: ${model}. Prompt: ${prompt.length} chars.`);
 
     try {
-        const response = await fetch('/api/gemini-tunnel/v1beta/models/gemini-2.0-flash:generateContent', {
+        const response = await fetch(`/api/gemini-tunnel/v1beta/models/${model}:generateContent`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

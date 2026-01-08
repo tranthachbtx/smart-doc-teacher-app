@@ -60,6 +60,11 @@ export class PedagogicalRelevanceEngine {
 
         try {
             const aiResponse = await mmAIManager.processContent({ text: content }, prompt);
+
+            if (!aiResponse.success) {
+                throw new Error("AI Content Generation Failed");
+            }
+
             const parsed = this.safeParse(aiResponse.content);
 
             const activities: ActivityScore[] = Object.entries(parsed).map(([type, data]: [string, any]) => ({
@@ -88,7 +93,7 @@ export class PedagogicalRelevanceEngine {
         } catch { return {}; }
     }
 
-    private async calculateBasicScore(content: string): Promise<RelevanceResult> {
+    public async calculateBasicScore(content: string): Promise<RelevanceResult> {
         // ... (Basic keyword logic for fallback)
         return {
             activities: [],

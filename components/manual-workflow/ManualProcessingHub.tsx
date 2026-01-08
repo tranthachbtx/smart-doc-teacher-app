@@ -112,23 +112,54 @@ export function ManualProcessingHub() {
     };
 
     const handleCopyPrompt = async (module: ProcessingModule) => {
-        toast({ title: "Đang tối ưu...", description: "Hệ thống đang tra cứu dữ liệu chuyên môn..." });
+        try {
+            toast({ title: "Đang tối ưu...", description: "Hệ thống đang tra cứu dữ liệu chuyên môn..." });
 
-        const smartData = await SmartPromptService.lookupSmartData(lessonGrade, lessonAutoFilledTheme);
+            const smartData = await SmartPromptService.lookupSmartData(lessonGrade, lessonAutoFilledTheme);
 
-        const prompt = await ManualWorkflowService.generatePromptForModule(module, {
-            topic: lessonAutoFilledTheme,
-            grade: lessonGrade,
-            fileSummary: expertGuidance || "Nội dung sách giáo khoa...",
-            optimizedFileSummary: optimizedMap[module.id],
-            smartData: smartData
-        });
+            const prompt = await ManualWorkflowService.generatePromptForModule(module, {
+                topic: lessonAutoFilledTheme,
+                grade: lessonGrade,
+                fileSummary: expertGuidance || "Nội dung sách giáo khoa...",
+                optimizedFileSummary: optimizedMap[module.id],
+                smartData: smartData
+            });
 
-        navigator.clipboard.writeText(prompt);
-        toast({
-            title: "Đã sao chép Prompt!",
-            description: `Đã tích hợp Dữ liệu Chuyên gia vào Prompt`,
-        });
+            try {
+                await navigator.clipboard.writeText(prompt);
+                toast({
+                    title: "Đã sao chép Prompt!",
+                    description: `Đã tích cực tích hợp Dữ liệu Chuyên gia vào Prompt`,
+                });
+            } catch (clipboardError: any) {
+                console.warn("[ManualProcessingHub] Clipboard blocked. Using alert fallback.");
+                // Since we can't easily show a modal from here without more state, 
+                // we'll use a prompt() which is a synchronous user gesture that allows copying.
+                // It's old school but extremely reliable for "copy this text" when everything else fails.
+                const manualCopy = window.confirm("Trình duyệt chặn tự động sao chép. Bạn có muốn xem Prompt để sao chép thủ công không?");
+                if (manualCopy) {
+                    const tempTextArea = document.createElement("textarea");
+                    tempTextArea.value = prompt;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
+                    try {
+                        document.execCommand('copy');
+                        toast({ title: "Đã sao chép!", description: "Đã dùng phương thức dự phòng để sao chép." });
+                    } catch (err) {
+                        alert("Không thể sao chép tự động. Vui lòng copy nội dung trong hộp thoại tiếp theo.");
+                        window.prompt("Copy Prompt tại đây (Ctrl+C):", prompt);
+                    }
+                    document.body.removeChild(tempTextArea);
+                }
+            }
+        } catch (error: any) {
+            console.error("[ManualProcessingHub] Error generating prompt:", error);
+            toast({
+                title: "Lỗi tạo Prompt",
+                description: error.message || "Không thể kết nối với AI. Vui lòng thử lại sau.",
+                variant: "destructive"
+            });
+        }
     };
 
     const handleFinalizeManualWorkflow = () => {

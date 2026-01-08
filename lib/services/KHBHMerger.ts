@@ -30,8 +30,8 @@ export async function surgicalMerge(currentPlan: any, expertDirectives: string):
     const genAI = new GoogleGenerativeAI(apiKey);
 
     const prompt = `
-BẠN LÀ: Engine Hợp nhất Giáo án Sư phạm (Pedagogical Merger Engine).
-NHIỆM VỤ: "Phẫu thuật" và lồng ghép các CHỈ THỊ CHIẾN LƯỢC vào GIÁO ÁN HIỆN TẠI.
+BẠN LÀ: Chuyên gia Phẫu thuật & Hợp nhất Giáo án Sư phạm (Pedagogical Merger Expert).
+NHIỆM VỤ: Lồng ghép các CHỈ THỊ CHIẾN LƯỢC vào GIÁO ÁN HIỆN TẠI một cách thông minh.
 
 GIÁO ÁN HIỆN TẠI (JSON):
 ${JSON.stringify(currentPlan, null, 2)}
@@ -42,17 +42,17 @@ ${expertDirectives}
 YÊU CẦU NGHIÊM NGẶT:
 1. TRÍ TUỆ CỐT LÕI: Giữ lại 100% các ví dụ hay, tình huống sư phạm thực tế từ giáo án cũ (nếu có trong JSON hiện tại).
 2. PHẪU THUẬT (SURGICAL FUSION): 
-   - Không ghi đè mù quáng.
-   - Chỉ cấy ghép các năng lực số, đạo đức và phương pháp tích cực vào đúng các hoạt động.
+   - Không ghi đè mù quáng. 
+   - Nếu là môn HĐTN, phải đảm bảo tính "Vertical Entanglement": Nội dung của Sinh hoạt dưới cờ, Hoạt động giáo dục và Sinh hoạt lớp phải cùng phục vụ một mục tiêu chủ đề chung, không được rời rạc.
    - Sử dụng marker {{cot_1}} cho GV và {{cot_2}} cho HS trong các chuỗi văn bản hoạt động.
-3. CHUẨN 5512: Đảm bảo cấu trúc JSON không thay đổi nhưng nội dung bên trong được "nâng tầm" chuyên gia.
+3. CHUẨN 5512: Nâng tầm chuyên gia cho nội dung nhưng giữ nguyên cấu trúc JSON ban đầu.
 4. BADGE: Gắn badge "Expert Integrated" vào kết quả.
 
 TRẢ VỀ: Một đối tượng JSON duy nhất là giáo án đã được hợp nhất. Trả về TRỰC TIẾP JSON, không thêm text giải thích.
 `;
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
         const result = await model.generateContent(prompt);
         const responseText = result.response.text();
 

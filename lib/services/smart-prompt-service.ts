@@ -145,21 +145,29 @@ Gợi ý sư phạm: Tập trung vào các hoạt động thực hành, trải n
                 .trim();
         };
 
+        const isHDTN = data.topicName.toLowerCase().includes("trải nghiệm") ||
+            data.objectives.toLowerCase().includes("trải nghiệm") ||
+            data.grade.includes("HĐTN");
+
+        const hdtndir = isHDTN ? `
+- ĐẶC THÙ HĐTN: Phải đảm bảo tính "Vertical Entanglement" (Sự thống nhất dọc) giữa Sinh hoạt dưới cờ (SHDC), Hoạt động giáo dục (HĐGD) và Sinh hoạt lớp (SHL) cho cùng một chủ đề. 
+- Mạch logic: SHDC khơi gợi -> HĐGD thực hành chuyên sâu -> SHL tổng kết và cam kết rèn luyện.` : "";
+
         return `
 # VAI TRÒ: CHUYÊN GIA THIẾT KẾ GIÁO DỤC & SOẠN THẢO KHBD CAO CẤP
 # NHIỆM VỤ: KHỞI TẠO KẾ HOẠCH BÀI DẠY (KHBD) CHUẨN MOET 5512
 
 ## 1. CHỈ DẪN PHÂN TÍCH CHIẾN LƯỢC
-- COI CÁC DỮ LIỆU DƯỚI ĐÂY LÀ "NỘI DUNG NGHIÊN CỨU TRỌNG TÂM" (Primordial Research Content). Đây là kết quả của việc nghiên cứu sâu và tra cứu hệ thống cơ sở dữ liệu học thuật.
+- COI CÁC DỮ LIỆU DƯỚI ĐÂY LÀ "NỘI DUNG NGHIÊN CỨU TRỌNG TÂM" (Primordial Research Content). 
 - ƯU TIÊN TUYỆT ĐỐI việc sử dụng các ngữ liệu, nhiệm vụ và gợi ý sư phạm đã được chuẩn bị sẵn.
 - LUÔN PHÂN TÍCH file giáo án cũ tôi gửi kèm theo prompt này (nếu có).
 - THỰC HIỆN "Surgical Upgrade": Giữ lại ngữ liệu hay từ bài cũ, nhưng cấu trúc lại 100% theo form 4 bước của Công văn 5512.
-- TIÊM (INJECT) YẾU TỐ HIỆN ĐẠI: Năng lực số (TT 02/2025), Đạo đức và Kỹ thuật dạy học tích cực.
+- TIÊM (INJECT) YẾU TỐ HIỆN ĐẠI: Năng lực số (TT 02/2025), Đạo đức và Kỹ thuật dạy học tích cực. ${hdtndir}
 
 ## 2. QUY TẮC CẤU TRÚC 2 CỘT (QUAN TRỌNG NHẤT)
 Để xuất Word chuyên nghiệp, nội dung các hoạt động PHẢI sử dụng marker:
-- {{cot_1}}: Dùng cho Hoạt động của Giáo viên (Chuyển giao nhiệm vụ, Quan sát, Hỗ trợ, Kết luận).
-- {{cot_2}}: Dùng cho Hoạt động của Học sinh (Thực hiện nhiệm vụ, Thảo luận, Báo cáo, Trình bày).
+- {{cot_1}}: Dùng cho Hoạt động của Giáo viên.
+- {{cot_2}}: Dùng cho Hoạt động của Học sinh.
 
 ## 3. CĂN CỨ DỮ LIỆU NGHIÊN CỨU SÂU (INPUT PRIMARY SOURCE)
 - Khối lớp: ${data.grade}
@@ -182,20 +190,21 @@ Yêu cầu trả về duy nhất 01 khối JSON với các trường sau:
   "muc_tieu_nang_luc": "Nội dung năng lực...",
   "muc_tieu_pham_chat": "Nội dung phẩm chất...",
   "thiet_bi_day_hoc": "Giáo viên: ...; Học sinh: ...",
-  "shdc": "Nội dung sinh hoạt dưới cờ (Tuần 1, 2, 3, 4)...",
-  "shl": "Nội dung sinh hoạt lớp (Tuần 1, 2, 3, 4)...",
-  "hoat_dong_khoi_dong": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV giao nhiệm vụ... {{cot_2}} HS thực hiện...",
-  "hoat_dong_kham_pha": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV chia nhóm... {{cot_2}} HS thảo luận...",
-  "hoat_dong_luyen_tap": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV giao bài tập... {{cot_2}} HS làm bài...",
-  "hoat_dong_van_dung": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV hướng dẫn... {{cot_2}} HS thực hiện ngoài giờ...",
+  "shdc": ${isHDTN ? `{ "chu_de": "...", "muc_tieu": "...", "to_chuc": "{{cot_1}} ... {{cot_2}} ..." }` : `"Nội dung sinh hoạt dưới cờ..."`},
+  "shl": ${isHDTN ? `{ "chu_de": "...", "muc_tieu": "...", "to_chuc": "{{cot_1}} ... {{cot_2}} ..." }` : `"Nội dung sinh hoạt lớp..."`},
+  "hoat_dong_khoi_dong": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV ... {{cot_2}} HS ...",
+  "hoat_dong_kham_pha": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV ... {{cot_2}} HS ...",
+  "hoat_dong_luyen_tap": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV ... {{cot_2}} HS ...",
+  "hoat_dong_van_dung": "a) Mục tiêu: ...; b) Nội dung: ...; c) Sản phẩm: ...; d) Tổ chức thực hiện: {{cot_1}} GV ... {{cot_2}} HS ...",
   "ho_so_day_hoc": "Các phụ lục, phiếu học tập (trình bày chi tiết)...",
   "huong_dan_ve_nha": "Dặn dò cụ thể..."
 }
 
 LƯU Ý: 
-- Mục d) "Tổ chức thực hiện" của mỗi hoạt động BẮT BUỘC phải dùng {{cot_1}} và {{cot_2}}.
+- Mục d) "Tổ chức thực hiện" BẮT BUỘC phải dùng {{cot_1}} và {{cot_2}}.
 - Ngôn ngữ sư phạm chuẩn MOET, chuyên nghiệp.
 - CHỈ TRẢ VỀ JSON. KHÔNG GIẢI THÍCH THÊM.
-`.trim();
+`
+            .trim();
     }
 };

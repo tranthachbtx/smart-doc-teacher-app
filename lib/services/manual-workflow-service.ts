@@ -92,7 +92,9 @@ ${specificAdvice}
         return (await ProfessionalContentProcessor.generateOptimizedPrompt(
             module.type,
             optimizedContent,
-            context.smartData
+            context.smartData,
+            null,
+            true // skipNeural: TRUE for manual prompt generation
         )) + contextInjection + smartDataSection;
     },
 
@@ -109,7 +111,8 @@ ${specificAdvice}
             module.type,
             optimizedContent,
             context.smartData,
-            context.previousContext ? { summary: context.previousContext } : null
+            context.previousContext ? { summary: context.previousContext } : null,
+            true // skipNeural: TRUE
         );
     },
 

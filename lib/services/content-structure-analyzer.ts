@@ -44,10 +44,13 @@ export class ContentStructureAnalyzer {
         3. LOẠI BỎ các thông tin hành chính như "Ngày soạn", "Ngày dạy", "Người soạn".
         4. KHÔNG giữ lại các ký hiệu OCR lỗi (như , 2). , v.v.) trong nội dung.
         
-        NHIỆM VỤ CẤU TRÚC:
-        1. Phân loại từng phần vào các nhóm: objective (mục tiêu), activity (hoạt động), knowledge (kiến thức), assessment (đánh giá), resource (thiết bị/tài liệu).
-        2. Đánh giá mức độ liên quan (0-100) của từng phần với 4 loại hoạt động: Khởi động (khoi_dong), Khám phá (kham_pha), Luyện tập (luyen_tap), Vận dụng (van_dung).
-        3. Trả về JSON theo cấu trúc sau (KHÔNG thêm text bên ngoài):
+        NHIỆM VỤ CẤU TRÚC & LAYOUT (QUAN TRỌNG):
+        1. NHẬN DIỆN CỘT: Nếu thấy ký tự '|' phân tách dòng, đó có thể là ranh giới giữa Cột Giáo viên và Cột Học sinh.
+        2. TÁI CẤU TRÚC 5512: Nếu trích xuất hoạt động (activity), hãy phân tích mối quan hệ GV-HS.
+        3. SỬ DỤNG MARKER: Nếu nhận diện được nội dung của GV và HS, hãy lồng ghép {{cot_1}} cho GV và {{cot_2}} cho HS ngay trong trường "content" của JSON.
+        4. Phân loại từng phần vào các nhóm: objective (mục tiêu), activity (hoạt động), knowledge (kiến thức), assessment (đánh giá), resource (thiết bị/tài liệu).
+        5. Đánh giá mức độ liên quan (0-100) của từng phần với 4 loại hoạt động: Khởi động (khoi_dong), Khám phá (kham_pha), Luyện tập (luyen_tap), Vận dụng (van_dung).
+        6. Trả về JSON theo cấu trúc sau (KHÔNG thêm text bên ngoài):
         {
             "title": "Tiêu đề bài học (Làm sạch, không chứa 'Trang X')",
             "grade": "Khối lớp",
@@ -56,7 +59,7 @@ export class ContentStructureAnalyzer {
                 {
                     "title": "Tiêu đề mục (Ví dụ: Hoạt động 1, Mục tiêu bài học)",
                     "type": "objective|activity|knowledge|assessment|resource",
-                    "content": "Nội dung chi tiết (ĐÃ LÀM SẠCH RÁC VÀ HEADER)",
+                    "content": "Nội dung chi tiết (SỬ DỤNG {{cot_1}} VÀ {{cot_2}} NẾU LÀ HOẠT ĐỘNG DẠY HỌC)",
                     "relevance": {
                         "khoi_dong": 80,
                         "kham_pha": 90,
@@ -71,7 +74,7 @@ export class ContentStructureAnalyzer {
         }
         
         NỘI DUNG CẦN PHÂN TÍCH:
-        ${rawText.substring(0, 10000)}
+        ${rawText.substring(0, 15000)}
         `;
 
         try {

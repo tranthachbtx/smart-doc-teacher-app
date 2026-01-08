@@ -27,9 +27,9 @@ export class LessonPlanAnalyzer {
 
         // 1. Tìm Topic/Chủ đề
         let topic = "";
-        const topicMatch = text.match(/(?:CHỦ ĐỀ|BÀI|BÀI DẠY|TÊN BÀI)\s*\d*:?\s*(.*)/i);
+        const topicMatch = text.match(/(?:CHỦ ĐỀ|BÀI|BÀI DẠY|TÊN BÀI|Chuyên đề|Tiết)\s*\d*:?\s*[:\-]?\s*(.*)/i);
         if (topicMatch) {
-            topic = topicMatch[1].trim();
+            topic = topicMatch[1].trim().split('\n')[0]; // Lấy dòng đầu tiên của match
         }
 
         // 2. Phân tách các phần lớn dựa trên số La Mã hoặc tiêu đề chuẩn
@@ -124,11 +124,18 @@ export class LessonPlanAnalyzer {
         let output = `Tên bài: ${analyzed.topic}\n\n`;
         output += `### 1. MỤC TIÊU/YÊU CẦU CẦN ĐẠT:\n${analyzed.objectives}\n\n`;
         output += `### 2. CHUẨN BỊ:\n${analyzed.preparations}\n\n`;
-        output += `### 3. CÁC HOẠT ĐỘNG CHÍNH ĐÃ CÓ:\n`;
+        output += `### 3. CÁC HOẠT ĐỘNG CHÍNH ĐÃ CÓ (GIỮ NGUYÊN NGỮ LIỆU GỐC):\n`;
 
         analyzed.activities.forEach((act, i) => {
-            output += `\n[HĐ ${i + 1}]: ${act.title}\n${act.content.substring(0, 1000)}${act.content.length > 1000 ? "..." : ""}\n`;
+            // INCREASED LIMIT to 3000 chars for richer context per activity
+            const content = act.content.length > 3000
+                ? act.content.substring(0, 3000) + "\n... (Nội dung còn tiếp, hãy yêu cầu nếu cần)"
+                : act.content;
+
+            output += `\n[HĐ ${i + 1}]: ${act.title.toUpperCase()}\n${content}\n`;
         });
+
+        output += `\n--- HƯỚNG DẪN CHO AI: Ký tự '|' trong nội dung trên biểu thị ranh giới cột giữa GV và HS. Hãy bảo tồn mối quan hệ này. ---\n`;
 
         return output;
     }

@@ -40,9 +40,52 @@ export class ClientPDFExtractor {
             for (let i = 1; i <= numPages; i++) {
                 const page = await pdf.getPage(i);
                 const textContent = await page.getTextContent();
-                const pageText = textContent.items
-                    .map((item: any) => item.str)
-                    .join(' ');
+
+                // --- COORDINATE-AWARE RECONSTRUCTION ---
+                // Group items by their Y-coordinate (transform[5])
+                const items = textContent.items as any[];
+                const lineGroups: Record<number, any[]> = {};
+
+                items.forEach((item) => {
+                    if (!item.str || item.str.trim() === '') return;
+
+                    const y = Math.round(item.transform[5]);
+                    if (!lineGroups[y]) lineGroups[y] = [];
+                    lineGroups[y].push(item);
+                });
+
+                // Sort lines from top to bottom
+                const sortedY = Object.keys(lineGroups)
+                    .map(Number)
+                    .sort((a, b) => b - a);
+
+                let pageText = '';
+                sortedY.forEach((y) => {
+                    const lineItems = lineGroups[y].sort((a, b) => a.transform[4] - b.transform[4]);
+
+                    let lineStr = '';
+                    let prevXEnd = -1;
+
+                    lineItems.forEach((item, idx) => {
+                        const x = item.transform[4];
+                        const width = item.width || (item.str.length * 5); // Fallback estimate
+
+                        // Detect significant gaps (Potential Table Columns)
+                        if (prevXEnd !== -1) {
+                            const gap = x - prevXEnd;
+                            if (gap > 50) { // Significant gap detected
+                                lineStr += ' | ';
+                            } else if (gap > 5) {
+                                lineStr += ' ';
+                            }
+                        }
+
+                        lineStr += item.str;
+                        prevXEnd = x + width;
+                    });
+
+                    pageText += lineStr + '\n';
+                });
 
                 fullText += `--- Page ${i} ---\n${pageText}\n\n`;
                 totalChars += pageText.length;
