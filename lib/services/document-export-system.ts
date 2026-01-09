@@ -441,10 +441,31 @@ export class DocumentExportSystem {
     }
 
     private async triggerDownload(blob: Blob, fileName: string) {
-        // 💎 INTEGRITY SEAL (ISO 25010 COMPLIANCE)
-        const seal = await IntegrityService.seal(blob, fileName);
-        console.log(`[Integrity] 🛡️ DOCUMENT SEALED: ${seal.checksum} at ${seal.timestamp}`);
+        // 1. Sanitize Filename (Critical for Windows/Download)
+        // Remove special chars like / \ : * ? " < > |
+        const safeName = fileName.replace(/[<>:"/\\|?*]/g, "").replace(/\s+/g, "_");
 
-        saveAs(blob, fileName);
+        // 2. Force MIME Type
+        const docxBlob = new Blob([blob], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+
+        // 3. Native Download (More robust than file-saver)
+        const url = window.URL.createObjectURL(docxBlob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = safeName;
+
+        // Append to body to ensure click works in all browsers (Firefox requirement)
+        document.body.appendChild(anchor);
+        anchor.click();
+
+        // Cleanup
+        setTimeout(() => {
+            document.body.removeChild(anchor);
+            window.URL.revokeObjectURL(url);
+        }, 100);
+
+        // 💎 INTEGRITY LOG
+        const seal = await IntegrityService.seal(docxBlob, safeName);
+        console.log(`[Integrity] 🛡️ DOCUMENT SEALED: ${seal.checksum} at ${seal.timestamp}`);
     }
 }
