@@ -16,7 +16,25 @@ export class KHBHMerger {
 
         console.log("[Merger] 🛠️ Bắt đầu phẫu thuật giáo án với gợi ý chiến lược...");
 
-        // 1. Phân tích các "Chỉ thị chiến lược" từ văn bản của Gemini Pro
+        // Try JSON parsing first
+        try {
+            const jsonPart = suggestions.match(/\{[\s\S]*\}/);
+            if (jsonPart) {
+                const data = JSON.parse(jsonPart[0]);
+                console.log("[Merger] 🧬 Phát hiện định dạng JSON - Đang tiến hành ghép tạng...");
+
+                return {
+                    ...updated,
+                    ...data,
+                    // Keep some metadata
+                    expertGuidance: suggestions
+                };
+            }
+        } catch (e) {
+            console.log("[Merger] ⚠️ Không phải JSON hoặc JSON lỗi, chuyển sang phân tích Regex...");
+        }
+
+        // Fallback: Regex-based extraction (Existing logic)
         const directives = this.extractDirectives(suggestions);
 
         // 2. Tích hợp Năng lực số (NLS) - Ưu tiên hàng đầu theo Thông tư 02/2025

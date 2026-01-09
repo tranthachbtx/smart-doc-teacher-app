@@ -210,62 +210,73 @@ LƯU Ý:
 
     /**
      * Phase 2: BUILD DEEP CONTENT PROMPT
-     * Mở rộng toàn bộ giáo án thành nội dung chuyên sâu, khoa học và đầy đủ các mục.
+     * Mở rộng toàn bộ giáo án thành nội dung SIÊU CHI TIẾT (Micro-surgery).
      */
-    buildDeepContentPrompt(currentResult: any, data: SmartPromptData): string {
+    buildDeepContentPrompt(currentResult: any, data: SmartPromptData, moduleType?: string): string {
         const isHDTN = data.topicName.toLowerCase().includes("trải nghiệm") ||
             data.grade.includes("HĐTN");
 
+        const targetSection = moduleType ? `TẬP TRUNG TỐI ĐA VÀO: ${moduleType.toUpperCase()}` : "TOÀN BỘ GIÁO ÁN";
+
         return `
-# VAI TRÒ: CHUYÊN GIA PHÁT TRIỂN NỘI DUNG GIÁO DỤC CHI TIẾT (LEVEL: SENIOR)
-# NHIỆM VỤ: PHÁT TRIỂN HOÀN THIỆN KẾ HOẠCH BÀI DẠY (PHASE 2 - FULL DEEP EXPANSION)
+# VAI TRÒ: SIÊU TRÍ TUỆ SƯ PHẠM & KIẾN TRÚC SƯ GIÁO DỤC (LEVEL: EXPERT)
+# NHIỆM VỤ: PHÁT TRIỂN NỘI DUNG SIÊU CHI TIẾT (DEEP DIVE MODE - CV 5512) - ${targetSection}
 
-Dựa trên khung giáo án hiện tại và dữ liệu nghiên cứu, hãy thực hiện "Nâng cấp toàn diện" để tạo ra một bản KHBD hoàn chỉnh, không bỏ sót bất kỳ mục nào.
+Dựa trên khung giáo án hiện tại, hãy thực hiện "Vi phẫu thuật hóa" toàn bộ nội dung để đạt độ dày tri thức tối đa (hướng tới giáo án 60 trang).
 
-## 1. DỮ LIỆU ĐẦU VÀO (CORE INPUT):
+## 🏮 TRIẾT LIGHT CHIẾN LƯỢC (DEEP DIVE PHILOSOPHY):
+Trong mỗi bước của chuỗi hoạt động (Transfer/Perform/Report/Conclude), bạn PHẢI áp dụng các lớp thông tin sau:
+
+### 1. ĐỐI VỚI CỘT GIÁO VIÊN (teacher_action):
+- **Kỹ thuật tổ chức:** Mô tả chi tiết cách bố trí lớp học, vị trí đứng, âm nhạc/ánh sáng (đặc trưng HĐTN).
+- **Lời thoại dẫn dắt (Verbatim Script):** Viết nguyên văn câu nói truyền cảm hứng, câu hỏi gợi mở của GV. Bắt đầu bằng: "GV nói:..."
+- **Kịch bản phân luồng (Branching):**
+  + Nếu lớp trầm: GV dùng câu hỏi mồi gì?
+  + Nếu lớp quá ồn/tranh luận gay gắt: GV điều phối thế nào?
+- **Quan sát sư phạm:** GV cần chú ý đến biểu hiện gì của HS (ánh mắt, cử chỉ)?
+
+### 2. ĐỐI VỚI CỘT HỌC SINH (student_action):
+- **Trạng thái tâm lý:** Mô tả cảm xúc của HS (hào hứng, e ngại, tò mò) khi nhận nhiệm vụ.
+- **Quy trình tư duy (Cognitive Process):** Các bước tư duy trong đầu để ra câu trả lời (Memory Retrieval, Critical Thinking).
+- **Hành động cụ thể:** Ghi chép, vẽ, di chuyển, thảo luận nhóm (mô tả rõ vai trò nhóm trưởng, thư ký).
+- **Sản phẩm dự kiến (Product):** Mô tả chi tiết câu trả lời hoặc sản phẩm đầu ra (bao gồm cả phương án đúng và phương án sai phổ biến).
+
+---
+
+## 📋 DỮ LIỆU ĐẦU VÀO (CORE INPUT):
 - Tên bài: ${currentResult.ten_bai || data.topicName}
-- Khung 4 hoạt động hiện tại: ${JSON.stringify({
-            kd: currentResult.hoat_dong_khoi_dong,
-            kp: currentResult.hoat_dong_kham_pha,
-            lt: currentResult.hoat_dong_luyen_tap,
-            vd: currentResult.hoat_dong_van_dung
-        })}
-- Dữ liệu SHDC/SHL hiện tại (Cần giữ lại và mở rộng): ${JSON.stringify({
-            shdc: currentResult.shdc,
-            shl: currentResult.shl
-        })}
+- Khung nội dung hiện tại: ${JSON.stringify(currentResult)}
 - Gợi ý Năng lực số (TT 02/2025): ${data.digitalCompetency}
 
-## 2. YÊU CẦU NÂNG CẤP CHI TIẾT:
-1. **Mục II (Mục tiêu):** Trích xuất từ nội dung 4 hoạt động để viết chi tiết Kiến thức, Năng lực (chung & riêng), Phẩm chất. KHÔNG ghi "Xem chi tiết...". Phải ghi rõ học sinh đạt được gì.
-2. **Mục III (Thiết bị):** Liệt kê cụ thể từng loại học liệu, link padlet, thẻ màu, video, hoặc dụng cụ thí nghiệm cần thiết cho GV và HS.
-3. **Mục IV (Tiến trình - 4 Hoạt động):** 
-   - Triển khai "Facilitation Guide" cực kỳ chi tiết cho GV (kỹ thuật đặt câu hỏi, tình huống sư phạm).
-   - Chi tiết hành động HS (thao tác số, làm việc nhóm).
-   - BẮT BUỘC dùng {{cot_1}} và {{cot_2}} cho phần "Tổ chức thực hiện".
-4. **Mục V (Hồ sơ dạy học):** Thiết kế chi tiết ít nhất 01 Phiếu học tập và 01 Rubric đánh giá đa mức độ.
-5. **Mục VI (Hướng dẫn về nhà):** Đưa ra các nhiệm vụ mở rộng, tìm hiểu thực tế hoặc chuẩn bị cho bài sau.
-6. **Mục SHDC & SHL (Nếu là HĐTN):** Phải được phát triển chuyên sâu theo cấu trúc 2 cột, kết nối chặt chẽ với chủ đề bài học.
+---
 
-## 3. QUY CÁCH TRẢ VỀ (JSON DUY NHẤT):
+## 🎯 YÊU CẦU NÂNG CẤP CỤ THỂ:
+1. **Mục II, III:** Viết cực kỳ chi tiết, liệt kê cụ thể từng học liệu, thiết bị số.
+2. **Tiến trình dạy học (Quan trọng nhất):** Triển khai 4 hoạt động theo phong cách "Director's Script". BẮT BUỘC dùng {{cot_1}} và {{cot_2}}.
+3. **Mục V (Hồ sơ):** Thiết kế chi tiết ít nhất 01 Phiếu học tập và 01 Rubric.
+4. **SHDC & SHL (Nếu là HĐTN):** Phát triển theo cấu trúc 2 cột, kết nối chặt chẽ với chủ đề.
+
+---
+
+## 📦 QUY CÁCH TRẢ VỀ (JSON DUY NHẤT):
 {
   "ten_bai": "...",
-  "muc_tieu_kien_thuc": "Chi tiết...",
-  "muc_tieu_nang_luc": "Chi tiết...",
-  "muc_tieu_pham_chat": "Chi tiết...",
-  "tich_hop_nls": "Mã năng lực số và nội dung tích hợp...",
-  "thiet_bi_day_hoc": "GV: ...; HS: ...",
-  "shdc": "Phát triển chi tiết cấu trúc 2 cột...",
-  "shl": "Phát triển chi tiết cấu trúc 2 cột...",
-  "hoat_dong_khoi_dong": "Phát triển chi tiết...",
-  "hoat_dong_kham_pha": "Phát triển chi tiết...",
-  "hoat_dong_luyen_tap": "Phát triển chi tiết...",
-  "hoat_dong_van_dung": "Phát triển chi tiết...",
-  "ho_so_day_hoc": "Nội dung Phụ lục (PHT, Rubric) cực kỳ chi tiết...",
-  "huong_dan_ve_nha": "Nhiệm vụ cụ thể..."
+  "muc_tieu_kien_thuc": "...",
+  "muc_tieu_nang_luc": "...",
+  "muc_tieu_pham_chat": "...",
+  "tich_hop_nls": "...",
+  "thiet_bi_day_hoc": "...",
+  "shdc": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
+  "shl": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
+  "hoat_dong_khoi_dong": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
+  "hoat_dong_kham_pha": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
+  "hoat_dong_luyen_tap": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
+  "hoat_dong_van_dung": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
+  "ho_so_day_hoc": "...",
+  "huong_dan_ve_nha": "..."
 }
 
-LƯU Ý: Tuyệt đối không dùng lại các marker [AI-SUGGESTION], [PDF]. Ngôn ngữ sư phạm chuyên sâu.
+LƯU Ý: Không dùng marker [AI-SUGGESTION]/[PDF]. Phải viết "dày" và "sâu".
 `.trim();
     }
 };

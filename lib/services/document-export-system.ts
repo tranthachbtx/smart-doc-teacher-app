@@ -56,14 +56,20 @@ export class DocumentExportSystem {
                 this.createField("", result.ten_bai || result.title || "..."),
 
                 this.createSectionTitle("II. MỤC TIÊU"),
-                this.createField("1. Kiến thức:", result.muc_tieu_kien_thuc),
-                this.createField("2. Năng lực:", result.muc_tieu_nang_luc),
-                this.createField("3. Phẩm chất:", result.muc_tieu_pham_chat),
-                this.createField("4. Tích hợp Năng lực số:", result.tich_hop_nls),
+                new Paragraph({ children: [new TextRun({ text: "1. Kiến thức:", bold: true, size: 24 })] }),
+                ...this.renderData(result.muc_tieu_kien_thuc),
+                new Paragraph({ children: [new TextRun({ text: "2. Năng lực:", bold: true, size: 24 })], spacing: { before: 100 } }),
+                ...this.renderData(result.muc_tieu_nang_luc),
+                new Paragraph({ children: [new TextRun({ text: "3. Phẩm chất:", bold: true, size: 24 })], spacing: { before: 100 } }),
+                ...this.renderData(result.muc_tieu_pham_chat),
+                new Paragraph({ children: [new TextRun({ text: "4. Tích hợp Năng lực số:", bold: true, size: 24 })], spacing: { before: 100 } }),
+                ...this.renderData(result.tich_hop_nls),
 
                 this.createSectionTitle("III. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU"),
-                this.createField("1. GV chuẩn bị:", result.gv_chuan_bi || result.thiet_bi_day_hoc),
-                this.createField("2. HS chuẩn bị:", result.hs_chuan_bi),
+                new Paragraph({ children: [new TextRun({ text: "1. GV chuẩn bị:", bold: true, size: 24 })] }),
+                ...this.renderData(result.gv_chuan_bi || result.thiet_bi_day_hoc),
+                new Paragraph({ children: [new TextRun({ text: "2. HS chuẩn bị:", bold: true, size: 24 })], spacing: { before: 100 } }),
+                ...this.renderData(result.hs_chuan_bi),
 
                 this.createSectionTitle("IV. TIẾN TRÌNH DẠY HỌC"),
             ];
@@ -279,8 +285,9 @@ export class DocumentExportSystem {
         });
     }
 
-    private createTwoColumnActivity(title: string, content: string): any[] {
-        const { cot1, cot2 } = this.parseColumns(content);
+    private createTwoColumnActivity(title: string, content: any): any[] {
+        const textContent = typeof content === "string" ? content : JSON.stringify(content);
+        const { cot1, cot2 } = this.parseColumns(textContent);
         return [
             new Paragraph({
                 spacing: { before: 200, after: 100 },
@@ -319,10 +326,58 @@ export class DocumentExportSystem {
         const cleaner = TextCleaningService.getInstance();
         const cleanedText = cleaner.cleanFinalOutput(text);
 
-        return cleanedText.split("\n").map(line => new Paragraph({
-            children: [new TextRun({ text: line, size: 22 })],
-            spacing: { after: 50 }
-        }));
+        return cleanedText.split("\n").map(line => {
+            const trimmedLine = line.trim();
+            const isQuote = trimmedLine.startsWith("> ");
+            const content = isQuote ? trimmedLine.substring(2) : line;
+
+            return new Paragraph({
+                children: this.parseMarkdownLine(content, isQuote),
+                spacing: { before: isQuote ? 100 : 0, after: 80 },
+                indent: isQuote ? { left: 720 } : undefined // Indent quotes
+            });
+        });
+    }
+
+    private parseMarkdownLine(line: string, isQuote: boolean): TextRun[] {
+        const parts: TextRun[] = [];
+        const boldRegex = /\*\*(.*?)\*\*/g;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = boldRegex.exec(line)) !== null) {
+            // Add text before match
+            if (match.index > lastIndex) {
+                parts.push(new TextRun({
+                    text: line.substring(lastIndex, match.index),
+                    size: 22,
+                    italics: isQuote
+                }));
+            }
+            // Add bold part
+            parts.push(new TextRun({
+                text: match[1],
+                bold: true,
+                size: 22,
+                italics: isQuote
+            }));
+            lastIndex = boldRegex.lastIndex;
+        }
+
+        // Add remaining text
+        if (lastIndex < line.length) {
+            parts.push(new TextRun({
+                text: line.substring(lastIndex),
+                size: 22,
+                italics: isQuote
+            }));
+        }
+
+        if (parts.length === 0 && line.length > 0) {
+            parts.push(new TextRun({ text: line, size: 22, italics: isQuote }));
+        }
+
+        return parts.length > 0 ? parts : [new TextRun({ text: " ", size: 22 })];
     }
 
     /**
@@ -371,29 +426,39 @@ export class DocumentExportSystem {
                         cot1: json.steps.map((s: any) => s.teacher_action || s.instruction || s.action || "").join("\n\n"),
                         cot2: json.steps.map((s: any) => s.student_action || s.product || s.result || "").join("\n\n")
                     };
+                    if (json.to_chuc) {
+                        const tc = String(json.to_chuc);
+                        const cot2M = tc.match(/\{\{cot_2\}\}/i);
+                        if (cot2M) {
+                            const split = tc.split(/\{\{cot_2\}\}/i);
+                            return {
+                                cot1: (json.muc_tieu ? `MỤC TIÊU: ${json.muc_tieu}\n\n` : "") + (split[0]?.replace(/\{\{cot_1\}\}/i, "")?.trim() || tc),
+                                cot2: split[1]?.trim() || "..."
+                            };
+                        }
+                    }
                 }
+            } catch { }
+
+            // Regex Fallback
+            const cot2Match = content.match(/\{\{cot_2\}\}/i);
+            if (cot2Match) {
+                const split = content.split(/\{\{cot_2\}\}/i);
+                return {
+                    cot1: split[0]?.replace(/\{\{cot_1\}\}/i, "")?.trim() || content,
+                    cot2: split[1]?.trim() || "..."
+                };
             }
-        } catch { }
 
-        // Regex Fallback
-        const cot2Match = content.match(/\{\{cot_2\}\}/i);
-        if (cot2Match) {
-            const split = content.split(/\{\{cot_2\}\}/i);
-            return {
-                cot1: split[0]?.replace(/\{\{cot_1\}\}/i, "")?.trim() || content,
-                cot2: split[1]?.trim() || "..."
-            };
+            // Section Search Fallback
+            const splitWord = content && content.includes("SẢN PHẨM") ? "SẢN PHẨM" : "HS CHUẨN BỊ";
+            const split = content.split(splitWord);
+            if (split.length > 1) {
+                return { cot1: split[0].trim(), cot2: split[1].trim() };
+            }
+
+            return { cot1: content, cot2: "..." };
         }
-
-        // Section Search Fallback
-        const splitWord = content && content.includes("SẢN PHẨM") ? "SẢN PHẨM" : "HS CHUẨN BỊ";
-        const split = content.split(splitWord);
-        if (split.length > 1) {
-            return { cot1: split[0].trim(), cot2: split[1].trim() };
-        }
-
-        return { cot1: content, cot2: "..." };
-    }
 
     private async triggerDownload(blob: Blob, fileName: string) {
         // 💎 INTEGRITY SEAL (ISO 25010 COMPLIANCE)

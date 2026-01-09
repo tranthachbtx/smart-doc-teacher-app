@@ -142,39 +142,62 @@ export const useLessonActions = () => {
         }
 
         store.setLoading('isGenerating', true);
-        store.setSuccess("🧠 Đang thực hiện Phase 2: Phát triển nội dung chuyên sâu (Deep Expansion)...");
+        store.setSuccess("🧠 Bắt đầu quy trình Siêu chuyên sâu (Sequential Deepening)...");
 
         try {
-            // 1. Build context and prompt
             const smartData = await SmartPromptService.lookupSmartData(lesson.grade, lesson.theme, lesson.chuDeSo);
-            const deepPrompt = SmartPromptService.buildDeepContentPrompt(lesson.result, smartData);
+            const cleaner = TextCleaningService.getInstance();
+            let currentPlan = { ...lesson.result };
 
-            // 2. Call AI
-            const result = await generateDeepContent(deepPrompt, store.selectedModel);
+            // Sequential Stages for Maximum Density
+            const stages = [
+                { id: "foundation", label: "Giai đoạn 1: Mục tiêu, Thiết bị & Khởi động", focus: "setup, shdc, hoat_dong_khoi_dong" },
+                { id: "core", label: "Giai đoạn 2: Khám phá & Luyện tập chuyên sâu", focus: "hoat_dong_kham_pha, hoat_dong_luyen_tap" },
+                { id: "closure", label: "Giai đoạn 3: Vận dụng, SHL & Hồ sơ dạy học", focus: "hoat_dong_van_dung, shl, ho_so_day_hoc, huong_dan_ve_nha" }
+            ];
 
-            if (result.success && result.data) {
-                const cleaner = TextCleaningService.getInstance();
-                const cleanedData = { ...result.data };
+            for (let i = 0; i < stages.length; i++) {
+                const stage = stages[i];
+                store.setSuccess(`🚀 [${i + 1}/${stages.length}] ${stage.label}...`);
 
-                // Clean each field
-                Object.keys(cleanedData).forEach(key => {
-                    if (typeof cleanedData[key] === 'string') {
-                        cleanedData[key] = cleaner.cleanFinalOutput(cleanedData[key]);
+                const deepPrompt = SmartPromptService.buildDeepContentPrompt(currentPlan, smartData, stage.focus);
+                const result = await generateDeepContent(deepPrompt, store.selectedModel);
+
+                if (result.success && result.data) {
+                    const stageData = { ...result.data };
+
+                    // Clean and Update only the fields we focused on in this stage
+                    // This prevents AI from "shinking" other fields it wasn't focusing on
+                    const focusFields = stage.focus.split(',').map(f => f.trim());
+
+                    focusFields.forEach(field => {
+                        if (stageData[field]) {
+                            let contentToCLean = stageData[field];
+                            if (typeof contentToCLean === 'string') {
+                                currentPlan[field] = cleaner.cleanFinalOutput(contentToCLean);
+                            } else {
+                                currentPlan[field] = contentToCLean; // Keep objects as is
+                            }
+                        }
+                    });
+
+                    // Also always update goals in Stage 1
+                    if (stage.id === "foundation") {
+                        currentPlan.muc_tieu_kien_thuc = cleaner.cleanFinalOutput(stageData.muc_tieu_kien_thuc || currentPlan.muc_tieu_kien_thuc);
+                        currentPlan.muc_tieu_nang_luc = cleaner.cleanFinalOutput(stageData.muc_tieu_nang_luc || currentPlan.muc_tieu_nang_luc);
+                        currentPlan.muc_tieu_pham_chat = cleaner.cleanFinalOutput(stageData.muc_tieu_pham_chat || currentPlan.muc_tieu_pham_chat);
+                        currentPlan.thiet_bi_day_hoc = cleaner.cleanFinalOutput(stageData.thiet_bi_day_hoc || currentPlan.thiet_bi_day_hoc);
                     }
-                });
 
-                // Update store with cleaned, expanded content
-                store.setLessonResult({
-                    ...lesson.result,
-                    ...cleanedData
-                });
-
-                store.setSuccess("✨ Đã phát triển nội dung chuyên sâu thành công (Phase 2)!");
-            } else {
-                throw new Error(result.error || "Không thể tạo nội dung chuyên sâu.");
+                    store.setLessonResult(currentPlan);
+                } else {
+                    console.warn(`Stage ${stage.id} failed, skipping...`, result.error);
+                }
             }
+
+            store.setSuccess("✨ Chúc mừng! Giáo án đã được phẫu thuật nội dung SIÊU CHI TIẾT thành công!");
         } catch (error: any) {
-            store.setError(`Lỗi Phase 2: ${error.message}`);
+            store.setError(`Lỗi Sequential Deepening: ${error.message}`);
         } finally {
             store.setLoading('isGenerating', false);
         }
