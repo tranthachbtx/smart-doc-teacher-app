@@ -135,13 +135,14 @@ export class ContentStructureAnalyzer {
         // V7: Simplified fallback without LessonPlanAnalyzer
         const sections: ContentSection[] = [];
 
-        // Add a single knowledge section as backup
+        // Add a single knowledge section as backup (FULL CONTENT PRESERVED)
+        // Set high relevance across the board so PedagogicalOrchestrator sees it as "setup" context
         sections.push({
             id: `fallback_raw_${Date.now()}`,
-            title: "Nội dung trích xuất (V7 Fallback)",
-            type: "knowledge",
-            content: rawText.substring(0, 8000),
-            relevance: { khoi_dong: 25, kham_pha: 25, luyen_tap: 25, van_dung: 25 },
+            title: "Nội dung gốc (Fallback Mode)",
+            type: "resource", // 'resource' is treated as universal context
+            content: rawText, // DO NOT TRUNCATE!
+            relevance: { khoi_dong: 50, kham_pha: 50, luyen_tap: 50, van_dung: 50, setup: 100 },
             metadata: { pageNumbers: [], wordCount: rawText.length / 5, complexity: 'medium' }
         });
 
