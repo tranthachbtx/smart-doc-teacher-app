@@ -18,6 +18,8 @@ export const useLessonActions = () => {
             return;
         }
 
+        console.log("[SYSTEM_AUDIT_LOG_CLIENT] 🚀 Client triggering generateLesson | Theme:", lesson.theme);
+
         store.setLoading('isGenerating', true);
         store.setSuccess("🚀 Đang khởi tạo tiến trình AI (Automated Deep Dive)...");
 
@@ -85,6 +87,7 @@ export const useLessonActions = () => {
             );
 
             if (result.success && result.data) {
+                console.log(`[SYSTEM_AUDIT_LOG_CLIENT] 🏁 Result received: Keys=${Object.keys(result.data).join(',')}`);
                 store.setLessonResult(result.data);
                 store.setSuccess("✅ Giáo án đã được tạo thành công!");
             } else {

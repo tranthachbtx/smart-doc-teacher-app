@@ -43,38 +43,47 @@ import type { ActivitySuggestions } from "@/lib/prompts/khdh-prompts";
 // ========================================
 
 
-// --- 1. RESILIENCE & CIRCUIT BREAKER (v6.0 Stable) ---
-const blacklist = new Set<string>();
-let isProxyDead = false; // Self-healing: if found dead, we skip it
-let tokens = 15; // 15 requests per minute
-let lastCheck = Date.now();
-let lastSuccess = Date.now();
-const GAP_MIN = 30000;  // 30s tối thiểu
-const GAP_MAX = 60000;  // 60s tối đa
+// --- 1. RESILIENCE & CIRCUIT BREAKER (v18.0 Enterprise) ---
 
-// Circuit Breaker State
-let consecutiveShadowBans = 0;
-let circuitOpenUntil = 0;
+// State Containers (Global Scope in Serverless/Node)
+// Map: Key -> Timestamp (When it can be used again)
+const keyBlacklist = new Map<string, number>();
 
-async function physical_gap() {
-  const now = Date.now();
-  if (now < circuitOpenUntil) {
-    const wait = circuitOpenUntil - now;
-    console.log(`[CircuitBreaker] OPEN: Safety cooling for ${Math.round(wait / 1000)}s...`);
-    await new Promise(r => setTimeout(r, wait));
+// Constants
+const BAN_TIME_429 = 60 * 1000; // 1 minute soft ban
+const BAN_TIME_500 = 10 * 1000; // 10s short ban
+const BAN_TIME_403 = 24 * 60 * 60 * 1000; // 24h hard ban for invalid keys
+
+function loadKeys(): string[] {
+  const keys: string[] = [];
+  // 1. Primary explicit keys
+  if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
+  if (process.env.GEMINI_API_KEY_2) keys.push(process.env.GEMINI_API_KEY_2);
+  if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3);
+
+  // 2. Dynamic Discovery (GEMINI_API_KEY_4 to _20)
+  for (let i = 4; i <= 20; i++) {
+    const k = process.env[`GEMINI_API_KEY_${i}`];
+    if (k) keys.push(k);
   }
 
-  // Decorrelated Jitter implementation
-  const jitter = Math.floor(Math.random() * (GAP_MAX - GAP_MIN)) + GAP_MIN;
-  const elapsed = Date.now() - lastSuccess;
-  if (elapsed < jitter) {
-    const wait = jitter - elapsed;
-    console.log(`[Antigravity] Jittered Gap: Waiting ${Math.round(wait / 1000)}s...`);
-    await new Promise(r => setTimeout(r, wait));
-  }
+  // Deduplicate and Clean
+  return Array.from(new Set(keys.map(k => k.trim().replace(/^["']|["']$/g, "")))).filter(k => k.length > 10);
 }
 
-// --- 2. CORE ENGINE (TUNNEL-FETCH MODE v6.0) ---
+function getAvailableKeys(): string[] {
+  const all = loadKeys();
+  const now = Date.now();
+
+  // Maintenance: Cleanup old bans
+  for (const [key, unlockTime] of keyBlacklist.entries()) {
+    if (now > unlockTime) keyBlacklist.delete(key);
+  }
+
+  return all.filter(k => !keyBlacklist.has(k));
+}
+
+// --- 2. CORE ENGINE (TUNNEL-FETCH MODE v18.0) ---
 
 export async function callAI(
   prompt: string,
@@ -82,221 +91,104 @@ export async function callAI(
   file?: { mimeType: string, data: string },
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
-  const allKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3]
-    .filter((k): k is string => !!k)
-    .map(k => k.trim().replace(/^["']|["']$/g, ""));
 
-  const availableKeys = allKeys.filter(k => !blacklist.has(k));
+  console.log(`[SYSTEM_AUDIT_LOG] 🤖 ENTER callAI | Prompt Length: ${prompt.length} chars | System Content Length: ${systemContent.length} chars | Model: ${modelName}`);
 
-  if (availableKeys.length === 0 && allKeys.length > 0) {
-    console.warn("[Antigravity] All Gemini keys are temporarily blacklisted. Checking hybrid fallbacks...");
+  // A. Load & Shuffle Keys (Load Balancing)
+  let availableKeys = getAvailableKeys();
+  if (availableKeys.length === 0) {
+    console.warn("[Antigravity] ⚠️ ALL GEMINI KEYS EXHAUSTED/BANNED. Checking Critical Failover...");
+    // Logic will fall through to Layer 2 (OpenAI/Groq)
   }
 
-  // Multi-Proxy Pool Parsing
+  // Random shuffle to prevent Thundering Herd on Key 1
+  availableKeys = availableKeys.sort(() => Math.random() - 0.5);
+
   const rawProxyUrl = process.env.GEMINI_PROXY_URL || "";
   const proxyPool = rawProxyUrl.split(',').map(u => u.trim()).filter(u => u.length > 0);
   let currentProxyIndex = 0;
 
-  // Phase 3: Simple Rate Limiting Check
-  if (!AIResilienceService.canMakeRequest()) {
-    console.warn("[Resilience] Rate limit hit. Waiting 2s...");
-    await new Promise(r => setTimeout(r, 2000));
-  }
+  let lastError = "NO_KEYS_AVAILABLE";
 
-  let lastError = availableKeys.length === 0 ? "GEMINI_KEYS_BLACKLISTED" : "";
-
+  // B. Execution Loop
   for (const key of availableKeys) {
-    let retryWait = 1000;
-    let consecutiveShadowBansForKey = 0; // RESET PER KEY (Arch 18.0 Logic)
-
-    for (let attempt = 0; attempt < 4; attempt++) {
-      try {
-        // 1. Token Bucket Throttling (Strict 30 RPM for Hybrid)
-        const now = Date.now();
-        const timeDiff = (now - lastCheck) / 60000;
-        tokens = Math.min(30, tokens + timeDiff * 30);
-        lastCheck = now;
-        if (tokens < 1) {
-          const throttleWait = 3000;
-          console.log(`[Throttling] RPM Limit reached. Cooling ${throttleWait / 1000}s...`);
-          await new Promise(r => setTimeout(r, throttleWait));
-        }
-        tokens--;
-
-        // 2. Physical Gap & Circuit Breaker Check
-        await physical_gap();
-
-        // Proxy Rotation Logic
-        let proxyToUse = null;
-        if (!isProxyDead && proxyPool.length > 0) {
-          proxyToUse = proxyPool[currentProxyIndex % proxyPool.length];
-        }
-
-        const apiVersions = ["v1beta", "v1"];
-        let lastResp: any = null;
-
-        for (const version of apiVersions) {
-          const endpoint = proxyToUse
-            ? `${proxyToUse.replace(/\/$/, '')}/${version}/models/${modelName}:generateContent?key=${key}`
-            : `https://generativelanguage.googleapis.com/${version}/models/${modelName}:generateContent?key=${key}`;
-
-          console.log(`[AI-TUNNEL] Key: ${key.slice(0, 8)} | Model: ${modelName} | API: ${version} | Proxy: ${proxyToUse || 'Direct'}`);
-
-          const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
-          if (file && file.data) {
-            parts.push({
-              inlineData: {
-                mimeType: file.mimeType || "application/pdf",
-                data: file.data
-              }
-            });
-          }
-
-          const response = await fetch(endpoint, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-antigravity-proxy": "v21.0",
-            },
-            body: JSON.stringify({
-              contents: [{ parts }],
-              generationConfig: {
-                temperature: 0.85,
-                maxOutputTokens: 8192
-              }
-            })
-          });
-
-          if (!response.ok) {
-            const errText = await response.text();
-            lastError = `Gemini_${version}_${response.status}: ${errText.substring(0, 100)}`;
-            console.warn(`[Gemini-Error] Version: ${version} | Status: ${response.status}`);
-
-            // 🚨 EMERGENCY DIRECT FALLBACK (If Proxy Fails)
-            if (response.status >= 500 && proxyToUse) {
-              console.log("[Antigravity] Proxy failed (500). Attempting DIRECT connection to Google...");
-              const directEndpoint = `https://generativelanguage.googleapis.com/${version}/models/${modelName}:generateContent?key=${key}`;
-              try {
-                const directResp = await fetch(directEndpoint, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ contents: [{ parts }], generationConfig: { temperature: 0.85 } })
-                });
-                if (directResp.ok) {
-                  const directJson = await directResp.json();
-                  const directText = directJson.candidates?.[0]?.content?.parts?.[0]?.text;
-                  if (directText) {
-                    console.log("[Antigravity] ✅ DIRECT connection succeeded!");
-                    return directText;
-                  }
-                }
-              } catch (directErr) {
-                console.warn("[Antigravity] Direct fallback also failed.");
-              }
-            }
-            continue;
-          }
-
-          const rawText = await response.text();
-
-          // 🟢 HEALING: Detection of "Hello World!" (Broken Proxy)
-          if (rawText.includes("Hello World!")) {
-            console.warn(`[ProxyWarning] ${proxyToUse} returned "Hello World!". Attempting DIRECT bypass...`);
-
-            // EMERGENCY DIRECT BYPASS FOR "HELLO WORLD"
-            const directEndpoint = `https://generativelanguage.googleapis.com/${version}/models/${modelName}:generateContent?key=${key}`;
-            try {
-              const directResp = await fetch(directEndpoint, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ contents: [{ parts }], generationConfig: { temperature: 0.85 } })
-              });
-              if (directResp.ok) {
-                const directJson = await directResp.json();
-                const directText = directJson.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (directText) {
-                  console.log("[Antigravity] ✅ DIRECT bypass succeeded!");
-                  return directText;
-                }
-              }
-            } catch (directErr) {
-              console.warn("[Antigravity] Direct bypass also failed.");
-            }
-
-            if (proxyPool.length > currentProxyIndex + 1) {
-              currentProxyIndex++;
-              attempt--;
-              break;
-            }
-            continue;
-          }
-
-          const json = JSON.parse(rawText);
-          const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-
-          if (!text) {
-            lastError = "EMPTY_RESPONSE_JSON";
-            continue;
-          }
-
-          // SUCCESS: Reset Circuit
-          lastSuccess = Date.now();
-          return text;
-        } // Hết vòng lặp apiVersions
-
-        throw new Error(lastError || "VERSION_LOOP_FAILED"); // End of logic
-      } catch (e: any) {
-        // Error handling block start...
-        const errorMsg = e.message || "";
-        const status = parseInt(errorMsg.split(' - ')[0]) || 500;
-        lastError = errorMsg;
-
-        // 3. ERROR CATEGORIZATION & SHADOW BAN DETECTION
-        const isModelNotFoundError = status === 404 && (errorMsg.includes("not found") || errorMsg.includes("not supported"));
-
-        if (!isModelNotFoundError && (status === 404 || status === 403 || errorMsg.includes("404") || errorMsg.includes("403"))) {
-          consecutiveShadowBansForKey++; // Fix: use local counter
-          console.error(`[CRITICAL] Shadow Ban Detected (${status}). Key: ${key.slice(0, 8)}... (${consecutiveShadowBansForKey}/5)`);
-
-          if (consecutiveShadowBansForKey >= 5) {
-            console.log("[CircuitBreaker] TRIPPED for specific key. Cooling 65s.");
-            blacklist.add(key);
-          }
-          break; // Next key
-        }
-
-        // 3.5 MODEL FALLBACK (if 404 is specifically about the model)
-        if (isModelNotFoundError) {
-          const fallbacks = ["gemini-1.5-flash", "gemini-pro", "gemini-1.5-flash-8b", "gemini-1.0-pro"];
-          const currentIndex = fallbacks.indexOf(modelName);
-          const nextModel = fallbacks[currentIndex + 1];
-
-          if (nextModel) {
-            console.warn(`[ModelFallback] Model ${modelName} returned 404. Trying ${nextModel}...`);
-            return await callAI(prompt, nextModel, file, systemContent);
-          }
-        }
-
-        // 4. RATE LIMIT (429) - EXPONENTIAL BACKOFF STRATEGY
-        if (status === 429 || errorMsg.includes("429") || errorMsg.includes("RESOURCE_EXHAUSTED")) {
-          const waitTime = (attempt + 1) * 10000; // 10s, 20s, 30s
-          console.warn(`⚠️ [Quota Hit] Key ${key.slice(0, 8)}... | Retrying in ${waitTime / 1000}s... (Attempt ${attempt + 1})`);
-          await new Promise(r => setTimeout(r, waitTime));
-          continue; // Retry loop
-        }
-
-        // 5. RETRY LOGIC (Internal Server Error)
-        if (status >= 500 && attempt < 1) {
-          console.warn(`[Retryable] ${status} on key ${key.slice(0, 8)}... Retrying...`);
-          await new Promise(r => setTimeout(r, retryWait));
-          retryWait *= 2; // Exponential backoff
-          continue;
-        }
-
-        // 6. FATAL ERRORS
-        console.error(`[Fatal] ${status} on key ${key.slice(0, 8)}...`);
-        break;
+    try {
+      // Proxy Selection
+      let proxyToUse = null;
+      if (proxyPool.length > 0) {
+        proxyToUse = proxyPool[currentProxyIndex % proxyPool.length];
       }
+
+      const apiVersions = ["v1beta", "v1"];
+
+      for (const version of apiVersions) {
+        const endpoint = proxyToUse
+          ? `${proxyToUse.replace(/\/$/, '')}/${version}/models/${modelName}:generateContent?key=${key}`
+          : `https://generativelanguage.googleapis.com/${version}/models/${modelName}:generateContent?key=${key}`;
+
+        console.log(`[AI-GATEWAY] 🔑 Using ends...${key.slice(-4)} | Model: ${modelName} | Proxy: ${proxyToUse ? 'Yes' : 'Direct'}`);
+
+        const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
+        if (file && file.data) {
+          parts.push({
+            inlineData: {
+              mimeType: file.mimeType || "application/pdf",
+              data: file.data
+            }
+          });
+        }
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-antigravity-proxy": "v18.0",
+          },
+          body: JSON.stringify({
+            contents: [{ parts }],
+            generationConfig: {
+              temperature: 0.85,
+              maxOutputTokens: 8192
+            }
+          }),
+          signal: AbortSignal.timeout(20000) // 20s timeout
+        });
+
+        if (!response.ok) {
+          const status = response.status;
+          const errText = await response.text();
+
+          // CIRCUIT BREAKER LOGIC
+          if (status === 429) {
+            console.warn(`[CircuitBreaker] 🟡 Key ${key.slice(-4)} Rate Limited (429). Cooling 60s.`);
+            keyBlacklist.set(key, Date.now() + BAN_TIME_429);
+            lastError = "RATE_LIMIT_HIT";
+            break; // Break Version loop, try next Key
+          } else if (status === 403 || status === 400) {
+            console.error(`[CircuitBreaker] 🔴 Key ${key.slice(-4)} INVALID (403/400). Hard Banning.`);
+            keyBlacklist.set(key, Date.now() + BAN_TIME_403); // Ban for 24h
+            lastError = "KEY_INVALID";
+            break; // Try next key
+          } else if (status >= 500) {
+            console.warn(`[CircuitBreaker] 🟠 Service Error (${status}). Short cooling.`);
+            keyBlacklist.set(key, Date.now() + BAN_TIME_500);
+            // 500 might be proxy issue
+          }
+
+          throw new Error(`HTTP ${status}: ${errText}`);
+        }
+
+        const json = await response.json();
+        const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!text) throw new Error("Empty AI Response");
+
+        return text; // SUCCESS!
+      } // End Version Loop
+    } catch (e: any) {
+      console.warn(`[Gateway] Key attempt failed: ${e.message}`);
+      lastError = e.message;
+      // Loop continues to next key
     }
   }
 
@@ -530,6 +422,7 @@ import { CurriculumService } from "../services/curriculum-service";
 
 export async function generateLesson(g: string, t: string, d?: string, c?: string, tasks?: string[], m?: string, s?: string, f?: { mimeType: string, data: string, name: string }, model?: string): Promise<ActionResult<LessonResult>> {
   try {
+    console.log(`[SYSTEM_AUDIT_LOG] 🏁 START generateLesson | Grade: ${g}, Topic: ${t}, File: ${f ? `${f.name} (${f.mimeType}, ${f.data.length} bytes)` : "NONE"}`);
     const normalizedTasks = Array.isArray(tasks)
       ? tasks.map((task) => ({ name: task, description: task }))
       : undefined;
@@ -685,6 +578,7 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
         hs_chuan_bi: setupJson.hs_chuan_bi || ""
       };
 
+      console.log(`[SYSTEM_AUDIT_LOG] 🧩 CHAINED DATA | Keys: ${Object.keys(data).join(', ')}`);
       return { success: true, data };
     }
 
@@ -701,7 +595,9 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
       )
       : getLessonIntegrationPrompt(g, t);
     const text = await callAI(p, model, f);
+    console.log(`[SYSTEM_AUDIT_LOG] 📥 AI RESPONSE RECEIVED | Length: ${text.length} chars`);
     let data = parseLessonResult(text);
+    console.log(`[SYSTEM_AUDIT_LOG] 🧩 PARSED DATA | Keys: ${data ? Object.keys(data).join(', ') : "NULL"}`);
 
     // 🎯 ARCHITECTURE 18.0: REFLECTION LAYER (DISABLED FOR SPEED - HOTFIX)
     /*
