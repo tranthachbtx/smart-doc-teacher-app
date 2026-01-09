@@ -581,7 +581,22 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
       const orchestrator = PedagogicalOrchestrator.getInstance();
 
       // Extract basic text from file first for context
-      const fileSummary = f.data ? (await extractTextFromFile(f)).content || "" : "";
+      let fileSummary = "";
+
+      // 🎯 OPTIMIZATION: Decode synthetic text directly (Skip costly extraction)
+      if (f.mimeType === 'text/plain' && f.name.startsWith("Auto_Fetch")) {
+        try {
+          // Decode Base64 (Server-side compatible)
+          fileSummary = Buffer.from(f.data, 'base64').toString('utf-8');
+          console.log("[GeminiServer] ⚡ Fast-decoded Synthetic File Content.");
+        } catch (e) {
+          console.warn("[GeminiServer] Base64 decode failed, falling back to AI extraction.");
+          fileSummary = f.data ? (await extractTextFromFile(f)).content || "" : "";
+        }
+      } else {
+        // Standard PDF/Image Processing
+        fileSummary = f.data ? (await extractTextFromFile(f)).content || "" : "";
+      }
 
       // 4. SMART CONTEXT INJECTION
       // Append DB data to fileSummary so AI 'sees' it as part of the input

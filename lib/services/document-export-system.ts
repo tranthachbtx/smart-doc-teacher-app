@@ -266,8 +266,20 @@ export class DocumentExportSystem {
     }
 
     private createTwoColumnActivity(title: string, content: any): any[] {
+        console.log(`[ExportSystem] 🔍 Processing activity: ${title}`);
+        console.log(`[ExportSystem] 📥 Raw content type: ${typeof content}`);
+
         const textContent = typeof content === "string" ? content : JSON.stringify(content);
+        console.log(`[ExportSystem] 📏 Text length: ${textContent.length}`);
+
         const { cot1, cot2 } = this.parseColumns(textContent);
+
+        console.log(`[ExportSystem] ✅ Parsed Result:`);
+        console.log(`   - Col 1 (GV): ${cot1.length} chars`);
+        console.log(`   - Col 2 (HS): ${cot2.length} chars`);
+
+        if (cot1.length < 50) console.warn(`[ExportSystem] ⚠️ Col 1 is suspiciously short: "${cot1}"`);
+
         return [
             new Paragraph({
                 spacing: { before: 200, after: 100 },
@@ -408,17 +420,31 @@ export class DocumentExportSystem {
 
                 // Case 1: Standard 'steps' array (Pro Tier)
                 if (json.steps && Array.isArray(json.steps)) {
-                    return {
-                        cot1: json.steps.map((s: any) => s.teacher_action || s.instruction || s.action || "").join("\n\n"),
-                        cot2: json.steps.map((s: any) => s.student_action || s.product || s.result || "").join("\n\n")
-                    };
+                    const cot1Content = json.steps.map((s: any) =>
+                        s.teacher_action || s.instruction || s.action || ""
+                    ).filter((c: string) => c && c.trim().length > 0).join("\n\n");
+
+                    const cot2Content = json.steps.map((s: any) =>
+                        s.student_action || s.product || s.result || ""
+                    ).filter((c: string) => c && c.trim().length > 0).join("\n\n");
+
+                    // FALLBACK FOR EMPTY STEPS
+                    if (cot1Content.length < 10) {
+                        console.warn("[ExportSystem] ⚠️ Steps found but content is empty. Applying fallback.");
+                        return {
+                            cot1: "Giáo viên tổ chức hoạt động theo hướng dẫn của chương trình GDPT 2018 (Nội dung chi tiết đang được AI bổ sung...).",
+                            cot2: "Học sinh tham gia hoạt động tích cực theo sự hướng dẫn của giáo viên."
+                        };
+                    }
+
+                    return { cot1: cot1Content, cot2: cot2Content };
                 }
 
                 // Case 2: Direct keys
-                if (json.teacher_action && json.student_action) {
+                if (json.teacher_action || json.student_action) {
                     return {
-                        cot1: json.teacher_action,
-                        cot2: json.student_action
+                        cot1: json.teacher_action || "GV hướng dẫn học sinh thực hiện nhiệm vụ.",
+                        cot2: json.student_action || "HS thực hiện nhiệm vụ và báo cáo kết quả."
                     };
                 }
 
@@ -434,7 +460,9 @@ export class DocumentExportSystem {
                     }
                 }
             }
-        } catch (e) { }
+        } catch (e) {
+            console.error("[ExportSystem] JSON Parse Error in parseColumns:", e);
+        }
 
         // Regex Fallback
         const cot2Match = content.match(/\{\{cot_2\}\}/i);

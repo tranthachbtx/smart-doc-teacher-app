@@ -295,17 +295,36 @@ THIẾT KẾ: ${module.title}
   + Cột GV: Phải có Lời thoại (Verbatim script), Kỹ thuật tổ chức (như 'Mảnh ghép', 'Khăn trải bàn', 'Socratic').
   + Cột HS: Mô tả Quy trình tư duy (Cognitive process), Trạng thái tâm lý.
   
-TRẢ VỀ JSON VỚI CẤU TRÚC:
+CRITICAL VALIDATION REQUIREMENTS:
+- teacher_action PHẢI có nội dung chi tiết (tối thiểu 50 ký tự)
+- student_action PHẢI có nội dung chi tiết (tối thiểu 50 ký tự)
+- KHÔNG được trả về empty strings
+- KHÔNG được trả về null/undefined
+- PHẢI có {{cot_1}} và {{cot_2}} markers trong content
+
+VALIDATION CHECK:
+Nếu không thể tạo nội dung chi tiết, trả về fallback:
+{
+  "module_title": "${module.title}",
+  "steps": [
+    {
+      "step_type": "fallback",
+      "teacher_action": "GV tổ chức hoạt động theo hướng dẫn chương trình (Nội dung chi tiết đang cập nhật...)",
+      "student_action": "HS tham gia hoạt động tích cực."
+    }
+  ]
+}
+  
+TRẢ VỀ JSON VỚI CẤU TRÚC CHÍNH XÁC:
 {
   "module_title": "${module.title}",
   "summary_for_next_step": "Tóm tắt kết quả...",
   "steps": [
     { 
-      "step_type": "transfer", 
+      "step_type": "transfer|perform|report|conclude", 
       "teacher_action": "Markdown ({{cot_1}})...", 
       "student_action": "Markdown ({{cot_2}})..." 
-    },
-    ... (perform, report, conclude)
+    }
   ]
 }
 `;
