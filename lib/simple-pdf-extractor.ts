@@ -18,7 +18,7 @@ export async function extractPDFContent(file: File): Promise<string> {
 
       // 2. Server-side Extraction
       const pdfModule = await import('pdf-parse');
-      const pdfParse = pdfModule.default || pdfModule;
+      const pdfParse = (pdfModule as any).default || pdfModule;
       const data = await pdfParse(Buffer.from(buffer));
       return data.text;
     } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {

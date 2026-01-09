@@ -340,10 +340,29 @@ export function ManualProcessingHub() {
                 </Card>
             </div>
 
-            {/* LƯU Ý DƯỚI CÙNG */}
-            <div className="flex justify-center">
+            {/* LƯU Ý DƯỚI CÙNG & NÚT XUẤT FILE PHÁ ĐẢO PAGE COUNT */}
+            <div className="flex flex-col items-center gap-6 pb-20">
+                <Button
+                    size="lg"
+                    onClick={handleExportDocx}
+                    disabled={!store.lesson.result}
+                    className="h-20 px-12 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl hover:shadow-indigo-200/50 transition-all gap-4 group text-xl font-black"
+                >
+                    {store.loading.isExporting ? (
+                        <>
+                            <Loader2 className="w-8 h-8 animate-spin" />
+                            ĐANG XUẤT FILE HF V26.0... ({store.exportProgress}%)
+                        </>
+                    ) : (
+                        <>
+                            <FileDown className="w-8 h-8 group-hover:bounce" />
+                            XUẤT GIÁO ÁN WORD (100+ TRANG)
+                        </>
+                    )}
+                </Button>
+
                 <Badge variant="outline" className="px-6 py-2 rounded-full bg-slate-50 border-slate-200 text-slate-500 gap-2">
-                    <Binary className="w-4 h-4" /> Smart Relay Engine v20.2: Tự động phát hiện & Chuyển đổi JSON
+                    <Binary className="w-4 h-4" /> Smart Relay Engine v26.0: Đã kích hoạt Multi-Segment Export
                 </Badge>
             </div>
         </div>

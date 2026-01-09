@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     // Use existing MultiStrategyExtractor for fast processing
     const extractor = MultiStrategyExtractor.getInstance();
-    let extractedContent = { content: '', source: 'none' as const };
+    let extractedContent: { content: string, source: string } = { content: '', source: 'none' };
     try {
       extractedContent = await extractor.extract(file, base64Data);
     } catch (err) {
