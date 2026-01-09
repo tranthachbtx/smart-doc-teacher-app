@@ -396,17 +396,32 @@ export class DocumentExportSystem {
     }
 
     private parseColumns(content: string): { cot1: string; cot2: string } {
+        if (!content || content.trim().length === 0) {
+            return { cot1: "Đang cập nhật nội dung...", cot2: "..." };
+        }
+
         // High-precision isolation
         try {
             const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 const json = JSON.parse(jsonMatch[0]);
+
+                // Case 1: Standard 'steps' array (Pro Tier)
                 if (json.steps && Array.isArray(json.steps)) {
                     return {
                         cot1: json.steps.map((s: any) => s.teacher_action || s.instruction || s.action || "").join("\n\n"),
                         cot2: json.steps.map((s: any) => s.student_action || s.product || s.result || "").join("\n\n")
                     };
                 }
+
+                // Case 2: Direct keys
+                if (json.teacher_action && json.student_action) {
+                    return {
+                        cot1: json.teacher_action,
+                        cot2: json.student_action
+                    };
+                }
+
                 if (json.to_chuc) {
                     const tc = String(json.to_chuc);
                     const cot2M = tc.match(/\{\{cot_2\}\}/i);

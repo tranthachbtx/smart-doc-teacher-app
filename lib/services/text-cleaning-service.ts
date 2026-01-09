@@ -101,13 +101,13 @@ export class TextCleaningService {
         if (!text) return "";
 
         return text
-            // 1. Loại bỏ các marker kỹ thuật
+            // 1. Loại bỏ các marker kỹ thuật (GIỮ LẠI {{cot_1}}, {{cot_2}} CHO EXPORT SYSTEM)
             .replace(/\[AI-SUGGESTION\]/gi, "")
             .replace(/\[PDF\]/gi, "")
             .replace(/\[KHTN\]/gi, "")
             .replace(/\[HĐTN\]/gi, "")
-            .replace(/{{cot_1}}/g, "")
-            .replace(/{{cot_2}}/g, "")
+            // .replace(/{{cot_1}}/g, "") // DISABLED: Cần giữ để phân cột
+            // .replace(/{{cot_2}}/g, "") // DISABLED: Cần giữ để phân cột
 
             // 2. Sửa lỗi thừa dấu **
             .replace(/\*\*\s*\*\*/g, "**") // ** ** -> **
