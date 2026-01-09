@@ -22,10 +22,11 @@ import { useLessonActions } from '@/lib/hooks/use-lesson-actions';
 import { ExpertBrainInjection } from '../template-engine/ExpertBrainInjection';
 import { ContentFilter } from '@/lib/services/content-filter';
 import { ProfessionalContentProcessor } from '@/lib/services/professional-content-processor';
+import { Rocket } from 'lucide-react';
 
 export function ManualProcessingHub() {
     const store = useAppStore();
-    const { lesson, isExporting } = store;
+    const { lesson, isExporting, isGenerating } = store;
     const {
         theme: lessonAutoFilledTheme,
         grade: lessonGrade,
@@ -45,6 +46,7 @@ export function ManualProcessingHub() {
 
     const {
         handleExportDocx,
+        handleGenerateFullPlan,
         handleSurgicalMerge: actionSurgicalMerge,
         handleAudit
     } = useLessonActions();
@@ -94,6 +96,18 @@ export function ManualProcessingHub() {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Step 1: Save File to Store (Base64) for AI Chain Engine
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = (reader.result as string).split(',')[1];
+            store.updateLessonField('file', {
+                mimeType: file.type,
+                data: base64,
+                name: file.name
+            });
+        };
+        reader.readAsDataURL(file);
+
         // Step 3: Session-Based Context Memory (Check and Warn)
         if (store.lesson.processedContext) {
             const confirmNew = window.confirm("Bạn đã có dữ liệu phân tích từ lần trước. Tải file mới sẽ xóa dữ liệu cũ. Tiếp tục?");
@@ -118,9 +132,11 @@ export function ManualProcessingHub() {
                 setStructuredContent(structured);
 
                 const scientificText = PedagogicalOrchestrator.simplifyScientificText(result.content);
-                setExpertGuidance(scientificText);
+                // If simplification is too aggressive or empty, use full content
+                const expertContext = (scientificText && scientificText.length > 100) ? scientificText : result.content;
+                setExpertGuidance(expertContext);
 
-                const modules = ManualWorkflowService.analyzeStructure(scientificText, "2");
+                const modules = ManualWorkflowService.analyzeStructure(expertContext, "2");
                 setManualModules(modules);
 
                 // --- STEP 1 & 2: PEDAGOGICAL SLICING & DEEP TAGGING ---
@@ -150,8 +166,8 @@ export function ManualProcessingHub() {
                 });
 
                 toast({
-                    title: "✅ Phân tích & Tối ưu xong!",
-                    description: `Đã cấu trúc hóa ${structured.sections.length} phần và tự động lọc dữ liệu cho từng module.`
+                    title: "✅ Phân tích xong & Sẵn sàng Deep Dive!",
+                    description: `Đã lưu file và phân tích cấu trúc. Hãy bấm nút 'Tạo Kế hoạch bài dạy' để chạy quy trình tự động.`
                 });
             } else {
                 throw new Error("Không tìm thấy nội dung văn bản trong tài liệu này.");
@@ -310,13 +326,14 @@ export function ManualProcessingHub() {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700">
-            {/* Header Steps */}
-            <div className="premium-glass soft-pastel-skyblue p-8 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-6 shadow-2xl relative overflow-hidden group">
+            {/* Header Steps: Compact Grid Layout */}
+            <div className="premium-glass soft-pastel-skyblue p-6 rounded-[2rem] shadow-xl relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-white/20 transition-all duration-1000"></div>
 
-                <div className="space-y-2 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
 
-                    <div className="flex flex-wrap items-center gap-3 mt-6">
+                    {/* 1. Upload & Analyze Analysis */}
+                    <div className="flex flex-col gap-2">
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -326,48 +343,62 @@ export function ManualProcessingHub() {
                         />
                         <Button
                             variant="outline"
-                            size="lg"
-                            className="h-14 px-8 rounded-2xl bg-white/80 text-blue-800 border-blue-200/50 hover:bg-white hover:scale-[1.02] transition-all shadow-lg hover:shadow-blue-200/50 gap-3 group"
+                            className="w-full h-12 rounded-xl bg-white/80 text-blue-800 border-blue-200/50 hover:bg-white shadow-sm gap-2 justify-start px-4"
                             onClick={() => fileInputRef.current?.click()}
                             disabled={isAnalyzing}
                         >
-                            {isAnalyzing ? <Loader2 className="w-5 h-5 animate-spin text-blue-500" /> : <Upload className="w-5 h-5 text-blue-500 group-hover:-translate-y-1 transition-transform" />}
-                            <span className="font-bold uppercase tracking-wider text-sm">
-                                {isAnalyzing ? (analyzingStatus || "Đang phân tích...") : "Phân tích tài liệu PDF"}
+                            {isAnalyzing ? <Loader2 className="w-4 h-4 animate-spin text-blue-500" /> : <Upload className="w-4 h-4 text-blue-500" />}
+                            <span className="font-bold text-xs uppercase tracking-wide truncate">
+                                {isAnalyzing ? analyzingStatus : "1. Tải lên & Phân tích PDF"}
                             </span>
                         </Button>
+
                         {expertGuidance && (
-                            <Badge className="h-14 px-6 rounded-2xl bg-emerald-500/10 text-emerald-700 border-emerald-200/50 backdrop-blur-md flex items-center gap-3 animate-in zoom-in-95 duration-500">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                                <FileText className="w-5 h-5 opacity-70" />
-                                <span className="font-bold text-sm uppercase tracking-widest">Tài liệu Sẵn sàng</span>
+                            <Badge className="w-full h-8 justify-center bg-emerald-500/10 text-emerald-700 border-emerald-200/50 animate-in zoom-in-95">
+                                <FileText className="w-3 h-3 mr-2" />
+                                <span className="text-[10px] font-bold uppercase">Tài liệu đã sẵn sàng</span>
                             </Badge>
                         )}
                     </div>
-                </div>
 
-                <div className="flex gap-4 relative z-10">
+                    {/* 2. Generate Plan (Rocket) */}
                     <Button
-                        size="lg"
+                        className="w-full h-auto min-h-[48px] rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md shadow-indigo-200 gap-3"
+                        onClick={handleGenerateFullPlan}
+                        disabled={isGenerating || !lessonAutoFilledTheme}
+                    >
+                        {isGenerating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Rocket className="w-5 h-5" />}
+                        <div className="flex flex-col items-start">
+                            <span className="font-black text-xs uppercase tracking-wider">
+                                {store.lesson.file ? "2. Tạo KHBD (Từ File)" : "2. Auto-Fetch & Tạo KHBD"}
+                            </span>
+                            <span className="text-[10px] opacity-80 font-normal">
+                                {store.lesson.file ? "Deep Dive 5 Bước (File Mode)" : "Deep Dive 5 Bước (Database Mode)"}
+                            </span>
+                        </div>
+                    </Button>
+
+                    {/* 3. Audit (5512) */}
+                    <Button
                         variant="outline"
                         onClick={handleAuditWithCheck}
                         disabled={!lessonResult && !manualModules.some(m => m.isCompleted)}
-                        className="h-16 px-8 rounded-2xl border-2 border-amber-200/50 text-amber-800 bg-amber-50/30 hover:bg-amber-100 hover:scale-[1.02] transition-all shadow-xl shadow-amber-200/20 group"
+                        className="w-full h-12 rounded-xl border-amber-200/50 text-amber-800 bg-amber-50/50 hover:bg-amber-100/80 gap-2 justify-start px-4"
                     >
-                        <Search className="w-6 h-6 mr-3 text-amber-600 group-hover:rotate-12 transition-transform" />
-                        <span className="font-black uppercase tracking-wider">Kiểm định 5512</span>
+                        <Search className="w-4 h-4 text-amber-600" />
+                        <span className="font-bold text-xs uppercase tracking-wide">3. Kiểm định 5512</span>
                     </Button>
 
+                    {/* 4. Export Word */}
                     <Button
-                        size="lg"
                         onClick={handleExportWithCheck}
                         disabled={isExporting || (!lessonResult && !manualModules.some(m => m.isCompleted))}
-                        className="h-16 px-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-2xl shadow-emerald-200 hover:scale-[1.02] transition-all text-white group relative overflow-hidden"
+                        className="w-full h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md shadow-emerald-200 gap-2"
                     >
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                        {isExporting ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <FileDown className="w-6 h-6 mr-3 group-hover:translate-y-1 transition-transform" />}
-                        <span className="font-black uppercase tracking-wider relative z-10">Xuất WORD</span>
+                        {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+                        <span className="font-bold text-xs uppercase tracking-wide">4. Xuất file Word</span>
                     </Button>
+
                 </div>
             </div>
 

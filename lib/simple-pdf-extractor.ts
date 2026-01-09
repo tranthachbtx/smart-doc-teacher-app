@@ -7,9 +7,16 @@
 export async function extractPDFContent(file: File): Promise<string> {
   try {
     const buffer = await file.arrayBuffer();
-    
+
     if (file.type === 'application/pdf') {
-      // Extract from PDF using require
+      // 1. Browser Environment Check
+      if (typeof window !== 'undefined') {
+        // pdf-parse is Node.js only.
+        // Throw error to trigger Fallback to Client-Side PDFJS (which is working).
+        throw new Error("Client-side environment extracted via Fallback.");
+      }
+
+      // 2. Server-side Extraction
       const pdfParse = require('pdf-parse');
       const data = await pdfParse(buffer);
       return data.text;

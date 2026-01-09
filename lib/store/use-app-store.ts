@@ -233,6 +233,15 @@ export const useAppStore = create<AppState>()(
         {
             name: 'smart-doc-storage',
             storage: createJSONStorage(() => localStorage),
+            partialize: (state) => ({
+                ...state,
+                lesson: {
+                    ...state.lesson,
+                    file: null, // DO NOT PERSIST LARGE FILE TO DISK
+                    result: state.lesson.result,
+                    manualModules: state.lesson.manualModules
+                }
+            })
         }
     )
 );

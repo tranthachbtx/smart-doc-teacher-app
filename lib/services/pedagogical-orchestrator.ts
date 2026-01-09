@@ -184,8 +184,8 @@ export class PedagogicalOrchestrator {
             manualModules: []
         };
 
-        // --- STEP 1: METADATA & OBJECTIVES (CALL 1) ---
-        console.log(`[Orchestrator] Step 1: Metadata & Objectives...`);
+        // --- STEP 1: METADATA & OBJECTIVES (CALL 1 - FLASH) ---
+        console.log(`[Orchestrator] Step 1: Metadata & Objectives (Flash)...`);
         const metadataPrompt = `
         Dựa trên nội dung PDF/SGK được cung cấp, hãy trích xuất và xây dựng các trường dữ liệu sau: 
         - Tên bài (ten_bai)
@@ -197,6 +197,7 @@ export class PedagogicalOrchestrator {
         Trả về JSON thuần túy (Raw JSON) với các key trên.
         `;
 
+        // FLASH TIER (Green Lane)
         const metadataRes = await this.aiManager.processContent({ text: metadata.fileSummary }, metadataPrompt, 'fast');
 
         if (metadataRes.success) {
@@ -217,7 +218,7 @@ export class PedagogicalOrchestrator {
             }
         }
 
-        // --- STEP 2-5: ACTIVITIES DEEP DIVE (CALL 2-5) ---
+        // --- STEP 2-5: ACTIVITIES DEEP DIVE (CALL 2-5 - PRO/RED LANE) ---
         const activities = [
             { id: "mod_khoi_dong", type: "khoi_dong", title: "HOẠT ĐỘNG 1: KHỞI ĐỘNG" },
             { id: "mod_kham_pha", type: "kham_pha", title: "HOẠT ĐỘNG 2: KHÁM PHÁ" },
@@ -227,12 +228,13 @@ export class PedagogicalOrchestrator {
 
         let previousContext = "";
 
-        for (const act of activities) {
-            console.log(`[Orchestrator] Deep Dive Step: ${act.title}...`);
+        for (let i = 0; i < activities.length; i++) {
+            const act = activities[i];
+            console.log(`[Orchestrator] Deep Dive Step: ${act.title} (Pro)...`);
 
             const prompt = this.buildDeepDivePrompt(act, metadata, previousContext);
 
-            // Using 'deep' tier (Gemini Pro + High Token Limit)
+            // PRO TIER (Red Lane) - Slow & Deep
             const result = await this.aiManager.processContent({ text: metadata.fileSummary }, prompt, 'deep');
 
             if (result.success) {
@@ -251,9 +253,16 @@ export class PedagogicalOrchestrator {
                     previousContext += `\n- Hoạt động ${act.title} đã xong. Kết quả: ${summary}`;
                 }
             }
+
+            // 🛑 FLOW THROTTLING: HYBRID STRATEGY (32s Delay)
+            // Only delay if it's NOT the last activity (Vận dụng doesn't need cooling before Flash step)
+            if (i < activities.length - 1) {
+                console.log(`[FlowThrottling] ☕ Cooling down for 32s (Pro Tier Safety Zone)...`);
+                await new Promise(r => setTimeout(r, 32000));
+            }
         }
 
-        // --- EXTRA: APPENDIX (Optional/Included in Vận dụng if needed, but explicit is better) ---
+        // --- EXTRA: APPENDIX (Flash Lane) ---
         // Using simple fast call for Appendix if not fully covered
         const appendixPrompt = `Tạo hướng dẫn về nhà và phụ lục cần thiết cho bài học này.`;
         const appendixRes = await this.aiManager.processContent({ text: metadata.fileSummary }, appendixPrompt, 'fast');

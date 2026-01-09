@@ -19,17 +19,64 @@ export const useLessonActions = () => {
         }
 
         store.setLoading('isGenerating', true);
-        store.setSuccess("🚀 Đang khởi tạo tiến trình AI...");
+        store.setSuccess("🚀 Đang khởi tạo tiến trình AI (Automated Deep Dive)...");
 
         try {
-            // Pipeline logic will be managed here
-            store.setSuccess("✅ Giáo án đã được tạo thành công!");
+            // Dynamic import to avoid circular dependencies
+            const { generateLesson } = await import('../actions/gemini');
+
+            // 🎯 SMART-INPUT LOGIC: If no file, synthesize one from Theme for Deep Dive Engine
+            let filePayload = undefined;
+
+            if (lesson.file) {
+                filePayload = {
+                    mimeType: lesson.file.mimeType,
+                    data: lesson.file.data, // This is base64 string
+                    name: lesson.file.name
+                };
+            } else if (lesson.theme && lesson.grade) {
+                // Synthetic File (Database Mode)
+                const syntheticContent = `YÊU CẦU TỰ ĐỘNG KHỞI TẠO:
+                - Chủ đề: ${lesson.theme}
+                - Khối lớp: ${lesson.grade}
+                - Nguồn dữ liệu: Truy xuất trực tiếp từ Cơ sở dữ liệu chương trình GDPT 2018 (Internal Database).
+                `;
+                // Convert to Base64 (Buffer works in Node, but this is Client hook?)
+                // Browser-safe Base64:
+                const base64Content = btoa(unescape(encodeURIComponent(syntheticContent)));
+
+                filePayload = {
+                    mimeType: 'text/plain',
+                    data: base64Content,
+                    name: `Auto_Fetch_Database_Lop${lesson.grade}.txt`
+                };
+                console.log("[useLessonActions] No file uploaded. Synthesized Virtual File for Deep Dive Engine.");
+            }
+
+            const result = await generateLesson(
+                lesson.grade,
+                lesson.theme,
+                lesson.duration,
+                undefined, // context
+                undefined, // tasks
+                lesson.month,
+                undefined, // suggestions
+                filePayload,
+                store.selectedModel
+            );
+
+            if (result.success && result.data) {
+                store.setLessonResult(result.data);
+                store.setSuccess("✅ Giáo án đã được tạo thành công!");
+            } else {
+                store.setError(result.error || "Có lỗi xảy ra khi tạo giáo án.");
+            }
         } catch (error: any) {
             store.setError(error.message);
         } finally {
             store.setLoading('isGenerating', false);
         }
-    }, [lesson.theme, store]);
+    }, [lesson.theme, lesson.grade, lesson.duration, lesson.month, lesson.file, store]);
 
     const handleExportDocx = useCallback(async () => {
         if (!lesson.result) {

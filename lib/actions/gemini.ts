@@ -109,7 +109,7 @@ export async function callAI(
     let retryWait = 1000;
     let consecutiveShadowBansForKey = 0; // RESET PER KEY (Arch 18.0 Logic)
 
-    for (let attempt = 0; attempt < 2; attempt++) {
+    for (let attempt = 0; attempt < 4; attempt++) {
       try {
         // 1. Token Bucket Throttling (Strict 30 RPM for Hybrid)
         const now = Date.now();
@@ -171,6 +171,29 @@ export async function callAI(
             const errText = await response.text();
             lastError = `Gemini_${version}_${response.status}: ${errText.substring(0, 100)}`;
             console.warn(`[Gemini-Error] Version: ${version} | Status: ${response.status}`);
+
+            // 🚨 EMERGENCY DIRECT FALLBACK (If Proxy Fails)
+            if (response.status >= 500 && proxyToUse) {
+              console.log("[Antigravity] Proxy failed (500). Attempting DIRECT connection to Google...");
+              const directEndpoint = `https://generativelanguage.googleapis.com/${version}/models/${modelName}:generateContent?key=${key}`;
+              try {
+                const directResp = await fetch(directEndpoint, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ contents: [{ parts }], generationConfig: { temperature: 0.85 } })
+                });
+                if (directResp.ok) {
+                  const directJson = await directResp.json();
+                  const directText = directJson.candidates?.[0]?.content?.parts?.[0]?.text;
+                  if (directText) {
+                    console.log("[Antigravity] ✅ DIRECT connection succeeded!");
+                    return directText;
+                  }
+                }
+              } catch (directErr) {
+                console.warn("[Antigravity] Direct fallback also failed.");
+              }
+            }
             continue;
           }
 
@@ -178,13 +201,34 @@ export async function callAI(
 
           // 🟢 HEALING: Detection of "Hello World!" (Broken Proxy)
           if (rawText.includes("Hello World!")) {
-            console.warn(`[ProxyWarning] ${proxyToUse} returned "Hello World!".`);
+            console.warn(`[ProxyWarning] ${proxyToUse} returned "Hello World!". Attempting DIRECT bypass...`);
+
+            // EMERGENCY DIRECT BYPASS FOR "HELLO WORLD"
+            const directEndpoint = `https://generativelanguage.googleapis.com/${version}/models/${modelName}:generateContent?key=${key}`;
+            try {
+              const directResp = await fetch(directEndpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ contents: [{ parts }], generationConfig: { temperature: 0.85 } })
+              });
+              if (directResp.ok) {
+                const directJson = await directResp.json();
+                const directText = directJson.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (directText) {
+                  console.log("[Antigravity] ✅ DIRECT bypass succeeded!");
+                  return directText;
+                }
+              }
+            } catch (directErr) {
+              console.warn("[Antigravity] Direct bypass also failed.");
+            }
+
             if (proxyPool.length > currentProxyIndex + 1) {
               currentProxyIndex++;
               attempt--;
-              break; // Thử lại với proxy mới
+              break;
             }
-            continue; // Thử version tiếp theo
+            continue;
           }
 
           const json = JSON.parse(rawText);
@@ -197,13 +241,12 @@ export async function callAI(
 
           // SUCCESS: Reset Circuit
           lastSuccess = Date.now();
-          consecutiveShadowBansForKey = 0;
           return text;
         } // Hết vòng lặp apiVersions
 
-        throw new Error(lastError || "VERSION_LOOP_FAILED");
-
+        throw new Error(lastError || "VERSION_LOOP_FAILED"); // End of logic
       } catch (e: any) {
+        // Error handling block start...
         const errorMsg = e.message || "";
         const status = parseInt(errorMsg.split(' - ')[0]) || 500;
         lastError = errorMsg;
@@ -234,11 +277,12 @@ export async function callAI(
           }
         }
 
-        // 4. RATE LIMIT (429)
+        // 4. RATE LIMIT (429) - EXPONENTIAL BACKOFF STRATEGY
         if (status === 429 || errorMsg.includes("429") || errorMsg.includes("RESOURCE_EXHAUSTED")) {
-          console.error(`[RateLimit] ${status} on key ${key.slice(0, 8)}...`);
-          blacklist.add(key);
-          break; // Next key
+          const waitTime = (attempt + 1) * 10000; // 10s, 20s, 30s
+          console.warn(`⚠️ [Quota Hit] Key ${key.slice(0, 8)}... | Retrying in ${waitTime / 1000}s... (Attempt ${attempt + 1})`);
+          await new Promise(r => setTimeout(r, waitTime));
+          continue; // Retry loop
         }
 
         // 5. RETRY LOGIC (Internal Server Error)
@@ -269,7 +313,7 @@ export async function callAI(
       name: "Groq",
       url: "https://api.groq.com/openai/v1/chat/completions",
       key: process.env.GROQ_API_KEY,
-      model: "llama-3.1-70b-versatile"
+      model: "llama3-70b-8192"
     },
     {
       name: "Anthropic",
@@ -482,6 +526,8 @@ export async function generateMeetingMinutes(m: string, s: string, c: string, co
   }
 }
 
+import { CurriculumService } from "../services/curriculum-service";
+
 export async function generateLesson(g: string, t: string, d?: string, c?: string, tasks?: string[], m?: string, s?: string, f?: { mimeType: string, data: string, name: string }, model?: string): Promise<ActionResult<LessonResult>> {
   try {
     const normalizedTasks = Array.isArray(tasks)
@@ -556,7 +602,7 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
         enrichedContext += `\n\n--- [DỮ LIỆU CỐT LÕI TỪ DATABASE] ---\n`;
         enrichedContext += `- Chủ đề chuẩn: ${smartTheme.theme.ten}\n`;
         enrichedContext += `- Mục tiêu (DB): ${smartTheme.theme.muc_tieu.join('; ')}\n`;
-        enrichedContext += `- Gợi ý công cụ (DB): ${pContext?.tichHop?.thiet_bi_cong_nghe.join(', ') || "Linh hoạt"}\n`;
+        enrichedContext += `- Gợi ý tích hợp (DB): ${pContext?.tichHop?.ke_hoach_day_hoc.join(', ') || "Linh hoạt"}\n`;
       }
 
       const chainedData = await orchestrator.generateChainedLessonPlan({
@@ -570,7 +616,7 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
       // (Assuming chainedData.manualModules is populated)
       // We interpret the chained modules back into the LessonResult structure
       const modules = chainedData.manualModules;
-      data = {
+      const data: LessonResult = {
         ten_bai: t,
         grade: g,
         hoat_dong_khoi_dong: modules.find((m: any) => m.type === 'khoi_dong')?.content || "",
@@ -579,7 +625,7 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
         hoat_dong_van_dung: modules.find((m: any) => m.type === 'van_dung')?.content || "",
 
         // Setup metadata
-        muc_tieu_kien_thuc: modules.find((m: any) => m.type === 'setup')?.content || "", // Requires parsing if content is JSON
+        muc_tieu_kien_thuc: modules.find((m: any) => m.type === 'setup')?.content || "",
         ho_so_day_hoc: modules.find((m: any) => m.type === 'appendix')?.content || "",
 
         // Legacy fields
@@ -606,12 +652,14 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
     const text = await callAI(p, model, f);
     let data = parseLessonResult(text);
 
-    // 🎯 ARCHITECTURE 18.0: REFLECTION LAYER
+    // 🎯 ARCHITECTURE 18.0: REFLECTION LAYER (DISABLED FOR SPEED - HOTFIX)
+    /*
     if (data && data.hoat_dong_day_hoc) {
       console.log('[GeminiServer] Applying 18.0 Reflection Layer...');
       const orchestrator = PedagogicalOrchestrator.getInstance();
       data = await orchestrator.reflectAndImprove(data);
     }
+    */
 
     return { success: true, data };
   } catch (e: any) { return { success: false, error: e.message }; }
