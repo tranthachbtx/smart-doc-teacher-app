@@ -112,6 +112,34 @@ export const SectionEditorGrid = memo(() => {
                     />
                 </div>
             </div>
+
+            {/* Footer Sections */}
+            <div className="space-y-8 pt-8 border-t border-slate-200">
+                <h3 className="font-black text-2xl text-slate-800">Thông tin Bổ trợ (Phụ lục & Dặn dò)</h3>
+                <div className="grid grid-cols-1 gap-6">
+                    <SectionEditorItem
+                        label="Tích hợp Năng lực số"
+                        value={lessonResult.tich_hop_nls || ""}
+                        onChange={(val) => updateField("tich_hop_nls", val)}
+                        bgClass="premium-glass soft-pastel-mint/10 p-6"
+                        field="tich_hop_nls"
+                    />
+                    <SectionEditorItem
+                        label="Hồ sơ Dạy học (Phụ lục: Phiếu học tập, Rubric...)"
+                        value={lessonResult.ho_so_day_hoc || lessonResult.materials || ""}
+                        onChange={(val) => updateField("ho_so_day_hoc", val)}
+                        bgClass="premium-neumo p-6"
+                        field="ho_so_day_hoc"
+                    />
+                    <SectionEditorItem
+                        label="Hướng dẫn về nhà"
+                        value={lessonResult.huong_dan_ve_nha || lessonResult.homework || ""}
+                        onChange={(val) => updateField("huong_dan_ve_nha", val)}
+                        bgClass="premium-neumo p-6"
+                        field="huong_dan_ve_nha"
+                    />
+                </div>
+            </div>
         </div>
     );
 });

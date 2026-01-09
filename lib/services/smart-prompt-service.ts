@@ -206,5 +206,66 @@ LƯU Ý:
 - CHỈ TRẢ VỀ JSON. KHÔNG GIẢI THÍCH THÊM.
 `
             .trim();
+    },
+
+    /**
+     * Phase 2: BUILD DEEP CONTENT PROMPT
+     * Mở rộng toàn bộ giáo án thành nội dung chuyên sâu, khoa học và đầy đủ các mục.
+     */
+    buildDeepContentPrompt(currentResult: any, data: SmartPromptData): string {
+        const isHDTN = data.topicName.toLowerCase().includes("trải nghiệm") ||
+            data.grade.includes("HĐTN");
+
+        return `
+# VAI TRÒ: CHUYÊN GIA PHÁT TRIỂN NỘI DUNG GIÁO DỤC CHI TIẾT (LEVEL: SENIOR)
+# NHIỆM VỤ: PHÁT TRIỂN HOÀN THIỆN KẾ HOẠCH BÀI DẠY (PHASE 2 - FULL DEEP EXPANSION)
+
+Dựa trên khung giáo án hiện tại và dữ liệu nghiên cứu, hãy thực hiện "Nâng cấp toàn diện" để tạo ra một bản KHBD hoàn chỉnh, không bỏ sót bất kỳ mục nào.
+
+## 1. DỮ LIỆU ĐẦU VÀO (CORE INPUT):
+- Tên bài: ${currentResult.ten_bai || data.topicName}
+- Khung 4 hoạt động hiện tại: ${JSON.stringify({
+            kd: currentResult.hoat_dong_khoi_dong,
+            kp: currentResult.hoat_dong_kham_pha,
+            lt: currentResult.hoat_dong_luyen_tap,
+            vd: currentResult.hoat_dong_van_dung
+        })}
+- Dữ liệu SHDC/SHL hiện tại (Cần giữ lại và mở rộng): ${JSON.stringify({
+            shdc: currentResult.shdc,
+            shl: currentResult.shl
+        })}
+- Gợi ý Năng lực số (TT 02/2025): ${data.digitalCompetency}
+
+## 2. YÊU CẦU NÂNG CẤP CHI TIẾT:
+1. **Mục II (Mục tiêu):** Trích xuất từ nội dung 4 hoạt động để viết chi tiết Kiến thức, Năng lực (chung & riêng), Phẩm chất. KHÔNG ghi "Xem chi tiết...". Phải ghi rõ học sinh đạt được gì.
+2. **Mục III (Thiết bị):** Liệt kê cụ thể từng loại học liệu, link padlet, thẻ màu, video, hoặc dụng cụ thí nghiệm cần thiết cho GV và HS.
+3. **Mục IV (Tiến trình - 4 Hoạt động):** 
+   - Triển khai "Facilitation Guide" cực kỳ chi tiết cho GV (kỹ thuật đặt câu hỏi, tình huống sư phạm).
+   - Chi tiết hành động HS (thao tác số, làm việc nhóm).
+   - BẮT BUỘC dùng {{cot_1}} và {{cot_2}} cho phần "Tổ chức thực hiện".
+4. **Mục V (Hồ sơ dạy học):** Thiết kế chi tiết ít nhất 01 Phiếu học tập và 01 Rubric đánh giá đa mức độ.
+5. **Mục VI (Hướng dẫn về nhà):** Đưa ra các nhiệm vụ mở rộng, tìm hiểu thực tế hoặc chuẩn bị cho bài sau.
+6. **Mục SHDC & SHL (Nếu là HĐTN):** Phải được phát triển chuyên sâu theo cấu trúc 2 cột, kết nối chặt chẽ với chủ đề bài học.
+
+## 3. QUY CÁCH TRẢ VỀ (JSON DUY NHẤT):
+{
+  "ten_bai": "...",
+  "muc_tieu_kien_thuc": "Chi tiết...",
+  "muc_tieu_nang_luc": "Chi tiết...",
+  "muc_tieu_pham_chat": "Chi tiết...",
+  "tich_hop_nls": "Mã năng lực số và nội dung tích hợp...",
+  "thiet_bi_day_hoc": "GV: ...; HS: ...",
+  "shdc": "Phát triển chi tiết cấu trúc 2 cột...",
+  "shl": "Phát triển chi tiết cấu trúc 2 cột...",
+  "hoat_dong_khoi_dong": "Phát triển chi tiết...",
+  "hoat_dong_kham_pha": "Phát triển chi tiết...",
+  "hoat_dong_luyen_tap": "Phát triển chi tiết...",
+  "hoat_dong_van_dung": "Phát triển chi tiết...",
+  "ho_so_day_hoc": "Nội dung Phụ lục (PHT, Rubric) cực kỳ chi tiết...",
+  "huong_dan_ve_nha": "Nhiệm vụ cụ thể..."
+}
+
+LƯU Ý: Tuyệt đối không dùng lại các marker [AI-SUGGESTION], [PDF]. Ngôn ngữ sư phạm chuyên sâu.
+`.trim();
     }
 };

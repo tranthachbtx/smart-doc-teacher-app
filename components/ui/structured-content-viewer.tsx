@@ -144,12 +144,12 @@ export function StructuredContentViewer({
                                                     <div className="flex items-center gap-1.5">
                                                         <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
                                                             <div
-                                                                className={`h-full rounded-full ${score > 70 ? 'bg-green-500' : score > 40 ? 'bg-blue-400' : 'bg-slate-300'}`}
-                                                                style={{ width: `${score}%` }}
+                                                                className={`h-full rounded-full ${(score || 0) > 70 ? 'bg-green-500' : (score || 0) > 40 ? 'bg-blue-400' : 'bg-slate-300'}`}
+                                                                style={{ width: `${score || 0}%` }}
                                                             />
                                                         </div>
-                                                        <span className={`text-[10px] font-bold ${score > 70 ? 'text-green-600' : 'text-slate-600'}`}>
-                                                            {score}%
+                                                        <span className={`text-[10px] font-bold ${(score || 0) > 70 ? 'text-green-600' : 'text-slate-600'}`}>
+                                                            {score || 0}%
                                                         </span>
                                                     </div>
                                                 </div>
@@ -170,10 +170,10 @@ export function StructuredContentViewer({
                                                     key={act}
                                                     variant="ghost"
                                                     size="sm"
-                                                    className={`text-[10px] h-7 px-2 ${section.relevance[act as keyof typeof section.relevance] > 60 ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50' : 'text-slate-400'}`}
+                                                    className={`text-[10px] h-7 px-2 ${(section.relevance as any)[act] > 60 ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50' : 'text-slate-400'}`}
                                                     onClick={() => onSectionSelect(section, act)}
                                                 >
-                                                    + {getActivityLabel(act)} ({section.relevance[act as keyof typeof section.relevance]}%)
+                                                    + {getActivityLabel(act)} ({(section.relevance as any)[act]}%)
                                                 </Button>
                                             ))}
                                         </div>

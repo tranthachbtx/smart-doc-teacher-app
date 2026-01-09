@@ -12,12 +12,17 @@ describe('SmartPromptService', () => {
     });
 
     it('should build a final prompt containing key instructions', () => {
-        const mockData = {
+        const mockData: any = {
             grade: "11",
             topicName: "Test Topic",
             objectives: "CHỦ ĐỀ: Test Topic",
             studentCharacteristics: "Gen Z students",
-            coreTasks: "Core tasks content",
+            coreMissions: {
+                khoiDong: "Task 1",
+                khamPha: "Task 2",
+                luyenTap: "Task 3",
+                vanDung: "Task 4"
+            },
             shdc_shl_suggestions: "SHDC suggestions",
             digitalCompetency: "Use AI tools",
             assessmentTools: "Rubrics",

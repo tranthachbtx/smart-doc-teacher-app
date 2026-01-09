@@ -13,7 +13,7 @@ import type {
 export interface ProcessingModule {
     id: string;
     title: string;
-    type: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung' | 'khac';
+    type: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung' | 'khac' | 'shdc' | 'shl' | 'setup' | 'appendix';
     prompt: string;
     content: string;
     isCompleted: boolean;

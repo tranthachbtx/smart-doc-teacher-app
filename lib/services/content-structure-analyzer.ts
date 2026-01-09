@@ -12,6 +12,10 @@ export interface ContentSection {
         kham_pha: number;
         luyen_tap: number;
         van_dung: number;
+        shdc?: number;
+        shl?: number;
+        setup?: number;
+        appendix?: number;
     };
     metadata: {
         pageNumbers: number[];

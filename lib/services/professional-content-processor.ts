@@ -3,7 +3,6 @@
  * Hệ thống tinh lọc và phân tích nội dung chuyên nghiệp
  */
 
-import { ProcessingModule } from "@/lib/store/use-app-store";
 import { SmartPromptData } from "./smart-prompt-service";
 import { PedagogicalOrchestrator } from "./pedagogical-orchestrator";
 import { TextCleaningService } from "./text-cleaning-service";
@@ -44,7 +43,7 @@ export interface ActivityContent {
 }
 
 export const ASSET_PATTERNS = [
-  /(?:Phiếu học tập|PHT|Giấy A4|Tranh ảnh|Video|Clip|Phim|PowerPoint|PPT|Sơ đồ tư duy|Mindmap|Bản đồ|Mô hình)/gi
+  /(?:Phiếu học tập|PHT|Giấy A4|Tranh ảnh|Video|Clip|Phim|PowerPoint|PPT|Sơ đồ duy|Mindmap|Bản đồ|Mô hình)/gi
 ];
 
 export const LEGACY_PATTERNS = [
@@ -162,7 +161,6 @@ export class ProfessionalContentProcessor {
       });
 
       // --- DETECTION: HĐTN Phase ---
-      // PHASE 1: HĐTN Phase Detection (SHDC, SHL, HĐGD)
       if (/(Sinh hoạt dưới cờ|SHDC)/i.test(trimmedLine) && trimmedLine.length < 50) {
         currentActivity = 'shdc';
         currentSection = 'general';
@@ -174,7 +172,7 @@ export class ProfessionalContentProcessor {
         continue;
       }
 
-      // Check for phase transitions (A, B, C, D headers)
+      // Check for phase transitions
       if (/^[A-D]\.\s*HOẠT ĐỘNG/i.test(trimmedLine) || /THÀNH KIẾN THỨC/i.test(trimmedLine) || /LUYỆN TẬP/i.test(trimmedLine) || /VẬN DỤNG/i.test(trimmedLine)) {
         if (/A\.|MỞ ĐẦU/i.test(trimmedLine)) currentActivity = 'khoi_dong';
         else if (/B\.|THÀNH KIẾN THỨC/i.test(trimmedLine)) currentActivity = 'kham_pha';
@@ -184,25 +182,20 @@ export class ProfessionalContentProcessor {
         continue;
       }
 
-      // Check for strong activity headers (Isolation Guard)
-      let foundNewActivity = false;
+      // Check for strong activity headers
       for (const [activity, patterns] of Object.entries(ACTIVITY_PATTERNS)) {
-        // High-precision detection for numbered activities within a phase
         const isNumberedActivity = /^(Hoạt động|HĐ)\s*\d+[:.]/i.test(trimmedLine) || /^\d+\.\s*[A-Z]/.test(trimmedLine);
-
         if (isNumberedActivity && patterns.slice(1, 4).some(p => p.test(trimmedLine))) {
           currentActivity = activity;
           currentSection = '';
-          foundNewActivity = true;
           break;
         }
       }
 
-      // Section markers within an activity (Mục tiêu, Nội dung, etc.)
+      // Section markers
       for (const [section, patterns] of Object.entries(SECTION_PATTERNS)) {
         if (patterns.some(pattern => pattern.test(trimmedLine)) && trimmedLine.length < 120) {
           currentSection = section;
-          foundNewActivity = true; // Treating section change like a small transition
           break;
         }
       }
@@ -217,23 +210,19 @@ export class ProfessionalContentProcessor {
 
       if (currentActivity && currentSection) {
         const activityKey = currentActivity as keyof ActivityContent;
-        const sectionKey = currentSection as keyof typeof content.khoi_dong;
-
-        // Intelligent filter to avoid adding headers as content
-        const isHeader = Object.values(SECTION_PATTERNS).flat().some(p => p.test(trimmedLine)) ||
-          Object.values(ACTIVITY_PATTERNS).flat().some(p => p.test(trimmedLine));
-
-        if (!isHeader && trimmedLine.length > 5) {
-          if (content[activityKey] && (content[activityKey] as any)[sectionKey]) {
-            if (!(content[activityKey] as any)[sectionKey].includes(trimmedLine) && !trimmedLine.includes('--- Page')) {
-              (content[activityKey] as any)[sectionKey].push(trimmedLine);
+        if (typeof content[activityKey] === 'object' && !Array.isArray(content[activityKey])) {
+          const sectionKey = currentSection as any;
+          const targetArray = (content[activityKey] as any)[sectionKey];
+          if (Array.isArray(targetArray)) {
+            if (!targetArray.includes(trimmedLine) && !trimmedLine.includes('--- Page')) {
+              targetArray.push(trimmedLine);
             }
           }
         }
       }
     }
 
-    // HEALING: If any activity is completely empty, inject universal objectives as context
+    // HEALING
     const mainActivities = ['khoi_dong', 'kham_pha', 'luyen_tap', 'van_dung'] as const;
     mainActivities.forEach(act => {
       const data = content[act];
@@ -250,8 +239,8 @@ export class ProfessionalContentProcessor {
    */
   static optimizeForActivity(activity: string, content: ActivityContent): string {
     const optimized: string[] = [];
+    const universalObjectives = content.khoi_dong.mucTieu;
 
-    // Handle HĐTN specific phases
     if (activity === 'shdc' || activity === 'shl') {
       const data = content[activity as 'shdc' | 'shl'];
       if (data && data.length > 0) {
@@ -261,14 +250,6 @@ export class ProfessionalContentProcessor {
       }
     }
 
-    const actKey = activity as 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung';
-    const actData = content[actKey];
-
-    if (!actData || Array.isArray(actData)) {
-      return "*(Hệ thống không tìm thấy nội dung cụ thể cho hoạt động này.)*";
-    }
-
-    // Helper to add section if content exists
     const addSection = (title: string, data: string[], limit: number = 8) => {
       const points = this.extractKeyPoints(data, limit);
       if (points.length > 0) {
@@ -280,42 +261,39 @@ export class ProfessionalContentProcessor {
 
     switch (activity) {
       case 'khoi_dong':
-        addSection('## 🎯 MỤC TIÊU KHỞI ĐỘNG', actData.mucTieu);
-        addSection('\n## 🎮 HOẠT ĐỘNG KHỞI ĐỘNG (DỰA TRÊN PDF)', actData.hoatDong);
-        if ('thietBi' in actData && Array.isArray(actData.thietBi)) {
-          addSection('\n## 🛠️ THIẾT BỊ', actData.thietBi);
-        }
+        addSection('## 🎯 MỤC TIÊU KHỞI ĐỘNG', content.khoi_dong.mucTieu);
+        addSection('\n## 🎮 HOẠT ĐỘNG KHỞI ĐỘNG (DỰA TRÊN PDF)', content.khoi_dong.hoatDong);
+        addSection('\n## 🛠️ THIẾT BỊ', content.khoi_dong.thietBi);
         break;
-
       case 'kham_pha':
-        addSection('## 🎯 MỤC TIÊU KHÁM PHÁ', actData.mucTieu);
-        if ('kiemThuc' in actData && Array.isArray(actData.kiemThuc)) {
-          addSection('\n## 📚 KIẾN THỨC CẦN HÌNH THÀNH', actData.kiemThuc);
-        }
-        addSection('\n## 🔬 HOẠT ĐỘNG KHÁM PHÁ (DỰA TRÊN PDF)', actData.hoatDong);
-        if ('thietBi' in actData && Array.isArray(actData.thietBi)) {
-          addSection('\n## 🛠️ THIẾT BỊ', actData.thietBi);
-        }
+        addSection('## 🎯 MỤC TIÊU KHÁM PHÁ', content.kham_pha.mucTieu);
+        addSection('\n## 📚 KIẾN THỨC CẦN HÌNH THÀNH', content.kham_pha.kiemThuc);
+        addSection('\n## 🔬 HOẠT ĐỘNG KHÁM PHÁ (DỰA TRÊN PDF)', content.kham_pha.hoatDong);
+        addSection('\n## 🛠️ THIẾT BỊ', content.kham_pha.thietBi);
         break;
-
       case 'luyen_tap':
-        addSection('## 🎯 MỤC TIÊU LUYỆN TẬP', actData.mucTieu);
-        if ('baiTap' in actData && Array.isArray(actData.baiTap)) {
-          addSection('\n## 📝 BÀI TẬP LUYỆN TẬP', actData.baiTap);
-        }
-        addSection('\n## 🛠️ HOẠT ĐỘNG LUYỆN TẬP (DỰA TRÊN PDF)', actData.hoatDong);
+        addSection('## 🎯 MỤC TIÊU LUYỆN TẬP', content.luyen_tap.mucTieu);
+        addSection('\n## 📝 BÀI TẬP LUYỆN TẬP', content.luyen_tap.baiTap);
+        addSection('\n## 🛠️ HOẠT ĐỘNG LUYỆN TẬP (DỰA TRÊN PDF)', content.luyen_tap.hoatDong);
         break;
-
       case 'van_dung':
-        addSection('## 🎯 MỤC TIÊU VẬN DỤNG', actData.mucTieu);
-        if ('duAn' in actData && Array.isArray(actData.duAn)) {
-          addSection('\n## 🚀 DỰ ÁN VẬN DỤNG', actData.duAn);
+        addSection('## 🎯 MỤC TIÊU VẬN DỤNG', content.van_dung.mucTieu);
+        addSection('\n## 🚀 DỰ ÁN VẬN DỤNG', content.van_dung.duAn);
+        addSection('\n## 🌟 HOẠT ĐỘNG VẬN DỤNG (DỰA TRÊN PDF)', content.van_dung.hoatDong);
+        break;
+      case 'setup':
+        optimized.push('## 🏗️ THÔNG TIN CỐT LÕI (Từ PDF)');
+        addSection('MỤC TIÊU: ', universalObjectives);
+        if (content.learningAssets.length > 0) {
+          optimized.push(`- Học liệu: ${content.learningAssets.join(', ')}`);
         }
-        addSection('\n## 🌟 HOẠT ĐỘNG VẬN DỤNG (DỰA TRÊN PDF)', actData.hoatDong);
+        break;
+      case 'appendix':
+        optimized.push('## 📑 PHỤ LỤC & ĐÁNH GIÁ (Từ PDF)');
+        addSection('TIÊU CHÍ ĐÁNH GIÁ: ', content.semanticTags.assessment);
         break;
     }
 
-    // Add Learning Assets & Legacy Mapping context if available
     if (content.learningAssets.length > 0 || content.legacyMappingNotes.length > 0) {
       optimized.push('## 📑 PHÂN TÍCH TÀI LIỆU GỐC (ASSETS & LEGACY)');
       if (content.learningAssets.length > 0) {
@@ -330,46 +308,26 @@ export class ProfessionalContentProcessor {
     return optimized.join('\n');
   }
 
-  /**
-   * Trích xuất ý chính từ nội dung
-   */
   private static extractKeyPoints(content: string[], maxPoints: number): string[] {
     const cleaner = TextCleaningService.getInstance();
-    // INCREASED DENSITY: Allow more points and more text if available to support 30-50 page goal
     return content
       .map(line => cleaner.clean(line))
       .filter(line => line.length > 5)
-      .filter(line => !line.match(/^Page\s+\d+/i)) // Remove PDF page markers
-      .map(line => line.replace(/^\s*[-*•|]\s*/, '')) // Loại bỏ bullet và marker |
-      .slice(0, Math.max(maxPoints, 15)) // Tăng lượng điểm trích xuất để giàu nội dung hơn
+      .filter(line => !line.match(/^Page\s+\d+/i))
+      .map(line => line.replace(/^\s*[-*•|]\s*/, ''))
+      .slice(0, Math.max(maxPoints, 15))
       .map(line => `• ${line}`);
   }
 
-  /**
-   * Helper: Phân loại bản chất sư phạm chuyên sâu (V4.0 Intelligence)
-   */
   private static categorizeSemanticLine(line: string): 'instruction' | 'task' | 'knowledge' | 'assessment' | 'product' | 'unknown' {
-    // 1. Chỉ dẫn sư phạm (Teacher Directives)
     if (/(yêu cầu|hướng dẫn|giúp|hỗ trợ|điều phối|tổ chức|mời|quan sát|lưu ý|giải thích|minh họa|đứng tại|quan sát)/i.test(line)) return 'instruction';
-
-    // 2. Nhiệm vụ học sinh & Thinking Routines (Student Tasks)
     if (/(thực hiện|làm|viết|vẽ|trình bày|báo cáo|thảo luận|trả lời|hoàn thành|suy nghĩ|liên tưởng|quan sát - suy ngẫm|đặt câu hỏi)/i.test(line)) return 'task';
-
-    // 3. Trọng tâm kiến thức (Knowledge Core)
     if (/(khái niệm|định nghĩa|quy tắc|nguyên tắc|kiến thức|nội dung chính|chốt|kết luận|tầm quan trọng|ý nghĩa)/i.test(line)) return 'knowledge';
-
-    // 4. Sản phẩm học tập (Product Out)
     if (/(sản phẩm|kết quả|bản vẽ|bài viết|video|bài báo cáo|phiếu bài tập|pht|poster|sơ đồ)/i.test(line)) return 'product';
-
-    // 5. Đánh giá & Tiêu chí (Assessment)
     if (/(đánh giá|nhận xét|tiêu chí|rubric|thang đo|khen ngợi|góp ý|phản hồi)/i.test(line)) return 'assessment';
-
     return 'unknown';
   }
 
-  /**
-   * Tạo prompt tối ưu cho từng hoạt động sử dụng Quantum Neural Fusion
-   */
   static async generateOptimizedPrompt(
     activity: string,
     optimizedContent: string,
@@ -379,13 +337,10 @@ export class ProfessionalContentProcessor {
     semanticContext?: any
   ): Promise<string> {
     const orchestrator = PedagogicalOrchestrator.getInstance();
-
-    // 1. Phân tích độ liên quan chuyên sâu MoET 5512 (V7 Unified Pass)
     const relevance = skipNeural
       ? { activities: [], confidence: 50, reasoning: "Basic Pass" }
       : await orchestrator.analyzeRelevance(optimizedContent);
 
-    // 2. Logic Pedagogical Reasoning
     let pedagogicalInsight = "";
     if (currentPlan) {
       const fusion = await orchestrator.fuseSuggestions(currentPlan, optimizedContent);
@@ -448,92 +403,46 @@ Trả về duy nhất JSON:
   ]
 }
 
-⚠️ LƯU Ý: Tuyệt đối không viết lời thoại sáo rỗng. Hãy viết những hướng dẫn sư phạm "đắt giá" và giàu hàm lượng tri thức.`;
+⚠️ LƯU Ý: Tuyệt đối không viết lời thoại sáo rỗng. Hãy viết những hướng dẫn sư phạm "đắt giá" và giàu hàm lượng tri thức. 
+Nếu đây là module 'setup', 'shdc', 'shl', hoặc 'appendix', hãy trả về cấu trúc JSON tương tự nhưng điều chỉnh 'steps' cho phù hợp hoặc trả về nội dung chuyên sâu trong các trường tương ứng của LessonResult.`;
 
     return basePrompt;
   }
 
-  /**
-   * Lấy tiêu đề hoạt động
-   */
   private static getActivityTitle(activity: string): string {
-    const titles = {
+    const titles: Record<string, string> = {
       khoi_dong: 'HOẠT ĐỘNG 1: KHỞI ĐỘNG',
       kham_pha: 'HOẠT ĐỘNG 2: KHÁM PHÁ',
       luyen_tap: 'HOẠT ĐỘNG 3: LUYỆN TẬP',
-      van_dung: 'HOẠT ĐỘNG 4: VẬN DỤNG'
+      van_dung: 'HOẠT ĐỘNG 4: VẬN DỤNG',
+      setup: 'THIẾT LẬP MỤC TIÊU & THIẾT BỊ',
+      shdc: 'SINH HOẠT DƯỚI CỜ',
+      shl: 'SINH HOẠT LỚP',
+      appendix: 'PHỤ LỤC & HƯỚNG DẪN VỀ NHÀ'
     };
-    return titles[activity as keyof typeof titles] || activity;
+    return titles[activity] || activity;
   }
 
-  /**
-   * Lấy thời lượng hoạt động
-   */
   private static getActivityDuration(activity: string): string {
-    const durations = {
+    const durations: Record<string, string> = {
       khoi_dong: '5-10 phút (Kích hoạt)',
       kham_pha: '20-25 phút (Đào sâu)',
       luyen_tap: '15-20 phút (Rèn luyện)',
-      van_dung: 'Tùy chỉnh (Mở rộng thực tế)'
+      van_dung: 'Tùy chỉnh (Mở rộng thực tế)',
+      shdc: '15-20 phút',
+      shl: '20-25 phút'
     };
-    return durations[activity as keyof typeof durations] || '15 phút';
+    return durations[activity] || '15 phút';
   }
 
-  /**
-   * Lấy yêu cầu đặc thù cho hoạt động
-   */
-  private static getActivityRequirements(activity: string): string {
-    const requirements = {
-      khoi_dong: `- Tạo tâm thế hứng thú, kích thích tò mò
-- Dùng trò chơi/tình huống mở đầu gần gũi
-- Kết nối với chủ đề "Bảo vệ thế giới tự nhiên"
-- Thiết kế tương tác cao, tất cả HS tham gia`,
-
-      kham_pha: `- Hình thành kiến thức mới về bảo vệ thế giới tự nhiên
-- Thiết kế chuỗi hoạt động chuyển giao nhiệm vụ rõ ràng
-- Tích hợp công cụ số (TT 02/2025)
-- Sử dụng phương pháp dạy học tích cực`,
-
-      luyen_tap: `- Củng cố kiến thức đã học
-- Thiết kế hệ thống bài tập đa dạng
-- Tích hợp công cụ đánh giá nhanh
-- Giao tiếp và hợp tác nhóm`,
-
-      van_dung: `- Giải quyết vấn đề thực tiễn
-- Thiết kế dự án nhỏ liên hệ thực tế
-- Tích hợp AI và công nghệ số
-- Lan tỏa giá trị bảo vệ môi trường`
-    };
-    return requirements[activity as keyof typeof requirements] || '';
-  }
-
-  /**
-   * Lấy gợi ý từ smart data
-   */
   private static getSmartDataAdvice(activity: string, smartData?: SmartPromptData): string {
     if (!smartData) return 'Không có dữ liệu chuyên môn.';
-
-    const advice = {
-      khoi_dong: `- **Tâm lý lứa tuổi**: ${smartData.studentCharacteristics}
-- **Nghiệm vụ cốt lõi**: ${smartData.coreMissions.khoiDong}
-- **Chiến lược**: Hãy dùng đặc điểm tâm lý trên để thiết kế một trò chơi/tình huống mở đầu cực cuốn hút.`,
-
-      kham_pha: `- **Nhiệm vụ TRỌNG TÂM (SGK)**: 
-${smartData.coreMissions.khamPha}
-- **Công cụ số (NLS)**: 
-${smartData.digitalCompetency}
-- **Chiến lược**: Hãy chuyển hóa các nhiệm vụ trọng tâm trên thành chuỗi hoạt động khám phá cụ thể. KHÔNG sáng tạo xa rời nhiệm vụ này.`,
-
-      luyen_tap: `- **Mục tiêu cần đạt**: ${smartData.objectives}
-- **Nhiệm vụ rèn luyện**: ${smartData.coreMissions.luyenTap}
-- **Công cụ đánh giá**: ${smartData.assessmentTools}
-- **Chiến lược**: Thiết kế hệ thống bài tập để củng cố các mục tiêu trên.`,
-
-      van_dung: `- **Lưu ý thực tiễn**: ${smartData.pedagogicalNotes}
-- **Nhiệm vụ thực tế**: ${smartData.coreMissions.vanDung}
-- **Chiến lược**: Đưa ra bài toán thực tế/Dự án nhỏ kết nối với lưu ý trên.`
+    const advice: Record<string, string> = {
+      khoi_dong: `- **Tâm lý lứa tuổi**: ${smartData.studentCharacteristics}\n- **Nghiệm vụ cốt lõi**: ${smartData.coreMissions.khoiDong}`,
+      kham_pha: `- **Nhiệm vụ TRỌNG TÂM (SGK)**: ${smartData.coreMissions.khamPha}\n- **Công cụ số (NLS)**: ${smartData.digitalCompetency}`,
+      luyen_tap: `- **Mục tiêu cần đạt**: ${smartData.objectives}\n- **Nhiệm vụ rèn luyện**: ${smartData.coreMissions.luyenTap}`,
+      van_dung: `- **Lưu ý thực tiễn**: ${smartData.pedagogicalNotes}\n- **Nhiệm vụ thực tế**: ${smartData.coreMissions.vanDung}`
     };
-
-    return advice[activity as keyof typeof advice] || '';
+    return advice[activity] || '';
   }
 }

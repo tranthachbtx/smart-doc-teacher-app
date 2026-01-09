@@ -1,5 +1,6 @@
 import { saveAs } from "file-saver";
 import { IntegrityService } from './integrity-service';
+import { TextCleaningService } from './text-cleaning-service';
 import {
     Document,
     Packer,
@@ -69,11 +70,21 @@ export class DocumentExportSystem {
 
             options.onProgress?.(30);
 
+            // Add SHDC if exists
+            if (result.shdc) {
+                children.push(...this.createTwoColumnActivity("SINH HOẠT DƯỚI CỜ", result.shdc));
+            }
+
             // Add Activities
             children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 1: KHỞI ĐỘNG (5-7 phút)", result.hoat_dong_khoi_dong || ""));
             children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 2: KHÁM PHÁ (15-20 phút)", (result.hoat_dong_kham_pha || result.hoat_dong_kham_pha_1) || ""));
             children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 3: LUYỆN TẬP (10-15 phút)", (result.hoat_dong_luyen_tap || result.hoat_dong_luyen_tap_1) || ""));
             children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 4: VẬN DỤNG (5-10 phút)", result.hoat_dong_van_dung || ""));
+
+            // Add SHL if exists
+            if (result.shl) {
+                children.push(...this.createTwoColumnActivity("SINH HOẠT LỚP", result.shl));
+            }
 
             options.onProgress?.(70);
 
@@ -257,7 +268,8 @@ export class DocumentExportSystem {
     }
 
     private createField(label: string, value: any): Paragraph {
-        const textValue = typeof value === "string" ? value : "...";
+        const cleaner = TextCleaningService.getInstance();
+        const textValue = typeof value === "string" ? cleaner.cleanFinalOutput(value) : "...";
         return new Paragraph({
             spacing: { after: 100 },
             children: [
@@ -304,7 +316,10 @@ export class DocumentExportSystem {
 
     private renderText(text: string): Paragraph[] {
         if (!text) return [new Paragraph({ text: "..." })];
-        return text.split("\n").map(line => new Paragraph({
+        const cleaner = TextCleaningService.getInstance();
+        const cleanedText = cleaner.cleanFinalOutput(text);
+
+        return cleanedText.split("\n").map(line => new Paragraph({
             children: [new TextRun({ text: line, size: 22 })],
             spacing: { after: 50 }
         }));

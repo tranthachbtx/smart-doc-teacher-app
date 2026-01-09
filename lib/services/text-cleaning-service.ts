@@ -94,14 +94,31 @@ export class TextCleaningService {
     }
 
     /**
-     * Chuẩn hóa để so sánh (deduplication)
+     * 🧼 CLEAN FINAL OUTPUT
+     * Loại bỏ các marker kỹ thuật [AI-SUGGESTION], [PDF] và dọn dẹp markdown rác.
      */
-    public normalizeForComparison(text: string): string {
+    public cleanFinalOutput(text: string): string {
+        if (!text) return "";
+
         return text
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "") // Loại bỏ dấu tiếng Việt để so sánh mờ
-            .replace(/\s+/g, "")             // Loại bỏ toàn bộ khoảng trắng
-            .replace(/[^\w]/g, "");          // Chỉ giữ lại chữ và số
+            // 1. Loại bỏ các marker kỹ thuật
+            .replace(/\[AI-SUGGESTION\]/gi, "")
+            .replace(/\[PDF\]/gi, "")
+            .replace(/\[KHTN\]/gi, "")
+            .replace(/\[HĐTN\]/gi, "")
+            .replace(/{{cot_1}}/g, "")
+            .replace(/{{cot_2}}/g, "")
+
+            // 2. Sửa lỗi thừa dấu **
+            .replace(/\*\*\s*\*\*/g, "**") // ** ** -> **
+            .replace(/\*\*\*\*/g, "**")    // **** -> **
+
+            // 3. Normalize các bullet point
+            .replace(/^[•●○◘◙] /gm, "- ")
+
+            // 4. Chuẩn hóa khoảng trắng
+            .replace(/[ \t]+/g, " ")
+            .replace(/\n\s*\n\s*\n+/g, "\n\n")
+            .trim();
     }
 }

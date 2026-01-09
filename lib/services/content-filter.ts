@@ -15,16 +15,31 @@ export class ContentFilter {
      */
     filterContentForActivity(
         structuredContent: StructuredContent,
-        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung',
-        maxContentLength: number = 3000
+        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung' | 'khac' | 'shdc' | 'shl' | 'setup' | 'appendix',
+        maxContentLength: number = 4000
     ): FilteredContent {
-        // 1. Lọc theo độ liên quan (> 40 để giữ lại các phần có ích)
-        const relevantSections = structuredContent.sections
-            .filter(section => (section.relevance[activityType] || 0) >= 40)
-            .sort((a, b) => (b.relevance[activityType] || 0) - (a.relevance[activityType] || 0));
+        // 1. Lọc theo độ liên quan
+        // Nếu là 'khac' hoặc các phần bổ trợ, lấy toàn bộ hoặc lọc theo type resource/objective
+        let relevantSections = [];
+        if (activityType === 'khoi_dong' || activityType === 'kham_pha' || activityType === 'luyen_tap' || activityType === 'van_dung') {
+            const typeKey = activityType;
+            relevantSections = structuredContent.sections
+                .filter(section => (section.relevance[typeKey] || 0) >= 35)
+                .sort((a, b) => (b.relevance[typeKey] || 0) - (a.relevance[typeKey] || 0));
+        } else {
+            // Đối với SHDC/SHL/Setup: Lấy các phần có type tương ứng
+            relevantSections = structuredContent.sections.filter(s => {
+                if (activityType === 'shdc' || activityType === 'shl') return s.title.toLowerCase().includes(activityType);
+                if (activityType === 'setup') return s.type === 'objective' || s.type === 'resource';
+                if (activityType === 'appendix') return s.type === 'assessment' || s.type === 'resource';
+                return true; // fallback cho 'khac'
+            });
+            if (relevantSections.length === 0) relevantSections = structuredContent.sections.slice(0, 10);
+        }
 
         // 2. Ưu tiên theo loại hoạt động (Dùng logic V10 cải tiến)
-        const prioritizedSections = this.prioritizeByActivity(relevantSections, activityType);
+        // Type assertion to bypass strict activity check for prioritization
+        const prioritizedSections = this.prioritizeByActivity(relevantSections, activityType as any);
 
         // 3. Trích xuất nội dung trong giới hạn độ dài
         let currentLength = 0;
@@ -39,10 +54,13 @@ export class ContentFilter {
         }
 
         // 4. Tạo nội dung cho prompt (Targeted format)
-        const promptContent = this.generateTargetedPromptContent(selectedSections, activityType);
+        const promptContent = this.generateTargetedPromptContent(selectedSections, activityType as any);
 
         const totalRelevance = selectedSections.length > 0
-            ? selectedSections.reduce((sum, s) => sum + s.relevance[activityType], 0) / selectedSections.length
+            ? selectedSections.reduce((sum, s) => {
+                const relevance = (activityType in s.relevance) ? (s.relevance as any)[activityType] : 50;
+                return sum + relevance;
+            }, 0) / selectedSections.length
             : 0;
 
         return {
@@ -55,13 +73,17 @@ export class ContentFilter {
 
     private prioritizeByActivity(
         sections: ContentSection[],
-        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'
+        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung' | 'shdc' | 'shl' | 'setup' | 'appendix' | 'khac'
     ): ContentSection[] {
         const priorities: Record<string, string[]> = {
             khoi_dong: ['objective', 'activity', 'knowledge'],
             kham_pha: ['knowledge', 'activity', 'objective'],
             luyen_tap: ['activity', 'assessment', 'knowledge'],
-            van_dung: ['activity', 'assessment', 'resource']
+            van_dung: ['activity', 'assessment', 'resource'],
+            shdc: ['activity', 'objective'],
+            shl: ['activity', 'objective'],
+            setup: ['objective', 'resource'],
+            appendix: ['assessment', 'resource']
         };
         const pList = priorities[activityType] || [];
         return [...sections].sort((a, b) => {
@@ -70,19 +92,23 @@ export class ContentFilter {
             const aP = aIdx === -1 ? 99 : aIdx;
             const bP = bIdx === -1 ? 99 : bIdx;
             if (aP !== bP) return aP - bP;
-            return (b.relevance[activityType] || 0) - (a.relevance[activityType] || 0);
+            return ((b.relevance as Record<string, any>)[activityType] || 0) - ((a.relevance as Record<string, any>)[activityType] || 0);
         });
     }
 
     private generateTargetedPromptContent(
         sections: ContentSection[],
-        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung'
+        activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung' | 'shdc' | 'shl' | 'setup' | 'appendix' | 'khac'
     ): string {
         const names: Record<string, string> = {
             khoi_dong: 'KHỞI ĐỘNG (WARM-UP)',
             kham_pha: 'KHÁM PHÁ (KNOWLEDGE FORMATION)',
             luyen_tap: 'LUYỆN TẬP (PRACTICE)',
-            van_dung: 'VẬN DỤNG (APPLICATION)'
+            van_dung: 'VẬN DỤNG (APPLICATION)',
+            shdc: 'SINH HOẠT DƯỚI CỜ',
+            shl: 'SINH HOẠT LỚP',
+            setup: 'MỤC TIÊU & THIẾT BỊ',
+            appendix: 'PHỤ LỤC & ĐÁNH GIÁ'
         };
 
         const cleaner = TextCleaningService.getInstance();

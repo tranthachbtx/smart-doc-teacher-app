@@ -17,17 +17,16 @@ export const ManualWorkflowService = {
      * Phân tích cấu trúc bài học từ nội dung văn bản.
      */
     analyzeStructure(text: string, duration: string): ProcessingModule[] {
-        // V7: Basic structure for manual workflow
-
-        // Nếu có các hoạt động được trích xuất, ta có thể tạo các module tương ứng
-        // Tuy nhiên, để linh hoạt theo chuẩn 5512 (4 bước), ta vẫn giữ 4 module chính,
-        // nhưng có thể bổ sung thông tin từ file vào tiêu đề hoặc nội dung.
-
+        // V7: Comprehensive structure for manual workflow (MoET 5512)
         const modules: ProcessingModule[] = [
-            { id: "mod_khoi_dong", title: "Hoạt động 1: Khởi động (Mở đầu)", type: "khoi_dong", prompt: "", content: "", isCompleted: false },
-            { id: "mod_kham_pha", title: "Hoạt động 2: Hình thành kiến thức mới (Khám phá)", type: "kham_pha", prompt: "", content: "", isCompleted: false },
-            { id: "mod_luyen_tap", title: "Hoạt động 3: Luyện tập", type: "luyen_tap", prompt: "", content: "", isCompleted: false },
-            { id: "mod_van_dung", title: "Hoạt động 4: Vận dụng", type: "van_dung", prompt: "", content: "", isCompleted: false }
+            { id: "mod_setup", title: "Bước 1: Mục tiêu & Thiết bị (Phần I, II, III)", type: "setup", prompt: "", content: "", isCompleted: false },
+            { id: "mod_shdc", title: "Bước 2: Sinh hoạt Dưới cờ", type: "shdc", prompt: "", content: "", isCompleted: false },
+            { id: "mod_khoi_dong", title: "Bước 3: Hoạt động 1 - Khởi động", type: "khoi_dong", prompt: "", content: "", isCompleted: false },
+            { id: "mod_kham_pha", title: "Bước 4: Hoạt động 2 - Khám phá", type: "kham_pha", prompt: "", content: "", isCompleted: false },
+            { id: "mod_luyen_tap", title: "Bước 5: Hoạt động 3 - Luyện tập", type: "luyen_tap", prompt: "", content: "", isCompleted: false },
+            { id: "mod_van_dung", title: "Bước 6: Hoạt động 4 - Vận dụng", type: "van_dung", prompt: "", content: "", isCompleted: false },
+            { id: "mod_shl", title: "Bước 7: Sinh hoạt Lớp", type: "shl", prompt: "", content: "", isCompleted: false },
+            { id: "mod_appendix", title: "Bước 8: Phụ lục & Dặn dò (Phần V, VI)", type: "appendix", prompt: "", content: "", isCompleted: false }
         ];
         return modules;
     },
@@ -64,12 +63,16 @@ export const ManualWorkflowService = {
         let smartDataSection = "";
         if (context.smartData) {
             const sd = context.smartData;
-            // ... (Smart Data Filtering Logic remains same)
 
             // SMART FILTERING ENGINE: Sử dụng dữ liệu đã được gán nhãn cho từng hoạt động
-            const mission = sd.coreMissions[module.type === 'khoi_dong' ? 'khoiDong' :
-                module.type === 'kham_pha' ? 'khamPha' :
-                    module.type === 'luyen_tap' ? 'luyenTap' : 'vanDung'];
+            let mission = "";
+            switch (module.type) {
+                case 'khoi_dong': mission = sd.coreMissions.khoiDong; break;
+                case 'kham_pha': mission = sd.coreMissions.khamPha; break;
+                case 'luyen_tap': mission = sd.coreMissions.luyenTap; break;
+                case 'van_dung': mission = sd.coreMissions.vanDung; break;
+                default: mission = "Nhiệm vụ chung từ chuyên gia.";
+            }
 
             const specificAdvice = `
 ## 🛡️ EXCLUSIVE DIRECTIVE (QUAN TRỌNG):
@@ -98,14 +101,16 @@ ${specificAdvice}
             : null;
 
         // Use ProfessionalContentProcessor for optimized prompt generation
-        return (await ProfessionalContentProcessor.generateOptimizedPrompt(
+        const prompt = await ProfessionalContentProcessor.generateOptimizedPrompt(
             module.type,
             typeof optimizedContent === 'string' ? optimizedContent : JSON.stringify(optimizedContent),
             context.smartData,
             null,
             true, // skipNeural: TRUE for manual prompt generation
             semanticContext
-        )) + contextInjection + smartDataSection;
+        );
+
+        return prompt + contextInjection + smartDataSection;
     },
 
     /**

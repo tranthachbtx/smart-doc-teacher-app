@@ -613,3 +613,11 @@ export async function extractTextFromFile(
     return { success: false, error: e.message };
   }
 }
+export async function generateDeepContent(prompt: string, model?: string): Promise<ActionResult<any>> {
+  try {
+    const text = await callAI(prompt, model, undefined, JSON_SYSTEM_PROMPT);
+    return { success: true, data: parseLessonResult(text) };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
+}

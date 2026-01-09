@@ -2,13 +2,13 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, CheckCircle } from "lucide-react";
+import { Copy, Download, CheckCircle, Sparkles } from "lucide-react";
 import { useLessonStore } from "@/lib/store/use-lesson-store";
 import { useLessonActions } from "@/lib/hooks/use-lesson-actions";
 
 export const LessonActionCenter = React.memo(() => {
     const { lessonResult, lessonAutoFilledTheme, isExporting, exportProgress } = useLessonStore();
-    const { handleExportDocx } = useLessonActions();
+    const { handleExportDocx, handleGenerateDeepContent } = useLessonActions();
     const setStatus = useLessonStore((state) => state.setStatus);
 
     if (!lessonResult) return null;
@@ -58,8 +58,19 @@ export const LessonActionCenter = React.memo(() => {
                         disabled={isExporting}
                     >
                         <Copy className="mr-3 h-5 w-5" />
-                        COPY TO CLIPBOARD
+                        COPY
                     </Button>
+
+                    <Button
+                        variant="outline"
+                        className="flex-1 md:flex-none h-14 rounded-2xl border-amber-200 bg-amber-50 text-amber-700 font-black px-8 hover:bg-amber-100"
+                        onClick={handleGenerateDeepContent}
+                        disabled={isExporting}
+                    >
+                        <Sparkles className="mr-3 h-5 w-5 text-amber-500" />
+                        PHASE 2: DEEP CONTENT
+                    </Button>
+
                     <Button
                         className="flex-1 md:flex-none h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-xl px-8 relative overflow-hidden group"
                         onClick={handleExportDocx}

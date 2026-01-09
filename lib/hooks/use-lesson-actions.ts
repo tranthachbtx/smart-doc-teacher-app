@@ -4,6 +4,9 @@ import { DocumentExportSystem } from '../services/document-export-system';
 import { auditLessonPlan } from '../actions/gemini';
 import { surgicalMerge } from '../services/KHBHMerger';
 import { performAdvancedAudit } from '../actions/advanced-audit';
+import { generateDeepContent } from '../actions/gemini';
+import { SmartPromptService } from '../services/smart-prompt-service';
+import { TextCleaningService } from '../services/text-cleaning-service';
 
 export const useLessonActions = () => {
     const store = useAppStore();
@@ -132,35 +135,77 @@ export const useLessonActions = () => {
         }
     }, [lesson.result, store]);
 
-    const handleSurgicalMerge = useCallback(async () => {
-        if (!lesson.expertGuidance || !lesson.result) {
-            store.setError("Thiếu dữ liệu: Cần cả Giáo án gốc và Chỉ thị chuyên gia");
+    const handleGenerateDeepContent = useCallback(async () => {
+        if (!lesson.result) {
+            store.setError("Bạn cần có khung giáo án 4 hoạt động trước khi tạo nội dung chuyên sâu.");
             return;
         }
 
         store.setLoading('isGenerating', true);
-        store.setSuccess("🧬 Đang thực hiện phẫu thuật & trộn nội dung...");
+        store.setSuccess("🧠 Đang thực hiện Phase 2: Phát triển nội dung chuyên sâu (Deep Expansion)...");
 
         try {
-            const result = await surgicalMerge(lesson.result, lesson.expertGuidance);
+            // 1. Build context and prompt
+            const smartData = await SmartPromptService.lookupSmartData(lesson.grade, lesson.theme, lesson.chuDeSo);
+            const deepPrompt = SmartPromptService.buildDeepContentPrompt(lesson.result, smartData);
 
-            if (result.success) {
-                store.setLessonResult(result.content);
-                store.setSuccess(`✅ ${result.auditTrail}`);
+            // 2. Call AI
+            const result = await generateDeepContent(deepPrompt, store.selectedModel);
+
+            if (result.success && result.data) {
+                const cleaner = TextCleaningService.getInstance();
+                const cleanedData = { ...result.data };
+
+                // Clean each field
+                Object.keys(cleanedData).forEach(key => {
+                    if (typeof cleanedData[key] === 'string') {
+                        cleanedData[key] = cleaner.cleanFinalOutput(cleanedData[key]);
+                    }
+                });
+
+                // Update store with cleaned, expanded content
+                store.setLessonResult({
+                    ...lesson.result,
+                    ...cleanedData
+                });
+
+                store.setSuccess("✨ Đã phát triển nội dung chuyên sâu thành công (Phase 2)!");
             } else {
-                throw new Error(result.auditTrail);
+                throw new Error(result.error || "Không thể tạo nội dung chuyên sâu.");
             }
         } catch (error: any) {
-            store.setError(`Lỗi phẫu thuật: ${error.message}`);
+            store.setError(`Lỗi Phase 2: ${error.message}`);
         } finally {
             store.setLoading('isGenerating', false);
         }
-    }, [lesson.expertGuidance, lesson.result, store]);
+    }, [lesson.result, lesson.grade, lesson.theme, lesson.chuDeSo, store]);
+
+    const handleSurgicalMerge = useCallback(async (expertDirectives: string) => {
+        if (!lesson.result) return;
+
+        store.setLoading('isGenerating', true);
+        store.setSuccess("🧬 Đang tiến hành hợp nhất chuyên môn (Surgical Fusion)...");
+
+        try {
+            const result = await surgicalMerge(lesson.result, expertDirectives);
+            if (result.success && result.content) {
+                store.setLessonResult(result.content);
+                store.setSuccess(`✅ ${result.auditTrail}`);
+            } else {
+                store.setError(result.auditTrail || "Không thể thực hiện hợp nhất.");
+            }
+        } catch (error: any) {
+            store.setError(`Lỗi Merge: ${error.message}`);
+        } finally {
+            store.setLoading('isGenerating', false);
+        }
+    }, [lesson.result, store]);
 
     return {
         handleGenerateFullPlan,
         handleExportDocx,
         handleAudit,
         handleSurgicalMerge,
+        handleGenerateDeepContent,
     };
 };

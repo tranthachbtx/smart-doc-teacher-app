@@ -43,7 +43,16 @@ export function ManualProcessingHub() {
     };
     const setLessonResult = (v: LessonResult | null) => store.setLessonResult(v);
 
-    const { handleExportDocx, handleSurgicalMerge, handleAudit } = useLessonActions();
+    const {
+        handleExportDocx,
+        handleSurgicalMerge: actionSurgicalMerge,
+        handleAudit
+    } = useLessonActions();
+
+    const onApplyMerge = useCallback(() => {
+        if (!expertGuidance) return;
+        actionSurgicalMerge(expertGuidance);
+    }, [expertGuidance, actionSurgicalMerge]);
     const { toast } = useToast();
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
     const [analyzingStatus, setAnalyzingStatus] = React.useState<string>("");
@@ -208,26 +217,63 @@ export function ManualProcessingHub() {
 
     const handleFinalizeManualWorkflow = () => {
         // Collect all modules and update lessonResult
+        const getMod = (id: string) => manualModules.find(m => m.id === id)?.content || "";
+
         const mappedResult: any = {
             ten_bai: lessonAutoFilledTheme,
             grade: lessonGrade,
-            hoat_dong_khoi_dong: manualModules.find(m => m.type === 'khoi_dong')?.content || "",
-            hoat_dong_kham_pha: manualModules.find(m => m.type === 'kham_pha')?.content || "",
-            hoat_dong_luyen_tap: manualModules.find(m => m.type === 'luyen_tap')?.content || "",
-            hoat_dong_van_dung: manualModules.find(m => m.type === 'van_dung')?.content || "",
-            // Fallback empty values for other fields to satisfy validator
-            muc_tieu_kien_thuc: "Xem chi tiết trong từng hoạt động.",
-            muc_tieu_nang_luc: "Được tích hợp trong các hoạt động.",
-            muc_tieu_pham_chat: "Được tích hợp trong các hoạt động.",
-            ho_so_day_hoc: "N/A",
-            huong_dan_ve_nha: "N/A"
+            // 4 Core Activities
+            hoat_dong_khoi_dong: getMod("mod_khoi_dong"),
+            hoat_dong_kham_pha: getMod("mod_kham_pha"),
+            hoat_dong_luyen_tap: getMod("mod_luyen_tap"),
+            hoat_dong_van_dung: getMod("mod_van_dung"),
+
+            // SHDC & SHL
+            shdc: getMod("mod_shdc"),
+            shl: getMod("mod_shl"),
+
+            // Metadata & Sections
+            ...parseMetadataModule(getMod("mod_setup")),
+            ...parseAppendixModule(getMod("mod_appendix")),
         };
+
+        // Fallback for Metadata if parsing failed or empty
+        if (!mappedResult.muc_tieu_kien_thuc) mappedResult.muc_tieu_kien_thuc = getMod("mod_setup") || "Xem chi tiết trong từng hoạt động.";
+        if (!mappedResult.gv_chuan_bi) mappedResult.gv_chuan_bi = "Theo nội dung bài dạy.";
+        if (!mappedResult.ho_so_day_hoc) mappedResult.ho_so_day_hoc = getMod("mod_appendix") || "N/A";
+        if (!mappedResult.huong_dan_ve_nha) mappedResult.huong_dan_ve_nha = "Hoàn thành các nhiệm vụ mở rộng.";
 
         setLessonResult(mappedResult);
         toast({
             title: "Hợp nhất thành công!",
-            description: "Dữ liệu từ các Module đã được chuyển vào Giáo án chính. Bạn có thể Xuất Word ngay bây giờ.",
+            description: "Toàn bộ 8 Module đã được chuyển vào Giáo án chính. Sẵn sàng xuất file đầy đủ.",
         });
+    };
+
+    // Helper to parse JSON or structured text from Setup module
+    const parseMetadataModule = (content: string) => {
+        try {
+            const json = JSON.parse(content.match(/\{[\s\S]*\}/)?.[0] || "");
+            return {
+                muc_tieu_kien_thuc: json.muc_tieu_kien_thuc || json.kien_thuc,
+                muc_tieu_nang_luc: json.muc_tieu_nang_luc || json.nang_luc,
+                muc_tieu_pham_chat: json.muc_tieu_pham_chat || json.pham_chat,
+                tich_hop_nls: json.tich_hop_nls || json.năng_lực_số,
+                gv_chuan_bi: json.thiet_bi_day_hoc?.gv || json.gv_chuan_bi,
+                hs_chuan_bi: json.thiet_bi_day_hoc?.hs || json.hs_chuan_bi
+            };
+        } catch { return {}; }
+    };
+
+    // Helper to parse JSON from Appendix module
+    const parseAppendixModule = (content: string) => {
+        try {
+            const json = JSON.parse(content.match(/\{[\s\S]*\}/)?.[0] || "");
+            return {
+                ho_so_day_hoc: json.ho_so_day_hoc || json.appendix,
+                huong_dan_ve_nha: json.huong_dan_ve_nha || json.dặn_dò
+            };
+        } catch { return {}; }
     };
 
     const handleExportWithCheck = async () => {
@@ -331,7 +377,7 @@ export function ManualProcessingHub() {
                     <ExpertBrainInjection
                         value={expertGuidance}
                         onChange={setExpertGuidance}
-                        onApply={handleSurgicalMerge}
+                        onApply={onApplyMerge}
                         isProcessing={isAnalyzing}
                         topic={lessonAutoFilledTheme}
                         grade={lessonGrade}
