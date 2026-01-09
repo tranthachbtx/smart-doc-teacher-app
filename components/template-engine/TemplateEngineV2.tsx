@@ -141,6 +141,12 @@ export function TemplateEngine() {
             store.updateMeetingField('result', meetingRes.data);
             store.setSuccess("Đã tạo biên bản họp thành công!");
           } else {
+            if (meetingRes.content) {
+              await copyToClipboard(meetingRes.content);
+              store.setSuccess("⚠️ AI server quá tải. Đã COPY PROMPT vào bộ nhớ tạm. Hãy dán vào Gemini/ChatGPT!");
+              // Don't throw to avoid red error screen matching user preference for "Manual Workflow"
+              return;
+            }
             throw new Error(meetingRes.error);
           }
           break;
@@ -161,6 +167,12 @@ export function TemplateEngine() {
             store.setLessonResult(lessonRes.data);
             store.setSuccess("Đã tạo kế hoạch bài dạy thành công!");
           } else {
+            // Lesson plan usually works with Manual Workflow Hub, but if they use this legacy path:
+            if (lessonRes.content) {
+              await copyToClipboard(lessonRes.content);
+              store.setSuccess("⚠️ Đã COPY PROMPT Giáo án. Hãy dán vào AI!");
+              return;
+            }
             throw new Error(lessonRes.error);
           }
           break;
@@ -178,6 +190,11 @@ export function TemplateEngine() {
             store.updateEventField('result', eventRes.data);
             store.setSuccess("Đã tạo kịch bản ngoại khóa thành công!");
           } else {
+            if (eventRes.content) {
+              await copyToClipboard(eventRes.content);
+              store.setSuccess("⚠️ Đã COPY PROMPT ngoại khóa. Hãy dán vào AI để tạo!");
+              return;
+            }
             throw new Error(eventRes.error);
           }
           break;
@@ -192,6 +209,11 @@ export function TemplateEngine() {
             store.updateNcbhField('result', ncbhRes.data);
             store.setSuccess("Đã tạo nghiên cứu bài học thành công!");
           } else {
+            if (ncbhRes.content) {
+              await copyToClipboard(ncbhRes.content);
+              store.setSuccess("⚠️ Đã COPY PROMPT NCBH. Hãy dán vào AI để tạo!");
+              return;
+            }
             throw new Error(ncbhRes.error);
           }
           break;
@@ -207,6 +229,11 @@ export function TemplateEngine() {
             store.updateAssessmentField('result', assessRes.data);
             store.setSuccess("Đã tạo kế hoạch kiểm tra đánh giá thành công!");
           } else {
+            if (assessRes.content) {
+              await copyToClipboard(assessRes.content);
+              store.setSuccess("⚠️ Đã COPY PROMPT Đánh giá. Hãy dán vào AI để tạo!");
+              return;
+            }
             throw new Error(assessRes.error);
           }
           break;

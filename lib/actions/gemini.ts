@@ -24,9 +24,12 @@ export async function callAI(
   file?: { mimeType: string, data: string },
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
+  console.log(`[AI-RELAY] Starting callAI with model: ${modelName}`);
 
   try {
     const keys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3].filter(k => !!k && k.length > 5);
+    console.log(`[AI-RELAY] Found ${keys.length} Gemini keys.`);
+
     if (keys.length > 0) {
       const activeKey = keys[Math.floor(Math.random() * keys.length)];
 
@@ -40,8 +43,10 @@ export async function callAI(
         ? `${proxyUrl.endsWith('/') ? proxyUrl : proxyUrl + '/'}`
         : "https://generativelanguage.googleapis.com/v1beta/";
 
+      console.log(`[AI-RELAY] Using Base URL: ${baseUrl}`);
       const apiUrl = `${baseUrl}models/${modelName}:generateContent?key=${activeKey}`;
 
+      console.log(`[AI-RELAY] Attempting fetch to Gemini...`);
       const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -60,12 +65,15 @@ export async function callAI(
         const errorBody = await response.text();
         console.error(`[AI-RELAY] Gemini API Error (${response.status}):`, errorBody);
       }
+    } else {
+      console.warn(`[AI-RELAY] No Gemini keys found.`);
     }
   } catch (e: any) { console.warn(`[AI-RELAY] Gemini Exception: ${e.message}`); }
 
   try {
     const openAIKey = process.env.OPENAI_API_KEY;
     if (openAIKey) {
+      console.log(`[AI-RELAY] Falling back to OpenAI...`);
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openAIKey}` },
@@ -82,9 +90,12 @@ export async function callAI(
         const errorBody = await response.text();
         console.error(`[AI-RELAY] OpenAI API Error (${response.status}):`, errorBody);
       }
+    } else {
+      console.warn(`[AI-RELAY] No OpenAI Key found.`);
     }
   } catch (e: any) { console.warn(`[AI-RELAY] OpenAI Exception: ${e.message}`); }
 
+  console.error(`[AI-RELAY] All providers failed.`);
   throw new Error("ALL_PROVIDERS_FAILED");
 }
 
@@ -97,7 +108,7 @@ export async function generateAIContent(prompt: string, model?: string, file?: a
   try {
     const text = await callAI(prompt, model || "gemini-1.5-flash", file);
     return { success: true, content: text, data: text };
-  } catch (e: any) { return { success: false, error: e.message }; }
+  } catch (e: any) { return { success: false, error: e.message, content: prompt }; }
 }
 
 /**
@@ -123,9 +134,10 @@ export async function generateLessonPlan(
   file?: { mimeType: string, data: string },
   modelName = "gemini-1.5-flash"
 ): Promise<ActionResult<any>> {
+  let prompt = "";
   try {
     const activitySuggestions = JSON.parse(suggestions || "{}");
-    const prompt = getKHDHPrompt(
+    prompt = getKHDHPrompt(
       grade,
       topic,
       duration,
@@ -141,7 +153,7 @@ export async function generateLessonPlan(
     const data = JSON.parse(jsonMatch[0]);
     return { success: true, data };
   } catch (e: any) {
-    return { success: false, error: e.message };
+    return { success: false, error: e.message, content: prompt };
   }
 }
 
@@ -152,15 +164,16 @@ export async function generateMeetingMinutes(
   conclusion?: string,
   modelName = "gemini-1.5-flash"
 ): Promise<ActionResult<any>> {
+  let prompt = "";
   try {
-    const prompt = getMeetingPrompt(month || "", session || "", keyContent || "", "", "", "");
+    prompt = getMeetingPrompt(month || "", session || "", keyContent || "", "", "", "");
     const text = await callAI(prompt, modelName);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("AI did not return valid JSON");
     const data = JSON.parse(jsonMatch[0]);
     return { success: true, data };
   } catch (e: any) {
-    return { success: false, error: e.message };
+    return { success: false, error: e.message, content: prompt };
   }
 }
 
@@ -173,15 +186,16 @@ export async function generateEventScript(
   evaluation?: string,
   modelName = "gemini-1.5-flash"
 ): Promise<ActionResult<any>> {
+  let prompt = "";
   try {
-    const prompt = getEventPrompt(grade, topic);
+    prompt = getEventPrompt(grade, topic);
     const text = await callAI(prompt, modelName);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("AI did not return valid JSON");
     const data = JSON.parse(jsonMatch[0]);
     return { success: true, data };
   } catch (e: any) {
-    return { success: false, error: e.message };
+    return { success: false, error: e.message, content: prompt };
   }
 }
 
@@ -191,15 +205,16 @@ export async function generateNCBH(
   instructions?: string,
   modelName = "gemini-1.5-flash"
 ): Promise<ActionResult<any>> {
+  let prompt = "";
   try {
-    const prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${instructions || ""}`;
+    prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${instructions || ""}`;
     const text = await callAI(prompt, modelName);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("AI did not return valid JSON");
     const data = JSON.parse(jsonMatch[0]);
     return { success: true, data };
   } catch (e: any) {
-    return { success: false, error: e.message };
+    return { success: false, error: e.message, content: prompt };
   }
 }
 
@@ -210,15 +225,16 @@ export async function generateAssessmentPlan(
   topic: string,
   modelName = "gemini-1.5-flash"
 ): Promise<ActionResult<any>> {
+  let prompt = "";
   try {
-    const prompt = getAssessmentPrompt(grade, term, productType, topic);
+    prompt = getAssessmentPrompt(grade, term, productType, topic);
     const text = await callAI(prompt, modelName);
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error("AI did not return valid JSON");
     const data = JSON.parse(jsonMatch[0]);
     return { success: true, data };
   } catch (e: any) {
-    return { success: false, error: e.message };
+    return { success: false, error: e.message, content: prompt };
   }
 }
 
@@ -243,9 +259,10 @@ export async function generateLessonSection(
   file?: { mimeType: string, data: string },
   stepInstruction?: string
 ): Promise<ActionResult<any>> {
+  let prompt = "";
   try {
     const activitySuggestions = JSON.parse(suggestions || "{}");
-    const prompt = getLessonPrompt(
+    prompt = getLessonPrompt(
       section as any,
       grade,
       topic,
@@ -263,7 +280,7 @@ export async function generateLessonSection(
     const data = JSON.parse(jsonMatch[0]);
     return { success: true, data };
   } catch (e: any) {
-    return { success: false, error: e.message };
+    return { success: false, error: e.message, content: prompt };
   }
 }
 
