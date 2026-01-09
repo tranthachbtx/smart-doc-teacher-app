@@ -18,7 +18,8 @@ import {
     MousePointer2,
     Database,
     Binary,
-    Sparkles
+    Sparkles,
+    LayoutDashboard
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SmartPromptService } from '@/lib/services/smart-prompt-service';
@@ -50,7 +51,6 @@ export function ManualProcessingHub() {
         setAnalyzingStatus("Khởi tạo Pipeline 9.1 (Hashing & Security)...");
 
         try {
-            // 1. Sử dụng SmartFileProcessor (Cực mạnh: Hash file, Kiểm tra Cache, Chạy Worker)
             const { SmartFileProcessor } = await import('@/lib/services/smart-file-processor');
             const processor = SmartFileProcessor.getInstance();
 
@@ -59,27 +59,19 @@ export function ManualProcessingHub() {
 
             setAnalyzingStatus("🧬 Đang tiêm (Inject) ngữ cảnh chuyên môn từ Database...");
 
-            // 2. Sử dụng PedagogicalOrchestrator để làm giàu dữ liệu (Enrichment)
-            const { PedagogicalOrchestrator } = await import('@/lib/services/pedagogical-orchestrator');
-            const orchestrator = PedagogicalOrchestrator.getInstance();
-
-            // Tìm kiếm sâu trong Database để lấy mục tiêu chuẩn, năng lực số, và tâm lý lớp học
             const { CurriculumService } = await import('@/lib/services/curriculum-service');
             const curriculum = CurriculumService.getInstance();
             const matchedTheme = curriculum.identifyThemeFromText(rawText.substring(0, 1000) + " " + file.name, parseInt(lessonGrade));
 
             if (matchedTheme) {
-                console.log(`[ManualHub] Auto-matched with Database Theme: ${matchedTheme.theme.ten}`);
                 store.updateLessonField('theme', matchedTheme.theme.ten);
             }
 
             setAnalyzingStatus("Đang mổ xẻ nội dung chuẩn 5512 (Professional Processor)...");
 
-            // 3. Sử dụng ProfessionalContentProcessor (Vô cùng mạnh mẽ)
             const { ProfessionalContentProcessor } = await import('@/lib/services/professional-content-processor');
             const activityContent = ProfessionalContentProcessor.extractActivityContent(rawText);
 
-            // 4. Cập nhật Store (File dữ liệu gốc)
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
@@ -87,7 +79,6 @@ export function ManualProcessingHub() {
                 store.updateLessonField('file', { mimeType: file.type, data: base64, name: file.name });
             };
 
-            // 5. KHỞI TẠO RESULT (Dữ liệu ban đầu "Siêu mạnh")
             const initialResult: any = {
                 ...(store.lesson.result || {}),
                 ten_bai: file.name.replace('.pdf', ''),
@@ -98,23 +89,22 @@ export function ManualProcessingHub() {
             };
             store.setLessonResult(initialResult);
 
-            // 6. KHỞI TẠO MODULES (Với nội dung đã được làm sạch và phong phú)
             const modules = await ManualWorkflowService.analyzeStructure(
                 rawText,
                 JSON.stringify(activityContent)
             );
             store.updateLessonField('manualModules', modules);
 
-            // 7. BƯỚC CUỐI: AI DEEP DISSECTION (Chỉ xử lý phần Metadata còn thiếu)
             setAnalyzingStatus("Đang dùng Trí tuệ nhân tạo mổ xẻ Metadata (Deep Dive)...");
             try {
                 const { ContentStructureAnalyzer } = await import('@/lib/services/content-structure-analyzer');
                 const analyzer = new ContentStructureAnalyzer();
-                // Chúng ta chỉ gửi TEXT đã trích xuất, không gửi File Base64 cồng kềnh
+                const payloadData = Buffer.from(rawText).toString('base64');
+
                 const struct = await analyzer.analyzeAndPreFill(
-                    { mimeType: 'text/plain', data: Buffer.from(rawText).toString('base64') },
+                    { mimeType: 'text/plain', data: payloadData },
                     lessonGrade,
-                    lessonAutoFilledTheme
+                    store.lesson.theme
                 );
 
                 if (struct) {
@@ -126,28 +116,27 @@ export function ManualProcessingHub() {
                     });
                 }
             } catch (aiErr) {
-                console.warn("[ManualHub] AI Dissection failed, continuing with Regex enrichment.", aiErr);
+                console.warn("[ManualHub] AI Dissection failed.", aiErr);
             }
 
             toast({
-                title: `✅ Đã tận dụng chức năng ưu việt (Source: ${processResult.source === 'cache' ? 'Smart Cache' : 'Deep API'})`,
-                description: "Nội dung PDF đã được trích xuất, làm giàu từ Database và chuẩn hóa 5512."
+                title: `✅ Đã trích xuất PDF (Source: ${processResult.source})`,
+                description: "Nội dung PDF đã được trích xuất và chuẩn hóa 5512."
             });
 
         } catch (error: any) {
-            console.error("[ManualProcessingHub] Elite Pipeline Error:", error);
+            console.error("[ManualProcessingHub] Pipeline Error:", error);
             toast({ title: "Lỗi mổ xẻ PDF", description: error.message, variant: "destructive" });
         } finally {
-            console.log("[ManualHub] 🔍 DEEP TRACE: Pipeline execution complete. Store Result:", store.lesson.result);
             setIsAnalyzing(false);
             setAnalyzingStatus("");
         }
     };
 
-    // BƯỚC 2 & 3: COPY SIÊU PROMPT GỘP
-    const handleCopyMergedPrompt = async (step: number) => {
+    // BƯỚC 2 & 3: COPY SIÊU PROMPT 3 TRỤ CỘT (Arch 31.0)
+    const handleCopyPrompt = async (pillarId: string) => {
         try {
-            toast({ title: "Đang tối ưu Siêu Prompt...", description: "Đang gộp hoạt động & tiêm context..." });
+            toast({ title: "Đang nén dữ liệu...", description: "Đang tạo Siêu Prompt theo Trụ cột..." });
 
             const smartData = await SmartPromptService.lookupSmartData(lessonGrade, lessonAutoFilledTheme);
             const cleanData = store.lesson.processedContext?.cleanData;
@@ -160,55 +149,117 @@ export function ManualProcessingHub() {
                 smartData: smartData
             };
 
-            console.log("[ManualHub] 🔍 DEEP TRACE: Exporting with Data Payload:", {
-                result: store.lesson.result,
-                context: context
-            });
-
-            const prompt = step === 1
-                ? await ManualWorkflowService.generateMergedPrompt1(context)
-                : await ManualWorkflowService.generateMergedPrompt2(context);
+            let prompt = "";
+            if (pillarId === 'pillar_1') prompt = await ManualWorkflowService.generatePillar1Prompt(context);
+            else if (pillarId === 'pillar_2') prompt = await ManualWorkflowService.generatePillar2Prompt(context);
+            else if (pillarId === 'pillar_3') prompt = await ManualWorkflowService.generatePillar3Prompt(context);
 
             await navigator.clipboard.writeText(prompt);
-            toast({ title: `Đã Copy Prompt Bước ${step}!`, description: "Dán vào Gemini Pro Web để lấy kịch bản chi tiết." });
+            toast({ title: "Đã Copy Siêu Prompt Trụ Cột!", description: "Dán vào Gemini Pro để lấy kết quả chuyên biệt." });
         } catch (e) {
-            toast({ title: "Lỗi", variant: "destructive" });
+            toast({ title: "Lỗi tạo Prompt", variant: "destructive" });
         }
     };
 
-    // HÀM DÁN THÔNG MINH (Tự động bóc tách mảng JSON)
+    // HÀM DÁN THÔNG MINH ELITE (Arch 31.0 - The 3-Pillar Dissection)
     const handleSmartPaste = (moduleId: string, rawValue: string) => {
         try {
-            const jsonStart = rawValue.indexOf('['); // Tìm mảng
-            const jsonEnd = rawValue.lastIndexOf(']');
-            if (jsonStart !== -1 && jsonEnd !== -1) {
-                const jsonStr = rawValue.substring(jsonStart, jsonEnd + 1);
-                const activities = JSON.parse(jsonStr);
+            const objStart = rawValue.indexOf('{');
+            const objEnd = rawValue.lastIndexOf('}');
+            if (objStart === -1) return;
 
-                if (Array.isArray(activities)) {
-                    let currentResult = { ...(store.lesson.result || {}) } as any;
+            const data = JSON.parse(rawValue.substring(objStart, objEnd + 1));
+            let r = { ...(store.lesson.result || {}) } as any;
 
-                    activities.forEach(act => {
-                        const formatted = act.steps.map((s: any) =>
-                            `{{cot_1}}\n${s.teacher_action}\n{{cot_2}}\n${s.student_action}`
-                        ).join('\n\n');
-
-                        // Ánh xạ vào đúng ô của store result (Fix labels)
-                        if (act.id.includes('khoi_dong')) currentResult.hoat_dong_khoi_dong = `HOẠT ĐỘNG: ${act.module_title || "KHỞI ĐỘNG"}\n\n` + formatted;
-                        if (act.id.includes('kham_pha')) currentResult.hoat_dong_kham_pha = `HOẠT ĐỘNG: ${act.module_title || "KHÁM PHÁ"}\n\n` + formatted;
-                        if (act.id.includes('luyen_tap')) currentResult.hoat_dong_luyen_tap = `HOẠT ĐỘNG: ${act.module_title || "LUYỆN TẬP"}\n\n` + formatted;
-                        if (act.id.includes('van_dung')) currentResult.hoat_dong_van_dung = `HOẠT ĐỘNG: ${act.module_title || "VẬN DỤNG"}\n\n` + formatted;
-                    });
-
-                    store.setLessonResult(currentResult);
-                    toast({ title: "🪄 Smart Transform Thành công!", description: "Nội dung đã được dàn trang 2 cột tự động." });
-                }
+            // TYPE 1: FRAMEWORK (Flexible Architecture v33.0 - Supports both Wrapper & Flat)
+            // Check for wrapper type
+            if (data.type === 'framework' && data.data) {
+                const d = data.data;
+                r.muc_tieu_kien_thuc = d.muc_tieu?.kien_thuc;
+                r.muc_tieu_nang_luc = d.muc_tieu?.nang_luc;
+                r.muc_tieu_pham_chat = d.muc_tieu?.pham_chat;
+                r.tich_hop_nls = d.muc_tieu?.nls;
+                r.gv_chuan_bi = d.thiet_bi?.gv;
+                r.hs_chuan_bi = d.thiet_bi?.hs;
+                r.shdc = d.hoat_dong_shdc;
+                r.shl = d.hoat_dong_shl;
+                if (d.ten_bai) r.ten_bai = d.ten_bai;
+                if (d.so_tiet) r.duration = d.so_tiet;
             }
+            // Check for Flat Structure (Prompt 1 v33.0)
+            else if (data.ten_bai || data.muc_tieu_kien_thuc || data.shdc) {
+                if (data.ten_bai) r.ten_bai = data.ten_bai;
+                if (data.so_tiet) r.duration = data.so_tiet;
+                if (data.muc_tieu_kien_thuc) r.muc_tieu_kien_thuc = data.muc_tieu_kien_thuc;
+                if (data.muc_tieu_nang_luc) r.muc_tieu_nang_luc = data.muc_tieu_nang_luc;
+                if (data.muc_tieu_pham_chat) r.muc_tieu_pham_chat = data.muc_tieu_pham_chat;
+                if (data.gv_chuan_bi) r.gv_chuan_bi = data.gv_chuan_bi;
+                if (data.hs_chuan_bi) r.hs_chuan_bi = data.hs_chuan_bi;
+                if (data.shdc) r.shdc = data.shdc;
+                if (data.shl) r.shl = data.shl;
+            }
+
+            // TYPE 2 & 3: MAIN ACTIVITIES (FLEXIBLE ARCHITECTURE v33.0)
+            if (data.khoi_dong || data.kham_pha || data.luyen_tap || data.van_dung) {
+                // Feature Mapping: Flat Structure (cot_gv/cot_hs)
+                const mapFlatActivity = (key: string, storePrefix: string) => {
+                    if (data[key]) {
+                        r[`${storePrefix}_cot_1`] = data[key].cot_gv;
+                        r[`${storePrefix}_cot_2`] = data[key].cot_hs;
+                        // Legacy support for Textarea display and UI feedback
+                        r[storePrefix] = `HOẠT ĐỘNG: ${key.toUpperCase()}\n\n{{cot_1}}\n${data[key].cot_gv}\n{{cot_2}}\n${data[key].cot_hs}`;
+                    }
+                };
+
+                mapFlatActivity('khoi_dong', 'hoat_dong_khoi_dong');
+                mapFlatActivity('kham_pha', 'hoat_dong_kham_pha');
+                mapFlatActivity('luyen_tap', 'hoat_dong_luyen_tap');
+                mapFlatActivity('van_dung', 'hoat_dong_van_dung');
+
+                // MAPPING EXTRA FIELDS (Pillar 3)
+                if (data.ho_so_day_hoc) r.ho_so_day_hoc = data.ho_so_day_hoc;
+                if (data.huong_dan_ve_nha) r.huong_dan_ve_nha = data.huong_dan_ve_nha;
+            }
+            // LEGACY SUPPORT (To be deprecated)
+            else if ((data.type === 'main_part_1' || data.type === 'main_part_2') && data.activities) {
+                data.activities.forEach((act: any) => {
+                    let formatted = "";
+                    if (act.objective) formatted += `**1. Mục tiêu:**\n${act.objective}\n\n`;
+                    if (act.content) formatted += `**2. Nội dung:**\n${act.content}\n\n`;
+                    if (act.product) formatted += `**3. Sản phẩm học tập:**\n${act.product}\n\n`;
+
+                    if (act.steps) {
+                        formatted += `**4. Tổ chức thực hiện:**\n\n`;
+                        const labels: any = { 'transfer': 'a) Chuyển giao nhiệm vụ:', 'perform': 'b) Thực hiện nhiệm vụ:', 'report': 'c) Báo cáo, thảo luận:', 'conclude': 'd) Kết luận, nhận định:' };
+                        formatted += act.steps.map((s: any) =>
+                            `{{cot_1}}\n**${labels[s.step_type] || 'Bước:'}**\n${s.teacher_action}\n{{cot_2}}\n${s.student_action}`
+                        ).join('\n\n');
+                    }
+
+                    const id = act.id?.toLowerCase() || "";
+                    const fullContent = act.module_title ? `HOẠT ĐỘNG: ${act.module_title}\n\n${formatted}` : formatted;
+
+                    if (id.includes('khoi_dong')) r.hoat_dong_khoi_dong = fullContent;
+                    else if (id.includes('kham_pha')) r.hoat_dong_kham_pha = fullContent;
+                    else if (id.includes('luyen_tap')) r.hoat_dong_luyen_tap = fullContent;
+                    else if (id.includes('van_dung')) r.hoat_dong_van_dung = fullContent;
+                });
+            }
+
+            // EXTRA: HOMEWORK & RUBRIC (Pillar 3 Specific - Legacy)
+            if (data.homework) r.huong_dan_ve_nha = data.homework;
+            if (data.rubric) {
+                const rub = data.rubric;
+                const formattedRub = rub.content ? `HOẠT ĐỘNG: ${rub.module_title || "RUBRIC"}\n\n${rub.content}` : String(rub);
+                r.ho_so_day_hoc = (r.ho_so_day_hoc || "") + "\n\n" + formattedRub;
+            }
+
+            store.setLessonResult(r);
+            toast({ title: "🪄 Triple-Pillar Integration v33.0!", description: "Đã phân rã dữ liệu vào đúng kịch bản (Flat & Legacy)." });
         } catch (e) {
-            // Fallback: cứ lưu text thô
+            console.warn("[ManualHub] Dissection error:", e);
         }
 
-        // Cập nhật giao diện Module
         store.updateLessonField('manualModules', manualModules.map(m =>
             m.id === moduleId ? { ...m, content: rawValue, isCompleted: true } : m
         ));
@@ -229,16 +280,15 @@ export function ManualProcessingHub() {
             {/* 🌊 PIPELINE GỘP 3 BƯỚC */}
             <div className="premium-glass soft-pastel-skyblue p-8 rounded-[3rem] shadow-2xl relative overflow-hidden border-b-4 border-indigo-200">
                 <div className="absolute top-0 right-0 p-4 opacity-10">
-                    <Binary className="w-40 h-40 text-indigo-500" />
+                    <Binary className="w-40 h-40 text-indigo-50" />
                 </div>
 
                 <h2 className="text-2xl font-black text-indigo-900 mb-6 flex items-center gap-3">
                     <Sparkles className="w-6 h-6 fill-indigo-500" />
-                    QUY TRÌNH 3 BƯỚC - COPY LẦN 2
+                    BỘ CÔNG CỤ BIÊN SOẠN KHBH THỦ CÔNG v31.0
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
-                    {/* BƯỚC 1: AUTO */}
                     <div className="flex flex-col gap-2">
                         <input type="file" ref={fileInputRef} className="hidden" accept=".pdf" onChange={handleFileUpload} />
                         <Button
@@ -249,12 +299,11 @@ export function ManualProcessingHub() {
                             {isAnalyzing ? <Loader2 className="w-8 h-8 animate-spin text-indigo-500" /> : <Database className="w-8 h-8 text-indigo-500 group-hover:scale-110 transition-transform" />}
                             <div className="text-left">
                                 <p className="text-[10px] uppercase font-black opacity-50 px-1 bg-indigo-50 rounded">BƯỚC 1: XỬ LÝ PDF</p>
-                                <p className="font-black text-base text-indigo-800 tracking-tighter">Mổ xẻ & Tự điền</p>
+                                <p className="font-black text-base text-indigo-800 tracking-tighter">Mổ xẻ Metadata</p>
                             </div>
                         </Button>
                     </div>
 
-                    {/* BƯỚC 2: COPY-PASTE (XUẤT WORD LUÔN Ở ĐÂY NẾU MUỐN) */}
                     <Button
                         className="h-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 hover:scale-[1.03] text-white shadow-2xl shadow-indigo-200 gap-4"
                         onClick={handleExportDocx}
@@ -281,66 +330,102 @@ export function ManualProcessingHub() {
                 </div>
             </div>
 
-            {/* 📦 CÁC TRẠM TRUNG CHUYỂN DỮ LIỆU */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* PHẦN 1: KHỞI ĐỘNG & KHÁM PHÁ */}
-                <Card className="rounded-[2.5rem] border-2 border-indigo-50 overflow-hidden bg-white shadow-xl group">
-                    <div className="bg-indigo-50/50 px-8 py-5 border-b flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg">
-                                <Zap className="w-5 h-5 fill-current" />
+            {/* 🏰 HỆ THỐNG 3 TRỤ CỘT (ARCH 31.0 - PILLAR STRATEGY) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {/* TRỤ CỘT 1: KHUNG & GIÁO ÁN VỆ TINH */}
+                <Card className="rounded-[3rem] border-2 border-slate-100 overflow-hidden bg-white shadow-2xl group flex flex-col relative">
+                    <div className="absolute top-4 right-4 bg-slate-100 text-[10px] font-black px-2 py-1 rounded-full text-slate-400">PILLAR 1/3</div>
+                    <div className="bg-gradient-to-br from-slate-50 to-white px-6 py-8 border-b flex flex-col gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-xl">
+                                <LayoutDashboard className="w-6 h-6" />
                             </div>
-                            <span className="font-black text-indigo-900">PHẦN KIẾN THỨC (HĐ 1+2)</span>
+                            <div>
+                                <h3 className="font-black text-slate-900 text-sm uppercase leading-tight">1. Khung & Vệ tinh</h3>
+                                <p className="text-slate-400 text-[10px] font-bold uppercase mt-1">Setup + SHDC + SHL</p>
+                            </div>
                         </div>
                         <Button
                             variant="secondary"
-                            size="sm"
-                            onClick={() => handleCopyMergedPrompt(1)}
-                            className="bg-indigo-100 text-indigo-700 hover:bg-indigo-600 hover:text-white font-black rounded-xl gap-2"
+                            onClick={() => handleCopyPrompt('pillar_1')}
+                            className="bg-slate-900 text-white hover:bg-slate-700 font-black rounded-2xl gap-2 py-6 shadow-lg shadow-slate-200"
                         >
-                            <Copy className="w-4 h-4" /> Copy Prompt
+                            <Copy className="w-4 h-4" /> COPY PROMPT 1
                         </Button>
                     </div>
-                    <div className="p-8">
+                    <div className="p-6 flex-grow">
                         <Textarea
-                            placeholder="Dán JSON từ Gemini vào đây để tự động dàn trang 2 cột..."
-                            className="min-h-[220px] rounded-3xl border-2 border-slate-100 bg-slate-50/30 focus:bg-white focus:border-indigo-400 font-mono text-xs transition-all"
-                            value={manualModules[1]?.content || ""}
-                            onChange={(e) => handleSmartPaste("mod_main_1", e.target.value)}
+                            placeholder="Dán JSON Khung (Metadata + SHDC + SHL)..."
+                            className="min-h-[220px] h-full rounded-[2.5rem] border-2 border-slate-100 bg-slate-50/10 focus:bg-white focus:border-slate-800 font-mono text-[10px] p-6 shadow-inner transition-all"
+                            value={manualModules.find(m => m.id === 'pillar_1')?.content || ""}
+                            onChange={(e) => handleSmartPaste("pillar_1", e.target.value)}
                         />
                     </div>
                 </Card>
 
-                {/* PHẦN 2: LUYỆN TẬP & VẬN DỤNG */}
-                <Card className="rounded-[2.5rem] border-2 border-emerald-50 overflow-hidden bg-white shadow-xl group">
-                    <div className="bg-emerald-50/50 px-8 py-5 border-b flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg">
-                                <Search className="w-5 h-5" />
+                {/* TRỤ CỘT 2: KIẾN TẠO TRI THỨC */}
+                <Card className="rounded-[3rem] border-2 border-indigo-100 overflow-hidden bg-white shadow-2xl group flex flex-col relative">
+                    <div className="absolute top-4 right-4 bg-indigo-100 text-[10px] font-black px-2 py-1 rounded-full text-indigo-400">PILLAR 2/3</div>
+                    <div className="bg-gradient-to-br from-indigo-50/30 to-white px-6 py-8 border-b flex flex-col gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-xl">
+                                <Zap className="w-6 h-6 fill-current" />
                             </div>
-                            <span className="font-black text-emerald-900">PHẦN THỰC CHIẾN (HĐ 3+4)</span>
+                            <div>
+                                <h3 className="font-black text-indigo-900 text-sm uppercase leading-tight">2. Kiến tạo tri thức</h3>
+                                <p className="text-indigo-400 text-[10px] font-bold uppercase mt-1">Hoạt động 1 + 2 (Deep Dive)</p>
+                            </div>
                         </div>
                         <Button
                             variant="secondary"
-                            size="sm"
-                            onClick={() => handleCopyMergedPrompt(2)}
-                            className="bg-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white font-black rounded-xl gap-2"
+                            onClick={() => handleCopyPrompt('pillar_2')}
+                            className="bg-indigo-600 text-white hover:bg-indigo-800 font-black rounded-2xl gap-2 py-6 shadow-lg shadow-indigo-200"
                         >
-                            <Copy className="w-4 h-4" /> Copy Prompt
+                            <Copy className="w-4 h-4" /> COPY PROMPT 2
                         </Button>
                     </div>
-                    <div className="p-8">
+                    <div className="p-6 flex-grow">
                         <Textarea
-                            placeholder="Dán JSON từ Gemini vào đây..."
-                            className="min-h-[220px] rounded-3xl border-2 border-slate-100 bg-slate-50/30 focus:bg-white focus:border-emerald-400 font-mono text-xs transition-all"
-                            value={manualModules[2]?.content || ""}
-                            onChange={(e) => handleSmartPaste("mod_main_2", e.target.value)}
+                            placeholder="Dán JSON Hoạt động 1 & 2 cốt lõi..."
+                            className="min-h-[220px] h-full rounded-[2.5rem] border-2 border-indigo-50 bg-indigo-50/5 focus:bg-white focus:border-indigo-600 font-mono text-[10px] p-6 shadow-inner transition-all"
+                            value={manualModules.find(m => m.id === 'pillar_2')?.content || ""}
+                            onChange={(e) => handleSmartPaste("pillar_2", e.target.value)}
+                        />
+                    </div>
+                </Card>
+
+                {/* TRỤ CỘT 3: THỰC CHIẾN & ĐÁNH GIÁ */}
+                <Card className="rounded-[3rem] border-2 border-rose-100 overflow-hidden bg-white shadow-2xl group flex flex-col relative">
+                    <div className="absolute top-4 right-4 bg-rose-100 text-[10px] font-black px-2 py-1 rounded-full text-rose-400">PILLAR 3/3</div>
+                    <div className="bg-gradient-to-br from-rose-50/30 to-white px-6 py-8 border-b flex flex-col gap-6">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-rose-600 flex items-center justify-center text-white shadow-xl">
+                                <Binary className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-black text-rose-900 text-sm uppercase leading-tight">3. Thực chiến & Đánh giá</h3>
+                                <p className="text-rose-400 text-[10px] font-bold uppercase mt-1">HĐ 3 + 4 + Bảng Rubric</p>
+                            </div>
+                        </div>
+                        <Button
+                            variant="secondary"
+                            onClick={() => handleCopyPrompt('pillar_3')}
+                            className="bg-rose-600 text-white hover:bg-rose-800 font-black rounded-2xl gap-2 py-6 shadow-lg shadow-rose-200"
+                        >
+                            <Copy className="w-4 h-4" /> COPY PROMPT 3
+                        </Button>
+                    </div>
+                    <div className="p-6 flex-grow">
+                        <Textarea
+                            placeholder="Dán JSON HĐ 3, 4 và Rubric đánh giá..."
+                            className="min-h-[220px] h-full rounded-[2.5rem] border-2 border-rose-50 bg-rose-50/5 focus:bg-white focus:border-rose-600 font-mono text-[10px] p-6 shadow-inner transition-all"
+                            value={manualModules.find(m => m.id === 'pillar_3')?.content || ""}
+                            onChange={(e) => handleSmartPaste("pillar_3", e.target.value)}
                         />
                     </div>
                 </Card>
             </div>
 
-            {/* LƯU Ý DƯỚI CÙNG & NÚT XUẤT FILE PHÁ ĐẢO PAGE COUNT */}
             <div className="flex flex-col items-center gap-6 pb-20">
                 <Button
                     size="lg"
@@ -351,18 +436,18 @@ export function ManualProcessingHub() {
                     {store.isExporting ? (
                         <>
                             <Loader2 className="w-8 h-8 animate-spin" />
-                            ĐANG XUẤT FILE HF V26.0... ({store.exportProgress}%)
+                            ĐANG XUẤT FILE... ({store.exportProgress}%)
                         </>
                     ) : (
                         <>
                             <FileDown className="w-8 h-8 group-hover:bounce" />
-                            XUẤT GIÁO ÁN WORD (100+ TRANG)
+                            XUẤT GIÁO ÁN WORD (5512)
                         </>
                     )}
                 </Button>
 
                 <Badge variant="outline" className="px-6 py-2 rounded-full bg-slate-50 border-slate-200 text-slate-500 gap-2">
-                    <Binary className="w-4 h-4" /> Smart Relay Engine v26.0: Đã kích hoạt Multi-Segment Export
+                    <Binary className="w-4 h-4" /> Deep Dissection Engine v31.0: Triple-Pillar Protocol Active
                 </Badge>
             </div>
         </div>

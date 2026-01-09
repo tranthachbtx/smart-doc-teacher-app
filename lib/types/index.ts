@@ -35,6 +35,8 @@ export interface LessonTask {
 
 export interface LessonResult {
   ma_chu_de?: string;
+  chuDeSo?: string;
+  theme?: string;
   ten_bai?: string;
   title?: string; // Alias for ten_bai used in some services
   grade?: string;
@@ -46,16 +48,24 @@ export interface LessonResult {
   shdc?: string;
   shl?: string;
   hoat_dong_khoi_dong?: string;
+  hoat_dong_khoi_dong_cot_1?: string;
+  hoat_dong_khoi_dong_cot_2?: string;
   hoat_dong_kham_pha?: string;
+  hoat_dong_kham_pha_cot_1?: string;
+  hoat_dong_kham_pha_cot_2?: string;
   hoat_dong_kham_pha_1?: string;
   hoat_dong_kham_pha_2?: string;
   hoat_dong_kham_pha_3?: string;
   hoat_dong_kham_pha_4?: string;
   hoat_dong_luyen_tap?: string;
+  hoat_dong_luyen_tap_cot_1?: string;
+  hoat_dong_luyen_tap_cot_2?: string;
   hoat_dong_luyen_tap_1?: string;
   hoat_dong_luyen_tap_2?: string;
   hoat_dong_luyen_tap_3?: string;
   hoat_dong_van_dung?: string;
+  hoat_dong_van_dung_cot_1?: string;
+  hoat_dong_van_dung_cot_2?: string;
   ho_so_day_hoc?: string;
   tich_hop_nls?: string;
   tich_hop_dao_duc?: string;

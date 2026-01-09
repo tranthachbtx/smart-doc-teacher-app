@@ -6,159 +6,151 @@ export interface PromptContext {
   topic: string;
   grade: string;
   fileSummary: string;
-  optimizedFileSummary?: any; // Chứa object cleanData từ bước mổ xẻ
-  smartData?: SmartPromptData;
+  optimizedFileSummary?: any;
+  smartData: SmartPromptData;
 }
 
 /**
- * 🛠️ MANUAL WORKFLOW SERVICE v20.2 (Chế độ 3 Bước - 2 Lần Copy)
- * Tập trung vào việc gộp các hoạt động và tự động hóa phần thủ tục.
+ * 🛠️ MANUAL WORKFLOW SERVICE v32.0 (ASSEMBLY STRATEGY)
+ * Chuyên dụng cho môn HĐTN, HN với quy trình Mapping 1:1 vào Template Word 2 cột.
  */
 export const ManualWorkflowService = {
-  /**
-   * Khởi tạo cấu trúc module (3 Cụm lớn)
-   */
   async analyzeStructure(text: string, analyzedJson?: string): Promise<ProcessingModule[]> {
-    // Nếu có dữ liệu đã mổ xẻ từ ContentStructureAnalyzer hoặc ProfessionalContentProcessor
-    const struct = analyzedJson ? JSON.parse(analyzedJson) : null;
-
-    // Helper để lấy text preview từ cấu trúc Arch 19.0 hoặc Arch 20.0
-    const getPreview = (key: string, data: any) => {
-      if (!data) return "Đang chờ mổ xẻ...";
-
-      // Case 1: Cấu trúc Arch 19.0 (ProfessionalContentProcessor)
-      if (data[key] && typeof data[key] === 'object' && data[key].hoatDong) {
-        return `[MỤC TIÊU]: ${data[key].mucTieu?.[0] || ""}\n[HÀNH ĐỘNG]: ${data[key].hoatDong?.[0] || ""}`.substring(0, 150) + "...";
-      }
-
-      // Case 2: Cấu trúc Arch 20.0 (ContentStructureAnalyzer / AI)
-      const rawKey = `raw_${key}`;
-      if (data[rawKey]) return data[rawKey].substring(0, 150) + "...";
-
-      return "Dữ liệu không xác định...";
-    };
-
     return [
-      {
-        id: "mod_setup_sh",
-        title: "Cụm 1: Thông tin chung & Sinh hoạt (Tự động)",
-        type: "setup",
-        prompt: "",
-        content: struct ? `Đã mổ xẻ: ${struct.ten_bai || "Sẵn sàng"}` : "Đang chờ mổ xẻ...",
-        isCompleted: !!struct
-      },
-      {
-        id: "mod_main_1",
-        title: "Cụm 2: Khởi động & Khám phá (Copy 1)",
-        type: "khac",
-        prompt: "",
-        content: `Khởi động: ${getPreview('khoi_dong', struct)}\n\nKhám phá: ${getPreview('kham_pha', struct)}`,
-        isCompleted: !!struct
-      },
-      {
-        id: "mod_main_2",
-        title: "Cụm 3: Luyện tập & Vận dụng (Copy 2)",
-        type: "khac",
-        prompt: "",
-        content: `Luyện tập: ${getPreview('luyen_tap', struct)}\n\nVận dụng: ${getPreview('van_dung', struct)}`,
-        isCompleted: !!struct
-      },
+      { id: "pillar_1", title: "Trụ cột 1: Khung & Vệ tinh (Metadata)", type: "setup", prompt: "", content: "", isCompleted: false },
+      { id: "pillar_2", title: "Trụ cột 2: Kiến tạo Tri thức (HĐ 1+2)", type: "khac", prompt: "", content: "", isCompleted: false },
+      { id: "pillar_3", title: "Trụ cột 3: Thực chiến (HĐ 3+4)", type: "khac", prompt: "", content: "", isCompleted: false },
     ];
   },
 
   /**
-   * TẠO SIÊU PROMPT GỘP (Khởi động + Khám phá)
+   * PROMPT 1: KHUNG & VỆ TINH (RAG: Audit & Upgrade - Database Standard)
    */
-  async generateMergedPrompt1(context: PromptContext): Promise<string> {
+  async generatePillar1Prompt(context: PromptContext): Promise<string> {
     const data = context.optimizedFileSummary || {};
-
-    // Hàm trích xuất nội dung mạnh mẽ nhất có thể
-    const getContent = (key: string) => {
-      if (data[key] && typeof data[key] === 'object' && data[key].hoatDong) {
-        return `MỤC TIÊU: ${data[key].mucTieu?.join('; ')}\nNỘI DUNG: ${data[key].hoatDong?.join('\n')}`;
-      }
-      return data[`raw_${key}`] || "Dựa vào chủ đề để sáng tạo";
-    };
-
-    const khoiDong = getContent('khoi_dong');
-    const khamPha = getContent('kham_pha');
+    const smartData = context.smartData;
 
     return `
-# VAI TRÒ: SIÊU TRÍ TUỆ SƯ PHẠM & KIẾN TRÚC SƯ GIÁO DỤC (Pedagogical Architect).
-# NHIỆM VỤ: Thiết kế KHBD PHẦN 1 (Khởi động & Khám phá). 
+# VAI TRÒ: Chuyên gia thẩm định và phát triển chương trình HĐTN, HN 12.
 
-## 🏮 TRIẾT LÝ THIẾT KẾ "LA BÀN" (COMPASS PHILOSOPHY):
-- **Độ dày tri thức**: Để đạt 30-50 trang, bạn PHẢI diễn giải cực kỳ chi tiết các bước.
-- **Không kịch bản**: Viết dưới dạng chỉ dẫn hành động sư phạm chuyên sâu, không viết lời thoại.
+# DỮ LIỆU THAM KHẢO (INPUT):
+1. **Nội dung từ KHBH cũ (PDF Input):**
+"""${JSON.stringify(data.thong_tin_chung || data)}"""
+- Dòng SHDC cũ: """${JSON.stringify(data.shdc || "")}"""
+- Dòng SHL cũ: """${JSON.stringify(data.shl || "")}"""
 
-# 1. DỮ LIỆU NGUỒN (Đã mổ xẻ từ PDF):
-- NỘI DUNG KHỞI ĐỘNG: """${khoiDong}"""
-- NỘI DUNG KHÁM PHÁ: """${khamPha}"""
-- NĂNG LỰC SỐ (NLS): ${context.smartData?.digitalCompetency || "Tự chọn NLS phù hợp"}
+2. **Dữ liệu chuẩn từ Hệ thống (Database Standard):**
+- **Yêu cầu cần đạt (YCCĐ) & Mục tiêu chuẩn:** """${smartData.objectives || ""}"""
+- **Đặc điểm học sinh:** """${smartData.studentCharacteristics || ""}"""
+- **Gợi ý SHDC & SHL chuẩn:** """${smartData.shdc_shl_suggestions || ""}"""
 
-# 2. QUY TẮC "BÀI DẠY CHUYÊN SÂU":
-1. **teacher_action**: Mô tả Kỹ thuật dạy học (Mảnh ghép, Trạm, KWL). Diễn giải chi tiết cách GV điều phối, quan sát và xử lý tình huống sư phạm. Đưa ra các câu hỏi gợi mở "đắt giá".
-2. **student_action & SẢN PHẨM**: Đây là trọng tâm. Mô tả CHI TIẾT kết quả học sinh cần đạt. Nếu là thảo luận, hãy viết ra các ý tưởng dự kiến. Nếu là bài tập, hãy viết ĐÁP ÁN CHI TIẾT.
+# NHIỆM VỤ (AUDIT & UPGRADE):
+Hãy phân tích phần "Mục tiêu" và "Thiết bị" từ file cũ, đối chiếu với Database.
+1. **Kiểm tra & Sửa lỗi (Audit):** So sánh với YCCĐ chuẩn. Nếu file cũ viết mục tiêu sai (dùng từ "Hiểu", "Biết"), hãy sửa lại bằng các động từ hành động (Action Verbs) như "Trình bày", "Phân tích", "Thực hiện".
+2. **Bổ sung (Upgrade):** Nếu thiếu thiết bị dạy học số (theo xu hướng mới), hãy tự động đề xuất thêm dựa trên đặc điểm học sinh.
+3. **SHDC & SHL (Enrich):** Nếu file cũ sơ sài, hãy dùng kiến thức chuyên môn và gợi ý từ Database để viết lại kịch bản chi tiết, hấp dẫn.
 
-# 3. ĐỊNH DẠNG JSON OUTPUT (Mảng 2 phần tử):
-[
-  {
-    "id": "hoat_dong_khoi_dong",
-    "module_title": "HOẠT ĐỘNG 1: KHỞI ĐỘNG - [Tên sáng tạo]",
-    "steps": [
-      { "step_type": "transfer", "teacher_action": "Markdown (Siêu chi tiết...)", "student_action": "Markdown (Kết quả dự kiến...)" }
-    ]
-  },
-  {
-    "id": "hoat_dong_kham_pha",
-    "module_title": "HOẠT ĐỘNG 2: KHÁM PHÁ - [Tên]",
-    "steps": [ ... ]
-  }
-]
-        `.trim();
+# YÊU CẦU OUTPUT JSON (Chuẩn Template):
+Hãy trả về JSON duy nhất:
+{
+  "ten_bai": "${context.topic}",
+  "so_tiet": "03",
+  "muc_tieu_kien_thuc": "- [Đã chuẩn hóa theo YCCĐ] ...",
+  "muc_tieu_nang_luc": "- [Đã chuẩn hóa] ...",
+  "muc_tieu_pham_chat": "- [Đã chuẩn hóa] ...",
+  "gv_chuan_bi": "...",
+  "hs_chuan_bi": "...",
+  "shdc": "Kịch bản SHDC (viết thành đoạn văn mô tả ngắn gọn, hấp dẫn)...",
+  "shl": "Kịch bản SHL (viết thành đoạn văn mô tả ngắn gọn, gắn kết chủ đề)..."
+}
+QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON hợp lệ. Không được viết thêm lời dẫn như "Đây là kết quả...", "Dưới đây là JSON...". Bắt đầu ngay bằng ký tự { và kết thúc bằng }.
+    `.trim();
   },
 
   /**
-   * TẠO SIÊU PROMPT GỘP (Luyện tập + Vận dụng)
+   * PROMPT 2: KIẾN TẠO TRI THỨC (RAG: Rewrite & Enrich - Digital Integration)
    */
-  async generateMergedPrompt2(context: PromptContext): Promise<string> {
+  async generatePillar2Prompt(context: PromptContext): Promise<string> {
     const data = context.optimizedFileSummary || {};
-
-    const getContent = (key: string) => {
-      if (data[key] && typeof data[key] === 'object' && data[key].hoatDong) {
-        return `MỤC TIÊU: ${data[key].mucTieu?.join('; ')}\nNỘI DUNG: ${data[key].hoatDong?.join('\n')}`;
-      }
-      return data[`raw_${key}`] || "Dựa vào chủ đề để sáng tạo";
-    };
-
-    const luyenTap = getContent('luyen_tap');
-    const vanDung = getContent('van_dung');
+    const smartData = context.smartData;
 
     return `
-# VAI TRÒ: CHUYÊN GIA PHƯƠNG PHÁP SƯ PHẠM.
-# NHIỆM VỤ: Thiết kế KHBD PHẦN 2 (Luyện tập & Vận dụng) chuẩn 5512.
+# VAI TRÒ: Kiến trúc sư sư phạm HĐTN, HN (Digital Native).
 
-## 🏮 CHIẾN LƯỢC NÂNG CẤP "CỰC ĐẠI" (MAXIMIZE CONTENT):
-1. **LUYỆN TẬP**: Xây dựng hệ thống bài tập phân hóa. Viết chi tiết đề bài và ĐÁP ÁN CHI TIẾT từng câu.
-2. **VẬN DỤNG**: Thiết kế dự án thực tế. Phải bao gồm: **HƯỚNG DẪN TỰ HÀNH ĐỘNG** và **BẢNG RUBRIC ĐÁNH GIÁ** (ít nhất 4 tiêu chí) ngay trong cột student_action.
+# DỮ LIỆU THAM KHẢO (INPUT):
+1. **Nội dung cũ (PDF Input):**
+- Khởi động: """${JSON.stringify(data.khoi_dong || "")}"""
+- Khám phá: """${JSON.stringify(data.kham_pha || "")}"""
 
-# 1. DỮ LIỆU NGUỒN:
-- NỘI DUNG LUYỆN TẬP: """${luyenTap}"""
-- NỘI DUNG VẬN DỤNG: """${vanDung}"""
+2. **Chỉ dẫn phương pháp chuẩn (Database Standard):**
+- **Năng lực số cần tích hợp (TT 02/2025):** """${smartData.digitalCompetency || ""}"""
+- **Lưu ý sư phạm & Phương pháp:** """${smartData.pedagogicalNotes || ""}"""
+- **Nhiệm vụ cốt lõi:** 
+   + KĐ: """${smartData.coreMissions?.khoiDong || ""}"""
+   + KP: """${smartData.coreMissions?.khamPha || ""}"""
 
-# 2. ĐỊNH DẠNG JSON OUTPUT (Mảng 2 phần tử):
-[
-  {
-    "id": "hoat_dong_luyen_tap",
-    "module_title": "HOẠT ĐỘNG 3: LUYỆN TẬP - [Tên]",
-    "steps": [ ... ]
+# NHIỆM VỤ (REWRITE & ENRICH):
+Hãy thiết kế lại HĐ Khởi động và Khám phá.
+- **Nếu nội dung cũ hay:** Hãy giữ lại ý tưởng cốt lõi nhưng viết chi tiết lời thoại và diễn biến tâm lý (Deep Dive).
+- **Nếu nội dung cũ sơ sài/nhàm chán:** Hãy SÁNG TẠO MỚI hoàn toàn dựa trên chỉ dẫn phương pháp và nhiệm vụ cốt lõi. Thêm các trò chơi, video, tình huống giả định.
+- **Yêu cầu bắt buộc (Gap Filling):** Phải lồng ghép việc sử dụng công cụ số (Năng lực số từ Database) vào hoạt động của HS nếu file cũ chưa có.
+
+# YÊU CẦU OUTPUT JSON (Cấu trúc 2 cột phẳng cho Template):
+{
+  "khoi_dong": {
+    "cot_gv": "**Phương pháp:** ...\n- GV chiếu video/tranh ảnh...\n- Câu hỏi gợi mở: ...",
+    "cot_hs": "- HS quan sát...\n- Trả lời: ..."
   },
-  {
-    "id": "hoat_dong_van_dung",
-    "module_title": "HOẠT ĐỘNG 4: VẬN DỤNG - [Tên]",
-    "steps": [ ... ]
+  "kham_pha": {
+    "cot_gv": "**Chuyển giao nhiệm vụ:** ...\n**Hỗ trợ/Gợi mở:** ...",
+    "cot_hs": "- Thảo luận nhóm...\n- Sản phẩm dự kiến: ..."
   }
-]
-        `.trim();
+}
+QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON hợp lệ. Không được viết thêm lời dẫn như "Đây là kết quả...", "Dưới đây là JSON...". Bắt đầu ngay bằng ký tự { và kết thúc bằng }.
+    `.trim();
+  },
+
+  /**
+   * PROMPT 3: THỰC CHIẾN (RAG: Optimize & Fill Gaps - Authentic Assessment)
+   */
+  async generatePillar3Prompt(context: PromptContext): Promise<string> {
+    const data = context.optimizedFileSummary || {};
+    const smartData = context.smartData;
+
+    return `
+# VAI TRÒ: Chuyên gia đánh giá và thực tiễn.
+
+# DỮ LIỆU THAM KHẢO (INPUT):
+1. **Nội dung cũ (PDF Input):**
+- Luyện tập: """${JSON.stringify(data.luyen_tap || "")}"""
+- Vận dụng: """${JSON.stringify(data.van_dung || "")}"""
+
+2. **Kho dữ liệu chuẩn (Database Standard):**
+- **Nhiệm vụ cốt lõi (Gợi ý sản phẩm):** 
+   + LT: """${smartData.coreMissions?.luyenTap || ""}"""
+   + VD: """${smartData.coreMissions?.vanDung || ""}"""
+- **Tiêu chí đánh giá & Rubric chuẩn:** """${smartData.assessmentTools || ""}"""
+
+# NHIỆM VỤ (OPTIMIZE & FILL GAPS):
+Thiết kế HĐ Luyện tập và Vận dụng.
+1. **Luyện tập (Authenticity):** Nếu bài tập cũ quá lý thuyết, hãy chuyển thể thành tình huống thực tế (Role-play) hoặc Trò chơi hóa (Gamification).
+2. **Vận dụng (Project-based):** Xây dựng một Dự án nhỏ (Project) ở nhà cho HS, dựa trên gợi ý cốt lõi từ Database.
+3. **Đánh giá (Rubric):** BẮT BUỘC phải tạo ra một Phụ lục chứa Phiếu học tập hoặc Rubric chấm điểm chi tiết (dựa trên dữ liệu Rubric từ Database).
+
+# YÊU CẦU OUTPUT JSON (Cấu trúc 2 cột phẳng cho Template):
+{
+  "luyen_tap": {
+    "cot_gv": "**Tổ chức:** ...\n- Quy luật chơi: ...",
+    "cot_hs": "- Tham gia trò chơi...\n- Rút ra bài học..."
+  },
+  "van_dung": {
+    "cot_gv": "**Giao dự án:** ...\n- Tiêu chí đánh giá: ...",
+    "cot_hs": "- Lập kế hoạch thực hiện...\n- Cam kết hoàn thành..."
+  },
+  "ho_so_day_hoc": "- **Phiếu học tập số 1:** ...\n\n- **Rubric đánh giá:** ...",
+  "huong_dan_ve_nha": "Dặn dò cụ thể và chi tiết..."
+}
+QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON hợp lệ. Không được viết thêm lời dẫn như "Đây là kết quả...", "Dưới đây là JSON...". Bắt đầu ngay bằng ký tự { và kết thúc bằng }.
+    `.trim();
   }
 };

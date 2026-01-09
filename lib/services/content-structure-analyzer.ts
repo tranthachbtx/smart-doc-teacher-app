@@ -82,15 +82,23 @@ export class ContentStructureAnalyzer {
             // SỬ DỤNG CHẾ ĐỘ MULTIMODAL (Gửi file trực tiếp thay vì text trích xuất lỗi)
             const result = await generateAIContent(prompt, "gemini-1.5-flash", filePayload);
 
-            if (!result.success || !result.content) throw new Error("AI Parsing failed.");
+            if (!result.success) {
+                console.error("[Analyzer] AI Error Response:", result.error);
+                throw new Error(`AI Dissection failed: ${result.error}`);
+            }
+
+            if (!result.content) throw new Error("AI returned empty content.");
 
             const jsonMatch = result.content.match(/\{[\s\S]*\}/);
             const data = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
-            if (!data) throw new Error("Invalid JSON from AI.");
+            if (!data) {
+                console.warn("[Analyzer] AI Content was not valid JSON:", result.content);
+                throw new Error("Invalid JSON format from AI.");
+            }
 
             return data;
         } catch (e: any) {
-            console.error("[Analyzer] Error:", e);
+            console.error("[Analyzer] Final Catch Error:", e.message);
             throw e;
         }
     }

@@ -85,6 +85,9 @@ export const useLessonActions = () => {
     /**
      * XUẤT FILE WORD 5512
      */
+    /**
+     * XUẤT FILE WORD THEO TEMPLATE 2 CỘT
+     */
     const handleExportDocx = useCallback(async () => {
         if (!lesson.result) {
             store.setError("Không có dữ liệu giáo án để xuất");
@@ -92,23 +95,24 @@ export const useLessonActions = () => {
         }
 
         store.setLoading('isExporting', true);
-        store.setExportProgress(0);
+        store.setExportProgress(10);
 
         try {
-            const result = await DocumentExportSystem.getInstance().exportLesson(
-                lesson.result,
-                { onProgress: (p) => store.setExportProgress(p) }
-            );
-
-            if (result) {
-                store.setSuccess(`💾 Đã tải xuống file Word!`);
-            } else {
-                throw new Error("Lỗi khi xuất file");
-            }
+            const { TemplateExportService } = await import('../services/template-export-service');
+            // Data Injection: Ensure global store state (chuDeSo) is passed to export payload
+            const exportData = {
+                ...lesson.result,
+                chuDeSo: lesson.chuDeSo || "",
+                theme: lesson.theme || ""
+            };
+            await TemplateExportService.exportLessonToTemplate(exportData);
+            store.setSuccess(`💾 Đã tải xuống giáo án (Mẫu 2 Cột)!`);
         } catch (error: any) {
-            store.setError(error.message || "Lỗi xuất file");
+            console.error("Template Export Error:", error);
+            store.setError(error.message || "Lỗi xuất file Template");
         } finally {
             store.setLoading('isExporting', false);
+            store.setExportProgress(0);
             setTimeout(() => store.setSuccess(null), 5000);
         }
     }, [lesson.result, lesson.theme, store]);

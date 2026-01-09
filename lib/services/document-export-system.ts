@@ -286,8 +286,8 @@ export class DocumentExportSystem {
 
         const paragraphs: any[] = [
             new Paragraph({
-                spacing: { before: 200, after: 100 },
-                children: [new TextRun({ text: title, bold: true, size: 26, color: "2E59A7" })]
+                spacing: { before: 300, after: 150 },
+                children: [new TextRun({ text: title, bold: true, size: 28, color: "2E59A7", underline: { type: "single" } })]
             })
         ];
 
@@ -303,7 +303,7 @@ export class DocumentExportSystem {
                         width: { size: 50, type: WidthType.PERCENTAGE },
                         shading: { fill: "E8EEF7", type: ShadingType.CLEAR, color: "auto" },
                         children: [new Paragraph({
-                            children: [new TextRun({ text: "HOẠT ĐỘNG CỦA GV & HS", bold: true, size: 22, color: "2E59A7" })],
+                            children: [new TextRun({ text: "HOẠT ĐỘNG CỦA GIÁO VIÊN", bold: true, size: 22, color: "2E59A7" })],
                             alignment: AlignmentType.CENTER
                         })]
                     }),
@@ -311,7 +311,7 @@ export class DocumentExportSystem {
                         width: { size: 50, type: WidthType.PERCENTAGE },
                         shading: { fill: "F2F5FA", type: ShadingType.CLEAR, color: "auto" },
                         children: [new Paragraph({
-                            children: [new TextRun({ text: "SẢN PHẨM DỰ KIẾN", bold: true, size: 22, color: "2E59A7" })],
+                            children: [new TextRun({ text: "HOẠT ĐỘNG CỦA HỌC SINH", bold: true, size: 22, color: "2E59A7" })],
                             alignment: AlignmentType.CENTER
                         })]
                     })

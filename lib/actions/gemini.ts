@@ -35,7 +35,14 @@ export async function callAI(
         parts.push({ inlineData: { mimeType: file.mimeType || "application/pdf", data: file.data } });
       }
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${activeKey}`, {
+      const proxyUrl = process.env.GEMINI_PROXY_URL;
+      const baseUrl = proxyUrl
+        ? `${proxyUrl.endsWith('/') ? proxyUrl : proxyUrl + '/'}`
+        : "https://generativelanguage.googleapis.com/v1beta/";
+
+      const apiUrl = `${baseUrl}models/${modelName}:generateContent?key=${activeKey}`;
+
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -48,9 +55,13 @@ export async function callAI(
         const json = await response.json();
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) return text;
+        console.warn(`[AI-RELAY] Gemini response OK but no text found.`, json);
+      } else {
+        const errorBody = await response.text();
+        console.error(`[AI-RELAY] Gemini API Error (${response.status}):`, errorBody);
       }
     }
-  } catch (e) { console.warn(`[AI-RELAY] Gemini Step Failed.`); }
+  } catch (e: any) { console.warn(`[AI-RELAY] Gemini Exception: ${e.message}`); }
 
   try {
     const openAIKey = process.env.OPENAI_API_KEY;
@@ -67,9 +78,12 @@ export async function callAI(
       if (response.ok) {
         const data = await response.json();
         return data.choices[0].message.content || "";
+      } else {
+        const errorBody = await response.text();
+        console.error(`[AI-RELAY] OpenAI API Error (${response.status}):`, errorBody);
       }
     }
-  } catch (e) { console.warn(`[AI-RELAY] OpenAI Step Failed.`); }
+  } catch (e: any) { console.warn(`[AI-RELAY] OpenAI Exception: ${e.message}`); }
 
   throw new Error("ALL_PROVIDERS_FAILED");
 }
