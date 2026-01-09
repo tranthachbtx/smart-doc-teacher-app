@@ -17,63 +17,77 @@ export interface ActionResult<T = any> {
   content?: string;
 }
 
-// --- CORE AI CALLER ---
+// --- CORE AI CALLER (ROBUST MULTI-PROVIDER STRATEGY) ---
 export async function callAI(
   prompt: string,
-  modelName = "gemini-1.5-flash",
+  modelName = "gemini-2.0-flash", // Upgraded default model
   file?: { mimeType: string, data: string },
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
   console.log(`[AI-RELAY] Starting callAI with model: ${modelName}`);
 
-  try {
-    const keys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3].filter(k => !!k && k.length > 5);
-    console.log(`[AI-RELAY] Found ${keys.length} Gemini keys.`);
+  // 1. Prepare Payload
+  const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
+  if (file && file.data) {
+    parts.push({ inlineData: { mimeType: file.mimeType || "application/pdf", data: file.data } });
+  }
+  const body = {
+    contents: [{ parts }],
+    generationConfig: { temperature: 0.85, maxOutputTokens: 8192 }
+  };
 
-    if (keys.length > 0) {
-      const activeKey = keys[Math.floor(Math.random() * keys.length)];
-
-      const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
-      if (file && file.data) {
-        parts.push({ inlineData: { mimeType: file.mimeType || "application/pdf", data: file.data } });
+  // 2. STRATEGY: PROXY (First priority if configured)
+  const proxyUrl = process.env.GEMINI_PROXY_URL;
+  if (proxyUrl && !proxyUrl.includes("example.com")) {
+    try {
+      console.log(`[AI-RELAY] 🛰️ Attempting Cloudflare Proxy...`);
+      const response = await fetch(`${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(20000)
+      });
+      if (response.ok) {
+        const json = await response.json();
+        const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          console.log("[AI-RELAY] ✅ Proxy SUCCESS");
+          return text;
+        }
       }
+    } catch (e: any) { console.warn(`[AI-RELAY] ⚠️ Proxy failed: ${e.message}`); }
+  }
 
-      const proxyUrl = process.env.GEMINI_PROXY_URL;
-      const baseUrl = proxyUrl
-        ? `${proxyUrl.endsWith('/') ? proxyUrl : proxyUrl + '/'}`
-        : "https://generativelanguage.googleapis.com/v1beta/";
+  // 3. STRATEGY: DIRECT GEMINI ROTATION
+  const geminiKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3].filter(k => !!k && k.length > 5);
+  console.log(`[AI-RELAY] Found ${geminiKeys.length} Gemini keys.`);
 
-      console.log(`[AI-RELAY] Using Base URL: ${baseUrl}`);
-      const apiUrl = `${baseUrl}models/${modelName}:generateContent?key=${activeKey}`;
-
-      console.log(`[AI-RELAY] Attempting fetch to Gemini...`);
-      const response = await fetch(apiUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: { temperature: 0.85, maxOutputTokens: 8192 }
-        })
+  for (const key of geminiKeys) {
+    try {
+      console.log(`[AI-RELAY] 💎 Attempting Direct Gemini Key...`);
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(15000)
       });
 
       if (response.ok) {
         const json = await response.json();
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text;
-        console.warn(`[AI-RELAY] Gemini response OK but no text found.`, json);
-      } else {
-        const errorBody = await response.text();
-        console.error(`[AI-RELAY] Gemini API Error (${response.status}):`, errorBody);
+        if (text) {
+          console.log("[AI-RELAY] ✅ Gemini SUCCESS");
+          return text;
+        }
       }
-    } else {
-      console.warn(`[AI-RELAY] No Gemini keys found.`);
-    }
-  } catch (e: any) { console.warn(`[AI-RELAY] Gemini Exception: ${e.message}`); }
+    } catch (e: any) { console.warn(`[AI-RELAY] ⚠️ Gemini Key failed: ${e.message}`); }
+  }
 
-  try {
-    const openAIKey = process.env.OPENAI_API_KEY;
-    if (openAIKey) {
-      console.log(`[AI-RELAY] Falling back to OpenAI...`);
+  // 4. STRATEGY: OPENAI FALLBACK
+  const openAIKey = process.env.OPENAI_API_KEY;
+  if (openAIKey) {
+    try {
+      console.log(`[AI-RELAY] 🤖 Falling back to OpenAI...`);
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openAIKey}` },
@@ -81,21 +95,41 @@ export async function callAI(
           model: "gpt-4o-mini",
           messages: [{ role: "system", content: systemContent }, { role: "user", content: prompt }],
           temperature: 0.7
-        })
+        }),
+        signal: AbortSignal.timeout(20000)
       });
       if (response.ok) {
         const data = await response.json();
+        console.log("[AI-RELAY] ✅ OpenAI SUCCESS");
         return data.choices[0].message.content || "";
-      } else {
-        const errorBody = await response.text();
-        console.error(`[AI-RELAY] OpenAI API Error (${response.status}):`, errorBody);
       }
-    } else {
-      console.warn(`[AI-RELAY] No OpenAI Key found.`);
-    }
-  } catch (e: any) { console.warn(`[AI-RELAY] OpenAI Exception: ${e.message}`); }
+    } catch (e: any) { console.warn(`[AI-RELAY] OpenAI Exception: ${e.message}`); }
+  }
 
-  console.error(`[AI-RELAY] All providers failed.`);
+  // 5. STRATEGY: GROQ FALLBACK
+  const groqKey = process.env.GROQ_API_KEY;
+  if (groqKey) {
+    try {
+      console.log(`[AI-RELAY] 🦊 Falling back to Groq...`);
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: "llama3-70b-8192",
+          messages: [{ role: "system", content: systemContent }, { role: "user", content: prompt }],
+          temperature: 0.7
+        }),
+        signal: AbortSignal.timeout(20000)
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log("[AI-RELAY] ✅ Groq SUCCESS");
+        return data.choices[0].message.content || "";
+      }
+    } catch (e: any) { console.warn(`[AI-RELAY] Groq Exception: ${e.message}`); }
+  }
+
+  console.error(`[AI-RELAY] 💀 ALL PROVIDERS FAILED.`);
   throw new Error("ALL_PROVIDERS_FAILED");
 }
 
@@ -106,7 +140,7 @@ export async function callAI(
  */
 export async function generateAIContent(prompt: string, model?: string, file?: any): Promise<ActionResult<string>> {
   try {
-    const text = await callAI(prompt, model || "gemini-1.5-flash", file);
+    const text = await callAI(prompt, model || "gemini-2.0-flash", file);
     return { success: true, content: text, data: text };
   } catch (e: any) { return { success: false, error: e.message, content: prompt }; }
 }
@@ -115,7 +149,7 @@ export async function generateAIContent(prompt: string, model?: string, file?: a
  * CRITICAL: Fixed signature for extractTextFromFile (matching legacy calls)
  */
 export async function extractTextFromFile(file: { mimeType: string, data: string }, prompt: string): Promise<ActionResult<string>> {
-  return generateAIContent(prompt, "gemini-1.5-flash", file);
+  return generateAIContent(prompt, "gemini-2.0-flash", file);
 }
 
 export async function generateLesson(...args: any[]): Promise<ActionResult<any>> {
@@ -132,7 +166,7 @@ export async function generateLessonPlan(
   chuDeSo?: string,
   suggestions?: string,
   file?: { mimeType: string, data: string },
-  modelName = "gemini-1.5-flash"
+  modelName = "gemini-2.0-flash"
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
@@ -162,7 +196,7 @@ export async function generateMeetingMinutes(
   session?: string,
   keyContent?: string,
   conclusion?: string,
-  modelName = "gemini-1.5-flash"
+  modelName = "gemini-2.0-flash"
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
@@ -184,7 +218,7 @@ export async function generateEventScript(
   budget?: string,
   checklist?: string,
   evaluation?: string,
-  modelName = "gemini-1.5-flash"
+  modelName = "gemini-2.0-flash"
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
@@ -203,7 +237,7 @@ export async function generateNCBH(
   grade: string,
   topic: string,
   instructions?: string,
-  modelName = "gemini-1.5-flash"
+  modelName = "gemini-2.0-flash"
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
@@ -223,7 +257,7 @@ export async function generateAssessmentPlan(
   term: string,
   productType: string,
   topic: string,
-  modelName = "gemini-1.5-flash"
+  modelName = "gemini-2.0-flash"
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
@@ -255,7 +289,7 @@ export async function generateLessonSection(
   tasks?: string[],
   chuDeSo?: string,
   suggestions?: string,
-  modelName = "gemini-1.5-flash",
+  modelName = "gemini-2.0-flash",
   file?: { mimeType: string, data: string },
   stepInstruction?: string
 ): Promise<ActionResult<any>> {
