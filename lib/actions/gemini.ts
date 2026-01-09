@@ -615,23 +615,59 @@ export async function generateLesson(g: string, t: string, d?: string, c?: strin
       // Map Chained Data to LessonResult
       // (Assuming chainedData.manualModules is populated)
       // We interpret the chained modules back into the LessonResult structure
+      // Map Chained Data to LessonResult
+      // We interpret the chained modules back into the LessonResult structure
       const modules = chainedData.manualModules;
+
+      // Helper to safely parse module content
+      const safeGetContent = (type: string) => {
+        const mod = modules.find((m: any) => m.type === type);
+        return mod?.content || "";
+      };
+
+      const safeParseJSON = (str: string) => {
+        try {
+          // Remove Markdown wrappers if present
+          const clean = str.replace(/```json/g, "").replace(/```/g, "");
+          const match = clean.match(/\{[\s\S]*\}/);
+          return match ? JSON.parse(match[0]) : {};
+        } catch (e) {
+          return {};
+        }
+      };
+
+      console.log(`[Gemini] Orchestrator returned ${modules.length} modules.`);
+      const setupContent = safeGetContent('setup');
+      console.log(`[Gemini] Setup Content Length: ${setupContent.length}`);
+      const setupJson = safeParseJSON(setupContent);
+      console.log(`[Gemini] Setup Parsed Keys: ${Object.keys(setupJson).join(', ')}`);
+
       const data: LessonResult = {
-        ten_bai: t,
+        ten_bai: setupJson.ten_bai || t,
         grade: g,
-        hoat_dong_khoi_dong: modules.find((m: any) => m.type === 'khoi_dong')?.content || "",
-        hoat_dong_kham_pha: modules.find((m: any) => m.type === 'kham_pha')?.content || "",
-        hoat_dong_luyen_tap: modules.find((m: any) => m.type === 'luyen_tap')?.content || "",
-        hoat_dong_van_dung: modules.find((m: any) => m.type === 'van_dung')?.content || "",
 
-        // Setup metadata
-        muc_tieu_kien_thuc: modules.find((m: any) => m.type === 'setup')?.content || "",
-        ho_so_day_hoc: modules.find((m: any) => m.type === 'appendix')?.content || "",
+        // Setup Metadata (Extracted from JSON)
+        muc_tieu_kien_thuc: setupJson.muc_tieu_kien_thuc || setupJson.kien_thuc || "",
+        muc_tieu_nang_luc: setupJson.muc_tieu_nang_luc || setupJson.nang_luc || "",
+        muc_tieu_pham_chat: setupJson.muc_tieu_pham_chat || setupJson.pham_chat || "",
+        thiet_bi_day_hoc: setupJson.thiet_bi_day_hoc || setupJson.thiet_bi || "",
 
-        // Legacy fields
-        shdc: "",
-        shl: "",
-        huong_dan_ve_nha: ""
+        // Deep Dive Activities (Pass Raw JSON to ExportSystem for 2-col rendering)
+        hoat_dong_khoi_dong: safeGetContent('khoi_dong'),
+        hoat_dong_kham_pha: safeGetContent('kham_pha'),
+        hoat_dong_luyen_tap: safeGetContent('luyen_tap'),
+        hoat_dong_van_dung: safeGetContent('van_dung'),
+
+        // Appendix & Others
+        shdc: setupJson.shdc || safeGetContent('shdc'),
+        shl: setupJson.shl || safeGetContent('shl'),
+        ho_so_day_hoc: safeGetContent('appendix') || setupJson.materials || "",
+        huong_dan_ve_nha: setupJson.huong_dan_ve_nha || "",
+
+        // Tích hợp (Nếu có trong setup)
+        tich_hop_nls: setupJson.tich_hop_nls || "",
+        gv_chuan_bi: setupJson.gv_chuan_bi || "",
+        hs_chuan_bi: setupJson.hs_chuan_bi || ""
       };
 
       return { success: true, data };

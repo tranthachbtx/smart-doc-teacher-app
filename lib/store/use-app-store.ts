@@ -49,6 +49,7 @@ interface AppState {
         auditResult: string | null;
         auditScore: number;
         processedContext: any | null; // Cache for analyzed PDF structure
+        fileSummary: string;
     };
 
     // Meeting Slice
@@ -150,6 +151,7 @@ export const useAppStore = create<AppState>()(
                 auditResult: null,
                 auditScore: 0,
                 processedContext: null,
+                fileSummary: "",
             },
 
             // Initial Meeting State

@@ -110,13 +110,14 @@ export class DocumentExportSystem {
         try {
             const children = [
                 this.createHeader(`BIÊN BẢN HỌP TỔ CHUYÊN MÔN - THÁNG ${month}`),
-                this.createField("Nội dung:", result.monthlyContext || "..."),
+                this.createField("Nội dung:", result.noi_dung_chinh || result.title || "..."),
                 this.createSectionTitle("I. ĐÁNH GIÁ CÔNG TÁC THÁNG QUA"),
-                ...this.renderData(result.evaluation),
+                ...this.renderData(result.uu_diem || "Chưa có dữ liệu ưu điểm"),
+                ...this.renderData(result.han_che || "Chưa có dữ liệu hạn chế"),
                 this.createSectionTitle("II. TRIỂN KHAI CÔNG TÁC THÁNG TỚI"),
-                ...this.renderData(result.plan),
+                ...this.renderData(result.ke_hoach_thang_toi || result.content || "..."),
                 this.createSectionTitle("III. THỐNG NHẤT CHUYÊN MÔN"),
-                ...this.renderData(result.conclusion)
+                ...this.renderData(result.ket_luan_cuoc_hop || result.conclusion || "...")
             ];
             const doc = new Document({ sections: [{ children }] });
             const blob = await Packer.toBlob(doc);
