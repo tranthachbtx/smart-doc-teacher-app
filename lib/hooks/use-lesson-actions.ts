@@ -223,12 +223,16 @@ export const useLessonActions = () => {
                     const focusFields = stage.focus.split(',').map(f => f.trim());
 
                     focusFields.forEach(field => {
-                        if (stageData[field]) {
-                            let contentToCLean = stageData[field];
+                        // Cast to 'any' to allow dynamic string indexing
+                        const dynamicStageData = stageData as any;
+                        const dynamicCurrentPlan = currentPlan as any;
+
+                        if (dynamicStageData[field]) {
+                            let contentToCLean = dynamicStageData[field];
                             if (typeof contentToCLean === 'string') {
-                                currentPlan[field] = cleaner.cleanFinalOutput(contentToCLean);
+                                dynamicCurrentPlan[field] = cleaner.cleanFinalOutput(contentToCLean);
                             } else {
-                                currentPlan[field] = contentToCLean; // Keep objects as is
+                                dynamicCurrentPlan[field] = contentToCLean; // Keep objects as is
                             }
                         }
                     });
