@@ -74,10 +74,13 @@ export default function EnhancedSmartLessonProcessor() {
 
   // Initialize modules when content is available
   useEffect(() => {
-    if (pdfContent && modules.length === 0) {
-      const initialModules = ManualWorkflowService.analyzeStructure(pdfContent, "2");
-      setModules(initialModules);
-    }
+    const initModules = async () => {
+      if (pdfContent && modules.length === 0) {
+        const initialModules = await ManualWorkflowService.analyzeStructure(pdfContent, "2");
+        setModules(initialModules);
+      }
+    };
+    initModules();
   }, [pdfContent, modules.length]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,13 +157,13 @@ export default function EnhancedSmartLessonProcessor() {
       setError('Vui lòng upload PDF và tích hợp database trước khi tạo prompt');
       return;
     }
-    
+
     setProcessingSteps(prev => [...prev, 'Đang tạo prompts thông minh...']);
-    
+
     try {
       // Process content with ProfessionalContentProcessor
       const processedContent = ProfessionalContentProcessor.extractActivityContent(pdfContent);
-      
+
       // Generate optimized prompts for all 4 modules
       const updatedModules = modules.map(module => {
         const optimizedContent = ProfessionalContentProcessor.optimizeForActivity(module.type, processedContent);
@@ -169,17 +172,17 @@ export default function EnhancedSmartLessonProcessor() {
           optimizedContent,
           databaseContext
         );
-        
+
         return {
           ...module,
           prompt,
           optimizedContent
         };
       });
-      
+
       setModules(updatedModules);
       setProcessingSteps(prev => [...prev, '✅ Đã tạo prompts tối ưu cho 4 hoạt động']);
-      
+
       toast({
         title: "Optimized Prompts Generated",
         description: "Đã tạo prompts chuyên nghiệp với nội dung được tinh lọc"

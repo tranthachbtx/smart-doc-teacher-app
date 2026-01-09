@@ -50,6 +50,23 @@ export function ManualProcessingHub() {
         setAnalyzingStatus("Đang đọc & Mổ xẻ trực tiếp PDF...");
 
         try {
+            // Sử dụng API Route để vượt rào Payload 1MB của Server Action
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await fetch('/api/extract-pdf-content', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Lỗi xử lý file');
+            }
+
+            const extractionResult = await response.json();
+
+            // Xử lý bước mổ xẻ AI (Pre-Fill Deep Data)
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
@@ -68,6 +85,7 @@ export function ManualProcessingHub() {
 
                 // Cập nhật Result tạm thời cho phần Metadata
                 const initialResult: any = {
+                    ...(store.lesson.result || {}),
                     ten_bai: struct.ten_bai,
                     muc_tieu_kien_thuc: struct.muc_tieu_kien_thuc,
                     muc_tieu_nang_luc: struct.muc_tieu_nang_luc,
@@ -79,14 +97,18 @@ export function ManualProcessingHub() {
                 };
                 store.setLessonResult(initialResult);
 
-                // Khởi tạo các module copy
-                const modules = ManualWorkflowService.analyzeStructure("", "");
+                // Khởi tạo các module copy VỚI DỮ LIỆU ĐÃ MỔ XẺ
+                const modules = await ManualWorkflowService.analyzeStructure(
+                    extractionResult.content || "",
+                    JSON.stringify(struct)
+                );
                 store.updateLessonField('manualModules', modules);
 
-                toast({ title: "✅ Đã tự động điền Metadata & Sinh hoạt!", description: "Bây giờ hãy Copy-Paste 2 phần còn lại." });
+                toast({ title: "✅ Đã mổ xẻ PDF thành công!", description: "Metadata & Sinh hoạt đã được điền. Các module đã sẵn sàng." });
             };
         } catch (error: any) {
-            toast({ title: "Lỗi", description: error.message, variant: "destructive" });
+            console.error("[ManualProcessingHub] Upload Error:", error);
+            toast({ title: "Lỗi mổ xẻ PDF", description: error.message, variant: "destructive" });
         } finally {
             setIsAnalyzing(false);
             setAnalyzingStatus("");

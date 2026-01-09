@@ -1,4 +1,4 @@
-import { saveAs } from "file-saver";
+import { PHIEU_HOC_TAP_RUBRIC_DATABASE, getPhieuHocTapTheoHoatDong, getRubricTheoHoatDong } from "@/lib/data/phieu-hoc-tap-rubric-database";
 import { IntegrityService } from './integrity-service';
 import { TextCleaningService } from './text-cleaning-service';
 import {
@@ -11,7 +11,10 @@ import {
     TableRow,
     TableCell,
     WidthType,
-    BorderStyle
+    BorderStyle,
+    HeadingLevel,
+    ShadingType,
+    VerticalAlign
 } from "docx";
 import type {
     LessonResult,
@@ -88,9 +91,19 @@ export class DocumentExportSystem {
 
             options.onProgress?.(70);
 
+            options.onProgress?.(80);
+
+            // TỰ ĐỘNG BƠM PHỤ LỤC (Inflation Trick v2.0)
+            children.push(this.createSectionTitle("V. HỒ SƠ DẠY HỌC (PHỤ LỤC)"));
+
+            // 1. Thêm Phụ lục từ AI viết
+            children.push(...this.renderData(result.ho_so_day_hoc || result.materials || ""));
+
+            // 2. Tự động truy vấn Database để thêm Mẫu Phiếu/Rubric chuẩn (Tăng độ dài & chuyên nghiệp)
+            const autoAppendices = this.generateAutoAppendices(result);
+            children.push(...autoAppendices);
+
             children.push(
-                this.createSectionTitle("V. HỒ SƠ DẠY HỌC (PHỤ LỤC)"),
-                ...this.renderData(result.ho_so_day_hoc || result.materials || "..."),
                 this.createSectionTitle("VI. HƯỚNG DẪN VỀ NHÀ"),
                 ...this.renderData(result.huong_dan_ve_nha || result.homework || "...")
             );
@@ -482,6 +495,102 @@ export class DocumentExportSystem {
         }
 
         return { cot1: content, cot2: "..." };
+    }
+
+    // ========================================
+    // 🎈 INFLATION ENGINE (TỰ ĐỘNG BƠM NỘI DUNG)
+    // ========================================
+
+    private generateAutoAppendices(result: LessonResult): any[] {
+        const blocks: any[] = [];
+        const foundMaterials = new Set<string>();
+
+        const searchTargets = [
+            { field: result.hoat_dong_khoi_dong, name: "Khởi động" },
+            { field: result.hoat_dong_kham_pha, name: "Khám phá" },
+            { field: result.hoat_dong_luyen_tap, name: "Luyện tập" },
+            { field: result.hoat_dong_van_dung, name: "Vận dụng" }
+        ];
+
+        searchTargets.forEach(target => {
+            if (!target.field) return;
+
+            // Truy vấn Phiếu học tập phù hợp
+            const phieuList = getPhieuHocTapTheoHoatDong(target.name);
+            phieuList.forEach(phieu => {
+                if (!foundMaterials.has(phieu.ma)) {
+                    foundMaterials.add(phieu.ma);
+                    blocks.push(new Paragraph({
+                        children: [new TextRun({ text: `\n\nPHỤ LỤC: ${phieu.ten.toUpperCase()} (${phieu.ma})`, bold: true, size: 28 })],
+                        heading: HeadingLevel.HEADING_3
+                    }));
+                    blocks.push(new Paragraph({
+                        children: [new TextRun({ text: `Mô tả: ${phieu.mo_ta}`, italics: true, size: 22 })]
+                    }));
+
+                    phieu.cau_truc.forEach(section => {
+                        blocks.push(new Paragraph({
+                            children: [new TextRun({ text: `\n${section.phan}`, bold: true, size: 24 })],
+                            spacing: { before: 100 }
+                        }));
+                        blocks.push(new Paragraph({
+                            children: [new TextRun({ text: `Hướng dẫn: ${section.huong_dan}`, size: 22 })]
+                        }));
+                        const questions = section.cau_hoi_mau.map(q => new Paragraph({
+                            children: [new TextRun({ text: `- ${q}`, size: 22 })],
+                            bullet: { level: 0 }
+                        }));
+                        blocks.push(...questions);
+                    });
+                    blocks.push(new Paragraph({
+                        children: [new TextRun({ text: `Lưu ý sử dụng: ${phieu.luu_y_su_dung.join('. ')}`, color: "666666", size: 20 })],
+                        spacing: { before: 100 }
+                    }));
+                }
+            });
+
+            // Truy vấn Rubric phù hợp
+            const rubricList = getRubricTheoHoatDong(target.name);
+            rubricList.forEach(rubric => {
+                if (!foundMaterials.has(rubric.ma)) {
+                    foundMaterials.add(rubric.ma);
+                    blocks.push(new Paragraph({
+                        children: [new TextRun({ text: `\n\nPHỤ LỤC: ${rubric.ten.toUpperCase()} (${rubric.ma})`, bold: true, size: 28 })],
+                        heading: HeadingLevel.HEADING_3
+                    }));
+
+                    // Render Rubric Table
+                    const tableRows = [
+                        new TableRow({
+                            children: [
+                                this.createTableCell("Tiêu chí", true, "E0E0E0"),
+                                this.createTableCell("Mức 4 (Xuất sắc)", true, "E0E0E0"),
+                                this.createTableCell("Mức 1 (Chưa đạt)", true, "E0E0E0")
+                            ]
+                        }),
+                        ...rubric.tieu_chi.map(tc => new TableRow({
+                            children: [
+                                this.createTableCell(tc.ten, true),
+                                this.createTableCell(tc.muc_4_xuat_sac),
+                                this.createTableCell(tc.muc_1_chua_dat)
+                            ]
+                        }))
+                    ];
+                    blocks.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }));
+                }
+            });
+        });
+
+        return blocks;
+    }
+
+    private createTableCell(text: string, bold = false, fill?: string): TableCell {
+        return new TableCell({
+            children: [new Paragraph({ children: [new TextRun({ text, bold, size: 22 })] })],
+            shading: fill ? { fill, type: ShadingType.CLEAR, color: "auto" } : undefined,
+            verticalAlign: VerticalAlign.CENTER,
+            margins: { top: 100, bottom: 100, left: 100, right: 100 }
+        });
     }
 
     private async triggerDownload(blob: Blob, fileName: string) {

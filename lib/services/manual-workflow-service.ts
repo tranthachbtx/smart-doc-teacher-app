@@ -18,11 +18,35 @@ export const ManualWorkflowService = {
   /**
    * Khởi tạo cấu trúc module (3 Cụm lớn)
    */
-  analyzeStructure(text: string, duration: string): ProcessingModule[] {
+  async analyzeStructure(text: string, analyzedJson?: string): Promise<ProcessingModule[]> {
+    // Nếu có dữ liệu đã mổ xẻ từ ContentStructureAnalyzer
+    const struct = analyzedJson ? JSON.parse(analyzedJson) : null;
+
     return [
-      { id: "mod_setup_sh", title: "Cụm 1: Thông tin chung & Sinh hoạt (Tự động)", type: "setup", prompt: "", content: "", isCompleted: false },
-      { id: "mod_main_1", title: "Cụm 2: Khởi động & Khám phá (Copy 1)", type: "khac", prompt: "", content: "", isCompleted: false },
-      { id: "mod_main_2", title: "Cụm 3: Luyện tập & Vận dụng (Copy 2)", type: "khac", prompt: "", content: "", isCompleted: false },
+      {
+        id: "mod_setup_sh",
+        title: "Cụm 1: Thông tin chung & Sinh hoạt (Tự động)",
+        type: "setup",
+        prompt: "",
+        content: struct ? `Đã mổ xẻ: ${struct.ten_bai}` : "Đang chờ mổ xẻ...",
+        isCompleted: !!struct
+      },
+      {
+        id: "mod_main_1",
+        title: "Cụm 2: Khởi động & Khám phá (Copy 1)",
+        type: "khac",
+        prompt: "",
+        content: struct ? `Nguồn PDF - Khởi động: ${struct.raw_khoi_dong?.substring(0, 150)}...\n\nNguồn PDF - Khám phá: ${struct.raw_kham_pha?.substring(0, 150)}...` : "Tự động trích xuất nội dung...",
+        isCompleted: !!struct
+      },
+      {
+        id: "mod_main_2",
+        title: "Cụm 3: Luyện tập & Vận dụng (Copy 2)",
+        type: "khac",
+        prompt: "",
+        content: struct ? `Nguồn PDF - Luyện tập: ${struct.raw_luyen_tap?.substring(0, 150)}...\n\nNguồn PDF - Vận dụng: ${struct.raw_van_dung?.substring(0, 150)}...` : "Tự động trích xuất nội dung...",
+        isCompleted: !!struct
+      },
     ];
   },
 

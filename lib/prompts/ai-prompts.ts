@@ -152,12 +152,36 @@ export function getMeetingPrompt(
 // ============================================================
 
 export function getLessonPrompt(
+  section: "setup" | "khởi động" | "khám phá" | "luyện tập" | "vận dụng" | "shdc_shl" | "final",
   grade: string,
-  lessonTopic: string,
-  duration?: string
+  topic: string,
+  duration?: string,
+  context?: string,
+  customInstructions?: string,
+  tasks?: any[],
+  chuDeSo?: string,
+  activitySuggestions?: any,
+  stepInstruction?: string
 ): string {
-  // Sử dụng prompt mới từ khdh-prompts.ts
-  return getKHDHPrompt(grade, lessonTopic, duration || "2 tiết");
+  // Tạo requirements đặc thù cho từng section
+  const sectionRequirements = `
+YÊU CẦU CHO PHẦN THIẾT KẾ: ${section.toUpperCase()}
+Ngữ cảnh hiện tại: ${context || "Khởi tạo bài dạy mới"}
+Hướng dẫn chi tiết: ${stepInstruction || "Thiết kế sư phạm cao cấp theo chuẩn 5512"}
+${customInstructions ? `Yêu cầu bổ sung từ người dùng: ${customInstructions}` : ""}
+  `;
+
+  // Sử dụng prompt trung tâm từ khdh-prompts.ts
+  return getKHDHPrompt(
+    grade,
+    topic,
+    duration || "2 tiết",
+    sectionRequirements,
+    tasks,
+    chuDeSo ? Number(chuDeSo) : undefined,
+    activitySuggestions,
+    true // hasFile = true để AI biết cần phân tích context
+  );
 }
 
 export function getLessonIntegrationPrompt(

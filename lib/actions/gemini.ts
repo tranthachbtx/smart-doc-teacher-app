@@ -1,6 +1,14 @@
 "use server";
 
 import { DEFAULT_LESSON_SYSTEM_PROMPT } from "@/lib/prompts/system-prompts";
+import {
+  getMeetingPrompt,
+  getEventPrompt,
+  getLessonPrompt
+} from "@/lib/prompts/ai-prompts";
+import { getAssessmentPrompt } from "@/lib/prompts/assessment-prompts";
+import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
+import { getKHDHPrompt } from "@/lib/prompts/khdh-prompts";
 
 export interface ActionResult<T = any> {
   success: boolean;
@@ -90,32 +98,159 @@ export async function generateLesson(...args: any[]): Promise<ActionResult<any>>
 }
 
 // Fixed Stubs to match TemplateEngineV2.tsx requirements
-export async function generateLessonPlan(...args: any[]): Promise<ActionResult<any>> {
-  return { success: false, error: "Please use the Manual Processing Hub for the new workflow." };
+export async function generateLessonPlan(
+  grade: string,
+  topic: string,
+  duration: string,
+  customInstructions: string,
+  tasks: string[],
+  chuDeSo?: string,
+  suggestions?: string,
+  file?: { mimeType: string, data: string },
+  modelName = "gemini-1.5-flash"
+): Promise<ActionResult<any>> {
+  try {
+    const activitySuggestions = JSON.parse(suggestions || "{}");
+    const prompt = getKHDHPrompt(
+      grade,
+      topic,
+      duration,
+      customInstructions,
+      tasks.map(t => ({ name: t, description: "" })),
+      undefined, // month can be null
+      activitySuggestions,
+      !!file
+    );
+    const text = await callAI(prompt, modelName, file);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI did not return valid JSON");
+    const data = JSON.parse(jsonMatch[0]);
+    return { success: true, data };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
 }
 
-export async function generateMeetingMinutes(...args: any[]): Promise<ActionResult<any>> {
-  return { success: false, error: "Feature currently unavailable." };
+export async function generateMeetingMinutes(
+  month?: string,
+  session?: string,
+  keyContent?: string,
+  conclusion?: string,
+  modelName = "gemini-1.5-flash"
+): Promise<ActionResult<any>> {
+  try {
+    const prompt = getMeetingPrompt(month || "", session || "", keyContent || "", "", "", "");
+    const text = await callAI(prompt, modelName);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI did not return valid JSON");
+    const data = JSON.parse(jsonMatch[0]);
+    return { success: true, data };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
 }
 
-export async function generateEventScript(...args: any[]): Promise<ActionResult<any>> {
-  return { success: false, error: "Feature currently unavailable." };
+export async function generateEventScript(
+  grade: string,
+  topic: string,
+  instructions?: string,
+  budget?: string,
+  checklist?: string,
+  evaluation?: string,
+  modelName = "gemini-1.5-flash"
+): Promise<ActionResult<any>> {
+  try {
+    const prompt = getEventPrompt(grade, topic);
+    const text = await callAI(prompt, modelName);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI did not return valid JSON");
+    const data = JSON.parse(jsonMatch[0]);
+    return { success: true, data };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
 }
 
-export async function generateNCBH(...args: any[]): Promise<ActionResult<any>> {
-  return { success: false, error: "Feature currently unavailable." };
+export async function generateNCBH(
+  grade: string,
+  topic: string,
+  instructions?: string,
+  modelName = "gemini-1.5-flash"
+): Promise<ActionResult<any>> {
+  try {
+    const prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${instructions || ""}`;
+    const text = await callAI(prompt, modelName);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI did not return valid JSON");
+    const data = JSON.parse(jsonMatch[0]);
+    return { success: true, data };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
 }
 
-export async function generateAssessmentPlan(...args: any[]): Promise<ActionResult<any>> {
-  return { success: false, error: "Feature currently unavailable." };
+export async function generateAssessmentPlan(
+  grade: string,
+  term: string,
+  productType: string,
+  topic: string,
+  modelName = "gemini-1.5-flash"
+): Promise<ActionResult<any>> {
+  try {
+    const prompt = getAssessmentPrompt(grade, term, productType, topic);
+    const text = await callAI(prompt, modelName);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI did not return valid JSON");
+    const data = JSON.parse(jsonMatch[0]);
+    return { success: true, data };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
 }
 
-export async function auditLessonPlan(...args: any[]): Promise<ActionResult<any>> {
-  return { success: false, error: "Feature currently unavailable." };
+export async function auditLessonPlan(lessonResult: any): Promise<ActionResult<any>> {
+  // audit logic is typically handled by performAdvancedAudit but we'll provide a wrapper
+  const { performAdvancedAudit } = await import("./advanced-audit");
+  const result = await performAdvancedAudit(lessonResult);
+  return { success: result.success, data: result.report, error: result.error };
 }
 
-export async function generateLessonSection(...args: any[]): Promise<ActionResult<any>> {
-  return { success: false, error: "Feature currently unavailable." };
+export async function generateLessonSection(
+  grade: string,
+  topic: string,
+  section: string,
+  context: string,
+  duration?: string,
+  customInstructions?: string,
+  tasks?: string[],
+  chuDeSo?: string,
+  suggestions?: string,
+  modelName = "gemini-1.5-flash",
+  file?: { mimeType: string, data: string },
+  stepInstruction?: string
+): Promise<ActionResult<any>> {
+  try {
+    const activitySuggestions = JSON.parse(suggestions || "{}");
+    const prompt = getLessonPrompt(
+      section as any,
+      grade,
+      topic,
+      duration || "45 phút",
+      context,
+      customInstructions || "",
+      tasks || [],
+      chuDeSo,
+      activitySuggestions,
+      stepInstruction
+    );
+    const text = await callAI(prompt, modelName, file);
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("AI did not return valid JSON");
+    const data = JSON.parse(jsonMatch[0]);
+    return { success: true, data };
+  } catch (e: any) {
+    return { success: false, error: e.message };
+  }
 }
 
 export async function onRefineSection(...args: any[]): Promise<ActionResult<any>> {
