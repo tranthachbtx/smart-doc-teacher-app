@@ -279,10 +279,22 @@ export class DocumentExportSystem {
     }
 
     private createTwoColumnActivity(title: string, content: any): any[] {
-        console.log(`[ExportSystem] 🚀 ARCH 26.0: Generating Multi-Segment Table for: ${title}`);
+        console.log(`[ExportSystem] 🚀 ARCH 26.1: Generating Multi-Segment Table for: ${title}`);
 
         const textContent = typeof content === "string" ? content : JSON.stringify(content);
-        const segments = this.parseAllSegments(textContent);
+        const { intro, segments } = this.parseAllSegmentsWithIntro(textContent);
+
+        const paragraphs: any[] = [
+            new Paragraph({
+                spacing: { before: 200, after: 100 },
+                children: [new TextRun({ text: title, bold: true, size: 26, color: "2E59A7" })]
+            })
+        ];
+
+        // Nếu có nội dung dẫn nhập (ví dụ: Tên hoạt động từ AI), in ra trước
+        if (intro && intro.length > 5) {
+            paragraphs.push(...this.renderData(intro));
+        }
 
         const rows = [
             new TableRow({
@@ -307,7 +319,6 @@ export class DocumentExportSystem {
             })
         ];
 
-        // Duyệt qua tất cả các segment để tạo hàng tương ứng
         segments.forEach((seg, idx) => {
             rows.push(new TableRow({
                 children: [
@@ -325,16 +336,12 @@ export class DocumentExportSystem {
             }));
         });
 
-        return [
-            new Paragraph({
-                spacing: { before: 200, after: 100 },
-                children: [new TextRun({ text: title, bold: true, size: 26, color: "2E59A7" })]
-            }),
-            new Table({
-                width: { size: 100, type: WidthType.PERCENTAGE },
-                rows: rows
-            })
-        ];
+        paragraphs.push(new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: rows
+        }));
+
+        return paragraphs;
     }
 
     private renderText(text: string): Paragraph[] {
@@ -435,49 +442,54 @@ export class DocumentExportSystem {
      * Parse All Segments (Arch 26.0)
      * Thay thế parseColumns cũ - Hỗ trợ mổ xẻ đa tầng nhiều cặp GV/HS
      */
-    private parseAllSegments(content: string): { cot1: string; cot2: string }[] {
+    private parseAllSegmentsWithIntro(content: string): { intro: string, segments: { cot1: string; cot2: string }[] } {
         if (!content || content.trim().length === 0) {
-            return [{ cot1: "Đang cập nhật nội dung...", cot2: "..." }];
+            return { intro: "", segments: [{ cot1: "Đang cập nhật nội dung...", cot2: "..." }] };
         }
 
-        const results: { cot1: string; cot2: string }[] = [];
+        const segments: { cot1: string; cot2: string }[] = [];
+        let intro = "";
 
         try {
-            // Case 1: Nếu là JSON thô chứa steps (Dành cho bản dán trực tiếp từ AI)
+            // Case 1: JSON
             const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 const json = JSON.parse(jsonMatch[0]);
                 if (json.steps && Array.isArray(json.steps)) {
                     json.steps.forEach((s: any) => {
-                        results.push({
-                            cot1: s.teacher_action || s.instruction || "GV tổ chức hoạt động.",
+                        segments.push({
+                            cot1: s.teacher_action || s.instruction || "GV tổ chức.",
                             cot2: s.student_action || s.product || "HS thực hiện."
                         });
                     });
-                    if (results.length > 0) return results;
+                    return { intro: json.module_title || "", segments };
                 }
             }
-        } catch (e) {
-            console.error("[ExportSystem] JSON Parse Error in parseAllSegments:", e);
-        }
+        } catch (e) { }
 
-        // Case 2: Xử lý chuỗi văn bản chứa nhiều marker {{cot_1}} / {{cot_2}}
-        // Đây chính là Root Cause fix: Thay vì split đơn lẻ, chúng ta duyệt theo cặp.
+        // Case 2: Multi-Segment Markers
         const markerRegex = /\{\{cot_1\}\}([\s\S]*?)\{\{cot_2\}\}([\s\S]*?)(?=\{\{cot_1\}\}|$)/gi;
         let match;
+        let firstIndex = -1;
+
         while ((match = markerRegex.exec(content)) !== null) {
-            results.push({
+            if (firstIndex === -1) firstIndex = match.index;
+            segments.push({
                 cot1: match[1].trim(),
                 cot2: match[2].trim()
             });
         }
 
-        // Fallback: Nếu không tìm thấy cặp marker nào, trả về toàn bộ text ở cot1
-        if (results.length === 0) {
-            results.push({ cot1: content, cot2: "..." });
+        if (firstIndex !== -1) {
+            intro = content.substring(0, firstIndex).trim();
         }
 
-        return results;
+        // Fallback
+        if (segments.length === 0) {
+            return { intro: "", segments: [{ cot1: content, cot2: "..." }] };
+        }
+
+        return { intro, segments };
     }
 
     // ========================================

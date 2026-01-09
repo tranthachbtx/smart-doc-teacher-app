@@ -348,7 +348,7 @@ export function ManualProcessingHub() {
                     disabled={!store.lesson.result}
                     className="h-20 px-12 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xl hover:shadow-indigo-200/50 transition-all gap-4 group text-xl font-black"
                 >
-                    {store.loading.isExporting ? (
+                    {store.isExporting ? (
                         <>
                             <Loader2 className="w-8 h-8 animate-spin" />
                             ĐANG XUẤT FILE HF V26.0... ({store.exportProgress}%)
