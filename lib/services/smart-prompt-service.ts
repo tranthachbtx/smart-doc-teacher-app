@@ -212,71 +212,55 @@ LƯU Ý:
      * Phase 2: BUILD DEEP CONTENT PROMPT
      * Mở rộng toàn bộ giáo án thành nội dung SIÊU CHI TIẾT (Micro-surgery).
      */
-    buildDeepContentPrompt(currentResult: any, data: SmartPromptData, moduleType?: string): string {
+    buildDeepContentPrompt(currentResult: any, data: SmartPromptData, moduleType?: string, fileContext?: string): string {
         const isHDTN = data.topicName.toLowerCase().includes("trải nghiệm") ||
             data.grade.includes("HĐTN");
 
         const targetSection = moduleType ? `TẬP TRUNG TỐI ĐA VÀO: ${moduleType.toUpperCase()}` : "TOÀN BỘ GIÁO ÁN";
+        const fileContextSection = fileContext ? `\n- DỮ LIỆU THAM KHẢO (PDF/TEXT): ${fileContext.substring(0, 15000)}...` : "";
+
+        // Contextual Instructions based on Phase
+        let contextInstruction = "";
+        if (moduleType?.includes("khoi_dong")) {
+            contextInstruction = "CHIẾN LƯỢC: Tạo 'Shock & Awe'. Gây ấn tượng mạnh ngay từ giây đầu tiên. Lời thoại GV phải cực kỳ lôi cuốn.";
+        } else if (moduleType?.includes("kham_pha")) {
+            contextInstruction = "CHIẾN LƯỢC: Dùng phương pháp 'Socratic Questioning'. Kết nối chặt chẽ với hoạt động Khởi động. Đào sâu kiến thức cốt lõi. Cột GV phải có các câu hỏi gợi mở tầng bậc.";
+        } else if (moduleType?.includes("luyen_tap")) {
+            contextInstruction = "CHIẾN LƯỢC: 'Deliberate Practice'. Thiết kế bài tập phân hóa. Dự đoán sai lầm (Common Pitfalls) của HS và cách GV sửa chữa.";
+        } else if (moduleType?.includes("van_dung")) {
+            contextInstruction = "CHIẾN LƯỢC: 'Real-world Transfer'. Kết nối bài học với cuộc sống thực tế. Giao nhiệm vụ mở rộng.";
+        }
 
         return `
-# VAI TRÒ: SIÊU TRÍ TUỆ SƯ PHẠM & KIẾN TRÚC SƯ GIÁO DỤC (LEVEL: EXPERT)
-# NHIỆM VỤ: PHÁT TRIỂN NỘI DUNG SIÊU CHI TIẾT (DEEP DIVE MODE - CV 5512) - ${targetSection}
+# VAI TRÒ: KIẾN TRÚC SƯ GIÁO DỤC (DEEP DIVE MODE) - GIAI ĐOẠN: ${moduleType?.toUpperCase() || "FULL"}
+# NHIỆM VỤ: PHÁT TRIỂN NỘI DUNG SIÊU CHI TIẾT (MICRO-SURGERY)
 
-Dựa trên khung giáo án hiện tại, hãy thực hiện "Vi phẫu thuật hóa" toàn bộ nội dung để đạt độ dày tri thức tối đa (hướng tới giáo án 60 trang).
+Dựa trên khung giáo án hiện tại và PDF tham khảo, hãy viết nội dung chuyên sâu cho các phần được yêu cầu.
+${contextInstruction}
 
 ## 🏮 TRIẾT LIGHT CHIẾN LƯỢC (DEEP DIVE PHILOSOPHY):
-Trong mỗi bước của chuỗi hoạt động (Transfer/Perform/Report/Conclude), bạn PHẢI áp dụng các lớp thông tin sau:
+Trong mỗi bước, BẮT BUỘC phải có:
 
 ### 1. ĐỐI VỚI CỘT GIÁO VIÊN (teacher_action):
-- **Kỹ thuật tổ chức:** Mô tả chi tiết cách bố trí lớp học, vị trí đứng, âm nhạc/ánh sáng (đặc trưng HĐTN).
-- **Lời thoại dẫn dắt (Verbatim Script):** Viết nguyên văn câu nói truyền cảm hứng, câu hỏi gợi mở của GV. Bắt đầu bằng: "GV nói:..."
-- **Kịch bản phân luồng (Branching):**
-  + Nếu lớp trầm: GV dùng câu hỏi mồi gì?
-  + Nếu lớp quá ồn/tranh luận gay gắt: GV điều phối thế nào?
-- **Quan sát sư phạm:** GV cần chú ý đến biểu hiện gì của HS (ánh mắt, cử chỉ)?
+- **Kỹ thuật tổ chức:** Mô tả phương pháp (Khăn trải bàn, Mảnh ghép, Bể cá...).
+- **Lời thoại dẫn dắt (Verbatim Script):** "GV nói:..." (Viết nguyên văn, giọng điệu truyền cảm).
+- **Kịch bản phân luồng (Branching):** Xử lý tình huống khi HS trả lời sai hoặc thụ động.
 
 ### 2. ĐỐI VỚI CỘT HỌC SINH (student_action):
-- **Trạng thái tâm lý:** Mô tả cảm xúc của HS (hào hứng, e ngại, tò mò) khi nhận nhiệm vụ.
-- **Quy trình tư duy (Cognitive Process):** Các bước tư duy trong đầu để ra câu trả lời (Memory Retrieval, Critical Thinking).
-- **Hành động cụ thể:** Ghi chép, vẽ, di chuyển, thảo luận nhóm (mô tả rõ vai trò nhóm trưởng, thư ký).
-- **Sản phẩm dự kiến (Product):** Mô tả chi tiết câu trả lời hoặc sản phẩm đầu ra (bao gồm cả phương án đúng và phương án sai phổ biến).
+- **Tâm lý & Tư duy:** Mô tả HS đang nghĩ gì? Cảm thấy thế nào?
+- **Hành động cụ thể:** Viết, thảo luận, di chuyển.
+- **Sản phẩm chi tiết:** Câu trả lời mẫu (đúng/sai), sản phẩm cụ thể.
 
 ---
 
 ## 📋 DỮ LIỆU ĐẦU VÀO (CORE INPUT):
 - Tên bài: ${currentResult.ten_bai || data.topicName}
-- Khung nội dung hiện tại: ${JSON.stringify(currentResult)}
-- Gợi ý Năng lực số (TT 02/2025): ${data.digitalCompetency}
+- Mục tiêu (Context): ${currentResult.muc_tieu_kien_thuc || "..."}
+- Khung bài hiện tại (JSON): ${JSON.stringify(currentResult)}
+- Gợi ý Năng lực số: ${data.digitalCompetency}${fileContextSection}
 
----
-
-## 🎯 YÊU CẦU NÂNG CẤP CỤ THỂ:
-1. **Mục II, III:** Viết cực kỳ chi tiết, liệt kê cụ thể từng học liệu, thiết bị số.
-2. **Tiến trình dạy học (Quan trọng nhất):** Triển khai 4 hoạt động theo phong cách "Director's Script". BẮT BUỘC dùng {{cot_1}} và {{cot_2}}.
-3. **Mục V (Hồ sơ):** Thiết kế chi tiết ít nhất 01 Phiếu học tập và 01 Rubric.
-4. **SHDC & SHL (Nếu là HĐTN):** Phát triển theo cấu trúc 2 cột, kết nối chặt chẽ với chủ đề.
-
----
-
-## 📦 QUY CÁCH TRẢ VỀ (JSON DUY NHẤT):
-{
-  "ten_bai": "...",
-  "muc_tieu_kien_thuc": "...",
-  "muc_tieu_nang_luc": "...",
-  "muc_tieu_pham_chat": "...",
-  "tich_hop_nls": "...",
-  "thiet_bi_day_hoc": "...",
-  "shdc": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
-  "shl": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
-  "hoat_dong_khoi_dong": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
-  "hoat_dong_kham_pha": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
-  "hoat_dong_luyen_tap": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
-  "hoat_dong_van_dung": "...(Dạng chuỗi có {{cot_1}} {{cot_2}})...",
-  "ho_so_day_hoc": "...",
-  "huong_dan_ve_nha": "..."
-}
-
-LƯU Ý: Không dùng marker [AI-SUGGESTION]/[PDF]. Phải viết "dày" và "sâu".
-`.trim();
+## 🎯 YÊU CẦU OUTPUT (JSON):
+Chỉ trả về JSON cập nhật cho các trường: ${moduleType}. KHÔNG trả về markdown.
+`;
     }
 };

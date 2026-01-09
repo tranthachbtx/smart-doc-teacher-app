@@ -149,18 +149,23 @@ export const useLessonActions = () => {
             const cleaner = TextCleaningService.getInstance();
             let currentPlan = { ...lesson.result };
 
-            // Sequential Stages for Maximum Density
+            // Priority: File Summary > Expert Guidance
+            const fileContext = lesson.fileSummary || lesson.expertGuidance || "";
+
+            // Sequential Stages for Maximum Density (Split into 4 for maximum depth)
             const stages = [
-                { id: "foundation", label: "Giai đoạn 1: Mục tiêu, Thiết bị & Khởi động", focus: "setup, shdc, hoat_dong_khoi_dong" },
-                { id: "core", label: "Giai đoạn 2: Khám phá & Luyện tập chuyên sâu", focus: "hoat_dong_kham_pha, hoat_dong_luyen_tap" },
-                { id: "closure", label: "Giai đoạn 3: Vận dụng, SHL & Hồ sơ dạy học", focus: "hoat_dong_van_dung, shl, ho_so_day_hoc, huong_dan_ve_nha" }
+                { id: "s1", label: "Giai đoạn 1: Mục tiêu, Thiết bị & Khởi động", focus: "setup, shdc, hoat_dong_khoi_dong" },
+                { id: "s2", label: "Giai đoạn 2: Khám phá (Deep Dive)", focus: "hoat_dong_kham_pha" },
+                { id: "s3", label: "Giai đoạn 3: Luyện tập (Deep Dive)", focus: "hoat_dong_luyen_tap" },
+                { id: "s4", label: "Giai đoạn 4: Vận dụng & Tổng kết", focus: "hoat_dong_van_dung, shl, ho_so_day_hoc, huong_dan_ve_nha" }
             ];
 
             for (let i = 0; i < stages.length; i++) {
                 const stage = stages[i];
                 store.setSuccess(`🚀 [${i + 1}/${stages.length}] ${stage.label}...`);
 
-                const deepPrompt = SmartPromptService.buildDeepContentPrompt(currentPlan, smartData, stage.focus);
+                // Inject File Context into the prompt
+                const deepPrompt = SmartPromptService.buildDeepContentPrompt(currentPlan, smartData, stage.focus, fileContext);
                 const result = await generateDeepContent(deepPrompt, store.selectedModel);
 
                 if (result.success && result.data) {

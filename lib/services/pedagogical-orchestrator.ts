@@ -171,6 +171,139 @@ export class PedagogicalOrchestrator {
     }
 
     // ========================================
+    // 🔗 AUTOMATED CHAINING (AUTOMATED DEEP DIVE ENGINE)
+    // ========================================
+
+    async generateChainedLessonPlan(metadata: { grade: string; topic: string; duration: string; fileSummary: string }, model: string = "gemini-1.5-pro"): Promise<any> {
+        console.log(`[Orchestrator] Starting Automated Deep Dive Engine for: ${metadata.topic}`);
+
+        const fullLessonData: any = {
+            grade: metadata.grade,
+            theme: metadata.topic,
+            duration: metadata.duration,
+            manualModules: []
+        };
+
+        // --- STEP 1: METADATA & OBJECTIVES (CALL 1) ---
+        console.log(`[Orchestrator] Step 1: Metadata & Objectives...`);
+        const metadataPrompt = `
+        Dựa trên nội dung PDF/SGK được cung cấp, hãy trích xuất và xây dựng các trường dữ liệu sau: 
+        - Tên bài (ten_bai)
+        - Mục tiêu Kiến thức, Năng lực, Phẩm chất (muc_tieu_*)
+        - Thiết bị dạy học (thiet_bi_day_hoc)
+        - Gợi ý nội dung Sinh hoạt dưới cờ (shdc)
+        - Gợi ý nội dung Sinh hoạt lớp (shl)
+        
+        Trả về JSON thuần túy (Raw JSON) với các key trên.
+        `;
+
+        const metadataRes = await this.aiManager.processContent({ text: metadata.fileSummary }, metadataPrompt, 'fast');
+
+        if (metadataRes.success) {
+            const metaJson = this.safeParseJSON(metadataRes.content);
+            if (metaJson) {
+                // Map metadata to modules for consistency
+                fullLessonData.manualModules.push({
+                    id: "mod_setup",
+                    title: "Thiết lập & Mục tiêu",
+                    type: "setup",
+                    content: JSON.stringify(metaJson, null, 2),
+                    isCompleted: true
+                });
+
+                // Also store suggested SHDC/SHL if available
+                if (metaJson.shdc) fullLessonData.manualModules.push({ id: "mod_shdc", title: "Sinh hoạt dưới cờ", type: "shdc", content: metaJson.shdc, isCompleted: true });
+                if (metaJson.shl) fullLessonData.manualModules.push({ id: "mod_shl", title: "Sinh hoạt lớp", type: "shl", content: metaJson.shl, isCompleted: true });
+            }
+        }
+
+        // --- STEP 2-5: ACTIVITIES DEEP DIVE (CALL 2-5) ---
+        const activities = [
+            { id: "mod_khoi_dong", type: "khoi_dong", title: "HOẠT ĐỘNG 1: KHỞI ĐỘNG" },
+            { id: "mod_kham_pha", type: "kham_pha", title: "HOẠT ĐỘNG 2: KHÁM PHÁ" },
+            { id: "mod_luyen_tap", type: "luyen_tap", title: "HOẠT ĐỘNG 3: LUYỆN TẬP" },
+            { id: "mod_van_dung", type: "van_dung", title: "HOẠT ĐỘNG 4: VẬN DỤNG" }
+        ];
+
+        let previousContext = "";
+
+        for (const act of activities) {
+            console.log(`[Orchestrator] Deep Dive Step: ${act.title}...`);
+
+            const prompt = this.buildDeepDivePrompt(act, metadata, previousContext);
+
+            // Using 'deep' tier (Gemini Pro + High Token Limit)
+            const result = await this.aiManager.processContent({ text: metadata.fileSummary }, prompt, 'deep');
+
+            if (result.success) {
+                const json = this.safeParseJSON(result.content);
+                if (json) {
+                    fullLessonData.manualModules.push({
+                        id: act.id,
+                        title: act.title,
+                        type: act.type,
+                        content: result.content, // Save the full Raw JSON response
+                        isCompleted: true
+                    });
+
+                    // Update context for next step
+                    const summary = json.summary_for_next_step || (json.steps ? "Hoạt động hoàn thành" : "");
+                    previousContext += `\n- Hoạt động ${act.title} đã xong. Kết quả: ${summary}`;
+                }
+            }
+        }
+
+        // --- EXTRA: APPENDIX (Optional/Included in Vận dụng if needed, but explicit is better) ---
+        // Using simple fast call for Appendix if not fully covered
+        const appendixPrompt = `Tạo hướng dẫn về nhà và phụ lục cần thiết cho bài học này.`;
+        const appendixRes = await this.aiManager.processContent({ text: metadata.fileSummary }, appendixPrompt, 'fast');
+        if (appendixRes.success) fullLessonData.manualModules.push({ id: "mod_appendix", title: "Phụ lục", type: "appendix", content: appendixRes.content, isCompleted: true });
+
+        return fullLessonData;
+    }
+
+    private buildDeepDivePrompt(module: { type: string; title: string }, metadata: any, previousContext: string): string {
+        // A. SYSTEM INSTRUCTION (COMPASS PHILOSOPHY)
+        const systemInstruction = `
+Bạn là CHUYÊN GIA SƯ PHẠM CAO CẤP & KIẾN TRÚC SƯ GIÁO DỤC (AI Pedagogical Architect).
+Nhiệm vụ: Soạn thảo Kế hoạch bài dạy (KHBD) môn Hoạt động Trải nghiệm, Hướng nghiệp theo công văn 5512.
+
+TƯ DUY CỐT LÕI (COMPASS PHILOSOPHY):
+1. **Deep Dive Mode:** Không viết tóm tắt. Phải viết kịch bản chi tiết từng lời thoại, hành động, diễn biến tâm lý.
+2. **Cấu trúc 2 cột:**
+   - {{cot_1}}: Hoạt động Giáo viên (Kỹ thuật tổ chức, Lời thoại dẫn dắt, Xử lý tình huống).
+   - {{cot_2}}: Hoạt động Học sinh (Tâm lý, Quy trình tư duy, Hành động cụ thể).
+3. **Data-Driven:** Dựa hoàn toàn vào dữ liệu PDF và Context được cung cấp.
+
+ĐỊNH DẠNG OUTPUT: Chỉ trả về JSON thuần túy (Raw JSON), không Markdown bọc ngoài.
+`;
+
+        // B. SPECIFIC INSTRUCTION FOR ACTIVITY
+        const activitySpecifics = `
+THIẾT KẾ: ${module.title}
+- Context: ${previousContext ? `Hoạt động trước: ${previousContext}` : "Đây là hoạt động đầu tiên."}
+- Yêu cầu Deep Dive:
+  + Cột GV: Phải có Lời thoại (Verbatim script), Kỹ thuật tổ chức (như 'Mảnh ghép', 'Khăn trải bàn', 'Socratic').
+  + Cột HS: Mô tả Quy trình tư duy (Cognitive process), Trạng thái tâm lý.
+  
+TRẢ VỀ JSON VỚI CẤU TRÚC:
+{
+  "module_title": "${module.title}",
+  "summary_for_next_step": "Tóm tắt kết quả...",
+  "steps": [
+    { 
+      "step_type": "transfer", 
+      "teacher_action": "Markdown ({{cot_1}})...", 
+      "student_action": "Markdown ({{cot_2}})..." 
+    },
+    ... (perform, report, conclude)
+  ]
+}
+`;
+        return `${systemInstruction}\n\n${activitySpecifics}`;
+    }
+
+    // ========================================
     // 🧠 RELEVANCE & TAGGING
     // ========================================
 

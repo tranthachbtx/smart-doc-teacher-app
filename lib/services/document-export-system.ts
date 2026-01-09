@@ -42,9 +42,6 @@ export class DocumentExportSystem {
     // 🚀 CORE EXPORT METHODS
     // ========================================
 
-    /**
-     * Export Lesson Plan (Official MoET 5512 Format)
-     */
     async exportLesson(result: LessonResult, options: { onProgress?: (p: number) => void } = {}): Promise<boolean> {
         console.log("[ExportSystem] Generating high-fidelity MoET 5512 Document...");
         options.onProgress?.(10);
@@ -76,18 +73,15 @@ export class DocumentExportSystem {
 
             options.onProgress?.(30);
 
-            // Add SHDC if exists
             if (result.shdc) {
                 children.push(...this.createTwoColumnActivity("SINH HOẠT DƯỚI CỜ", result.shdc));
             }
 
-            // Add Activities
             children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 1: KHỞI ĐỘNG (5-7 phút)", result.hoat_dong_khoi_dong || ""));
             children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 2: KHÁM PHÁ (15-20 phút)", (result.hoat_dong_kham_pha || result.hoat_dong_kham_pha_1) || ""));
             children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 3: LUYỆN TẬP (10-15 phút)", (result.hoat_dong_luyen_tap || result.hoat_dong_luyen_tap_1) || ""));
             children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 4: VẬN DỤNG (5-10 phút)", result.hoat_dong_van_dung || ""));
 
-            // Add SHL if exists
             if (result.shl) {
                 children.push(...this.createTwoColumnActivity("SINH HOẠT LỚP", result.shl));
             }
@@ -104,34 +98,29 @@ export class DocumentExportSystem {
             const doc = new Document({ sections: [{ children }] });
             const blob = await Packer.toBlob(doc);
             this.triggerDownload(blob, `Giao_an_${result.ten_bai || "5512"}.docx`);
-
-            options.onProgress?.(100);
             return true;
         } catch (error) {
-            console.error("[ExportSystem] Export failed:", error);
+            console.error("[ExportSystem] Lesson export failed:", error);
             return false;
         }
     }
 
-    /**
-     * Export Meeting Minutes
-     */
     async exportMeeting(result: MeetingResult, month: string): Promise<boolean> {
         console.log(`[ExportSystem] Generating Meeting Minutes for Month ${month}...`);
         try {
             const children = [
-                this.createHeader(`BIÊN BẢN HỌP CHUYÊN MÔN THÁNG ${month}`),
-                this.createField("1. Nội dung chính:", result.noi_dung_chinh),
-                this.createField("2. Ưu điểm:", result.uu_diem),
-                this.createField("3. Hạn chế:", result.han_che),
-                this.createField("4. Ý kiến đóng góp:", result.y_kien_dong_gop),
-                this.createField("5. Kế hoạch tháng tới:", result.ke_hoach_thang_toi),
-                this.createSectionTitle("KẾT LUẬN CUỘC HỌP"),
-                ...this.renderData(result.ket_luan_cuoc_hop || result.conclusion || "...")
+                this.createHeader(`BIÊN BẢN HỌP TỔ CHUYÊN MÔN - THÁNG ${month}`),
+                this.createField("Nội dung:", result.monthlyContext || "..."),
+                this.createSectionTitle("I. ĐÁNH GIÁ CÔNG TÁC THÁNG QUA"),
+                ...this.renderData(result.evaluation),
+                this.createSectionTitle("II. TRIỂN KHAI CÔNG TÁC THÁNG TỚI"),
+                ...this.renderData(result.plan),
+                this.createSectionTitle("III. THỐNG NHẤT CHUYÊN MÔN"),
+                ...this.renderData(result.conclusion)
             ];
             const doc = new Document({ sections: [{ children }] });
             const blob = await Packer.toBlob(doc);
-            this.triggerDownload(blob, `Bien_ban_hop_T${month}.docx`);
+            this.triggerDownload(blob, `Bien_ban_Hop_To_${month}.docx`);
             return true;
         } catch (error) {
             console.error("[ExportSystem] Meeting export failed:", error);
@@ -139,20 +128,16 @@ export class DocumentExportSystem {
         }
     }
 
-    /**
-     * Export Event Script
-     */
     async exportEvent(result: EventResult, metadata: { grade: string; month: string }): Promise<boolean> {
-        console.log(`[ExportSystem] Generating Event Script: ${result.ten_chu_de}...`);
+        console.log(`[ExportSystem] Generating Event Script for ${result.ten_chu_de || "New Event"}...`);
         try {
-            const children: any[] = [
-                this.createHeader((result.ten_chu_de || result.title || "KỊCH BẢN NGOẠI KHÓA").toUpperCase()),
-                this.createField("Khối lớp:", metadata.grade),
-                this.createField("Thời gian:", result.thoi_gian),
-                this.createField("Địa điểm:", result.dia_diem),
-                this.createField("Đối tượng:", result.doi_tuong),
+            const children = [
+                this.createHeader(`KỊCH BẢN HOẠT ĐỘNG NGOẠI KHÓA/SỰ KIỆN`),
+                this.createField("Chủ đề:", result.ten_chu_de || result.title),
+                this.createField("Khối:", metadata.grade),
+                this.createField("Tháng:", metadata.month),
 
-                this.createSectionTitle("I. MỤC TIÊU"),
+                this.createSectionTitle("I. MỤC ĐÍCH & YÊU CẦU"),
                 ...this.renderData(result.muc_tieu || result.muc_dich_yeu_cau),
 
                 this.createSectionTitle("II. KỊCH BẢN CHI TIẾT"),
@@ -172,9 +157,6 @@ export class DocumentExportSystem {
         }
     }
 
-    /**
-     * Export NCBH Profile
-     */
     async exportNCBH(result: NCBHResult, metadata: { grade: string; month: string }): Promise<boolean> {
         console.log(`[ExportSystem] Generating NCBH Profile for Month ${metadata.month}...`);
         try {
@@ -217,9 +199,6 @@ export class DocumentExportSystem {
         }
     }
 
-    /**
-     * Export Assessment Plan
-     */
     async exportAssessmentPlan(result: AssessmentResult, metadata: { grade: string; term: string }): Promise<boolean> {
         console.log(`[ExportSystem] Generating Assessment Plan for ${metadata.term}...`);
         try {
@@ -426,39 +405,40 @@ export class DocumentExportSystem {
                         cot1: json.steps.map((s: any) => s.teacher_action || s.instruction || s.action || "").join("\n\n"),
                         cot2: json.steps.map((s: any) => s.student_action || s.product || s.result || "").join("\n\n")
                     };
-                    if (json.to_chuc) {
-                        const tc = String(json.to_chuc);
-                        const cot2M = tc.match(/\{\{cot_2\}\}/i);
-                        if (cot2M) {
-                            const split = tc.split(/\{\{cot_2\}\}/i);
-                            return {
-                                cot1: (json.muc_tieu ? `MỤC TIÊU: ${json.muc_tieu}\n\n` : "") + (split[0]?.replace(/\{\{cot_1\}\}/i, "")?.trim() || tc),
-                                cot2: split[1]?.trim() || "..."
-                            };
-                        }
+                }
+                if (json.to_chuc) {
+                    const tc = String(json.to_chuc);
+                    const cot2M = tc.match(/\{\{cot_2\}\}/i);
+                    if (cot2M) {
+                        const split = tc.split(/\{\{cot_2\}\}/i);
+                        return {
+                            cot1: (json.muc_tieu ? `MỤC TIÊU: ${json.muc_tieu}\n\n` : "") + (split[0]?.replace(/\{\{cot_1\}\}/i, "")?.trim() || tc),
+                            cot2: split[1]?.trim() || "..."
+                        };
                     }
                 }
-            } catch { }
-
-            // Regex Fallback
-            const cot2Match = content.match(/\{\{cot_2\}\}/i);
-            if (cot2Match) {
-                const split = content.split(/\{\{cot_2\}\}/i);
-                return {
-                    cot1: split[0]?.replace(/\{\{cot_1\}\}/i, "")?.trim() || content,
-                    cot2: split[1]?.trim() || "..."
-                };
             }
+        } catch (e) { }
 
-            // Section Search Fallback
-            const splitWord = content && content.includes("SẢN PHẨM") ? "SẢN PHẨM" : "HS CHUẨN BỊ";
-            const split = content.split(splitWord);
-            if (split.length > 1) {
-                return { cot1: split[0].trim(), cot2: split[1].trim() };
-            }
-
-            return { cot1: content, cot2: "..." };
+        // Regex Fallback
+        const cot2Match = content.match(/\{\{cot_2\}\}/i);
+        if (cot2Match) {
+            const split = content.split(/\{\{cot_2\}\}/i);
+            return {
+                cot1: split[0]?.replace(/\{\{cot_1\}\}/i, "")?.trim() || content,
+                cot2: split[1]?.trim() || "..."
+            };
         }
+
+        // Section Search Fallback
+        const splitWord = content && content.includes("SẢN PHẨM") ? "SẢN PHẨM" : "HS CHUẨN BỊ";
+        const split = content.split(splitWord);
+        if (split.length > 1) {
+            return { cot1: split[0].trim(), cot2: split[1].trim() };
+        }
+
+        return { cot1: content, cot2: "..." };
+    }
 
     private async triggerDownload(blob: Blob, fileName: string) {
         // 💎 INTEGRITY SEAL (ISO 25010 COMPLIANCE)
