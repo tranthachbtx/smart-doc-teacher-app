@@ -35,22 +35,41 @@ export const useLessonActions = () => {
                     name: lesson.file.name
                 };
             } else if (lesson.theme && lesson.grade) {
-                // Synthetic File (Database Mode)
-                const syntheticContent = `YÊU CẦU TỰ ĐỘNG KHỞI TẠO:
+                // 🎯 ENHANCED DATABASE MODE (FIX: EMPTY CONTENT)
+                const smartData = await SmartPromptService.lookupSmartData(lesson.grade, lesson.theme, lesson.chuDeSo);
+
+                const richContent = `YÊU CẦU TỰ ĐỘNG KHỞI TẠO (DATABASE MODE):
                 - Chủ đề: ${lesson.theme}
                 - Khối lớp: ${lesson.grade}
-                - Nguồn dữ liệu: Truy xuất trực tiếp từ Cơ sở dữ liệu chương trình GDPT 2018 (Internal Database).
+                
+                DỮ LIỆU TỪ CHƯƠNG TRÌNH GDPT 2018 (CHI TIẾT):
+                ${smartData.objectives}
+                
+                NHIỆM VỤ SƯ PHẠM CỐT LÕI CẦN THỂ HIỆN TRONG GIÁO ÁN:
+                1. Khởi động: ${smartData.coreMissions.khoiDong}
+                2. Khám phá: ${smartData.coreMissions.khamPha}
+                3. Luyện tập: ${smartData.coreMissions.luyenTap}
+                4. Vận dụng: ${smartData.coreMissions.vanDung}
+                
+                GỢI Ý PHƯƠNG PHÁP & KỸ THUẬT DẠY HỌC:
+                ${smartData.pedagogicalNotes}
+                
+                YÊU CẦU TÍCH HỢP NĂNG LỰC SỐ:
+                ${smartData.digitalCompetency}
+                
+                YÊU CẦU ĐÁNH GIÁ (RUBRIC/HỒ SƠ):
+                ${smartData.assessmentTools}
                 `;
-                // Convert to Base64 (Buffer works in Node, but this is Client hook?)
-                // Browser-safe Base64:
-                const base64Content = btoa(unescape(encodeURIComponent(syntheticContent)));
+
+                // Browser-safe Base64 encoding for Unicode
+                const base64Content = btoa(unescape(encodeURIComponent(richContent)));
 
                 filePayload = {
                     mimeType: 'text/plain',
                     data: base64Content,
                     name: `Auto_Fetch_Database_Lop${lesson.grade}.txt`
                 };
-                console.log("[useLessonActions] No file uploaded. Synthesized Virtual File for Deep Dive Engine.");
+                console.log("[useLessonActions] No file uploaded. Synthesized RICH Virtual File from Database.");
             }
 
             const result = await generateLesson(
