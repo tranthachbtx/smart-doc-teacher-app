@@ -10,19 +10,19 @@ import { extractTextFromFile } from '@/lib/actions/gemini';
 
 export async function POST(request: NextRequest) {
   console.log('[PDF-EXTRACTOR] Processing PDF extraction request...');
-  
+
   try {
     // Get file from form data
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    
+
     if (!file) {
       return NextResponse.json(
         { success: false, error: 'Vui lòng chọn file PDF hoặc DOCX' },
         { status: 400 }
       );
     }
-    
+
     // Validate file size (max 50MB)
     const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
@@ -31,56 +31,84 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     // Validate file type
     const allowedTypes = [
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
-    
+
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
         { success: false, error: 'Chỉ hỗ trợ file PDF và DOCX' },
         { status: 400 }
       );
     }
-    
+
     console.log(`[PDF-EXTRACTOR] Processing file: ${file.name} (${file.size} bytes)`);
-    
+
     // Convert file to base64 for MultiStrategyExtractor
     const arrayBuffer = await file.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString('base64');
-    
+
     // Use existing MultiStrategyExtractor for fast processing
     const extractor = MultiStrategyExtractor.getInstance();
-    const extractedContent = await extractor.extract(file, base64Data);
-    
-    // Fallback to Gemini Vision if needed
+    let extractedContent = { content: '', source: 'none' as const };
+    try {
+      extractedContent = await extractor.extract(file, base64Data);
+    } catch (err) {
+      console.warn('[PDF-EXTRACTOR] Extractor failed, proceeding to AI analysis:', err);
+    }
+
+    // Deep Analysis using ContentStructureAnalyzer (on server)
+    console.log('[PDF-EXTRACTOR] Performing structural analysis...');
+    const analyzer = new ContentStructureAnalyzer();
+    const filePayload = { mimeType: file.type, data: base64Data };
+
+    // Attempt pre-fill analysis (this gives us the metadata and activity chunks)
+    // Pass empty grade/theme if not provided, or extract from text later
+    let struct = null;
+    try {
+      struct = await analyzer.analyzeAndPreFill(filePayload, "10", file.name);
+    } catch (err) {
+      console.warn('[PDF-EXTRACTOR] Structural analysis failed, using raw text only:', err);
+    }
+
+    // Handle Fallback to Gemini Vision for content if extraction was very poor
     let finalContent = extractedContent.content;
     let extractionSource = extractedContent.source;
-    
+
     if (!finalContent || finalContent.length < 100) {
-      console.log('[PDF-EXTRACTOR] Fallback to Gemini Vision for better extraction...');
-      try {
+      if (struct) {
+        // Use reconstructed content from struct if raw extraction failed
+        finalContent = [
+          struct.ten_bai,
+          struct.muc_tieu_kien_thuc,
+          struct.raw_khoi_dong,
+          struct.raw_kham_pha,
+          struct.raw_luyen_tap,
+          struct.raw_van_dung
+        ].join('\n\n');
+        extractionSource = 'ai_reconstruction';
+      } else {
+        console.log('[PDF-EXTRACTOR] Fallback to Gemini Vision for better extraction...');
         const geminiResult = await extractTextFromFile(
-          { mimeType: file.type, data: base64Data },
+          filePayload,
           "Hãy phân tích tài liệu này và trích xuất nội dung theo cấu trúc giáo án. Tập trung vào các phần: Mục tiêu, Chuẩn bị, Hoạt động (Khởi động, Khám phá, Luyện tập, Vận dụng), Kiểm tra, Hướng dẫn về nhà."
         );
-        
+
         if (geminiResult.success) {
           finalContent = geminiResult.content || '';
           extractionSource = 'gemini_vision';
         }
-      } catch (error) {
-        console.error('[PDF-EXTRACTOR] Gemini Vision fallback failed:', error);
       }
     }
-    
+
     // Extract KHBH sections
     const khbhSections = extractKHBHSections(finalContent);
-    
-    console.log(`[PDF-EXTRACTOR] Analysis complete: ${khbhSections.length} KHBH sections found`);
-    
+
+    console.log(`[PDF-EXTRACTOR] Analysis complete. Source: ${extractionSource}`);
+
     return NextResponse.json({
       success: true,
       content: finalContent,
@@ -91,9 +119,10 @@ export async function POST(request: NextRequest) {
         fileType: file.type,
         extractionSource: extractionSource
       },
+      struct: struct, // RETURN THE ANALYZED STRUCTURE
       summary: finalContent.substring(0, 500)
     });
-    
+
   } catch (error) {
     console.error('[PDF-EXTRACTOR] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -109,72 +138,72 @@ export async function POST(request: NextRequest) {
  */
 function extractKHBHSections(content: string) {
   const sections = [];
-  
+
   // Define KHBH section patterns
   const sectionPatterns = [
-    { 
-      key: 'muc_tieu', 
-      title: 'Mục tiêu bài học', 
+    {
+      key: 'muc_tieu',
+      title: 'Mục tiêu bài học',
       patterns: [/mục tiêu/i, /tiêu chí/i, /kiến thức/i, /năng lực/i, /phẩm chất/i],
       priority: 1
     },
-    { 
-      key: 'chuẩn_bị', 
-      title: 'Chuẩn bị bài học', 
+    {
+      key: 'chuẩn_bị',
+      title: 'Chuẩn bị bài học',
       patterns: [/chuẩn bị/i, /thiết bị/i, /giáo cụ/i, /học liệu/i],
       priority: 2
     },
-    { 
-      key: 'hoat_động_khởi_động', 
-      title: 'HOẠT ĐỘNG 1: KHỞI ĐỘNG', 
+    {
+      key: 'hoat_động_khởi_động',
+      title: 'HOẠT ĐỘNG 1: KHỞI ĐỘNG',
       patterns: [/khởi động/i, /đặt vấn đề/i, /giới thiệu/i, /warm[-]?up/i, /hoạt động 1/i],
       priority: 3
     },
-    { 
-      key: 'hoạt_động_khám_phá', 
-      title: 'HOẠT ĐỘNG 2: KHÁM PHÁ', 
+    {
+      key: 'hoạt_động_khám_phá',
+      title: 'HOẠT ĐỘNG 2: KHÁM PHÁ',
       patterns: [/khám phá/i, /hình thành/i, /xây dựng/i, /mới/i, /hoạt động 2/i],
       priority: 4
     },
-    { 
-      key: 'hoạt_động_luyện_tập', 
-      title: 'HOẠT ĐỘNG 3: LUYỆN TẬP', 
+    {
+      key: 'hoạt_động_luyện_tập',
+      title: 'HOẠT ĐỘNG 3: LUYỆN TẬP',
       patterns: [/luyện tập/i, /thực hành/i, /củng cố/i, /bài tập/i, /hoạt động 3/i],
       priority: 5
     },
-    { 
-      key: 'hoạt_động_vận_dụng', 
-      title: 'HOẠT ĐỘNG 4: VẬN DỤNG', 
+    {
+      key: 'hoạt_động_vận_dụng',
+      title: 'HOẠT ĐỘNG 4: VẬN DỤNG',
       patterns: [/vận dụng/i, /mở rộng/i, /sáng tạo/i, /thực tế/i, /hoạt động 4/i],
       priority: 6
     },
-    { 
-      key: 'kiểm_tra', 
-      title: 'Kiểm tra đánh giá', 
+    {
+      key: 'kiểm_tra',
+      title: 'Kiểm tra đánh giá',
       patterns: [/kiểm tra/i, /đánh giá/i, /tự luận/i, /bài kiểm tra/i],
       priority: 7
     },
-    { 
-      key: 'hướng_dẫn', 
-      title: 'Hướng dẫn về nhà', 
+    {
+      key: 'hướng_dẫn',
+      title: 'Hướng dẫn về nhà',
       patterns: [/hướng dẫn/i, /về nhà/i, /dặn dò/i, /bài tập về nhà/i],
       priority: 8
     }
   ];
-  
+
   // Fallback: Extract from raw text
   const lines = content.split('\n');
   let currentSection = null;
   let currentContent = [];
-  
+
   for (const line of lines) {
     const trimmedLine = line.trim();
-    
+
     // Check if this line starts a new section
-    const matchedPattern = sectionPatterns.find(pattern => 
+    const matchedPattern = sectionPatterns.find(pattern =>
       pattern.patterns.some(p => p.test(trimmedLine)) && trimmedLine.length < 100
     );
-    
+
     if (matchedPattern) {
       // Save previous section
       if (currentSection) {
@@ -183,7 +212,7 @@ function extractKHBHSections(content: string) {
           content: currentContent.join('\n').trim()
         });
       }
-      
+
       // Start new section
       currentSection = {
         key: matchedPattern.key,
@@ -197,7 +226,7 @@ function extractKHBHSections(content: string) {
       currentContent.push(trimmedLine);
     }
   }
-  
+
   // Add last section
   if (currentSection) {
     sections.push({
@@ -205,14 +234,14 @@ function extractKHBHSections(content: string) {
       content: currentContent.join('\n').trim()
     });
   }
-  
+
   // Sort by priority and merge similar sections
   const sortedSections = sections.sort((a, b) => {
     const priorityA = sectionPatterns.find(p => p.key === a.key)?.priority || 999;
     const priorityB = sectionPatterns.find(p => p.key === b.key)?.priority || 999;
     return priorityA - priorityB;
   });
-  
+
   return sortedSections;
 }
 

@@ -279,49 +279,60 @@ export class DocumentExportSystem {
     }
 
     private createTwoColumnActivity(title: string, content: any): any[] {
-        console.log(`[ExportSystem] 🔍 Processing activity: ${title}`);
-        console.log(`[ExportSystem] 📥 Raw content type: ${typeof content}`);
+        console.log(`[ExportSystem] 🚀 ARCH 26.0: Generating Multi-Segment Table for: ${title}`);
 
         const textContent = typeof content === "string" ? content : JSON.stringify(content);
-        console.log(`[ExportSystem] 📏 Text length: ${textContent.length}`);
+        const segments = this.parseAllSegments(textContent);
 
-        const { cot1, cot2 } = this.parseColumns(textContent);
+        const rows = [
+            new TableRow({
+                children: [
+                    new TableCell({
+                        width: { size: 50, type: WidthType.PERCENTAGE },
+                        shading: { fill: "E8EEF7", type: ShadingType.CLEAR, color: "auto" },
+                        children: [new Paragraph({
+                            children: [new TextRun({ text: "HOẠT ĐỘNG CỦA GV & HS", bold: true, size: 22, color: "2E59A7" })],
+                            alignment: AlignmentType.CENTER
+                        })]
+                    }),
+                    new TableCell({
+                        width: { size: 50, type: WidthType.PERCENTAGE },
+                        shading: { fill: "F2F5FA", type: ShadingType.CLEAR, color: "auto" },
+                        children: [new Paragraph({
+                            children: [new TextRun({ text: "SẢN PHẨM DỰ KIẾN", bold: true, size: 22, color: "2E59A7" })],
+                            alignment: AlignmentType.CENTER
+                        })]
+                    })
+                ]
+            })
+        ];
 
-        console.log(`[ExportSystem] ✅ Parsed Result:`);
-        console.log(`   - Col 1 (GV): ${cot1.length} chars`);
-        console.log(`   - Col 2 (HS): ${cot2.length} chars`);
-
-        if (cot1.length < 50) console.warn(`[ExportSystem] ⚠️ Col 1 is suspiciously short: "${cot1}"`);
+        // Duyệt qua tất cả các segment để tạo hàng tương ứng
+        segments.forEach((seg, idx) => {
+            rows.push(new TableRow({
+                children: [
+                    new TableCell({
+                        width: { size: 50, type: WidthType.PERCENTAGE },
+                        borders: { bottom: { style: idx === segments.length - 1 ? BorderStyle.SINGLE : BorderStyle.DASHED, size: 1, color: "DDDDDD" } },
+                        children: [...this.renderData(seg.cot1)]
+                    }),
+                    new TableCell({
+                        width: { size: 50, type: WidthType.PERCENTAGE },
+                        borders: { bottom: { style: idx === segments.length - 1 ? BorderStyle.SINGLE : BorderStyle.DASHED, size: 1, color: "DDDDDD" } },
+                        children: [...this.renderData(seg.cot2)]
+                    })
+                ]
+            }));
+        });
 
         return [
             new Paragraph({
                 spacing: { before: 200, after: 100 },
-                children: [new TextRun({ text: title, bold: true, size: 26, color: "444444" })]
+                children: [new TextRun({ text: title, bold: true, size: 26, color: "2E59A7" })]
             }),
             new Table({
                 width: { size: 100, type: WidthType.PERCENTAGE },
-                rows: [
-                    new TableRow({
-                        children: [
-                            new TableCell({
-                                width: { size: 50, type: WidthType.PERCENTAGE },
-                                borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } },
-                                children: [
-                                    new Paragraph({ children: [new TextRun({ text: "HOẠT ĐỘNG CỦA GV & HS", bold: true, size: 22 })], alignment: AlignmentType.CENTER }),
-                                    ...this.renderData(cot1)
-                                ]
-                            }),
-                            new TableCell({
-                                width: { size: 50, type: WidthType.PERCENTAGE },
-                                borders: { top: { style: BorderStyle.SINGLE }, bottom: { style: BorderStyle.SINGLE }, left: { style: BorderStyle.SINGLE }, right: { style: BorderStyle.SINGLE } },
-                                children: [
-                                    new Paragraph({ children: [new TextRun({ text: "SẢN PHẨM DỰ KIẾN", bold: true, size: 22 })], alignment: AlignmentType.CENTER }),
-                                    ...this.renderData(cot2)
-                                ]
-                            })
-                        ]
-                    })
-                ]
+                rows: rows
             })
         ];
     }
@@ -420,81 +431,53 @@ export class DocumentExportSystem {
         return paragraphs.length > 0 ? paragraphs : [new Paragraph({ text: "..." })];
     }
 
-    private parseColumns(content: string): { cot1: string; cot2: string } {
+    /**
+     * Parse All Segments (Arch 26.0)
+     * Thay thế parseColumns cũ - Hỗ trợ mổ xẻ đa tầng nhiều cặp GV/HS
+     */
+    private parseAllSegments(content: string): { cot1: string; cot2: string }[] {
         if (!content || content.trim().length === 0) {
-            return { cot1: "Đang cập nhật nội dung...", cot2: "..." };
+            return [{ cot1: "Đang cập nhật nội dung...", cot2: "..." }];
         }
 
-        // High-precision isolation
+        const results: { cot1: string; cot2: string }[] = [];
+
         try {
+            // Case 1: Nếu là JSON thô chứa steps (Dành cho bản dán trực tiếp từ AI)
             const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 const json = JSON.parse(jsonMatch[0]);
-
-                // Case 1: Standard 'steps' array (Pro Tier)
                 if (json.steps && Array.isArray(json.steps)) {
-                    const cot1Content = json.steps.map((s: any) =>
-                        s.teacher_action || s.instruction || s.action || ""
-                    ).filter((c: string) => c && c.trim().length > 0).join("\n\n");
-
-                    const cot2Content = json.steps.map((s: any) =>
-                        s.student_action || s.product || s.result || ""
-                    ).filter((c: string) => c && c.trim().length > 0).join("\n\n");
-
-                    // FALLBACK FOR EMPTY STEPS
-                    if (cot1Content.length < 10) {
-                        console.warn("[ExportSystem] ⚠️ Steps found but content is empty. Applying fallback.");
-                        return {
-                            cot1: "Giáo viên tổ chức hoạt động theo hướng dẫn của chương trình GDPT 2018 (Nội dung chi tiết đang được AI bổ sung...).",
-                            cot2: "Học sinh tham gia hoạt động tích cực theo sự hướng dẫn của giáo viên."
-                        };
-                    }
-
-                    return { cot1: cot1Content, cot2: cot2Content };
-                }
-
-                // Case 2: Direct keys
-                if (json.teacher_action || json.student_action) {
-                    return {
-                        cot1: json.teacher_action || "GV hướng dẫn học sinh thực hiện nhiệm vụ.",
-                        cot2: json.student_action || "HS thực hiện nhiệm vụ và báo cáo kết quả."
-                    };
-                }
-
-                if (json.to_chuc) {
-                    const tc = String(json.to_chuc);
-                    const cot2M = tc.match(/\{\{cot_2\}\}/i);
-                    if (cot2M) {
-                        const split = tc.split(/\{\{cot_2\}\}/i);
-                        return {
-                            cot1: (json.muc_tieu ? `MỤC TIÊU: ${json.muc_tieu}\n\n` : "") + (split[0]?.replace(/\{\{cot_1\}\}/i, "")?.trim() || tc),
-                            cot2: split[1]?.trim() || "..."
-                        };
-                    }
+                    json.steps.forEach((s: any) => {
+                        results.push({
+                            cot1: s.teacher_action || s.instruction || "GV tổ chức hoạt động.",
+                            cot2: s.student_action || s.product || "HS thực hiện."
+                        });
+                    });
+                    if (results.length > 0) return results;
                 }
             }
         } catch (e) {
-            console.error("[ExportSystem] JSON Parse Error in parseColumns:", e);
+            console.error("[ExportSystem] JSON Parse Error in parseAllSegments:", e);
         }
 
-        // Regex Fallback
-        const cot2Match = content.match(/\{\{cot_2\}\}/i);
-        if (cot2Match) {
-            const split = content.split(/\{\{cot_2\}\}/i);
-            return {
-                cot1: split[0]?.replace(/\{\{cot_1\}\}/i, "")?.trim() || content,
-                cot2: split[1]?.trim() || "..."
-            };
+        // Case 2: Xử lý chuỗi văn bản chứa nhiều marker {{cot_1}} / {{cot_2}}
+        // Đây chính là Root Cause fix: Thay vì split đơn lẻ, chúng ta duyệt theo cặp.
+        const markerRegex = /\{\{cot_1\}\}([\s\S]*?)\{\{cot_2\}\}([\s\S]*?)(?=\{\{cot_1\}\}|$)/gi;
+        let match;
+        while ((match = markerRegex.exec(content)) !== null) {
+            results.push({
+                cot1: match[1].trim(),
+                cot2: match[2].trim()
+            });
         }
 
-        // Section Search Fallback
-        const splitWord = content && content.includes("SẢN PHẨM") ? "SẢN PHẨM" : "HS CHUẨN BỊ";
-        const split = content.split(splitWord);
-        if (split.length > 1) {
-            return { cot1: split[0].trim(), cot2: split[1].trim() };
+        // Fallback: Nếu không tìm thấy cặp marker nào, trả về toàn bộ text ở cot1
+        if (results.length === 0) {
+            results.push({ cot1: content, cot2: "..." });
         }
 
-        return { cot1: content, cot2: "..." };
+        return results;
     }
 
     // ========================================

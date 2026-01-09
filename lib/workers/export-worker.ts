@@ -123,113 +123,79 @@ const createField = (label: string, value: string | undefined) => {
 };
 
 const parseTwoColumnContent = (content: string) => {
-    if (!content) return { gv: "...", hs: "..." };
+    if (!content) return [{ gv: "...", hs: "..." }];
 
-    // 1. Try JSON Parsing (For Manual Workflow results)
+    const results: { gv: string; hs: string }[] = [];
+
+    // 1. Try JSON Parsing (Dành cho dữ liệu dán trực tiếp từ AI JSON)
     try {
-        const startIndex = content.indexOf("{");
-        const endIndex = content.lastIndexOf("}");
-        if (startIndex !== -1 && endIndex !== -1) {
-            const jsonString = content.substring(startIndex, endIndex + 1);
-            const jsonData = JSON.parse(jsonString);
-            if (jsonData.steps && Array.isArray(jsonData.steps)) {
-                let gv = "";
-                let hs = "";
-                jsonData.steps.forEach((step: any) => {
-                    if (step.teacher_action) gv += (gv ? "\n\n" : "") + step.teacher_action;
-                    if (step.student_action) hs += (hs ? "\n\n" : "") + step.student_action;
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            const json = JSON.parse(jsonMatch[0]);
+            if (json.steps && Array.isArray(json.steps)) {
+                json.steps.forEach((s: any) => {
+                    results.push({
+                        gv: s.teacher_action || s.instruction || "GV tổ chức.",
+                        hs: s.student_action || s.product || "HS thực hiện."
+                    });
                 });
-                return { gv: gv || "...", hs: hs || "..." };
+                if (results.length > 0) return results;
             }
         }
-    } catch (e) { /* Fallback to Regex */ }
+    } catch (e) { /* Fallback */ }
 
-    // 2. Regex Logic (Legacy/Standard)
-    const cot1Match = /\{\{cot_1\}\}/i.exec(content);
-    const cot2Match = /\{\{cot_2\}\}/i.exec(content);
-
-    const cot1Index = cot1Match ? cot1Match.index : -1;
-    const cot2Index = cot2Match ? cot2Match.index : -1;
-
-    if (cot1Index === -1 && cot2Index === -1) {
-        return { gv: content.trim(), hs: "..." };
+    // 2. Multi-Segment Marker Recon (Root Cause Fix)
+    // Quét toàn bộ các cặp {{cot_1}} ... {{cot_2}}
+    const markerRegex = /\{\{cot_1\}\}([\s\S]*?)\{\{cot_2\}\}([\s\S]*?)(?=\{\{cot_1\}\}|$)/gi;
+    let match;
+    while ((match = markerRegex.exec(content)) !== null) {
+        results.push({
+            gv: match[1].trim(),
+            hs: match[2].trim()
+        });
     }
 
-    let gvContent = "...";
-    let hsContent = "...";
-
-    if (cot1Index !== -1) {
-        const startGv = cot1Index + 9;
-        const endGv = (cot2Index !== -1 && cot2Index > cot1Index) ? cot2Index : content.length;
-        gvContent = content.substring(startGv, endGv).trim();
+    // Fallback: Nếu không có marker, trả về 1 hàng đơn
+    if (results.length === 0) {
+        results.push({ gv: content, hs: "..." });
     }
 
-    if (cot2Index !== -1) {
-        const startHs = cot2Index + 9;
-        hsContent = content.substring(startHs).trim();
-    }
-
-    return { gv: gvContent, hs: hsContent };
+    return results;
 };
 
-const createTwoColumnTable = (gvContent: string, hsContent: string) => {
+const createTwoColumnTable = (segments: { gv: string; hs: string }[]) => {
+    const rows = [
+        new d.TableRow({
+            tableHeader: true,
+            cantSplit: true,
+            children: [
+                new d.TableCell({
+                    children: [new d.Paragraph({ alignment: d.AlignmentType.CENTER, children: [new d.TextRun({ text: "Hoạt động của Giáo viên", bold: true, size: 22 })] })],
+                    shading: { fill: "F1F5F9" },
+                    width: { size: 50, type: d.WidthType.PERCENTAGE },
+                }),
+                new d.TableCell({
+                    children: [new d.Paragraph({ alignment: d.AlignmentType.CENTER, children: [new d.TextRun({ text: "Hoạt động của Học sinh", bold: true, size: 22 })] })],
+                    shading: { fill: "F1F5F9" },
+                    width: { size: 50, type: d.WidthType.PERCENTAGE },
+                }),
+            ]
+        })
+    ];
+
+    segments.forEach(seg => {
+        rows.push(new d.TableRow({
+            cantSplit: false,
+            children: [
+                new d.TableCell({ children: renderFormattedText(seg.gv), width: { size: 50, type: d.WidthType.PERCENTAGE } }),
+                new d.TableCell({ children: renderFormattedText(seg.hs), width: { size: 50, type: d.WidthType.PERCENTAGE } })
+            ]
+        }));
+    });
+
     return new d.Table({
         width: { size: 100, type: d.WidthType.PERCENTAGE },
-        borders: {
-            top: { style: d.BorderStyle.SINGLE, size: 2, color: "E2E8F0" },
-            bottom: { style: d.BorderStyle.SINGLE, size: 2, color: "E2E8F0" },
-            left: { style: d.BorderStyle.SINGLE, size: 2, color: "E2E8F0" },
-            right: { style: d.BorderStyle.SINGLE, size: 2, color: "E2E8F0" },
-            insideHorizontal: { style: d.BorderStyle.SINGLE, size: 1, color: "F1F5F9" },
-            insideVertical: { style: d.BorderStyle.SINGLE, size: 1, color: "F1F5F9" },
-        },
-        rows: [
-            new d.TableRow({
-                tableHeader: true,
-                cantSplit: true,
-                height: { value: 300, rule: d.HeightRule.ATLEAST },
-                children: [
-                    new d.TableCell({
-                        children: [new d.Paragraph({
-                            alignment: d.AlignmentType.CENTER,
-                            children: [new d.TextRun({ text: "Hoạt động của Giáo viên", bold: true, size: 22 })]
-                        })],
-                        shading: { fill: "F1F5F9" },
-                        width: { size: 50, type: d.WidthType.PERCENTAGE },
-                        verticalAlign: d.VerticalAlign.CENTER,
-                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
-                    }),
-                    new d.TableCell({
-                        children: [new d.Paragraph({
-                            alignment: d.AlignmentType.CENTER,
-                            children: [new d.TextRun({ text: "Hoạt động của Học sinh", bold: true, size: 22 })]
-                        })],
-                        shading: { fill: "F1F5F9" },
-                        width: { size: 50, type: d.WidthType.PERCENTAGE },
-                        verticalAlign: d.VerticalAlign.CENTER,
-                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
-                    }),
-                ]
-            }),
-            new d.TableRow({
-                cantSplit: false, // Allow extensive content to split pages
-                height: { value: 300, rule: d.HeightRule.ATLEAST },
-                children: [
-                    new d.TableCell({
-                        children: renderFormattedText(gvContent),
-                        width: { size: 50, type: d.WidthType.PERCENTAGE },
-                        verticalAlign: d.VerticalAlign.TOP,
-                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
-                    }),
-                    new d.TableCell({
-                        children: renderFormattedText(hsContent),
-                        width: { size: 50, type: d.WidthType.PERCENTAGE },
-                        verticalAlign: d.VerticalAlign.TOP,
-                        margins: { top: 120, bottom: 120, left: 120, right: 120 }
-                    })
-                ]
-            })
-        ]
+        rows: rows
     });
 };
 
@@ -242,44 +208,19 @@ const createTwoColumnActivity = (title: string, fullContent: string | undefined)
         })
     ];
 
-    // Robust splitting by steps a), b), c), d) - STRICT START OF LINE
-    const steps = fullContent.split(/(?:\r?\n|^)(?=[a-d]\))/i);
-
-    steps.forEach(step => {
-        const trimmedStep = step.trim();
-        if (!trimmedStep) return;
-
-        if (trimmedStep.toLowerCase().startsWith('d)')) {
-            const labelEnd = trimmedStep.indexOf(':');
-            const label = labelEnd > -1 ? trimmedStep.substring(0, labelEnd) : "d) Tổ chức thực hiện";
-            const body = labelEnd > -1 ? trimmedStep.substring(labelEnd + 1).trim() : trimmedStep.substring(2).trim();
-
-            results.push(new d.Paragraph({
-                spacing: { before: 120, after: 60 },
-                children: [new d.TextRun({ text: label + ":", bold: true, size: 24, italics: true })]
-            }));
-            const { gv, hs } = parseTwoColumnContent(body);
-            results.push(createTwoColumnTable(gv, hs));
-        } else {
-            const colonIndex = trimmedStep.indexOf(':');
-            if (colonIndex !== -1) {
-                const label = trimmedStep.substring(0, colonIndex + 1);
-                const body = trimmedStep.substring(colonIndex + 1).trim();
-                results.push(new d.Paragraph({
-                    spacing: { before: 60, after: 60 },
-                    alignment: d.AlignmentType.JUSTIFIED,
-                    indent: { firstLine: 720 },
-                    children: [
-                        new d.TextRun({ text: label, bold: true, size: 24, italics: true }),
-                        new d.TextRun({ text: " ", size: 24 }),
-                        ...parseMarkdownToRuns(body)
-                    ]
-                }));
-            } else {
-                results.push(...renderFormattedText(trimmedStep));
-            }
-        }
-    });
+    // Nếu content có chứa marker {{cot_1}}, xử lý theo bảng đa hàng
+    if (fullContent.includes('{{cot_1}}')) {
+        const segments = parseTwoColumnContent(fullContent);
+        results.push(createTwoColumnTable(segments));
+    } else {
+        // Xử lý split theo các bước a), b), c) nếu không có marker
+        const steps = fullContent.split(/(?:\r?\n|^)(?=[a-d]\))/i);
+        steps.forEach(step => {
+            const trimmedStep = step.trim();
+            if (!trimmedStep) return;
+            results.push(...renderFormattedText(trimmedStep));
+        });
+    }
 
     return results;
 };

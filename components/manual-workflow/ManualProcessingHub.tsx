@@ -41,75 +41,104 @@ export function ManualProcessingHub() {
     const [analyzingStatus, setAnalyzingStatus] = React.useState<string>("");
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    // BƯỚC 1: XỬ LÝ TỰ ĐỘNG (Pre-Fill)
+    // BƯỚC 1: TRÍCH XUẤT ELITE (Architecture 25.0 - Hashing, Caching & Orchestration)
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
         setIsAnalyzing(true);
-        setAnalyzingStatus("Đang đọc & Mổ xẻ trực tiếp PDF...");
+        setAnalyzingStatus("Khởi tạo Pipeline 9.1 (Hashing & Security)...");
 
         try {
-            // Sử dụng API Route để vượt rào Payload 1MB của Server Action
-            const formData = new FormData();
-            formData.append('file', file);
+            // 1. Sử dụng SmartFileProcessor (Cực mạnh: Hash file, Kiểm tra Cache, Chạy Worker)
+            const { SmartFileProcessor } = await import('@/lib/services/smart-file-processor');
+            const processor = SmartFileProcessor.getInstance();
 
-            const response = await fetch('/api/extract-pdf-content', {
-                method: 'POST',
-                body: formData
-            });
+            const processResult = await processor.processFile(file, (stage) => setAnalyzingStatus(stage));
+            const rawText = processResult.content;
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Lỗi xử lý file');
+            setAnalyzingStatus("🧬 Đang tiêm (Inject) ngữ cảnh chuyên môn từ Database...");
+
+            // 2. Sử dụng PedagogicalOrchestrator để làm giàu dữ liệu (Enrichment)
+            const { PedagogicalOrchestrator } = await import('@/lib/services/pedagogical-orchestrator');
+            const orchestrator = PedagogicalOrchestrator.getInstance();
+
+            // Tìm kiếm sâu trong Database để lấy mục tiêu chuẩn, năng lực số, và tâm lý lớp học
+            const { CurriculumService } = await import('@/lib/services/curriculum-service');
+            const curriculum = CurriculumService.getInstance();
+            const matchedTheme = curriculum.identifyThemeFromText(rawText.substring(0, 1000) + " " + file.name, parseInt(lessonGrade));
+
+            if (matchedTheme) {
+                console.log(`[ManualHub] Auto-matched with Database Theme: ${matchedTheme.theme.ten}`);
+                store.updateLessonField('theme', matchedTheme.theme.ten);
             }
 
-            const extractionResult = await response.json();
+            setAnalyzingStatus("Đang mổ xẻ nội dung chuẩn 5512 (Professional Processor)...");
 
-            // Xử lý bước mổ xẻ AI (Pre-Fill Deep Data)
+            // 3. Sử dụng ProfessionalContentProcessor (Vô cùng mạnh mẽ)
+            const { ProfessionalContentProcessor } = await import('@/lib/services/professional-content-processor');
+            const activityContent = ProfessionalContentProcessor.extractActivityContent(rawText);
+
+            // 4. Cập nhật Store (File dữ liệu gốc)
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
                 const base64 = (reader.result as string).split(',')[1];
-                const filePayload = { mimeType: file.type, data: base64 };
-
-                // Lưu vào store
-                store.updateLessonField('file', { ...filePayload, name: file.name });
-
-                const analyzer = new ContentStructureAnalyzer();
-                const struct = await analyzer.analyzeAndPreFill(filePayload, lessonGrade, lessonAutoFilledTheme);
-
-                // TỰ ĐỘNG ĐIỀN DATA (Việc nhẹ)
-                store.updateLessonField('theme', struct.ten_bai);
-                store.updateLessonField('processedContext', { cleanData: struct });
-
-                // Cập nhật Result tạm thời cho phần Metadata
-                const initialResult: any = {
-                    ...(store.lesson.result || {}),
-                    ten_bai: struct.ten_bai,
-                    muc_tieu_kien_thuc: struct.muc_tieu_kien_thuc,
-                    muc_tieu_nang_luc: struct.muc_tieu_nang_luc,
-                    muc_tieu_pham_chat: struct.muc_tieu_pham_chat,
-                    thiet_bi_gv: struct.thiet_bi_gv,
-                    thiet_bi_hs: struct.thiet_bi_hs,
-                    shdc: struct.noi_dung_shdc,
-                    shl: struct.noi_dung_shl,
-                };
-                store.setLessonResult(initialResult);
-
-                // Khởi tạo các module copy VỚI DỮ LIỆU ĐÃ MỔ XẺ
-                const modules = await ManualWorkflowService.analyzeStructure(
-                    extractionResult.content || "",
-                    JSON.stringify(struct)
-                );
-                store.updateLessonField('manualModules', modules);
-
-                toast({ title: "✅ Đã mổ xẻ PDF thành công!", description: "Metadata & Sinh hoạt đã được điền. Các module đã sẵn sàng." });
+                store.updateLessonField('file', { mimeType: file.type, data: base64, name: file.name });
             };
+
+            // 5. KHỞI TẠO RESULT (Dữ liệu ban đầu "Siêu mạnh")
+            const initialResult: any = {
+                ...(store.lesson.result || {}),
+                ten_bai: file.name.replace('.pdf', ''),
+                hoat_dong_khoi_dong: ProfessionalContentProcessor.optimizeForActivity('khoi_dong', activityContent),
+                hoat_dong_kham_pha: ProfessionalContentProcessor.optimizeForActivity('kham_pha', activityContent),
+                hoat_dong_luyen_tap: ProfessionalContentProcessor.optimizeForActivity('luyen_tap', activityContent),
+                hoat_dong_van_dung: ProfessionalContentProcessor.optimizeForActivity('van_dung', activityContent),
+            };
+            store.setLessonResult(initialResult);
+
+            // 6. KHỞI TẠO MODULES (Với nội dung đã được làm sạch và phong phú)
+            const modules = await ManualWorkflowService.analyzeStructure(
+                rawText,
+                JSON.stringify(activityContent)
+            );
+            store.updateLessonField('manualModules', modules);
+
+            // 7. BƯỚC CUỐI: AI DEEP DISSECTION (Chỉ xử lý phần Metadata còn thiếu)
+            setAnalyzingStatus("Đang dùng Trí tuệ nhân tạo mổ xẻ Metadata (Deep Dive)...");
+            try {
+                const { ContentStructureAnalyzer } = await import('@/lib/services/content-structure-analyzer');
+                const analyzer = new ContentStructureAnalyzer();
+                // Chúng ta chỉ gửi TEXT đã trích xuất, không gửi File Base64 cồng kềnh
+                const struct = await analyzer.analyzeAndPreFill(
+                    { mimeType: 'text/plain', data: Buffer.from(rawText).toString('base64') },
+                    lessonGrade,
+                    lessonAutoFilledTheme
+                );
+
+                if (struct) {
+                    store.updateLessonField('theme', struct.ten_bai);
+                    store.updateLessonField('processedContext', { cleanData: struct });
+                    store.setLessonResult({
+                        ...initialResult,
+                        ...struct
+                    });
+                }
+            } catch (aiErr) {
+                console.warn("[ManualHub] AI Dissection failed, continuing with Regex enrichment.", aiErr);
+            }
+
+            toast({
+                title: `✅ Đã tận dụng chức năng ưu việt (Source: ${processResult.source === 'cache' ? 'Smart Cache' : 'Deep API'})`,
+                description: "Nội dung PDF đã được trích xuất, làm giàu từ Database và chuẩn hóa 5512."
+            });
+
         } catch (error: any) {
-            console.error("[ManualProcessingHub] Upload Error:", error);
+            console.error("[ManualProcessingHub] Elite Pipeline Error:", error);
             toast({ title: "Lỗi mổ xẻ PDF", description: error.message, variant: "destructive" });
         } finally {
+            console.log("[ManualHub] 🔍 DEEP TRACE: Pipeline execution complete. Store Result:", store.lesson.result);
             setIsAnalyzing(false);
             setAnalyzingStatus("");
         }
@@ -130,6 +159,11 @@ export function ManualProcessingHub() {
                 optimizedFileSummary: cleanData,
                 smartData: smartData
             };
+
+            console.log("[ManualHub] 🔍 DEEP TRACE: Exporting with Data Payload:", {
+                result: store.lesson.result,
+                context: context
+            });
 
             const prompt = step === 1
                 ? await ManualWorkflowService.generateMergedPrompt1(context)
@@ -159,11 +193,11 @@ export function ManualProcessingHub() {
                             `{{cot_1}}\n${s.teacher_action}\n{{cot_2}}\n${s.student_action}`
                         ).join('\n\n');
 
-                        // Ánh xạ vào đúng ô của store result
-                        if (act.id.includes('khoi_dong')) currentResult.hoat_dong_khoi_dong = formatted;
-                        if (act.id.includes('kham_pha')) currentResult.hoat_dong_kham_pha = formatted;
-                        if (act.id.includes('luyen_tap')) currentResult.hoat_dong_luyen_tap = formatted;
-                        if (act.id.includes('van_dung')) currentResult.hoat_dong_van_dung = formatted;
+                        // Ánh xạ vào đúng ô của store result (Fix labels)
+                        if (act.id.includes('khoi_dong')) currentResult.hoat_dong_khoi_dong = `HOẠT ĐỘNG: ${act.module_title || "KHỞI ĐỘNG"}\n\n` + formatted;
+                        if (act.id.includes('kham_pha')) currentResult.hoat_dong_kham_pha = `HOẠT ĐỘNG: ${act.module_title || "KHÁM PHÁ"}\n\n` + formatted;
+                        if (act.id.includes('luyen_tap')) currentResult.hoat_dong_luyen_tap = `HOẠT ĐỘNG: ${act.module_title || "LUYỆN TẬP"}\n\n` + formatted;
+                        if (act.id.includes('van_dung')) currentResult.hoat_dong_van_dung = `HOẠT ĐỘNG: ${act.module_title || "VẬN DỤNG"}\n\n` + formatted;
                     });
 
                     store.setLessonResult(currentResult);

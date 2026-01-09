@@ -32,7 +32,7 @@ export class MultiStrategyExtractor {
 
         // STRATEGY 1: Client-Side PDF Parser (Browser Main Thread / Worker)
         // Fastest, Zero Network Latency for Text PDFs.
-        if (file.type === 'application/pdf') {
+        if (file.type === 'application/pdf' && typeof window !== 'undefined') {
             try {
                 console.log('[MultiStrategy] Attempting Enhanced PDF Extraction (Arch 18.0)...');
                 const enhancedRes = await enhancedPDFExtractor.extractAndAnalyzePDF(file);
@@ -64,6 +64,8 @@ export class MultiStrategyExtractor {
                 console.warn(`[MultiStrategy] Client PDF Parse failed: ${e.message}`, e);
                 errors.push(`Client PDF: ${e.message}`);
             }
+        } else if (file.type === 'application/pdf') {
+            console.log('[MultiStrategy] Skipping Client-side strategies (Server environment).');
         }
 
         // STRATEGY 2: Server-Side Local Parser (DOCX mainly, or PDF fallback)
@@ -104,10 +106,14 @@ export class MultiStrategyExtractor {
 
         // All strategies failed
         if (errors.length > 0) {
-            console.error('[MultiStrategy] All strategies failed:', errors);
+            console.warn('[MultiStrategy] No high-quality text extracted via traditional methods. AI fallback encouraged.', errors);
         }
 
-        throw new Error(`All extraction strategies failed. Details: ${errors.slice(0, 2).join(' | ')}`);
+        return {
+            content: "",
+            source: 'ocr', // Placeholder for AI fallback
+            score: 0
+        };
     }
 
     private finalizeContent(content: string, source: 'local_parser' | 'gemini_vision' | 'ocr'): ExtractedContent {

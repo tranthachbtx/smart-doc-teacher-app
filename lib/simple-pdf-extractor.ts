@@ -17,8 +17,9 @@ export async function extractPDFContent(file: File): Promise<string> {
       }
 
       // 2. Server-side Extraction
-      const pdfParse = require('pdf-parse');
-      const data = await pdfParse(buffer);
+      const pdfModule = await import('pdf-parse');
+      const pdfParse = pdfModule.default || pdfModule;
+      const data = await pdfParse(Buffer.from(buffer));
       return data.text;
     } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
       // For DOCX, we'll use a simpler approach - convert to text
