@@ -1,161 +1,97 @@
 import { generateAIContent } from "@/lib/actions/gemini";
 
+/**
+ * 🔬 SMART PARSING PIPELINE v20.2
+ * Tự động hóa khâu "Việc nhẹ" và Mổ xẻ dữ liệu "Việc nặng".
+ */
 
+// --- LEGACY COMPATIBILITY INTERFACES ---
 export interface ContentSection {
     id: string;
     title: string;
-    type: 'objective' | 'activity' | 'knowledge' | 'assessment' | 'resource';
     content: string;
-    subsections?: ContentSection[];
-    relevance: {
-        khoi_dong: number; // 0-100
-        kham_pha: number;
-        luyen_tap: number;
-        van_dung: number;
-        shdc?: number;
-        shl?: number;
-        setup?: number;
-        appendix?: number;
-    };
+    type: 'objective' | 'knowledge' | 'activity' | 'assessment' | 'resource' | 'other';
+    relevance: Record<string, number>;
+    confidence?: number;
     metadata: {
-        pageNumbers: number[];
         wordCount: number;
-        complexity: 'low' | 'medium' | 'high';
+        pageNumber?: number;
     };
 }
 
 export interface StructuredContent {
-    title: string;
-    grade: string;
-    subject: string;
     sections: ContentSection[];
     metadata: {
-        totalWordCount: number;
-        sectionCount: number;
-        processedAt: string;
+        title: string;
+        grade: string;
+        subject: string;
+        extractedAt: string;
+        wordCount?: number;
     };
+}
+// --- END LEGACY ---
+
+export interface CleanedStructure {
+    // Dữ liệu cho ô Metadata (Auto-Fill)
+    ten_bai: string;
+    muc_tieu_kien_thuc: string;
+    muc_tieu_nang_luc: string;
+    muc_tieu_pham_chat: string;
+    thiet_bi_gv: string;
+    thiet_bi_hs: string;
+
+    // Dữ liệu cho sinh hoạt (Auto-Fill)
+    noi_dung_shdc: string;
+    noi_dung_shl: string;
+
+    // Dữ liệu gốc đã lọc (Cho Prompt Manual)
+    raw_khoi_dong: string;
+    raw_kham_pha: string;
+    raw_luyen_tap: string;
+    raw_van_dung: string;
 }
 
 export class ContentStructureAnalyzer {
-    async analyzePDFContent(rawText: string, model: string = "gemini-1.5-flash-latest"): Promise<StructuredContent> {
-        // 1. Initial AI analysis for structure
-        const structurePrompt = `
-        Bạn là chuyên gia phân tích dữ liệu giáo dục. Hãy phân tích nội dung giáo án sau và bóc tách thành các phần nhỏ có ý nghĩa sư phạm.
+    async analyzeAndPreFill(filePayload: { mimeType: string, data: string }, grade: string, theme: string): Promise<CleanedStructure> {
+        const prompt = `
+        Bạn là chuyên gia xử lý dữ liệu giáo dục 5512.
+        Nhiệm vụ: Phân tích file bài dạy cũ này và thực hiện 2 việc:
+        1. TRÍCH XUẤT sạch sẽ nội dung từng hoạt động (không tóm tắt).
+        2. TỰ ĐỘNG SOẠN THẢO phần Mục tiêu và Sinh hoạt (SHDC/SHL) dựa trên bối cảnh bài học.
         
-        YÊU CẦU NGHIÊM NGẶT VỀ LÀM SẠCH DỮ LIỆU:
-        1. LOẠI BỎ HOÀN TOÀN các dòng chứa thông tin rác: Số trang (Trang 1, Page X...), Header/Footer lặp lại.
-        2. LOẠI BỎ các tiêu đề chủ đề quá dài lặp lại ở đầu mỗi trang (ví dụ: "Chủ đề 7: Bảo vệ...").
-        3. LOẠI BỎ các thông tin hành chính như "Ngày soạn", "Ngày dạy", "Người soạn".
-        4. KHÔNG giữ lại các ký hiệu OCR lỗi (như , 2). , v.v.) trong nội dung.
+        Bối cảnh: Khối ${grade}, Bài học: ${theme}.
         
-        NHIỆM VỤ CẤU TRÚC & LAYOUT (QUAN TRỌNG):
-        1. NHẬN DIỆN CỘT: Nếu thấy ký tự '|' phân tách dòng, đó có thể là ranh giới giữa Cột Giáo viên và Cột Học sinh.
-        2. TÁI CẤU TRÚC 5512: Nếu trích xuất hoạt động (activity), hãy phân tích mối quan hệ GV-HS.
-        3. SỬ DỤNG MARKER: Nếu nhận diện được nội dung của GV và HS, hãy lồng ghép {{cot_1}} cho GV và {{cot_2}} cho HS ngay trong trường "content" của JSON.
-        4. Phân loại từng phần vào các nhóm: objective (mục tiêu), activity (hoạt động), knowledge (kiến thức), assessment (đánh giá), resource (thiết bị/tài liệu).
-        5. Đánh giá mức độ liên quan (0-100) của từng phần với 4 loại hoạt động: Khởi động (khoi_dong), Khám phá (kham_pha), Luyện tập (luyen_tap), Vận dụng (van_dung).
-        6. Trả về JSON theo cấu trúc sau (KHÔNG thêm text bên ngoài):
+        # ĐỊNH DẠNG JSON TRẢ VỀ (DUY NHẤT):
         {
-            "title": "Tiêu đề bài học (Làm sạch, không chứa 'Trang X')",
-            "grade": "Khối lớp",
-            "subject": "Môn học",
-            "sections": [
-                {
-                    "title": "Tiêu đề mục (Ví dụ: Hoạt động 1, Mục tiêu bài học)",
-                    "type": "objective|activity|knowledge|assessment|resource",
-                    "content": "Nội dung chi tiết (SỬ DỤNG {{cot_1}} VÀ {{cot_2}} NẾU LÀ HOẠT ĐỘNG DẠY HỌC)",
-                    "relevance": {
-                        "khoi_dong": 80,
-                        "kham_pha": 90,
-                        "luyen_tap": 70,
-                        "van_dung": 60
-                    },
-                    "metadata": {
-                        "complexity": "low|medium|high"
-                    }
-                }
-            ]
+          "ten_bai": "Tên bài học chuẩn",
+          "muc_tieu_kien_thuc": "Soạn thảo chi tiết chuẩn 2018...",
+          "muc_tieu_nang_luc": "Soạn thảo chi tiết năng lực chung & đặc thù...",
+          "muc_tieu_pham_chat": "Soạn thảo chi tiết phẩm chất...",
+          "thiet_bi_gv": "Liệt kê chi tiết thiết bị cho GV...",
+          "thiet_bi_hs": "Liệt kê chi tiết thiết bị cho HS...",
+          "noi_dung_shdc": "Soạn kịch bản Sinh hoạt dưới cờ (150-200 từ)...",
+          "noi_dung_shl": "Soạn kịch bản Sinh hoạt lớp (150-200 từ)...",
+          "raw_khoi_dong": "Trích xuất nguyên văn/chi tiết nhất phần Khởi động từ file...",
+          "raw_kham_pha": "Trích xuất nguyên văn/chi tiết nhất phần Khám phá/Hình thành kiến thức...",
+          "raw_luyen_tap": "Trích xuất nguyên văn/chi tiết nhất phần Luyện tập...",
+          "raw_van_dung": "Trích xuất nguyên văn/chi tiết nhất phần Vận dụng..."
         }
-        
-        NỘI DUNG CẦN PHÂN TÍCH:
-        ${rawText.substring(0, 15000)}
         `;
 
         try {
-            const aiResponse = await generateAIContent(structurePrompt, model);
+            // SỬ DỤNG CHẾ ĐỘ MULTIMODAL (Gửi file trực tiếp thay vì text trích xuất lỗi)
+            const result = await generateAIContent(prompt, "gemini-1.5-flash", filePayload);
 
-            if (!aiResponse.success || !aiResponse.content) {
-                throw new Error("AI analysis failed: " + aiResponse.error);
-            }
+            if (!result.success || !result.content) throw new Error("AI Parsing failed.");
 
-            // Clean JSON string
-            const jsonStr = aiResponse.content.substring(
-                aiResponse.content.indexOf("{"),
-                aiResponse.content.lastIndexOf("}") + 1
-            );
+            const jsonMatch = result.content.match(/\{[\s\S]*\}/);
+            const data = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+            if (!data) throw new Error("Invalid JSON from AI.");
 
-            const parsed = JSON.parse(jsonStr);
-
-            // Enhance with IDs and defaults
-            const sections = (parsed.sections || []).map((s: any, index: number) => ({
-                ...s,
-                id: `sec_${Date.now()}_${index}`,
-                metadata: {
-                    ...s.metadata,
-                    pageNumbers: [],
-                    wordCount: s.content.split(/\s+/).length,
-                    complexity: s.metadata?.complexity || 'medium'
-                }
-            }));
-
-            return {
-                title: parsed.title || "Tài liệu chưa đặt tên",
-                grade: parsed.grade || "Chưa rõ",
-                subject: parsed.subject || "Chưa rõ",
-                sections: sections,
-                metadata: {
-                    totalWordCount: rawText.split(/\s+/).length,
-                    sectionCount: sections.length,
-                    processedAt: new Date().toISOString()
-                }
-            };
-        } catch (error: any) {
-            console.warn("⚠️ [ContentStructureAnalyzer] AI Analysis failed, switching to Enhanced Architecture 18.0 Fallback:", error.message);
-            // Return a fallback structured content if AI fails
-            try {
-                return await this.getEnhancedFallbackStructure(rawText);
-            } catch (fallbackError: any) {
-                console.error("❌ [ContentStructureAnalyzer] Fatal error in enhanced fallback logic:", fallbackError);
-                throw new Error("Không thể phân tích tài liệu ngay cả bằng phương thức Kiến trúc 18.0: " + fallbackError.message);
-            }
+            return data;
+        } catch (e: any) {
+            console.error("[Analyzer] Error:", e);
+            throw e;
         }
-    }
-
-    private async getEnhancedFallbackStructure(rawText: string): Promise<StructuredContent> {
-        // V7: Simplified fallback without LessonPlanAnalyzer
-        const sections: ContentSection[] = [];
-
-        // Add a single knowledge section as backup (FULL CONTENT PRESERVED)
-        // Set high relevance across the board so PedagogicalOrchestrator sees it as "setup" context
-        sections.push({
-            id: `fallback_raw_${Date.now()}`,
-            title: "Nội dung gốc (Fallback Mode)",
-            type: "resource", // 'resource' is treated as universal context
-            content: rawText, // DO NOT TRUNCATE!
-            relevance: { khoi_dong: 50, kham_pha: 50, luyen_tap: 50, van_dung: 50, setup: 100 },
-            metadata: { pageNumbers: [], wordCount: rawText.length / 5, complexity: 'medium' }
-        });
-
-        return {
-            title: "Tài liệu trích xuất (Enhanced Fallback)",
-            grade: "Chưa rõ",
-            subject: "Chưa rõ",
-            sections: sections,
-            metadata: {
-                totalWordCount: rawText.split(/\s+/).length,
-                sectionCount: sections.length,
-                processedAt: new Date().toISOString()
-            }
-        };
     }
 }

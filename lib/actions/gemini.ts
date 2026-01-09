@@ -1,90 +1,15 @@
 "use server";
 
-// --- VERCEL EDGE RUNTIME CONFIGURATION ---
-// Critical to bypass 10s Serverless Timeout on Hobby Plan
-// MEMO: To enable Edge Runtime, add "export const runtime = 'edge';" to app/page.tsx instead.
+import { DEFAULT_LESSON_SYSTEM_PROMPT } from "@/lib/prompts/system-prompts";
 
-import { DEFAULT_LESSON_SYSTEM_PROMPT, JSON_SYSTEM_PROMPT } from "@/lib/prompts/system-prompts";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { HDTN_CURRICULUM } from "@/lib/hdtn-curriculum";
-import { getPPCTChuDe } from "@/lib/data/ppct-database";
-import {
-  ActionResult,
-  MeetingResult,
-  LessonResult,
-  EventResult,
-  NCBHResult,
-  AssessmentResult,
-} from "@/lib/types";
-import {
-  getMeetingPrompt,
-  getLessonIntegrationPrompt,
-  getEventPrompt,
-} from "@/lib/prompts/ai-prompts";
-import { check5512Compliance } from "./compliance-checker";
-import { AIResilienceService } from "@/lib/services/ai-resilience-service";
-import { getAssessmentPrompt } from "@/lib/prompts/assessment-prompts";
-import { getKHDHPrompt, MONTH_TO_CHU_DE } from "@/lib/prompts/khdh-prompts";
-import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
-import {
-  parseLessonResult,
-  parseMeetingResult,
-  parseEventResult,
-  parseNCBHResult,
-  parseAssessmentResult,
-  parseResilient
-} from "@/lib/utils/ai-response-parser";
-import { PedagogicalOrchestrator } from "@/lib/services/pedagogical-orchestrator";
-
-import type { ActivitySuggestions } from "@/lib/prompts/khdh-prompts";
-
-// ========================================
-// ✅ CORE AI FUNCTIONS (STATELESS & RESILIENT)
-// ========================================
-
-
-// --- 1. RESILIENCE & CIRCUIT BREAKER (v18.0 Enterprise) ---
-
-// State Containers (Global Scope in Serverless/Node)
-// Map: Key -> Timestamp (When it can be used again)
-const keyBlacklist = new Map<string, number>();
-
-// Constants
-const BAN_TIME_429 = 60 * 1000; // 1 minute soft ban
-const BAN_TIME_500 = 10 * 1000; // 10s short ban
-const BAN_TIME_403 = 24 * 60 * 60 * 1000; // 24h hard ban for invalid keys
-
-function loadKeys(): string[] {
-  const keys: string[] = [];
-  // 1. Primary explicit keys
-  if (process.env.GEMINI_API_KEY) keys.push(process.env.GEMINI_API_KEY);
-  if (process.env.GEMINI_API_KEY_2) keys.push(process.env.GEMINI_API_KEY_2);
-  if (process.env.GEMINI_API_KEY_3) keys.push(process.env.GEMINI_API_KEY_3);
-
-  // 2. Dynamic Discovery (GEMINI_API_KEY_4 to _20)
-  for (let i = 4; i <= 20; i++) {
-    const k = process.env[`GEMINI_API_KEY_${i}`];
-    if (k) keys.push(k);
-  }
-
-  // Deduplicate and Clean
-  return Array.from(new Set(keys.map(k => k.trim().replace(/^["']|["']$/g, "")))).filter(k => k.length > 10);
+export interface ActionResult<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  content?: string;
 }
 
-function getAvailableKeys(): string[] {
-  const all = loadKeys();
-  const now = Date.now();
-
-  // Maintenance: Cleanup old bans
-  for (const [key, unlockTime] of keyBlacklist.entries()) {
-    if (now > unlockTime) keyBlacklist.delete(key);
-  }
-
-  return all.filter(k => !keyBlacklist.has(k));
-}
-
-// --- 2. CORE ENGINE (TUNNEL-FETCH MODE v18.0) ---
-
+// --- CORE AI CALLER ---
 export async function callAI(
   prompt: string,
   modelName = "gemini-1.5-flash",
@@ -92,628 +17,111 @@ export async function callAI(
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
 
-  console.log(`[SYSTEM_AUDIT_LOG] 🤖 ENTER callAI | Prompt Length: ${prompt.length} chars | System Content Length: ${systemContent.length} chars | Model: ${modelName}`);
+  try {
+    const keys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3].filter(k => !!k && k.length > 5);
+    if (keys.length > 0) {
+      const activeKey = keys[Math.floor(Math.random() * keys.length)];
 
-  // A. Load & Shuffle Keys (Load Balancing)
-  let availableKeys = getAvailableKeys();
-  if (availableKeys.length === 0) {
-    console.warn("[Antigravity] ⚠️ ALL GEMINI KEYS EXHAUSTED/BANNED. Checking Critical Failover...");
-    // Logic will fall through to Layer 2 (OpenAI/Groq)
-  }
-
-  // Random shuffle to prevent Thundering Herd on Key 1
-  availableKeys = availableKeys.sort(() => Math.random() - 0.5);
-
-  const rawProxyUrl = process.env.GEMINI_PROXY_URL || "";
-  const proxyPool = rawProxyUrl.split(',').map(u => u.trim()).filter(u => u.length > 0);
-  let currentProxyIndex = 0;
-
-  let lastError = "NO_KEYS_AVAILABLE";
-
-  // B. Execution Loop
-  for (const key of availableKeys) {
-    try {
-      // Proxy Selection
-      let proxyToUse = null;
-      if (proxyPool.length > 0) {
-        proxyToUse = proxyPool[currentProxyIndex % proxyPool.length];
+      const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
+      if (file && file.data) {
+        parts.push({ inlineData: { mimeType: file.mimeType || "application/pdf", data: file.data } });
       }
 
-      const apiVersions = ["v1beta", "v1"];
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${activeKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: { temperature: 0.85, maxOutputTokens: 8192 }
+        })
+      });
 
-      for (const version of apiVersions) {
-        const endpoint = proxyToUse
-          ? `${proxyToUse.replace(/\/$/, '')}/${version}/models/${modelName}:generateContent?key=${key}`
-          : `https://generativelanguage.googleapis.com/${version}/models/${modelName}:generateContent?key=${key}`;
-
-        console.log(`[AI-GATEWAY] 🔑 Using ends...${key.slice(-4)} | Model: ${modelName} | Proxy: ${proxyToUse ? 'Yes' : 'Direct'}`);
-
-        const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
-        if (file && file.data) {
-          parts.push({
-            inlineData: {
-              mimeType: file.mimeType || "application/pdf",
-              data: file.data
-            }
-          });
-        }
-
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-antigravity-proxy": "v18.0",
-          },
-          body: JSON.stringify({
-            contents: [{ parts }],
-            generationConfig: {
-              temperature: 0.85,
-              maxOutputTokens: 8192
-            }
-          }),
-          signal: AbortSignal.timeout(20000) // 20s timeout
-        });
-
-        if (!response.ok) {
-          const status = response.status;
-          const errText = await response.text();
-
-          // CIRCUIT BREAKER LOGIC
-          if (status === 429) {
-            console.warn(`[CircuitBreaker] 🟡 Key ${key.slice(-4)} Rate Limited (429). Cooling 60s.`);
-            keyBlacklist.set(key, Date.now() + BAN_TIME_429);
-            lastError = "RATE_LIMIT_HIT";
-            break; // Break Version loop, try next Key
-          } else if (status === 403 || status === 400) {
-            console.error(`[CircuitBreaker] 🔴 Key ${key.slice(-4)} INVALID (403/400). Hard Banning.`);
-            keyBlacklist.set(key, Date.now() + BAN_TIME_403); // Ban for 24h
-            lastError = "KEY_INVALID";
-            break; // Try next key
-          } else if (status >= 500) {
-            console.warn(`[CircuitBreaker] 🟠 Service Error (${status}). Short cooling.`);
-            keyBlacklist.set(key, Date.now() + BAN_TIME_500);
-            // 500 might be proxy issue
-          }
-
-          throw new Error(`HTTP ${status}: ${errText}`);
-        }
-
+      if (response.ok) {
         const json = await response.json();
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!text) throw new Error("Empty AI Response");
-
-        return text; // SUCCESS!
-      } // End Version Loop
-    } catch (e: any) {
-      console.warn(`[Gateway] Key attempt failed: ${e.message}`);
-      lastError = e.message;
-      // Loop continues to next key
-    }
-  }
-
-
-  // --- LAYER 2: NEURAL FAILOVER (HIGH-FIDELITY OVERRIDE) ---
-  const failoverProviders = [
-    {
-      name: "OpenAI",
-      url: "https://api.openai.com/v1/chat/completions",
-      key: process.env.OPENAI_API_KEY,
-      model: "gpt-4o-mini"
-    },
-    {
-      name: "Groq",
-      url: "https://api.groq.com/openai/v1/chat/completions",
-      key: process.env.GROQ_API_KEY,
-      model: "llama3-70b-8192"
-    },
-    {
-      name: "Anthropic",
-      url: "https://api.anthropic.com/v1/messages",
-      key: process.env.ANTHROPIC_API_KEY,
-      model: "claude-3-haiku-20240307"
-    }
-  ];
-
-  for (const provider of failoverProviders) {
-    if (provider.key && provider.key.length > 20) {
-      try {
-        console.log(`[NeuralFailover] Attempting ${provider.name} (${provider.model})...`);
-
-        let body: any;
-        let headers: Record<string, string> = {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${provider.key.trim()}`
-        };
-
-        if (provider.name === "Anthropic") {
-          headers = {
-            "Content-Type": "application/json",
-            "x-api-key": provider.key.trim(),
-            "anthropic-version": "2023-06-01"
-          };
-          body = {
-            model: provider.model,
-            system: systemContent,
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 4096
-          };
-        } else {
-          body = {
-            model: provider.model,
-            messages: [
-              { role: "system", content: systemContent },
-              { role: "user", content: prompt }
-            ],
-            temperature: 0.7
-          };
-        }
-
-        const resp = await fetch(provider.url, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(body)
-        });
-
-        if (resp.ok) {
-          const data = await resp.json();
-          const resultText = provider.name === "Anthropic"
-            ? data.content[0].text
-            : data.choices[0].message.content;
-
-          console.log(`[NeuralFailover] ✅ ${provider.name} SUCCESS! System integrity maintained.`);
-          return resultText;
-        } else {
-          const err = await resp.text();
-          console.warn(`[NeuralFailover] ${provider.name} failed: ${resp.status} - ${err.substring(0, 100)}`);
-        }
-      } catch (e: any) {
-        console.error(`[NeuralFailover] ${provider.name} Runtime Error: ${e.message}`);
+        if (text) return text;
       }
     }
-  }
+  } catch (e) { console.warn(`[AI-RELAY] Gemini Step Failed.`); }
 
-  // ALL KEYS FAILED
-  const recoveryGuide = `
-  🛠️ HƯỚNG DẪN KHẮC PHỤC (DEVOPS GUIDE):
-  1. Kiểm tra GEMINI_API_KEY trong file .env.local (Đảm bảo không có dấu cách thừa).
-  2. Nếu dùng Proxy: Hãy cập nhật Cloudflare Worker với mã nguồn Antigravity mới nhất.
-  3. Liên hệ Admin nếu tiếp tục lỗi ALL_KEYS_FAILED: ${lastError}`;
-
-  throw new Error(`ALL_KEYS_FAILED. ${recoveryGuide}`);
-}
-
-// --- 3. IMPROVED JSON PARSER (v2.0) ---
-// ✅ Using hardened parser from lib/utils/ai-response-parser.ts
-
-// --- 4. CORE GENERATION FUNCTIONS ---
-
-export async function generateLessonSection(
-  grade: string,
-  topic: string,
-  section: string,
-  context: string = "",
-  duration?: string,
-  custInstr?: string,
-  tasks?: Array<string> | Array<{ name: string; description: string; time?: number }>,
-  month?: string,
-  suggest?: string | ActivitySuggestions,
-  model?: string,
-  file?: { mimeType: string, data: string, name: string },
-  stepInstr?: string
-): Promise<ActionResult> {
   try {
-    const pName = `${grade}_${topic.replace(/\s+/g, '_')}`;
-    const ckptId = `section_${section}`;
-
-    // Check cache first
-    const cached = checkpoint_load(pName, ckptId);
-    if (cached) {
-      console.log(`[Cache] Hit for ${ckptId}`);
-      return { success: true, data: cached };
-    }
-
-    // CONTEXT INJECTION: GIST-BASED
-    let context_injection = context;
-
-    let specializedPrompt = "";
-    switch (section) {
-      case 'blueprint':
-        specializedPrompt = "TASK: Design a 30-50 page lesson architecture. Focus on high information density, not filler.";
-        break;
-      case 'setup':
-        specializedPrompt = "TASK: Draft knowledge targets (CV 5512). Be succinct and professional.";
-        break;
-      case 'khởi động':
-        specializedPrompt = "TASK: Create a 5-minute energetic warm-up. Detail teacher script.";
-        break;
-      case 'final':
-        specializedPrompt = "TASK: CONSOLIDATE. Combine all PREVIOUS_LEARNING_GISTS into a cohesive document. Add final Assessment Rubrics.";
-        break;
-      default:
-        specializedPrompt = `
-        TASK: GENERATE CONTENT FOR SECTION '${section}'.
-        STRATEGY: TEACHER Q & STUDENT GIST (Abstractive Generative QA).
-        
-        STRUCTURE:
-        1. TEACHER_Q: A thought-provoking question or activity setup provided by the teacher (Max 200 words).
-        2. ACTIVITY_DENSITY: Expand using 'Chain of Density'. DO NOT just lengthen. Layer in:
-           - Specific pedagogical techniques (e.g., Think-Pair-Share).
-           - Concrete real-world examples.
-           - Socratic dialogue scripts between Teacher/Student.
-           - Deep knowledge formation (Max 1000 words).
-        3. STUDENT_GIST: A concise summary (100 words) of learned concepts.
-        
-        CONSTRAINT: Output strictly in Vietnamese. No filler.`;
-    }
-
-    const normalizedTasks = Array.isArray(tasks)
-      ? (tasks.length > 0 && typeof tasks[0] === "string"
-        ? (tasks as string[]).map((t) => {
-          const [name, ...rest] = t.split(":");
-          return {
-            name: (name || t).trim(),
-            description: (rest.join(":").trim() || t).trim(),
-          };
+    const openAIKey = process.env.OPENAI_API_KEY;
+    if (openAIKey) {
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openAIKey}` },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "system", content: systemContent }, { role: "user", content: prompt }],
+          temperature: 0.7
         })
-        : (tasks as Array<{ name: string; description: string; time?: number }>))
-      : undefined;
-
-    const monthNumber = typeof month === "string" ? Number.parseInt(month, 10) : undefined;
-
-    const activitySuggestions: ActivitySuggestions | undefined = (() => {
-      if (!suggest) return undefined;
-      if (typeof suggest === "object") return suggest;
-      try {
-        return JSON.parse(suggest) as ActivitySuggestions;
-      } catch {
-        return undefined;
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data.choices[0].message.content || "";
       }
-    })();
+    }
+  } catch (e) { console.warn(`[AI-RELAY] OpenAI Step Failed.`); }
 
-    const base = getKHDHPrompt(
-      grade,
-      topic,
-      duration || "2 tiết",
-      custInstr,
-      normalizedTasks,
-      Number.isFinite(monthNumber) ? monthNumber : undefined,
-      activitySuggestions,
-      !!file
-    );
-    const qualityRules = `
-    RULES (Antigravity v6.0):
-    1. Output Target: High-Density Pedagogical Content (Markdown).
-    2. Format: Use ## Headers, - Bullet points. NO JSON.
-    3. MANDATORY: End output with "STUDENT_GIST: <summary>" for memory retention.`;
-
-    const complexPrompt = `${context_injection}\n\n${base}\n\nCORE_TASK: ${specializedPrompt}\n${stepInstr || ""}\n${qualityRules}`;
-
-    const text = await callAI(complexPrompt, model, file);
-    const data = parseLessonResult(text);
-
-    return { success: true, data };
-  } catch (e: any) {
-    console.error(`[Fatal Stage ${section}] ${e.message}`);
-    return { success: false, error: e.message };
-  }
+  throw new Error("ALL_PROVIDERS_FAILED");
 }
 
-// Simple cache functions (stateless)
-function checkpoint_load(pName: string, id: string) {
-  return null; // Disabled server-side caching
-}
+// --- API WRAPPERS ---
 
-// ========================================
-// ✅ LEGACY FUNCTIONS (FOR COMPATIBILITY)
-// ========================================
-
-export async function generateMeetingMinutes(m: string, s: string, c: string, conc: string, model?: string): Promise<ActionResult<MeetingResult>> {
+/**
+ * Compatibility wrapper for generateAIContent
+ */
+export async function generateAIContent(prompt: string, model?: string, file?: any): Promise<ActionResult<string>> {
   try {
-    const t = await callAI(getMeetingPrompt(m, s, c, conc, "", ""), model, undefined, JSON_SYSTEM_PROMPT);
-    return { success: true, data: parseMeetingResult(t) };
-  } catch (e: any) {
-    console.error(`[MeetingFail] AI Failed: ${e.message}`);
-    return { success: false, error: `${e.message} | V7 Failure: AI drafting failed.` };
-  }
-}
-
-import { CurriculumService } from "../services/curriculum-service";
-
-export async function generateLesson(g: string, t: string, d?: string, c?: string, tasks?: string[], m?: string, s?: string, f?: { mimeType: string, data: string, name: string }, model?: string): Promise<ActionResult<LessonResult>> {
-  try {
-    console.log(`[SYSTEM_AUDIT_LOG] 🏁 START generateLesson | Grade: ${g}, Topic: ${t}, File: ${f ? `${f.name} (${f.mimeType}, ${f.data.length} bytes)` : "NONE"}`);
-    const normalizedTasks = Array.isArray(tasks)
-      ? tasks.map((task) => ({ name: task, description: task }))
-      : undefined;
-    const monthNumber = typeof m === "string" ? Number.parseInt(m, 10) : undefined;
-
-    const activitySuggestions: ActivitySuggestions | undefined = (() => {
-      if (!s) return undefined;
-      try {
-        return JSON.parse(s) as ActivitySuggestions;
-      } catch {
-        return undefined;
-      }
-    })();
-
-    // 🎯 ARCHITECTURE 18.2: SMART INPUT & AUTO-MAPPING
-    // Triggered when file exists: Automatically enrich inputs from Database before AI
-    if (f) {
-      console.log('[GeminiServer] 🚀 Activating Smart Input & Data Mapping...');
-
-      const cs = CurriculumService.getInstance();
-      let themeInfo = null;
-      let pedagogicalContext = null;
-
-      // 1. Theme Identification (If t is generic, try to find in DB)
-      // If "Chủ đề 7" is passed, look it up.
-      // If file text contains theme name, look it up.
-      const themeDetail = cs.getThemeDetail(Number(g), t); // Try matching input T first
-
-      if (themeDetail) {
-        themeInfo = themeDetail;
-        console.log(`[SmartMap] Found Theme Match: ${themeInfo.ten}`);
-      } else {
-        // Fallback: Parse from File (Basic check handled inside chain, but can do here)
-      }
-
-      // 2. Pedagogical Context Retrieval
-      if (themeInfo) {
-        pedagogicalContext = cs.getPedagogicalContext(Number(g), themeInfo.ma);
-      }
-
-      // 3. Inject into Orchestrator (Pass as part of metadata)
-      // The Orchestrator will now receive enriched "pre-mapped" data
-    }
-
-    // 🎯 ARCHITECTURE 18.1: ORCHESTRATED CHAINING
-    // Automatically switch to Chained Workflow if file exists (Deep Dive Mode)
-    if (f) {
-      console.log('[GeminiServer] 🚀 Activating Automated Chain-of-Calls via PedagogicalOrchestrator...');
-      const orchestrator = PedagogicalOrchestrator.getInstance();
-
-      // Extract basic text from file first for context
-      let fileSummary = "";
-
-      // 🎯 OPTIMIZATION: Decode synthetic text directly (Skip costly extraction)
-      if (f.mimeType === 'text/plain' && f.name.startsWith("Auto_Fetch")) {
-        try {
-          // Decode Base64 (Server-side compatible)
-          fileSummary = Buffer.from(f.data, 'base64').toString('utf-8');
-          console.log("[GeminiServer] ⚡ Fast-decoded Synthetic File Content.");
-        } catch (e) {
-          console.warn("[GeminiServer] Base64 decode failed, falling back to AI extraction.");
-          fileSummary = f.data ? (await extractTextFromFile(f)).content || "" : "";
-        }
-      } else {
-        // Standard PDF/Image Processing
-        fileSummary = f.data ? (await extractTextFromFile(f)).content || "" : "";
-      }
-
-      // 4. SMART CONTEXT INJECTION
-      // Append DB data to fileSummary so AI 'sees' it as part of the input
-      let enrichedContext = fileSummary;
-
-      // Re-fetch service instance locally if needed or reuse
-      const cs = CurriculumService.getInstance();
-      // (Repeat logic briefly to ensure scope access or just rely on Orchestrator's internal injection? 
-      //  The Orchestrator ALREADY has injectCurriculumContext logic! 
-      //  We just need to ensure `t` (topic) matches something the Orchestrator can find.
-      //  So we don't need heavy code here if Orchestrator is doing its job.
-      //  BUT, the user requested "Auto-Mapping" logic here.)
-
-      // Let's explicitly look up and append to ensure it's forced:
-      const smartTheme = cs.identifyThemeFromText(t, Number(g));
-      if (smartTheme) {
-        const pContext = cs.getPedagogicalContext(smartTheme.grade, smartTheme.theme.ma);
-        enrichedContext += `\n\n--- [DỮ LIỆU CỐT LÕI TỪ DATABASE] ---\n`;
-        enrichedContext += `- Chủ đề chuẩn: ${smartTheme.theme.ten}\n`;
-        enrichedContext += `- Mục tiêu (DB): ${smartTheme.theme.muc_tieu.join('; ')}\n`;
-        enrichedContext += `- Gợi ý tích hợp (DB): ${pContext?.tichHop?.ke_hoach_day_hoc.join(', ') || "Linh hoạt"}\n`;
-      }
-
-      const chainedData = await orchestrator.generateChainedLessonPlan({
-        grade: g,
-        topic: t,
-        duration: d || "2 tiết",
-        fileSummary: enrichedContext // Pass enriched context!
-      }, model);
-
-      // Map Chained Data to LessonResult
-      // (Assuming chainedData.manualModules is populated)
-      // We interpret the chained modules back into the LessonResult structure
-      // Map Chained Data to LessonResult
-      // We interpret the chained modules back into the LessonResult structure
-      const modules = chainedData.manualModules;
-
-      // Helper to safely parse module content
-      const safeGetContent = (type: string) => {
-        const mod = modules.find((m: any) => m.type === type);
-        return mod?.content || "";
-      };
-
-      const safeParseJSON = (str: string) => {
-        try {
-          // Remove Markdown wrappers if present
-          const clean = str.replace(/```json/g, "").replace(/```/g, "");
-          const match = clean.match(/\{[\s\S]*\}/);
-          return match ? JSON.parse(match[0]) : {};
-        } catch (e) {
-          return {};
-        }
-      };
-
-      console.log(`[Gemini] Orchestrator returned ${modules.length} modules.`);
-      const setupContent = safeGetContent('setup');
-      console.log(`[Gemini] Setup Content Length: ${setupContent.length}`);
-      const setupJson = safeParseJSON(setupContent);
-      console.log(`[Gemini] Setup Parsed Keys: ${Object.keys(setupJson).join(', ')}`);
-
-      const data: LessonResult = {
-        ten_bai: setupJson.ten_bai || t,
-        grade: g,
-
-        // Setup Metadata (Extracted from JSON)
-        muc_tieu_kien_thuc: setupJson.muc_tieu_kien_thuc || setupJson.kien_thuc || "",
-        muc_tieu_nang_luc: setupJson.muc_tieu_nang_luc || setupJson.nang_luc || "",
-        muc_tieu_pham_chat: setupJson.muc_tieu_pham_chat || setupJson.pham_chat || "",
-        thiet_bi_day_hoc: setupJson.thiet_bi_day_hoc || setupJson.thiet_bi || "",
-
-        // Deep Dive Activities (Pass Raw JSON to ExportSystem for 2-col rendering)
-        hoat_dong_khoi_dong: safeGetContent('khoi_dong'),
-        hoat_dong_kham_pha: safeGetContent('kham_pha'),
-        hoat_dong_luyen_tap: safeGetContent('luyen_tap'),
-        hoat_dong_van_dung: safeGetContent('van_dung'),
-
-        // Appendix & Others
-        shdc: setupJson.shdc || safeGetContent('shdc'),
-        shl: setupJson.shl || safeGetContent('shl'),
-        ho_so_day_hoc: safeGetContent('appendix') || setupJson.materials || "",
-        huong_dan_ve_nha: setupJson.huong_dan_ve_nha || "",
-
-        // Tích hợp (Nếu có trong setup)
-        tich_hop_nls: setupJson.tich_hop_nls || "",
-        gv_chuan_bi: setupJson.gv_chuan_bi || "",
-        hs_chuan_bi: setupJson.hs_chuan_bi || ""
-      };
-
-      console.log(`[SYSTEM_AUDIT_LOG] 🧩 CHAINED DATA | Keys: ${Object.keys(data).join(', ')}`);
-      return { success: true, data };
-    }
-
-    const p = f
-      ? getKHDHPrompt(
-        g,
-        t,
-        d || "2 tiết",
-        c,
-        normalizedTasks,
-        Number.isFinite(monthNumber) ? monthNumber : undefined,
-        activitySuggestions,
-        !!f
-      )
-      : getLessonIntegrationPrompt(g, t);
-    const text = await callAI(p, model, f);
-    console.log(`[SYSTEM_AUDIT_LOG] 📥 AI RESPONSE RECEIVED | Length: ${text.length} chars`);
-    let data = parseLessonResult(text);
-    console.log(`[SYSTEM_AUDIT_LOG] 🧩 PARSED DATA | Keys: ${data ? Object.keys(data).join(', ') : "NULL"}`);
-
-    // 🎯 ARCHITECTURE 18.0: REFLECTION LAYER (DISABLED FOR SPEED - HOTFIX)
-    /*
-    if (data && data.hoat_dong_day_hoc) {
-      console.log('[GeminiServer] Applying 18.0 Reflection Layer...');
-      const orchestrator = PedagogicalOrchestrator.getInstance();
-      data = await orchestrator.reflectAndImprove(data);
-    }
-    */
-
-    return { success: true, data };
+    const text = await callAI(prompt, model || "gemini-1.5-flash", file);
+    return { success: true, content: text, data: text };
   } catch (e: any) { return { success: false, error: e.message }; }
 }
 
-export async function generateEvent(g: string, t: string, i?: string, budget?: string, checklist?: string, evaluation?: string, model?: string): Promise<ActionResult<EventResult>> {
-  try {
-    const extra = `\n\nNGÂN SÁCH: ${budget || "Tối ưu hóa"}\nDANH MỤC CẦN CHUẨN BỊ: ${checklist || "Tự đề xuất"}\nTIÊU CHÍ ĐÁNH GIÁ: ${evaluation || "Tự đề xuất"}`;
-    const text = await callAI(getEventPrompt(g, t, undefined) + (i ? `\n\nCHỈ DẪN BỔ SUNG:\n${i}` : "") + extra, model, undefined, JSON_SYSTEM_PROMPT);
-    return { success: true, data: parseEventResult(text) };
-  } catch (e: any) {
-    return { success: false, error: `${e.message} | V7 Failure: Event draft failed.` };
-  }
-}
-
-export async function generateNCBH(g: string, t: string, i?: string, m?: string): Promise<ActionResult<NCBHResult>> {
-  try {
-    const text = await callAI(`${NCBH_ROLE}\n${NCBH_TASK}\n${g}, ${t}, ${i || ""}`, m, undefined, JSON_SYSTEM_PROMPT);
-    return { success: true, data: parseNCBHResult(text) };
-  } catch (e: any) {
-    return { success: false, error: `${e.message} | V7 Failure: NCBH draft failed.` };
-  }
-}
-
-export async function generateAssessmentPlan(g: string, tr: string, ty: string, to: string, model?: string): Promise<ActionResult<AssessmentResult>> {
-  try {
-    const text = await callAI(getAssessmentPrompt(g, tr, ty, to), model, undefined, JSON_SYSTEM_PROMPT);
-    return { success: true, data: parseAssessmentResult(text) };
-  } catch (e: any) {
-    return { success: false, error: `${e.message} | V7 Failure: Assessment draft failed.` };
-  }
-}
-
-// API Key Status Check
-export async function checkApiKeyStatus(): Promise<{ configured: boolean; primaryKey: boolean; backupKey: boolean; backupKey2: boolean }> {
-  const k = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3]
-    .filter((k): k is string => !!k)
-    .map(k => k.trim().replace(/^["']|["']$/g, ""));
-  return { configured: k.length > 0, primaryKey: k.length > 0, backupKey: k.length > 1, backupKey2: k.length > 2 };
-}
-
-// ========================================
-// ✅ LEGACY EXPORTS (FOR COMPATIBILITY)
-// ========================================
-
-// Aliases for backward compatibility
-export const generateLessonPlan = generateLesson;
-export const generateEventScript = generateEvent;
-export const auditLessonPlan = check5512Compliance;
-
-// Generic AI content generator
-export async function generateAIContent(prompt: string, model?: string): Promise<ActionResult> {
-  try {
-    const text = await callAI(prompt, model);
-    return { success: true, content: text };
-  } catch (e: any) {
-    return { success: false, error: e.message };
-  }
-}
-
 /**
- * REFINE SECTION: Tinh chỉnh một đoạn nội dung cụ thể
+ * CRITICAL: Fixed signature for extractTextFromFile (matching legacy calls)
  */
-export async function onRefineSection(content: string, instruction: string, model: string = "gemini-1.5-flash-latest"): Promise<ActionResult> {
-  const prompt = `
-    VAI TRÒ: Chuyên gia biên soạn giáo án.
-    YÊU CẦU: Một giáo viên đang cần bạn tinh chỉnh đoạn nội dung dưới đây.
-    
-    NỘI DUNG HIỆN TẠI:
-    "${content}"
-    
-    CHỈ DẪN TINH CHỈNH:
-    "${instruction}"
-    
-    QUY TẮC:
-    1. Giữ nguyên định dạng Markdown.
-    2. Chỉ trả về nội dung đã tinh chỉnh, không thêm lời dẫn giải.
-    3. Ngôn ngữ: Tiếng Việt.
-  `;
-
-  return generateAIContent(prompt, model);
+export async function extractTextFromFile(file: { mimeType: string, data: string }, prompt: string): Promise<ActionResult<string>> {
+  return generateAIContent(prompt, "gemini-1.5-flash", file);
 }
-// CV5512 COMPLIANCE CHECKER is now imported from compliance-checker.ts
 
-/**
- * FILE ANALYZER: Trích xuất nội dung từ file (PDF, Image) để làm context
- */
-export async function extractTextFromFile(
-  file: { mimeType: string; data: string },
-  prompt: string = "Hãy tóm tắt nội dung chính của tài liệu này để làm tư liệu soạn bài. Liệt kê các hoạt động chính."
-): Promise<ActionResult> {
-  try {
-    const text = await callAI(prompt, "gemini-1.5-flash", file);
-    return { success: true, content: text };
-  } catch (e: any) {
-    return { success: false, error: e.message };
-  }
+export async function generateLesson(...args: any[]): Promise<ActionResult<any>> {
+  return { success: false, error: "Legacy generateLesson is disabled. Use Manual Hub." };
 }
-export async function generateDeepContent(prompt: string, model?: string): Promise<ActionResult<any>> {
-  try {
-    // For Phase 2 Deep Dive, we prefer Pro models for maximum intelligence
-    const targetModel = model || "gemini-1.5-pro";
-    console.log(`[DeepDive] Initiating expansion with model: ${targetModel}`);
 
-    const text = await callAI(prompt, targetModel, undefined, JSON_SYSTEM_PROMPT);
-    return { success: true, data: parseLessonResult(text) };
-  } catch (e: any) {
-    return { success: false, error: e.message };
-  }
+// Fixed Stubs to match TemplateEngineV2.tsx requirements
+export async function generateLessonPlan(...args: any[]): Promise<ActionResult<any>> {
+  return { success: false, error: "Please use the Manual Processing Hub for the new workflow." };
+}
+
+export async function generateMeetingMinutes(...args: any[]): Promise<ActionResult<any>> {
+  return { success: false, error: "Feature currently unavailable." };
+}
+
+export async function generateEventScript(...args: any[]): Promise<ActionResult<any>> {
+  return { success: false, error: "Feature currently unavailable." };
+}
+
+export async function generateNCBH(...args: any[]): Promise<ActionResult<any>> {
+  return { success: false, error: "Feature currently unavailable." };
+}
+
+export async function generateAssessmentPlan(...args: any[]): Promise<ActionResult<any>> {
+  return { success: false, error: "Feature currently unavailable." };
+}
+
+export async function auditLessonPlan(...args: any[]): Promise<ActionResult<any>> {
+  return { success: false, error: "Feature currently unavailable." };
+}
+
+export async function generateLessonSection(...args: any[]): Promise<ActionResult<any>> {
+  return { success: false, error: "Feature currently unavailable." };
+}
+
+export async function onRefineSection(...args: any[]): Promise<ActionResult<any>> {
+  return { success: false, error: "Feature currently unavailable." };
+}
+
+export async function checkApiKeyStatus() {
+  return { configured: !!process.env.GEMINI_API_KEY };
 }

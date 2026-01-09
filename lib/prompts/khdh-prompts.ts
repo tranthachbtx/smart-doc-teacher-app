@@ -81,9 +81,9 @@ export const MONTH_TO_CHU_DE: Record<number, number> = {
 
 export const KHDH_TONE = `
 TONE OF VOICE:
-- PROFESSIONAL: Use precise pedagogical terminology (e.g., "Transferring tasks", "Expected products", "Activating thinking").
-- INSPIRING: Teacher's guidance must be lively, curiosity-inducing, not dry.
-- DETAILED: Do NOT write generic text like "Teacher lectures". MUST write "Teacher uses probing questions: '...', then observes and supports groups...".
+- PROFESSIONAL: Sử dụng thuật ngữ sư phạm chính xác (VD: "Chuyển giao nhiệm vụ", "Sản phẩm dự kiến", "Kích hoạt tư duy").
+-pedagogical: Tập trung vào "Hành động sư phạm" thay vì lời thoại.
+- DETAILED: KHÔNG viết chung chung kiểu "GV giảng bài". BẮT BUỘC viết "GV sử dụng bộ câu hỏi gợi mở: '...', quan sát và hỗ trợ các nhóm thảo luận kỹ thuật khăn trải bàn...".
 `;
 
 export const KHDH_ROLE = `
@@ -112,10 +112,10 @@ export const KHDH_TASK = `
 MỤC TIÊU SẢN PHẨM: "PHẪU THUẬT & TÁI CẤU TRÚC" giáo án cũ thành KHBD SIÊU CHI TIẾT (30-50 trang) chuẩn "LA BÀN".
 
 QUY TRÌNH XỬ LÝ (BẮT BUỘC):
-1. TRÍCH XUẤT TINH HOA: Đọc file cũ, giữ lại các "kịch bản gốc", các ví dụ thực tế và số liệu mà giáo viên đã soạn.
-2. ÁP ĐẶT KHUNG 5512: Ép toàn bộ nội dung cũ vào khung 4 bước (Chuyển giao -> Thực hiện -> Báo cáo -> Chốt). Nếu file cũ chỉ có "GV giảng, HS nghe", bạn PHẢI tự biên soạn lại thành các câu hỏi gợi mở, thảo luận nhóm.
-3. INJECT HỆ THỐNG NLS & ĐẠO ĐỨC (NÂNG TẦM): Đây là phần bắt buộc nâng cấp. Sử dụng khung Circular 02/2025 để chèn các hoạt động dùng AI, Canva, Padlet... vào đúng các bước thực hành.
-4. CHI TIẾT HÓA ĐỐI THOẠI: Biến các dòng tóm tắt thành kịch bản hội thoại 2 chiều Living Lesson.
+1. TRÍCH XUẤT TINH HOA: Đọc file cũ, giữ lại các "nội dung gốc", các ví dụ thực tế và số liệu chuyên môn.
+2. ÁP ĐẶT KHUNG 5512: Ép toàn bộ nội dung cũ vào khung 4 bước (Chuyển giao -> Thực hiện -> Báo cáo -> Chốt). Nếu file cũ chỉ có "GV giảng, HS nghe", bạn PHẢI tự biên soạn lại thành các nhiệm vụ cụ thể.
+3. INJECT HỆ THỐNG NLS & ĐẠO ĐỨC (NÂNG TẦM): Sử dụng khung Thông tư 02/2025 để chèn các hoạt động dùng AI, Canva, Padlet... vào đúng các bước thực hành.
+4. CHI TIẾT HÓA HÀNH ĐỘNG & SẢN PHẨM: Tuyệt đối không viết kịch bản hội thoại. Thay vào đó, mô tả chi tiết "GV làm gì?" và "Sản phẩm cụ thể HS phải đạt được là gì?".
 
 TRIẾT LÝ: "KHÔNG CHỈ LÀ SAO CHÉP - MÀ LÀ NÂNG CẤP HỆ GEN GIÁO ÁN".
 `;
@@ -167,25 +167,25 @@ c) Sản phẩm:
 d) Tổ chức thực hiện:
 {{cot_2}}
 Bước 1: CHUYỂN GIAO NHIỆM VỤ
-• GV thực hiện: [Thao tác cụ thể: Chiếu video, phát phiếu, chia nhóm...].
-• Hệ thống câu hỏi chủ chốt: 
-  + Câu 1: [Câu hỏi kích thích tư duy].
-  + Câu 2: [Câu hỏi đào sâu].
+• GV thực hiện: [Mô tả kỹ thuật dạy học sử dụng: Trạm, Mảnh ghép, KWL... và các bước chỉ dẫn của GV].
+• Lệnh bài tập/Câu hỏi định hướng: 
+  + [Câu hỏi 1: Kích thích tư duy].
+  + [Câu hỏi 2: Đào sâu vấn đề].
 
 Bước 2: THỰC HIỆN NHIỆM VỤ ([X] phút)
-• HS thực hiện: [Mô tả chi tiết HS làm gì: Đọc tài liệu, thảo luận nhóm, tìm kiếm thông tin...].
-• Gợi ý HS trả lời/xử lý: 
-  + Ý 1: ["..." - Nội dung chuẩn kiến thức cần đạt].
-  + Ý 2: ["..."].
-• Hỗ trợ (Scaffolding): [Nếu HS bị "tắc" ở bước nào, GV sẽ gợi ý ra sao?].
+• HS thực hiện: [Mô tả chi tiết HS làm gì: Đọc tài liệu, thảo luận nhóm 4, tìm kiếm thông tin trên internet, hoàn thiện Phiếu học tập].
+• SẢN PHẨM/ĐÁP ÁN DỰ KIẾN: 
+  + [Liệt kê chi tiết các câu trả lời đúng, nội dung kiến thức chuẩn HS cần trình bày được].
+  + [Mô tả hình thức sản phẩm: Sơ đồ tư duy, bài trình thuyết trình Canva...].
+• Hỗ trợ (Scaffolding): [GV quan sát và định hướng cho các nhóm gặp khó khăn ra sao?].
 
 Bước 3: BÁO CÁO, THẢO LUẬN ([X] phút)
-• GV điều phối: [Sử dụng kỹ thuật: khăn trải bàn, các mảnh ghép, hoặc phòng tranh...].
-• HS báo cáo: [Cách thức báo cáo và phản biện giữa các nhóm].
+• GV điều phối: [Cách thức tổ chức báo cáo: Phòng tranh, Thuyết trình quay vòng, Bình chọn trực tuyến...].
+• HS báo cáo: [Nội dung báo cáo, cách thức phản biện và đặt câu hỏi giữa các nhóm].
 
 Bước 4: KẾT LUẬN, NHẬN ĐỊNH
-• GV chốt kiến thức: [Tóm tắt ngắn gọn, cốt lõi nhất].
-• Giáo dục tích hợp: [Bài học về Đạo đức/Năng lực số rút ra từ hoạt động này].
+• GV chốt kiến thức: [Tóm tắt nội dung cốt lõi, khoa học].
+• Giáo dục tích hợp: [Bài học về Đạo đức/Năng lực số rút ra từ hoạt động].
 {{/cot_2}}
 {{/cot_1}}
 
@@ -202,13 +202,13 @@ Bước 4: KẾT LUẬN, NHẬN ĐỊNH
 export const FORMAT_RULES = `
 FORMATTING & LANGUAGE RULES:
 
-1. NO ** double asterisks ** in content.
-2. NO TABS or indentation. Use Markdown list (-) clearly.
-3. PLACE/DATE: Use "Hà Nội, ngày... tháng... năm..." format.
-4. HIERARCHY: Use rule I -> 1 -> a -> - (Decree 30).
-5. LANGUAGE: Vietnamese Pedagogical Standard (Formal, Professional, Objective).
-6. ACTION VERBS: Use Bloom verbs (Identify, Analyze, Evaluate, Create).
-7. TONE: Serious, constructive, guiding. Avoid subjective exclamations.
+1. TUYỆT ĐỐI KHÔNG dùng lời thoại (Kiểu: GV: "..."). Chỉ dùng văn phong hành động hành chính.
+2. KHÔNG dùng dấu ** trong nội dung.
+3. KHÔNG dùng TAB hoặc thụt dòng. Sử dụng gạch đầu dòng (-) rõ ràng.
+4. ĐỊA ĐIỂM/THỜI GIAN: Sử dụng định dạng "Hà Nội, ngày... tháng... năm...".
+5. PHÂN CẤP ĐỀ MỤC: Sử dụng I -> 1 -> a -> - (Theo Nghị định 30).
+6. ĐỘNG TỪ HÀNH ĐỘNG: Sử dụng các động từ Bloom (Liệt kê, Phân tích, Đánh giá, Sáng tạo).
+7. SẢN PHẨM HỌC SINH: Phải viết CỰC KỲ DÀI VÀ CHI TIẾT (đáp án, mẫu bảng đã điền) để tăng độ dày cho giáo án.
 8. PARAGRAPHS: Use double newline (\\n\\n) to separate paragraphs for XML parsing.
 9. *** FINAL OUTPUT MUST BE IN VIETNAMESE *** (System instructions are English, but content is Vietnamese).
 `;

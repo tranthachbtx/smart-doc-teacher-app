@@ -1,165 +1,113 @@
 
 import { ProcessingModule } from "@/lib/store/use-app-store";
 import { SmartPromptData } from "./smart-prompt-service";
-import { ProfessionalContentProcessor } from "./professional-content-processor";
 
 export interface PromptContext {
-    topic: string;
-    grade: string;
-    fileSummary: string;
-    optimizedFileSummary?: string;
-    previousContext?: string;
-    smartData?: SmartPromptData;
+  topic: string;
+  grade: string;
+  fileSummary: string;
+  optimizedFileSummary?: any; // Chứa object cleanData từ bước mổ xẻ
+  smartData?: SmartPromptData;
 }
 
+/**
+ * 🛠️ MANUAL WORKFLOW SERVICE v20.2 (Chế độ 3 Bước - 2 Lần Copy)
+ * Tập trung vào việc gộp các hoạt động và tự động hóa phần thủ tục.
+ */
 export const ManualWorkflowService = {
-    /**
-     * Phân tích cấu trúc bài học từ nội dung văn bản.
-     */
-    analyzeStructure(text: string, duration: string): ProcessingModule[] {
-        // V7: Comprehensive structure for manual workflow (MoET 5512)
-        const modules: ProcessingModule[] = [
-            { id: "mod_setup", title: "Bước 1: Mục tiêu & Thiết bị (Phần I, II, III)", type: "setup", prompt: "", content: "", isCompleted: false },
-            { id: "mod_shdc", title: "Bước 2: Sinh hoạt Dưới cờ", type: "shdc", prompt: "", content: "", isCompleted: false },
-            { id: "mod_khoi_dong", title: "Bước 3: Hoạt động 1 - Khởi động", type: "khoi_dong", prompt: "", content: "", isCompleted: false },
-            { id: "mod_kham_pha", title: "Bước 4: Hoạt động 2 - Khám phá", type: "kham_pha", prompt: "", content: "", isCompleted: false },
-            { id: "mod_luyen_tap", title: "Bước 5: Hoạt động 3 - Luyện tập", type: "luyen_tap", prompt: "", content: "", isCompleted: false },
-            { id: "mod_van_dung", title: "Bước 6: Hoạt động 4 - Vận dụng", type: "van_dung", prompt: "", content: "", isCompleted: false },
-            { id: "mod_shl", title: "Bước 7: Sinh hoạt Lớp", type: "shl", prompt: "", content: "", isCompleted: false },
-            { id: "mod_appendix", title: "Bước 8: Phụ lục & Dặn dò (Phần V, VI)", type: "appendix", prompt: "", content: "", isCompleted: false }
-        ];
-        return modules;
-    },
+  /**
+   * Khởi tạo cấu trúc module (3 Cụm lớn)
+   */
+  analyzeStructure(text: string, duration: string): ProcessingModule[] {
+    return [
+      { id: "mod_setup_sh", title: "Cụm 1: Thông tin chung & Sinh hoạt (Tự động)", type: "setup", prompt: "", content: "", isCompleted: false },
+      { id: "mod_main_1", title: "Cụm 2: Khởi động & Khám phá (Copy 1)", type: "khac", prompt: "", content: "", isCompleted: false },
+      { id: "mod_main_2", title: "Cụm 3: Luyện tập & Vận dụng (Copy 2)", type: "khac", prompt: "", content: "", isCompleted: false },
+    ];
+  },
 
-    /**
-     * Helper to validate and clean file summary
-     */
-    validateAndCleanFileSummary(fileSummary: string): string {
-        if (!fileSummary || fileSummary.trim().length === 0 || fileSummary === "Nội dung sách giáo khoa...") {
-            return "Không có nội dung gốc được cung cấp. Hãy dựa vào kiến thức chuyên môn và chủ đề để thiết kế hoạt động.";
-        }
-        return fileSummary;
-    },
+  /**
+   * TẠO SIÊU PROMPT GỘP (Khởi động + Khám phá)
+   * Chế độ "CHUẨN SƯ PHẠM 5512" (Action-Oriented)
+   */
+  async generateMergedPrompt1(context: PromptContext): Promise<string> {
+    const cleanData = context.optimizedFileSummary || {};
 
-    /**
-     * Tạo Prompt "xịn" cho từng module để user copy sang Gemini Pro Web/ChatGPT
-     */
-    async generatePromptForModule(module: ProcessingModule, context: PromptContext): Promise<string> {
-        // High-Precision Logic: Use pre-optimized content if available, otherwise process the raw summary
-        let optimizedContent = "";
+    return `
+# VAI TRÒ: CHUYÊN GIA THIẾT KẾ PHƯƠNG PHÁP VÀ TIẾN TRÌNH SƯ PHẠM (Pedagogical Process Designer).
+# NHIỆM VỤ: Thiết kế Kế hoạch bài dạy (KHBD) PHẦN 1 (Khởi động & Khám phá) chuẩn 5512.
 
-        if (context.optimizedFileSummary) {
-            optimizedContent = context.optimizedFileSummary;
-        } else {
-            const baseContent = ManualWorkflowService.validateAndCleanFileSummary(context.fileSummary);
-            const processedContent = ProfessionalContentProcessor.extractActivityContent(baseContent);
-            optimizedContent = ProfessionalContentProcessor.optimizeForActivity(module.type, processedContent);
-        }
+# 1. DỮ LIỆU ĐẦU VÀO (Đã lọc sạch từ file PDF):
+- Nội dung Khởi động: """${cleanData.raw_khoi_dong || "Dựa vào chủ đề để sáng tạo"}"""
+- Nội dung Khám phá: """${cleanData.raw_kham_pha || "Dựa vào chủ đề để sáng tạo"}"""
+- Năng lực số (NLS) cần tích hợp: ${context.smartData?.digitalCompetency || "Tự chọn NLS phù hợp"}
 
-        const contextInjection = context.previousContext
-            ? `\\n[CONTEXT_UPDATE]: Hoạt động trước đó đã hoàn thành. Hãy tiếp nối mạch bài học này để tạo sự logic.\\nBối cảnh cũ: ${context.previousContext}\\n`
-            : "";
+# 2. QUY TẮC "CHUẨN SƯ PHẠM" (STRICT RULES):
+1. **KHÔNG VIẾT LỜI THOẠI HỘI THOẠI**: Tuyệt đối không viết kiểu "GV nói...", "HS chào...". Hãy viết dưới dạng mô tả hành động hành chính.
+2. **CỘT GIÁO VIÊN (teacher_action)**: 
+   - Mô tả Kỹ thuật dạy học (VD: KWL, Trạm, Mảnh ghép, Động não).
+   - Mô tả cụ thể hành động: Giao nhiệm vụ, Chiếu clip, Phát phiếu học tập, Quan sát, Hỗ trợ.
+   - Ghi rõ các Câu hỏi định hướng/lệnh bài tập (VD: Yêu cầu HS phân tích..., Câu hỏi: "Em hãy cho biết...").
+3. **CỘT HỌC SINH (student_action)**: 
+   - Mô tả hành động cụ thể của HS: Thảo luận nhóm 4 người, Ghi kết quả vào Phiếu học tập số 1, Trình bày trên Canva.
+   - **SẢN PHẨM CẦN ĐẠT (CỰC KỲ CHI TIẾT)**: Liệt kê các câu trả lời dự kiến, các ý tưởng, nội dung bảng biểu hoàn thiện. Đây là phần trọng tâm để tăng độ dài và chất lượng bài dạy.
+4. **TÍCH HỢP NĂNG LỰC SỐ (NLS)**: Lồng ghép việc sử dụng AI, Canva, Padlet hoặc tìm kiếm internet vào các nhiệm vụ khám phá kiến thức.
 
-        // --- CONSTRUCT MASTER PROMPT BLUEPRINT (FORCED EXPANSION) ---
+# 3. ĐỊNH DẠNG JSON OUTPUT (Mảng 2 phần tử):
+[
+  {
+    "id": "hoat_dong_khoi_dong",
+    "module_title": "HOẠT ĐỘNG 1: KHỞI ĐỘNG - [Tên sáng tạo]",
+    "steps": [
+      { "step_type": "transfer", "teacher_action": "Markdown (Mô tả GV giao nv...)", "student_action": "Markdown (Mô tả HS thực hiện & SP dự kiến...)" },
+      { "step_type": "perform", ... },
+      { "step_type": "report", ... },
+      { "step_type": "conclude", ... }
+    ]
+  },
+  {
+    "id": "hoat_dong_kham_pha",
+    "module_title": "HOẠT ĐỘNG 2: KHÁM PHÁ - [Tên sáng tạo]",
+    "steps": [ ... ]
+  }
+]
+        `.trim();
+  },
 
-        // PART 1: SYSTEM INSTRUCTION
-        const systemInstruction = `
-PHÁN 1: THIẾT LẬP HỆ ĐIỀU HÀNH (SYSTEM INSTRUCTION)
-Bạn là KIẾN TRÚC SƯ SƯ PHẠM CAO CẤP (Pedagogical Architect), chuyên gia về chương trình "Hoạt động Trải nghiệm, Hướng nghiệp 12".
-Tư duy cốt lõi: "GIÁO ÁN LÀ KỊCH BẢN ĐẠO DIỄN" (Director's Script).
-Nhiệm vụ: Chuyển hóa các đầu mục khô khan thành một kịch bản hành động chi tiết từng giây, tập trung vào cảm xúc, tâm lý hành vi và xử lý tình huống thực tế.
-Mục tiêu độ dài: Tạo ra nội dung sâu và dày nhất có thể (Max Tokens), tuyệt đối không tóm tắt.
-`;
+  /**
+   * TẠO SIÊU PROMPT GỘP (Luyện tập + Vận dụng)
+   */
+  async generateMergedPrompt2(context: PromptContext): Promise<string> {
+    const cleanData = context.optimizedFileSummary || {};
 
-        // PART 2: DATA INPUT
-        const dataInput = `
-PHÁN 2: DỮ LIỆU ĐẦU VÀO (CONTEXT INJECTION)
-## 📂 DỮ LIỆU HOẠT ĐỘNG:
-- **Tên hoạt động:** ${module.title}
-- **Thời lượng:** 10-15 phút (Điều chỉnh linh hoạt)
-- **Mục tiêu cốt lõi:** ${module.type === 'khoi_dong' ? 'Kích thích hứng thú, kết nối kiến thức cũ' :
-                module.type === 'kham_pha' ? 'Hình thành kiến thức mới, phát triển năng lực' :
-                    module.type === 'luyen_tap' ? 'Củng cố kiến thức, rèn luyện kỹ năng' :
-                        module.type === 'van_dung' ? 'Vận dụng thực tiễn, mở rộng vấn đề' : 'Theo định hướng bài dạy'}
-- **Nội dung thô (từ PDF/SGK):**
-  ${typeof optimizedContent === 'string' ? optimizedContent : JSON.stringify(optimizedContent)}
-- **Bối cảnh địa phương:** ${context.topic} - Khối ${context.grade}.
-- **Ngữ cảnh trước đó:** ${contextInjection}
-`;
+    return `
+# VAI TRÒ: CHUYÊN GIA THIẾT KẾ PHƯƠNG PHÁP SƯ PHẠM.
+# NHIỆM VỤ: Thiết kế KHBD PHẦN 2 (Luyện tập & Vận dụng) chuẩn 5512.
 
-        // PART 3: DEEP DIVE INSTRUCTIONS
-        const executionCommand = `
-PHÁN 3: LỆNH THỰC THI "DEEP DIVE" (QUAN TRỌNG NHẤT)
-## ⚡ CHỈ THỊ THỰC HIỆN "DEEP DIVE" (SIÊU CHI TIẾT):
-Hãy thiết kế hoạt động này theo chuẩn Công văn 5512, nhưng ở chế độ "Full Capacity". Với mỗi bước (Transfer, Perform, Report, Conclude), bạn PHẢI triển khai đủ 4 lớp thông tin sau đây:
+# 1. DỮ LIỆU ĐẦU VÀO:
+- Nội dung Luyện tập: """${cleanData.raw_luyen_tap || "Sáng tạo bài tập"}"""
+- Nội dung Vận dụng: """${cleanData.raw_van_dung || "Sáng tạo dự án thực tế"}"""
 
-### 1. ĐỐI VỚI CỘT GIÁO VIÊN (teacher_action):
-*Yêu cầu: Không viết văn xuôi, dùng Markdown gạch đầu dòng rõ ràng.*
-- **(A) Kỹ thuật Setup:** Mô tả vị trí đứng (bục giảng/giữa lớp), ánh sáng, âm thanh, công cụ trực quan cần dùng.
-- **(B) Lời thoại kịch bản (Verbatim Script):** Viết nguyên văn câu nói/câu hỏi của GV. Bắt đầu bằng: *"> GV nói:..."*. Ngôn từ phải truyền cảm hứng, gây tò mò, "đắt giá".
-- **(C) Kịch bản phân luồng (Scenario Branching):**
-  + *Nếu lớp trầm:* GV dùng câu hỏi mồi gì?
-  + *Nếu lớp ồn/tranh luận lạc đề:* GV điều phối thế nào?
-- **(D) Quan sát sư phạm:** Hướng dẫn GV cần nhìn vào đâu, chú ý biểu hiện gì của HS (ánh mắt, body language).
+# 2. YÊU CẦU THỰC HIỆN:
+1. **LUYỆN TẬP (HĐ3)**: Thiết kế các bài tập/trò chơi có tính phân hóa. Mô tả rõ cách giáo viên hướng dẫn học sinh sửa các lỗi sai thường gặp. Ghi chi tiết ĐÁP ÁN DỰ KIẾN (Sản phẩm HS).
+2. **VẬN DỤNG (HĐ4)**: Thiết kế một nhiệm vụ/dự án thực tế (trải nghiệm). 
+   - Yêu cầu AI viết chi tiết nội dung một **"PHIẾU HƯỚNG DẪN TỰ HÀNH ĐỘNG"** cho HS.
+   - Xây dựng một **BẢNG RUBRIC ĐÁNH GIÁ** chi tiết (ít nhất 3 tiêu chí, 4 mức độ) ngay trong phần student_action.
+3. **ĐỊNH DẠNG**: Tuyệt đối không dùng lời thoại. Sử dụng gạch đầu dòng và bảng biểu (Markdown) để nội dung khoa học, chuyên nghiệp.
 
-### 2. ĐỐI VỚI CỘT HỌC SINH (student_action):
-- **(A) Trạng thái tâm lý (Psych State):** Mô tả cảm xúc của HS (hào hứng, e ngại, bất ngờ) ngay lúc nhận nhiệm vụ.
-- **(B) Quy trình tư duy (Cognitive Process):** Mô tả diễn biến trong đầu HS. Họ đang nhớ lại điều gì? Đang phân tích cái gì?
-- **(C) Hành động cụ thể:** Viết, vẽ, thảo luận, di chuyển.
-- **(D) Tương tác xã hội (Social):** Mô tả cách HS tương tác với bạn bên cạnh (tranh luận, đồng tình, chia sẻ).
-
-### 3. ĐỊNH DẠNG ĐẦU RA (JSON ONLY):
-Trả về kết quả dưới dạng JSON hợp lệ, không kèm lời dẫn.
-{
-  "module_title": "${module.title}",
-  "summary_for_next_step": "Tóm tắt ngắn gọn",
-  "steps": [
-    {
-      "step_type": "transfer", 
-      "teacher_action": "Markdown text...",
-      "student_action": "Markdown text..."
-    },
-    {
-      "step_type": "perform", 
-      "teacher_action": "Markdown text...",
-      "student_action": "Markdown text..."
-    },
-    {
-      "step_type": "report", 
-      "teacher_action": "Markdown text...",
-      "student_action": "Markdown text..."
-    },
-    {
-      "step_type": "conclude", 
-      "teacher_action": "Markdown text...",
-      "student_action": "Markdown text..."
-    }
-  ]
-}
-`;
-        return `${systemInstruction}\n${dataInput}\n${executionCommand}`;
-    },
-
-    /**
-     * Generate optimized prompt using ProfessionalContentProcessor
-     */
-    async generateOptimizedPromptForModule(module: ProcessingModule, context: PromptContext): Promise<string> {
-        // Process content with ProfessionalContentProcessor
-        const processedContent = ProfessionalContentProcessor.extractActivityContent(context.fileSummary);
-        const optimizedContent = ProfessionalContentProcessor.optimizeForActivity(module.type, processedContent);
-
-        // Generate optimized prompt (Now Async)
-        return await ProfessionalContentProcessor.generateOptimizedPrompt(
-            module.type,
-            optimizedContent,
-            context.smartData,
-            context.previousContext ? { summary: context.previousContext } : null,
-            true // skipNeural: TRUE
-        );
-    },
-
-    /**
-     * V7 Note: Robust generation is now handled directly by PedagogicalOrchestrator
-     * in the automatic workflow. Manual workflow uses generatePromptForModule.
-     */
+# 3. ĐỊNH DẠNG JSON OUTPUT (Mảng 2 phần tử):
+[
+  {
+    "id": "hoat_dong_luyen_tap",
+    "module_title": "HOẠT ĐỘNG 3: LUYỆN TẬP - [Tên]",
+    "steps": [ ... ]
+  },
+  {
+    "id": "hoat_dong_van_dung",
+    "module_title": "HOẠT ĐỘNG 4: VẬN DỤNG - [Tên]",
+    "steps": [ ... ]
+  }
+]
+        `.trim();
+  }
 };
