@@ -40,6 +40,7 @@ export function ManualProcessingHub() {
 
     const [isAnalyzing, setIsAnalyzing] = React.useState(false);
     const [analyzingStatus, setAnalyzingStatus] = React.useState<string>("");
+    const [detectedTopicName, setDetectedTopicName] = React.useState<string>("");
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     // BƯỚC 1: TRÍCH XUẤT ELITE (Architecture 25.0 - Hashing, Caching & Orchestration)
@@ -100,19 +101,17 @@ export function ManualProcessingHub() {
                 console.log("[ManualHub] 3. METADATA RECEIVED:", struct);
                 const cleanStruct = {
                     ...struct,
-                    // If AI missed something deep in the body, we still have it in fullText for later steps
                 };
 
+                setDetectedTopicName(struct.ten_bai);
                 store.updateLessonField('theme', struct.ten_bai);
                 store.updateLessonField('processedContext', {
                     cleanData: cleanStruct,
-                    fullRawText: fullText // STORE FULL TEXT IN REDUX/STATE FOR PROMPT GENERATION
+                    fullRawText: fullText
                 });
 
                 store.setLessonResult({
                     ...(store.lesson.result || {}),
-
-                    // Map other fields...
                     ...struct
                 });
             }
@@ -242,26 +241,46 @@ export function ManualProcessingHub() {
                 if (data.shl) r.shl = data.shl;
             }
 
-            // TYPE 2 & 3: MAIN ACTIVITIES (FLEXIBLE ARCHITECTURE v33.0)
-            if (data.khoi_dong || data.kham_pha || data.luyen_tap || data.van_dung) {
-                // Feature Mapping: Flat Structure (cot_gv/cot_hs)
-                const mapFlatActivity = (key: string, storePrefix: string) => {
+            // TYPE 2 & 3: MAIN ACTIVITIES (FLEXIBLE ARCHITECTURE v34.0 - Flat & Nested)
+            if (data.khoi_dong || data.kham_pha || data.luyen_tap || data.van_dung ||
+                data.hoat_dong_khoi_dong_cot_1 || data.hoat_dong_kham_pha_cot_1 ||
+                data.hoat_dong_luyen_tap_cot_1 || data.hoat_dong_van_dung_cot_1) {
+
+                // 1. Handle Nested Structure (khoi_dong: { cot_gv, cot_hs })
+                const mapNestedActivity = (key: string, storePrefix: string) => {
                     if (data[key]) {
                         r[`${storePrefix}_cot_1`] = data[key].cot_gv;
                         r[`${storePrefix}_cot_2`] = data[key].cot_hs;
-                        // Legacy support for Textarea display and UI feedback
                         r[storePrefix] = `HOẠT ĐỘNG: ${key.toUpperCase()}\n\n{{cot_1}}\n${data[key].cot_gv}\n{{cot_2}}\n${data[key].cot_hs}`;
                     }
                 };
 
-                mapFlatActivity('khoi_dong', 'hoat_dong_khoi_dong');
-                mapFlatActivity('kham_pha', 'hoat_dong_kham_pha');
-                mapFlatActivity('luyen_tap', 'hoat_dong_luyen_tap');
-                mapFlatActivity('van_dung', 'hoat_dong_van_dung');
+                // 2. Handle Flat Structure (hoat_dong_khoi_dong_cot_1, hoat_dong_khoi_dong_cot_2)
+                const mapFlatActivity = (prefix: string) => {
+                    if (data[`${prefix}_cot_1`] || data[`${prefix}_cot_2`]) {
+                        r[`${prefix}_cot_1`] = data[`${prefix}_cot_1`];
+                        r[`${prefix}_cot_2`] = data[`${prefix}_cot_2`];
+                        r[prefix] = `HOẠT ĐỘNG\n\n{{cot_1}}\n${data[`${prefix}_cot_1`]}\n{{cot_2}}\n${data[`${prefix}_cot_2`]}`;
+                    }
+                };
 
-                // MAPPING EXTRA FIELDS (Pillar 3)
+                mapNestedActivity('khoi_dong', 'hoat_dong_khoi_dong');
+                mapNestedActivity('kham_pha', 'hoat_dong_kham_pha');
+                mapNestedActivity('luyen_tap', 'hoat_dong_luyen_tap');
+                mapNestedActivity('van_dung', 'hoat_dong_van_dung');
+
+                mapFlatActivity('hoat_dong_khoi_dong');
+                mapFlatActivity('hoat_dong_kham_pha');
+                mapFlatActivity('hoat_dong_luyen_tap');
+                mapFlatActivity('hoat_dong_van_dung');
+
+                // EXTRA MAPPING
                 if (data.ho_so_day_hoc) r.ho_so_day_hoc = data.ho_so_day_hoc;
                 if (data.huong_dan_ve_nha) r.huong_dan_ve_nha = data.huong_dan_ve_nha;
+                if (data.shdc) r.shdc = data.shdc;
+                if (data.shl) r.shl = data.shl;
+                if (data.ten_bai) r.ten_bai = data.ten_bai;
+                if (data.so_tiet) r.duration = data.so_tiet;
             }
             // LEGACY SUPPORT (To be deprecated)
             else if ((data.type === 'main_part_1' || data.type === 'main_part_2') && data.activities) {
@@ -371,6 +390,24 @@ export function ManualProcessingHub() {
                         </div>
                     </Button>
                 </div>
+
+                {detectedTopicName && detectedTopicName !== lessonAutoFilledTheme && (
+                    <div className="mt-4 p-4 bg-rose-50 border-2 border-rose-200 rounded-2xl flex items-center gap-3 animate-pulse">
+                        <BrainCircuit className="w-6 h-6 text-rose-500" />
+                        <div>
+                            <p className="text-xs font-black text-rose-900 uppercase">Phát hiện xung đột chủ đề!</p>
+                            <p className="text-sm text-rose-700">File nhận diện là: <b>{detectedTopicName}</b>. Bạn có muốn sử dụng chủ đề này thay vì <b>{lessonAutoFilledTheme}</b>?</p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="ml-auto rounded-xl border-rose-300 text-rose-700 hover:bg-rose-100"
+                            onClick={() => store.updateLessonField('theme', detectedTopicName)}
+                        >
+                            Chấp nhận
+                        </Button>
+                    </div>
+                )}
             </div>
 
             {/* 🏰 HỆ THỐNG 3 TRỤ CỘT (ARCH 31.0 - PILLAR STRATEGY) */}

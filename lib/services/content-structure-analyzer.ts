@@ -59,7 +59,8 @@ export class ContentStructureAnalyzer {
         1. TRÍCH XUẤT sạch sẽ nội dung từng hoạt động (không tóm tắt).
         2. TỰ ĐỘNG SOẠN THẢO phần Mục tiêu và Sinh hoạt (SHDC/SHL) dựa trên bối cảnh bài học.
         
-        Bối cảnh: Khối ${grade}, Bài học: ${theme}.
+        Bối cảnh ban đầu: Khối ${grade}, Bài học: ${theme}.
+        LƯU Ý QUAN TRỌNG: Nếu nội dung file bạn đang đọc KHÁC với chủ đề bài học "${theme}", hãy ƯU TIÊN TUYỆT ĐỐI nội dung trong file. Đừng cố gắng gượng ép nội dung file vào chủ đề "${theme}". Hãy tự động nhận diện tên bài học chính xác từ file.
         
         # ĐỊNH DẠNG JSON TRẢ VỀ (DUY NHẤT):
         {

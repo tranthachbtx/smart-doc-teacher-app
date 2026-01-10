@@ -29,9 +29,12 @@ export async function extractPDFContent(file: File): Promise<string> {
     } else {
       throw new Error('Chỉ hỗ trợ file PDF và DOCX');
     }
-  } catch (error) {
-    console.error('PDF extraction error:', error);
-    throw new Error('Không thể trích xuất nội dung từ file. Vui lòng kiểm tra lại file.');
+  } catch (error: any) {
+    if (error.message !== "Client-side environment extracted via Fallback.") {
+      console.error('PDF extraction error:', error);
+      throw new Error('Không thể trích xuất nội dung từ file. Vui lòng kiểm tra lại file.');
+    }
+    throw error;
   }
 }
 

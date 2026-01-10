@@ -202,9 +202,7 @@ export class ProfessionalContentProcessor {
 
       // Content Accumulation
       if (currentActivity === 'shdc' || currentActivity === 'shl') {
-        if (!Object.values(SECTION_PATTERNS).flat().some(p => p.test(trimmedLine))) {
-          content[currentActivity]?.push(trimmedLine);
-        }
+        content[currentActivity]?.push(trimmedLine);
         continue;
       }
 

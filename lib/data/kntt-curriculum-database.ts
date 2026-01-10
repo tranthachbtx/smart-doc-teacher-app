@@ -2756,14 +2756,22 @@ export function timChuDeTheoTen(
         ? CHUONG_TRINH_LOP_11
         : CHUONG_TRINH_LOP_12;
 
-  const searchLower = tenHoacTuKhoa.toLowerCase();
+  const searchLower = tenHoacTuKhoa.trim().toLowerCase();
+  if (!searchLower) return null;
 
+  // 1. Prioritize Exact/Partial Name Match (High Confidence)
+  const nameMatch = chuongTrinh.chu_de.find(cd =>
+    cd.ten.toLowerCase().includes(searchLower) ||
+    searchLower.includes(cd.ten.toLowerCase())
+  );
+  if (nameMatch) return nameMatch;
+
+  // 2. Fallback to Keyword Search (Lower Confidence)
   return (
     chuongTrinh.chu_de.find(
       (cd) =>
-        cd.ten.toLowerCase().includes(searchLower) ||
-        (cd.tu_khoa_tim_kiem &&
-          cd.tu_khoa_tim_kiem.some((tk) => searchLower.includes(tk)))
+        cd.tu_khoa_tim_kiem &&
+        cd.tu_khoa_tim_kiem.some((tk) => searchLower.includes(tk.toLowerCase()))
     ) || null
   );
 }

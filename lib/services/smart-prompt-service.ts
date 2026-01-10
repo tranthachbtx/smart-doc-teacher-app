@@ -53,8 +53,18 @@ export const SmartPromptService = {
         const gradeInt = parseInt(grade) as 10 | 11 | 12;
         const chuDeSoNum = chuDeSo ? parseInt(chuDeSo) : undefined;
 
-        // 1. Get Curriculum Data (Detailed)
         const chuDe = timChuDeTheoTen(gradeInt, topicName);
+        console.log(`[SmartPrompt] Lookup for "${topicName}" (Grade ${grade}) -> Match: ${chuDe?.ten || 'NONE'}`);
+
+        // AUTO-DETECT chuDeSo from ma if missing (e.g. "12.7" -> 7)
+        let finalChuDeSo = chuDeSoNum;
+        if (!finalChuDeSo && chuDe?.ma) {
+            const parts = chuDe.ma.split('.');
+            if (parts.length > 1) {
+                finalChuDeSo = parseInt(parts[1]);
+            }
+        }
+
         let curriculumContext = "";
         const coreMissions = {
             khoiDong: "Chuẩn bị tâm thế, kết nối kiến thức cũ.",
@@ -93,10 +103,10 @@ Giai đoạn tâm lý: ${trongTam?.dac_diem?.join(", ") || "Học sinh đang tro
 Gợi ý sư phạm: Tập trung vào các hoạt động thực hành, trải nghiệm nhóm, khuyến khích tự học và sáng tạo.`;
 
         // 3. Get PPCT Context
-        const ppctContext = chuDeSoNum ? taoContextPhanBoThoiGian(gradeInt, chuDeSoNum) : "Dữ liệu phân phối chương trình.";
+        const ppctContext = finalChuDeSo ? taoContextPhanBoThoiGian(gradeInt, finalChuDeSo) : "Dữ liệu phân phối chương trình.";
 
         // 4. Get SHDC/SHL Suggestions
-        const shdcShlContext = chuDeSoNum ? taoContextSHDC_SHL(gradeInt, chuDeSoNum, chuDe?.mach_noi_dung) : "Gợi ý Sinh hoạt dưới cờ và Sinh hoạt lớp theo chủ đề.";
+        const shdcShlContext = finalChuDeSo ? taoContextSHDC_SHL(gradeInt, finalChuDeSo, chuDe?.mach_noi_dung) : "Gợi ý Sinh hoạt dưới cờ và Sinh hoạt lớp theo chủ đề.";
 
         // 5. Get Digital Competency (NLS) - Cleaned version focusing only on content
         const nlsSuggestions = goiYNLSTheoChuDe(chuDe?.mach_noi_dung || topicName);
