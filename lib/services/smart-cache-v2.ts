@@ -130,7 +130,9 @@ export class SmartCacheV2 {
             return result;
         } catch (e) {
             console.error('[SmartCacheV2] Decompression failed', e);
-            return input;
+            // CRITICAL FIX: If decompression fails, return null (treat as cache miss).
+            // Do NOT return the compressed binary string as text!
+            return null;
         }
     }
 

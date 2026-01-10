@@ -48,6 +48,7 @@ export function ManualProcessingHub() {
         if (!file) return;
 
         setIsAnalyzing(true);
+        console.log(`[ManualHub] 1. INPUT TRACE: File: ${file.name}, Size: ${file.size} bytes (${(file.size / 1024 / 1024).toFixed(2)}MB), Type: ${file.type}`);
         setAnalyzingStatus("Khởi tạo Pipeline 9.1 (Hashing & Security)...");
 
         try {
@@ -99,7 +100,10 @@ export function ManualProcessingHub() {
             try {
                 const { ContentStructureAnalyzer } = await import('@/lib/services/content-structure-analyzer');
                 const analyzer = new ContentStructureAnalyzer();
+                console.log(`[ManualHub] 2. FLOW TRACE: Analyzer Input Text Length: ${rawText.length}`);
+
                 const payloadData = Buffer.from(rawText).toString('base64');
+                console.log(`[ManualHub] 3. PAYLOAD TRACE: Base64 Payload Size: ${payloadData.length} chars`);
 
                 const struct = await analyzer.analyzeAndPreFill(
                     { mimeType: 'text/plain', data: payloadData },

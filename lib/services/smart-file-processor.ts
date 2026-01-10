@@ -38,7 +38,7 @@ export class SmartFileProcessor {
         const cachedContent = await cacheEngine.get(hash);
 
         if (cachedContent) {
-            console.log('[SmartFileProcessor] Smart Cache V2 hit for', file.name);
+            console.log(`[SmartFileProcessor] Smart Cache V2 hit for ${file.name}. Content Length: ${cachedContent.length}`);
             if (onProgress) onProgress("⚡ Found in Smart Cache!");
             await new Promise(r => setTimeout(r, 500));
             return { content: cachedContent, source: 'cache' };
@@ -57,6 +57,7 @@ export class SmartFileProcessor {
         const extractor = MultiStrategyExtractor.getInstance();
 
         const extractionResult = await extractor.extract(file, base64Data);
+        console.log(`[SmartFileProcessor] Extraction complete. Length: ${extractionResult.content?.length || 0} chars. Source: ${extractionResult.source}`);
 
         if (onProgress) onProgress("🧠 Offloading Pedagogical Analysis to Background Worker...");
 

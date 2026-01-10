@@ -55,6 +55,8 @@ export async function callAI(
           console.log("[AI-RELAY] ✅ Proxy SUCCESS");
           return text;
         }
+      } else {
+        console.warn(`[AI-RELAY] ⚠️ Proxy Error: ${response.status}`, await response.text());
       }
     } catch (e: any) { console.warn(`[AI-RELAY] ⚠️ Proxy failed: ${e.message}`); }
   }
@@ -79,9 +81,14 @@ export async function callAI(
         if (text) {
           console.log("[AI-RELAY] ✅ Gemini SUCCESS");
           return text;
+        } else {
+          console.warn(`[AI-RELAY] ⚠️ Gemini Response OK but NO TEXT. Blocked?`, JSON.stringify(json));
         }
+      } else {
+        const errText = await response.text();
+        console.warn(`[AI-RELAY] ⚠️ Gemini API Error: ${response.status} ${response.statusText}`, errText);
       }
-    } catch (e: any) { console.warn(`[AI-RELAY] ⚠️ Gemini Key failed: ${e.message}`); }
+    } catch (e: any) { console.warn(`[AI-RELAY] ⚠️ Gemini Key failed (Network/Exception): ${e.message}`); }
   }
 
   // 4. STRATEGY: OPENAI FALLBACK
