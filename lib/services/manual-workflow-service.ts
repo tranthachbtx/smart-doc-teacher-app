@@ -31,13 +31,14 @@ export const ManualWorkflowService = {
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia thẩm định và phát triển chương trình HĐTN, HN 12.
+# VAI TRÒ: Chuyên gia thẩm định và phát triển chương trình HĐTN, HN 12 (v32.1).
 
 # DỮ LIỆU THAM KHẢO (INPUT):
 1. **Nội dung từ KHBH cũ (PDF Input):**
 """${JSON.stringify(data.thong_tin_chung || data)}"""
 - Dòng SHDC cũ: """${JSON.stringify(data.shdc || "")}"""
 - Dòng SHL cũ: """${JSON.stringify(data.shl || "")}"""
+- Toàn bộ nội dung thô (Tham khảo): """${context.fileSummary}"""
 
 2. **Dữ liệu chuẩn từ Hệ thống (Database Standard):**
 - **Yêu cầu cần đạt (YCCĐ) & Mục tiêu chuẩn:** """${smartData.objectives || ""}"""
@@ -75,12 +76,13 @@ QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON h
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Kiến trúc sư sư phạm HĐTN, HN (Digital Native).
+# VAI TRÒ: Kiến trúc sư sư phạm HĐTN, HN (Digital Native - v32.1).
 
 # DỮ LIỆU THAM KHẢO (INPUT):
 1. **Nội dung cũ (PDF Input):**
 - Khởi động: """${JSON.stringify(data.khoi_dong || "")}"""
 - Khám phá: """${JSON.stringify(data.kham_pha || "")}"""
+- Nội dung gốc toàn văn (Dùng nếu các mục trên trống): """${context.fileSummary}"""
 
 2. **Chỉ dẫn phương pháp chuẩn (Database Standard):**
 - **Năng lực số cần tích hợp (TT 02/2025):** """${smartData.digitalCompetency || ""}"""
@@ -118,12 +120,13 @@ QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON h
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia đánh giá và thực tiễn.
+# VAI TRÒ: Chuyên gia đánh giá và thực tiễn (v32.1).
 
 # DỮ LIỆU THAM KHẢO (INPUT):
 1. **Nội dung cũ (PDF Input):**
 - Luyện tập: """${JSON.stringify(data.luyen_tap || "")}"""
 - Vận dụng: """${JSON.stringify(data.van_dung || "")}"""
+- Nội dung gốc toàn văn (Dùng nếu các mục trên trống): """${context.fileSummary}"""
 
 2. **Kho dữ liệu chuẩn (Database Standard):**
 - **Nhiệm vụ cốt lõi (Gợi ý sản phẩm):** 
