@@ -31,7 +31,7 @@ export const ManualWorkflowService = {
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia thẩm định và phát triển chương trình HĐTN, HN 12 (v32.2).
+# VAI TRÒ: Chuyên gia thẩm định và phát triển chương trình HĐTN, HN 12 (v32.3).
 
 # DỮ LIỆU THAM KHẢO (INPUT):
 1. **Nội dung từ KHBH cũ (PDF Input):**
@@ -76,7 +76,7 @@ QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON h
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Kiến trúc sư sư phạm HĐTN, HN (Digital Native - v32.2).
+# VAI TRÒ: Kiến trúc sư sư phạm HĐTN, HN (Digital Native - v32.3).
 
 # DỮ LIỆU THAM KHẢO (INPUT):
 1. **Nội dung cũ (PDF Input):**
@@ -120,7 +120,7 @@ QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON h
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia đánh giá và thực tiễn (v32.2).
+# VAI TRÒ: Chuyên gia đánh giá và thực tiễn (v32.3).
 
 # DỮ LIỆU THAM KHẢO (INPUT):
 1. **Nội dung cũ (PDF Input):**

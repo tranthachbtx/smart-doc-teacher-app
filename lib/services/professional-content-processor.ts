@@ -161,12 +161,12 @@ export class ProfessionalContentProcessor {
       });
 
       // --- DETECTION: HĐTN Phase ---
-      if (/(Sinh hoạt dưới cờ|SHDC)/i.test(trimmedLine) && trimmedLine.length < 50) {
+      if (/(Sinh hoạt dưới cờ|SHDC|Dưới cờ)/i.test(trimmedLine) && trimmedLine.length < 80) {
         currentActivity = 'shdc';
         currentSection = 'general';
         continue;
       }
-      if (/(Sinh hoạt lớp|SHL)/i.test(trimmedLine) && trimmedLine.length < 50) {
+      if (/(Sinh hoạt lớp|SHL|Sinh lớp)/i.test(trimmedLine) && trimmedLine.length < 80) {
         currentActivity = 'shl';
         currentSection = 'general';
         continue;
