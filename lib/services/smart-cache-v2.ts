@@ -103,7 +103,7 @@ export class SmartCacheV2 {
         }
     }
 
-    private async decompress(input: string): Promise<string> {
+    private async decompress(input: string): Promise<string | null> {
         if (typeof window === 'undefined' || typeof DecompressionStream === 'undefined' || !this.isBase64(input)) {
             return input;
         }

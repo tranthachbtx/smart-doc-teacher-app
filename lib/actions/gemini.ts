@@ -26,6 +26,7 @@ export async function callAI(
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
   console.log(`[AI-RELAY] Starting callAI with model: ${modelName}`);
+  const errorLogs: string[] = [];
 
   // 1. Prepare Payload
   const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
@@ -56,18 +57,31 @@ export async function callAI(
           return text;
         }
       } else {
-        console.warn(`[AI-RELAY] ⚠️ Proxy Error: ${response.status}`, await response.text());
+        const errText = await response.text();
+        if (errText.includes("Hello World") || errText.includes("error code: 1020")) {
+          const msg = "Proxy Configuration Error: Endpoint returning default Cloudflare page (Hello World). Check GEMINI_PROXY_URL.";
+          console.error(`[AI-RELAY] ❌ ${msg}`);
+          errorLogs.push(msg);
+        } else {
+          const msg = `Proxy Error: ${response.status} - ${errText}`;
+          console.warn(`[AI-RELAY] ⚠️ ${msg}`);
+          errorLogs.push(msg);
+        }
       }
-    } catch (e: any) { console.warn(`[AI-RELAY] ⚠️ Proxy failed: ${e.message}`); }
+    } catch (e: any) {
+      console.warn(`[AI-RELAY] ⚠️ Proxy failed: ${e.message}`);
+      errorLogs.push(`Proxy Ex: ${e.message}`);
+    }
   }
 
   // 3. STRATEGY: DIRECT GEMINI ROTATION
   const geminiKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3].filter(k => !!k && k.length > 5);
   console.log(`[AI-RELAY] Found ${geminiKeys.length} Gemini keys.`);
 
-  for (const key of geminiKeys) {
+  for (let i = 0; i < geminiKeys.length; i++) {
+    const key = geminiKeys[i];
     try {
-      console.log(`[AI-RELAY] 💎 Attempting Direct Gemini Key...`);
+      console.log(`[AI-RELAY] 💎 Attempting Direct Gemini Key ${i + 1}/${geminiKeys.length}...`);
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,12 +97,25 @@ export async function callAI(
           return text;
         } else {
           console.warn(`[AI-RELAY] ⚠️ Gemini Response OK but NO TEXT. Blocked?`, JSON.stringify(json));
+          errorLogs.push(`Gemini No Text: ${JSON.stringify(json).substring(0, 100)}`);
         }
       } else {
         const errText = await response.text();
-        console.warn(`[AI-RELAY] ⚠️ Gemini API Error: ${response.status} ${response.statusText}`, errText);
+        let statusMsg = `Gemini API Error: ${response.status} ${response.statusText}`;
+
+        if (errText.includes("API key was reported as leaked")) {
+          statusMsg = "CRITICAL: API KEY LEAKED & REVOKED by Google. Please rotate keys immediately.";
+          console.error(`[AI-RELAY] 💀 ${statusMsg}`);
+        } else {
+          statusMsg += ` - ${errText.substring(0, 100)}`;
+          console.warn(`[AI-RELAY] ⚠️ ${statusMsg}`);
+        }
+        errorLogs.push(`Key ${i + 1}: ${statusMsg}`);
       }
-    } catch (e: any) { console.warn(`[AI-RELAY] ⚠️ Gemini Key failed (Network/Exception): ${e.message}`); }
+    } catch (e: any) {
+      console.warn(`[AI-RELAY] ⚠️ Gemini Key failed: ${e.message}`);
+      errorLogs.push(`Gemini Net/Ex: ${e.message}`);
+    }
   }
 
   // 4. STRATEGY: OPENAI FALLBACK
@@ -110,8 +137,10 @@ export async function callAI(
         const data = await response.json();
         console.log("[AI-RELAY] ✅ OpenAI SUCCESS");
         return data.choices[0].message.content || "";
+      } else {
+        errorLogs.push(`OpenAI Error: ${response.status} ${await response.text()}`);
       }
-    } catch (e: any) { console.warn(`[AI-RELAY] OpenAI Exception: ${e.message}`); }
+    } catch (e: any) { errorLogs.push(`OpenAI Ex: ${e.message}`); }
   }
 
   // 5. STRATEGY: GROQ FALLBACK
@@ -133,13 +162,15 @@ export async function callAI(
         const data = await response.json();
         console.log("[AI-RELAY] ✅ Groq SUCCESS");
         return data.choices[0].message.content || "";
+      } else {
+        errorLogs.push(`Groq Error: ${response.status} ${await response.text()}`);
       }
-    } catch (e: any) { console.warn(`[AI-RELAY] Groq Exception: ${e.message}`); }
+    } catch (e: any) { errorLogs.push(`Groq Ex: ${e.message}`); }
   }
 
   console.error(`[AI-RELAY] 💀 ALL PROVIDERS FAILED.`);
   console.error(`[AI-RELAY] Checked: Proxy (${!!proxyUrl}), Gemini Keys (${geminiKeys.length}), OpenAI (${!!openAIKey}), Groq (${!!groqKey})`);
-  throw new Error(`ALL_PROVIDERS_FAILED: Keys Available -> Gemini: ${geminiKeys.length}, OpenAI: ${!!openAIKey}, Groq: ${!!groqKey}`);
+  throw new Error(`ALL_PROVIDERS_FAILED: ${errorLogs.join(' | ') || 'Unknown errors'}`);
 }
 
 // --- API WRAPPERS ---

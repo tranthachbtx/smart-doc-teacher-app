@@ -39,9 +39,10 @@ export class SmartFileProcessor {
 
         if (cachedContent) {
             console.log(`[SmartFileProcessor] Smart Cache V2 hit for ${file.name}. Content Length: ${cachedContent.length}`);
-            if (onProgress) onProgress("⚡ Found in Smart Cache!");
-            await new Promise(r => setTimeout(r, 500));
-            return { content: cachedContent, source: 'cache' };
+            console.log(`[SmartFileProcessor] 🚨 AUDIT MODE: IGNORING CACHE to force clean extraction.`);
+            // if (onProgress) onProgress("⚡ Found in Smart Cache!");
+            // await new Promise(r => setTimeout(r, 500));
+            // return { content: cachedContent, source: 'cache' };
         }
 
         // 3. API Processing (Multi-Strategy)
