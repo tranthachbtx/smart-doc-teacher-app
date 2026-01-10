@@ -115,8 +115,15 @@ export function ManualProcessingHub() {
                         ...struct
                     });
                 }
-            } catch (aiErr) {
+            } catch (aiErr: any) {
                 console.warn("[ManualHub] AI Dissection failed.", aiErr);
+                toast({
+                    title: "Lỗi AI Dissection (3.0 Pipeline)",
+                    description: aiErr.message || "Không thể phân tích file.",
+                    variant: "destructive",
+                    duration: 10000
+                });
+                return; // STOP execution on error
             }
 
             toast({
@@ -126,7 +133,12 @@ export function ManualProcessingHub() {
 
         } catch (error: any) {
             console.error("[ManualProcessingHub] Pipeline Error:", error);
-            toast({ title: "Lỗi mổ xẻ PDF", description: error.message, variant: "destructive" });
+            toast({
+                title: "Lỗi Hệ Thống Nghiêm Trọng",
+                description: error.message || "Lỗi không xác định trong quy trình xử lý file.",
+                variant: "destructive",
+                duration: 15000
+            });
         } finally {
             setIsAnalyzing(false);
             setAnalyzingStatus("");

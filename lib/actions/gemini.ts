@@ -131,7 +131,8 @@ export async function callAI(
   }
 
   console.error(`[AI-RELAY] 💀 ALL PROVIDERS FAILED.`);
-  throw new Error("ALL_PROVIDERS_FAILED");
+  console.error(`[AI-RELAY] Checked: Proxy (${!!proxyUrl}), Gemini Keys (${geminiKeys.length}), OpenAI (${!!openAIKey}), Groq (${!!groqKey})`);
+  throw new Error(`ALL_PROVIDERS_FAILED: Keys Available -> Gemini: ${geminiKeys.length}, OpenAI: ${!!openAIKey}, Groq: ${!!groqKey}`);
 }
 
 // --- API WRAPPERS ---
