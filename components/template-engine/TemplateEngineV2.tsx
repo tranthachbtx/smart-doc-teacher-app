@@ -249,33 +249,37 @@ export function TemplateEngine() {
 
   const handleExport = async (mode: string) => {
     store.setLoading('isExporting', true);
-    const exportSystem = DocumentExportSystem.getInstance();
+    // Restore the Template Service for "Sample-Based" export
+    const { TemplateExportService } = await import("@/lib/services/template-export-service");
+    const exportSystem = DocumentExportSystem.getInstance(); // Keep as fallback/alternative for others
+
     try {
-      store.setSuccess("Đang tạo file Word chuyên nghiệp...");
+      store.setSuccess("Đang xuất file dựa trên mẫu chuẩn...");
 
       let success = false;
       switch (mode) {
+
         case "lesson":
           if (!lesson.result) throw new Error("Chưa có kết quả giáo án để xuất");
-          success = await exportSystem.exportLesson(lesson.result, {
-            onProgress: (p) => store.setSuccess(`Đang xuất file... ${Math.round(p)}%`)
-          });
+          success = await TemplateExportService.exportLessonToTemplate(lesson.result);
           break;
         case "meeting":
           if (!meeting.result) throw new Error("Chưa có kết quả biên bản để xuất");
-          success = await exportSystem.exportMeeting(meeting.result, meeting.month);
+          success = await TemplateExportService.exportMeetingToTemplate(meeting.result);
           break;
         case "event":
           if (!event.result) throw new Error("Chưa có kết quả kịch bản để xuất");
-          success = await exportSystem.exportEvent(event.result, { grade: event.grade, month: event.month });
+          success = await TemplateExportService.exportEventToTemplate(event.result);
           break;
         case "ncbh":
           if (!ncbh.result) throw new Error("Chưa có kết quả NCBH để xuất");
-          success = await exportSystem.exportNCBH(ncbh.result, { grade: ncbh.grade, month: ncbh.month });
+          success = await TemplateExportService.exportNCBHToTemplate(ncbh.result);
           break;
         case "assessment":
           if (!assessment.result) throw new Error("Chưa có kết quả đánh giá để xuất");
-          success = await exportSystem.exportAssessmentPlan(assessment.result, { grade: assessment.grade, term: assessment.term });
+          // Use uploaded template if available, otherwise default path
+          const templateInput = assessment.template?.data || "/templates/mau-ke-hoach-day-hoc.docx";
+          success = await TemplateExportService.exportAssessmentToTemplate(assessment.result, templateInput);
           break;
         default:
           throw new Error(`Chế độ xuất "${mode}" chưa được hỗ trợ trong phiên bản tinh gọn.`);

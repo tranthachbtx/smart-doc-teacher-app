@@ -9,6 +9,7 @@ import {
 import { getAssessmentPrompt } from "@/lib/prompts/assessment-prompts";
 import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
 import { getKHDHPrompt } from "@/lib/prompts/khdh-prompts";
+import { getMeetingMinutesPrompt } from "@/lib/prompts/meeting-prompts";
 
 export interface ActionResult<T = any> {
   success: boolean;
@@ -136,6 +137,31 @@ export async function callAI(
 // --- API WRAPPERS ---
 
 /**
+ * ROBUST JSON PARSER: Extracts JSON object even if wrapped in Markdown or chat text.
+ */
+function parseSmartJSON(text: string): any {
+  try {
+    // 1. Try removing Markdown code blocks
+    let cleanText = text.replace(/```json\s*/g, "").replace(/```\s*$/g, "").trim();
+
+    // 2. Find first '{' and last '}'
+    const firstOpen = cleanText.indexOf('{');
+    const lastClose = cleanText.lastIndexOf('}');
+
+    if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
+      cleanText = cleanText.substring(firstOpen, lastClose + 1);
+      return JSON.parse(cleanText);
+    }
+
+    // 3. Last ditch: Fallback to simple parse (might throw)
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("[SmartJSON] Parsing failed. Raw text:", text.substring(0, 100) + "...");
+    throw new Error("AI returned text but it wasn't valid JSON.");
+  }
+}
+
+/**
  * Compatibility wrapper for generateAIContent
  */
 export async function generateAIContent(prompt: string, model?: string, file?: any): Promise<ActionResult<string>> {
@@ -170,21 +196,32 @@ export async function generateLessonPlan(
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
+    // For Lesson Plan, we use the specialized wrapper in ai-prompts that handles KHDH logic
     const activitySuggestions = JSON.parse(suggestions || "{}");
+    const sectionRequirements = `
+YÊU CẦU CHO PHẦN THIẾT KẾ: TOÀN BÀI
+Ngữ cảnh hiện tại: Thiết kế bài dạy mới
+Hướng dẫn chi tiết: ${customInstructions || "Thiết kế sư phạm cao cấp theo chuẩn 5512"}
+`;
+    // We construct the prompt manually using getKHDHPrompt equivalent or the wrapper
+    // Actually, getLessonPrompt in ai-prompts is designed for sections.
+    // Here we need a full lesson prompt. Let's use the one imported from ai-prompts/khdh-prompts via getKHDHPrompt
+    // Re-importing getKHDHPrompt here locally to be safe
+    const { getKHDHPrompt } = await import("@/lib/prompts/khdh-prompts");
+
     prompt = getKHDHPrompt(
       grade,
       topic,
       duration,
-      customInstructions,
+      sectionRequirements,
       tasks.map(t => ({ name: t, description: "" })),
-      undefined, // month can be null
+      chuDeSo ? Number(chuDeSo) : undefined,
       activitySuggestions,
       !!file
     );
+
     const text = await callAI(prompt, modelName, file);
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI did not return valid JSON");
-    const data = JSON.parse(jsonMatch[0]);
+    const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
     return { success: false, error: e.message, content: prompt };
@@ -200,11 +237,18 @@ export async function generateMeetingMinutes(
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
-    prompt = getMeetingPrompt(month || "", session || "", keyContent || "", "", "", "");
+    // DIRECT USE of meeting-prompts.ts
+    // We pass placeholder values for currentThemes/nextThemes if not provided, allowing AI to hallucinate based on month/grade logic internally
+    prompt = getMeetingMinutesPrompt(
+      month || "9",
+      session || "1",
+      keyContent || "",
+      "", // currentThemes (will be auto-filled by prompt logic if empty)
+      "", // nextThemes
+      ""  // nextMonth
+    );
     const text = await callAI(prompt, modelName);
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI did not return valid JSON");
-    const data = JSON.parse(jsonMatch[0]);
+    const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
     return { success: false, error: e.message, content: prompt };
@@ -222,11 +266,12 @@ export async function generateEventScript(
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
+    // DIRECT USE of ai-prompts.ts (Event section)
     prompt = getEventPrompt(grade, topic);
+    if (instructions) prompt += `\n\nYÊU CẦU BỔ SUNG TỪ NGƯỜI DÙNG:\n${instructions}`;
+
     const text = await callAI(prompt, modelName);
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI did not return valid JSON");
-    const data = JSON.parse(jsonMatch[0]);
+    const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
     return { success: false, error: e.message, content: prompt };
@@ -241,11 +286,10 @@ export async function generateNCBH(
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
+    // DIRECT USE of ncbh-prompts.ts
     prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${instructions || ""}`;
     const text = await callAI(prompt, modelName);
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI did not return valid JSON");
-    const data = JSON.parse(jsonMatch[0]);
+    const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
     return { success: false, error: e.message, content: prompt };
@@ -261,11 +305,10 @@ export async function generateAssessmentPlan(
 ): Promise<ActionResult<any>> {
   let prompt = "";
   try {
+    // DIRECT USE of assessment-prompts.ts
     prompt = getAssessmentPrompt(grade, term, productType, topic);
     const text = await callAI(prompt, modelName);
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI did not return valid JSON");
-    const data = JSON.parse(jsonMatch[0]);
+    const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
     return { success: false, error: e.message, content: prompt };
@@ -296,6 +339,7 @@ export async function generateLessonSection(
   let prompt = "";
   try {
     const activitySuggestions = JSON.parse(suggestions || "{}");
+    // DIRECT USE of ai-prompts wrapper for sections
     prompt = getLessonPrompt(
       section as any,
       grade,
@@ -309,9 +353,7 @@ export async function generateLessonSection(
       stepInstruction
     );
     const text = await callAI(prompt, modelName, file);
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("AI did not return valid JSON");
-    const data = JSON.parse(jsonMatch[0]);
+    const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
     return { success: false, error: e.message, content: prompt };

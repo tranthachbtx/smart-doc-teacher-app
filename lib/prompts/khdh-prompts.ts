@@ -245,113 +245,60 @@ export function getKHDHPrompt(
     totalMinutes = Number.parseInt(periodsMatch[1]) * 45;
   }
 
+  // TỐI ƯU HÓA TÌM KIẾM CHỦ ĐỀ (DEEP TRACE LOGIC)
+  // Ưu tiên 1: Tìm theo Tên chủ đề (Chính xác nhất với Input người dùng)
+  // Ưu tiên 2: Tìm theo Tháng (Nếu người dùng chọn tháng nhưng chưa nhập tên chuẩn)
+
+  let foundChuDe = null;
+  let machNoiDung = "ban_than";
+  let chuDeSo = 1;
+
+  // 1. Tìm theo tên
+  if (topic && topic.trim().length > 0) {
+    foundChuDe = timChuDeTheoTen(gradeNumber, topic);
+  }
+
+  // 2. Fallback tìm theo tháng
+  if (!foundChuDe && month) {
+    foundChuDe = getChuDeTheoThang(gradeNumber, month);
+  }
+
+  // 3. Fallback mặc định theo tháng nếu có (để tính PPCT)
+  if (!foundChuDe && month) {
+    chuDeSo = MONTH_TO_CHU_DE[month] || 1;
+  }
+
+  // Nếu tìm thấy chủ đề trong DB, cập nhật các thông số
+  let chuDeContext = "";
+  let tenChuDe = topic;
+
+  if (foundChuDe) {
+    tenChuDe = foundChuDe.ten;
+    chuDeContext = taoPromptContextTuChuDe(foundChuDe, gradeNumber);
+    if (foundChuDe.mach_noi_dung) machNoiDung = foundChuDe.mach_noi_dung;
+
+    const match = foundChuDe.ma.match(/\d+\.(\d+)/);
+    if (match) chuDeSo = Number.parseInt(match[1]);
+  }
+
+  // Tính toán PPCT và Thời lượng dựa trên Chủ đề số đã xác định
   let ppctContext = "";
   let phanBoThoiGianContext = "";
-  let chuDeSo = 1;
   let ppctInfo = null;
 
-  if (month) {
-    chuDeSo = MONTH_TO_CHU_DE[month] || 1;
+  ppctInfo = getPPCTChuDe(gradeNumber, chuDeSo);
+  if (ppctInfo) {
+    ppctContext = taoContextPPCT(gradeNumber, chuDeSo);
+    phanBoThoiGianContext = taoContextPhanBoThoiGian(gradeNumber, chuDeSo);
+  }
 
+  if (month && !ppctInfo && !foundChuDe) {
+    // Logic cũ: Nếu vẫn không tìm được gì thì dùng map tháng mặc định
+    chuDeSo = MONTH_TO_CHU_DE[month] || 1;
     ppctInfo = getPPCTChuDe(gradeNumber, chuDeSo);
     if (ppctInfo) {
       ppctContext = taoContextPPCT(gradeNumber, chuDeSo);
       phanBoThoiGianContext = taoContextPhanBoThoiGian(gradeNumber, chuDeSo);
-    }
-  }
-
-  // Calculate specific times for each component based on PPCT or default
-  let hdgdMinutes = totalMinutes;
-  let shdcMinutes = 0;
-  let shlMinutes = 0;
-
-  if (ppctInfo) {
-    // If we have PPCT info, use it to split the time
-    const totalPPCTPeriods = ppctInfo.tong_tiet;
-    if (totalPPCTPeriods > 0) {
-      const hdgdRatio = ppctInfo.hdgd / totalPPCTPeriods;
-      const shdcRatio = ppctInfo.shdc / totalPPCTPeriods;
-      const shlRatio = ppctInfo.shl / totalPPCTPeriods;
-
-      // Calculate minutes for each part based on the requested duration
-      // Note: "duration" passed to this function might be the total for the topic or just a part.
-      // Assuming if fullPlan=true in the caller, duration is the total topic time.
-      hdgdMinutes = Math.round(totalMinutes * hdgdRatio);
-      shdcMinutes = Math.round(totalMinutes * shdcRatio);
-      shlMinutes = Math.round(totalMinutes * shlRatio);
-    }
-  }
-
-  const timeInstruction = `
-LƯU Ý ĐẶC BIỆT VỀ PHÂN BỔ THỜI GIAN:
-- Tổng thời lượng chủ đề là: ${duration} (tương đương ${totalMinutes} phút).
-
-${ppctInfo ? `
-- CẤU TRÚC PHÂN BỔ (Theo PPCT):
-  + Hoạt động giáo dục (HĐGD): ${ppctInfo.hdgd} tiết (~${hdgdMinutes} phút) -> Dành cho 4 hoạt động chính (Khởi động, Khám phá, Luyện tập, Vận dụng).
-  + Sinh hoạt dưới cờ (SHDC): ${ppctInfo.shdc} tiết (~${shdcMinutes} phút) -> Điền vào mục "hoat_dong_duoi_co.shdc".
-  + Sinh hoạt lớp (SHL): ${ppctInfo.shl} tiết (~${shlMinutes} phút) -> Điền vào mục "hoat_dong_duoi_co.shl".
-
-- BẠN PHẢI PHÂN PHỐI ${hdgdMinutes} PHÚT CỦA HĐGD VÀO 4 HOẠT ĐỘNG CHÍNH NHƯ SAU:
-  + Khởi động: ~5-10% (~${Math.round(hdgdMinutes * 0.1)} phút)
-  + Khám phá: ~40-50% (~${Math.round(hdgdMinutes * 0.45)} phút)
-  + Luyện tập: ~30-40% (~${Math.round(hdgdMinutes * 0.35)} phút)
-  + Vận dụng: ~10-15% (~${Math.round(hdgdMinutes * 0.1)} phút)
-
-- BẠN PHẢI PHÂN PHỐI THỜI GIAN CHO SHDC VÀ SHL TƯƠNG ỨNG VỚI SỐ TIẾT QUY ĐỊNH Ở TRÊN.
-` : `
-- BẠN BẮT BUỘC PHẢI PHÂN PHỐI THỜI GIAN CỤ THỂ CHO TỪNG HOẠT ĐỘNG SAO CHO TỔNG THỜI GIAN XẤP XỈ ${totalMinutes} PHÚT.
-- Tỷ lệ gợi ý:
-  + Khởi động: ~5-10% (khoảng ${Math.round(totalMinutes * 0.1)} phút)
-  + Khám phá: ~40-50% (khoảng ${Math.round(totalMinutes * 0.45)} phút)
-  + Luyện tập: ~30-40% (khoảng ${Math.round(totalMinutes * 0.35)} phút)
-  + Vận dụng: ~10-15% (khoảng ${Math.round(totalMinutes * 0.1)} phút)
-`}
-- Nếu có nhiệm vụ cụ thể từ người dùng, hãy ưu tiên thời gian cho các nhiệm vụ đó.
-`;
-
-  // Lấy chủ đề từ kntt-curriculum-database
-  let chuDeContext = "";
-  let tenChuDe = topic;
-  let machNoiDung = "ban_than";
-
-  if (month) {
-    const chuDe = getChuDeTheoThang(gradeNumber, month);
-    if (chuDe) {
-      chuDeContext = taoPromptContextTuChuDe(chuDe, gradeNumber);
-      tenChuDe = chuDe.ten;
-      // Xác định mạch nội dung từ chủ đề
-      if (
-        chuDe.ten.toLowerCase().includes("gia đình") ||
-        chuDe.ten.toLowerCase().includes("trách nhiệm với gia đình")
-      ) {
-        machNoiDung = "gia_dinh";
-      } else if (
-        chuDe.ten.toLowerCase().includes("cộng đồng") ||
-        chuDe.ten.toLowerCase().includes("xã hội")
-      ) {
-        machNoiDung = "cong_dong";
-      } else if (
-        chuDe.ten.toLowerCase().includes("môi trường") ||
-        chuDe.ten.toLowerCase().includes("thiên nhiên")
-      ) {
-        machNoiDung = "moi_truong";
-      } else if (
-        chuDe.ten.toLowerCase().includes("nghề") ||
-        chuDe.ten.toLowerCase().includes("hướng nghiệp")
-      ) {
-        machNoiDung = "nghe_nghiep";
-      }
-      const match = chuDe.ma.match(/\d+\.(\d+)/);
-      if (match) chuDeSo = Number.parseInt(match[1]);
-    }
-  } else {
-    const chuDe = timChuDeTheoTen(gradeNumber, topic);
-    if (chuDe) {
-      chuDeContext = taoPromptContextTuChuDe(chuDe, gradeNumber);
-      tenChuDe = chuDe.ten;
-      const match = chuDe.ma.match(/\d+\.(\d+)/);
-      if (match) chuDeSo = Number.parseInt(match[1]);
     }
   }
 
@@ -515,171 +462,97 @@ Nhiệm vụ ${i + 1}: ${t.name}
 `;
   }
 
+  // NLS Suggestions
+  const nlsSuggestions = goiYNLSTheoChuDe(topic);
+  const nlsSuggestionText = nlsSuggestions.length > 0
+    ? nlsSuggestions.map(nl => `- ${nl.ma} (${nl.ten}): ${nl.vi_du_tich_hop.join(", ")}`).join("\n")
+    : "Tự đề xuất 1-2 năng lực số phù hợp (Tra cứu, Tạo nội dung, hoặc An toàn số).";
+
+
   return `
+# VAI TRÒ: Chuyên gia thẩm định và phát triển chương trình HĐTN, HN 12 (Chương trình 2018).
+
+# DỮ LIỆU THAM KHẢO (INPUT):
+
+1. **Nội dung thực tế từ KHBH cũ (PDF Input):**
 ${hasFile ? `
-============================================================
-CHỈ DẪN VỀ TÀI LIỆU ĐÍNH KÈM (PDF/ẢNH)
-============================================================
-Bạn đã nhận được một TÀI LIỆU ĐÍNH KÈM (PDF/Ảnh). 
-NHIỆM VỤ: Hãy trích xuất các ví dụ, kịch bản, và tên các nhiệm vụ cụ thể từ tài liệu này để làm cho giáo án sát với SGK thực tế nhất có thể. Tuy nhiên, vẫn phải giữ vững cấu trúc sư phạm và các chỉ dẫn từ Database hệ thống dưới đây.
+   (HỆ THỐNG ĐÃ GỬI KÈM TÀI LIỆU PDF/ẢNH)
+   - Nhiệm vụ của bạn là ĐỌC KỸ tài liệu đính kèm này.
+   - Trích xuất toàn bộ: Tên bài, Mục tiêu, Tiến trình hoạt động cũ.
+   - Nhận diện các điểm yếu: Mục tiêu thụ động (Biết, Hiểu...), Hoạt động sơ sài, Thiếu công nghệ.
 ` : `
-============================================================
-CHỈ DẪN KHI KHÔNG CÓ TÀI LIỆU ĐÍNH KÈM
-============================================================
-Bạn KHÔNG nhận được tài liệu đính kèm nào. 
-NHIỆM VỤ: Hãy dựa hoàn toàn vào TRI THỨC CHUYÊN GIA của bạn và các dữ liệu từ Database (PPCT, Mạch kiến thức...) được cung cấp bên dưới để thiết kế một kịch bản giáo án sáng tạo, đầy đủ và SIÊU CHI TIẾT. Tuyệt đối không viết sơ sài.
+   (KHÔNG CÓ TÀI LIỆU ĐÍNH KÈM)
+   - Giả định: Giáo viên cần xây dựng bài mới hoàn toàn từ con số 0.
+   - Hãy sử dụng 100% dữ liệu chuẩn từ hệ thống dưới đây.
 `}
 
-${KHDH_ROLE}
+2. **Dữ liệu chuẩn từ Kho dữ liệu Hệ thống (Database Injection):**
 
-${KHDH_TASK}
-
-============================================================
-${ppctContext || `Dựa trên thời lượng yêu cầu: ${duration}`}
-
-============================================================
-HƯỚNG DẪN PHÂN BỔ THỜI GIAN VÀ CẤU TRÚC (BẮT BUỘC)
-============================================================
-${phanBoThoiGianContext || HUONG_DAN_AI_SU_DUNG_PPCT}
-
-${timeInstruction}
-
-============================================================
-HƯỚNG DẪN TÍCH HỢP NĂNG LỰC SỐ (NLS) - THÔNG TƯ 02/2025/TT-BGDĐT
-============================================================
-
-${nlsContext}
-
-============================================================
-DỮ LIỆU TỪ CƠ SỞ DỮ LIỆU CHƯƠNG TRÌNH (ĐÃ NGHIÊN CỨU KỸ)
-============================================================
-
+   a) **Thông tin chủ đề (Tra cứu từ Database Chương trình):**
+   - Tên chủ đề chuẩn: "${tenChuDe}"
+   - Mạch nội dung: ${machNoiDung}
+   - **Yêu cầu cần đạt (YCCĐ) & Mục tiêu chuẩn:**
 ${chuDeContext}
 
-${hoatDongContext}
+   b) **Gợi ý hoạt động chuẩn của SGK (Tham khảo):**
+${hoatDongContext || "   - (Chưa có dữ liệu chi tiết, hãy bám sát tên chủ đề)"}
 
-${cauHoiContext}
+   c) **Định hướng Năng lực số (Theo Thông tư 02/2025):**
+   - Hệ thống gợi ý các năng lực sau là phù hợp nhất cho chủ đề này:
+${nlsSuggestionText}
 
-============================================================
-MẪU SINH HOẠT DƯỚI CỜ (SHDC) VÀ SINH HOẠT LỚP (SHL)
-============================================================
+   d) **Hướng dẫn phân bổ thời gian (PPCT):**
+${phanBoThoiGianContext || HUONG_DAN_AI_SU_DUNG_PPCT}
 
-${shdcShlContext}
-
+${activitySuggestionsContext ? `
+   e) **Yêu cầu đặc biệt từ Giáo viên (User Custom):**
 ${activitySuggestionsContext}
+` : ""}
 
-============================================================
-TIÊU CHÍ ĐÁNH GIÁ CUỐI CHỦ ĐỀ
-============================================================
+# NHIỆM VỤ (AUDIT & UPGRADE):
+Hãy phân tích dữ liệu cũ (nếu có) và tái cấu trúc lại thành Kế hoạch dạy học (KHBD) chuẩn 5512.
 
-${tieuChiDanhGiaContext}
+1. **Mục tiêu (Audit & Standardize):** 
+   - RÀ SOÁT: Nếu file cũ dùng động từ thụ động (Hiểu, Biết), hãy *GẠCH BỎ* và thay bằng động từ hành động thang Bloom (Phân tích, Thiết kế, Thực hiện, Đánh giá) dựa trên mục "Yêu cầu cần đạt" ở trên.
 
-============================================================
-HỒ SƠ, BẢNG BIỂU VÀ PHỤ LỤC (KHUYÊN DÙNG)
-============================================================
-${bangBieuContext}
+2. **Thiết bị & Học liệu (Digital Upgrade):**
+   - CẬP NHẬT: Bắt buộc bổ sung công cụ số (NLS) đã gợi ý ở mục 2c vào phần "Thiết bị dạy học" và "Tiến trình".
+   - Ví dụ: Thay vì "Máy chiếu", hãy ghi "Máy chiếu, Padlet (thảo luận), Canva (thiết kế)".
 
-SỬ DỤNG BẢNG BIỂU THEO CHỦ ĐỀ:
-- Tài chính/Bản thân: Bảng kế hoạch tài chính, Bảng SWOT, Mẫu SMART.
-- Trách nhiệm/Gia đình: Bảng chia sẻ trách nhiệm.
-- Rèn luyện: Bảng theo dõi rèn luyện.
+3. **Tiến trình Hoạt động (Enrich & Deepen):**
+   - SO SÁNH: Đối chiếu hoạt động trong file cũ với "Gợi ý hoạt động chuẩn" (Mục 2b).
+   - NÂNG CẤP: Nếu hoạt động cũ sơ sài, hãy VIẾT LẠI HOÀN TOÀN dựa trên gợi ý chuẩn, thêm chi tiết các bước thực hiện (GV làm gì, HS làm gì).
+   - ĐỊNH DẠNG: Sử dụng triệt để cấu trúc **{{cot_1}}** và **{{cot_2}}** cho phần "Tổ chức thực hiện".
 
-============================================================
-PHIẾU HỌC TẬP VÀ RUBRIC ĐÁNH GIÁ (ĐÃ THIẾT KẾ SẴN)
-============================================================
+# YÊU CẦU OUTPUT JSON (QUAN TRỌNG - BẮT BUỘC):
+- Trả về **DUY NHẤT** một khối JSON hợp lệ. 
+- Không viết lời dẫn. Không Markdown dư thừa ngoài block JSON.
+- **Quy tắc văn bản:** Mọi ký tự xuống dòng trong nội dung JSON phải chuyển thành \`\\n\`.
 
-${phieuHocTapContext}
-
-${rubricContext}
-
-${danhGiaKHBDContext}
-
-HƯỚNG DẪN SƯ PHẠM THEO CÔNG VĂN 5512:
-${cv5512Context}
-
-MỨC ĐỘ BLOOM CHO KHỐI ${grade}:
-- Mức độ: ${bloomInfo?.bloom || "Nhận biết, Hiểu"}
-- Động từ hành động: ${bloomInfo?.hoat_dong || "Tìm hiểu"}
-- Trọng tâm: ${getTrongTamTheoKhoi(gradeNumber)?.trong_tam || ""}
-
-============================================================
-DỮ LIỆU ĐẦU VÀO (USER INPUT)
-============================================================
-
-Khối lớp: ${grade}
-Đặc điểm chương trình: ${curriculum?.title || "Hoạt động trải nghiệm, Hướng nghiệp"
-    }
-Chủ đề/Bài học: "${topic}"
-Thời lượng: ${duration}
-${topicInfo
-      ? `
-THÔNG TIN BỔ SUNG TỪ SÁCH:
-- Mã: ${topicInfo.id}
-- Thuộc mạch: ${topicInfo.categoryName}
-- Hoạt động cốt lõi: ${topicInfo.coreActivity}
-- Kết quả cần đạt: ${topicInfo.outcomes?.join(", ") || ""}
-- Phương pháp gợi ý: ${topicInfo.methods?.join(", ") || ""}
-`
-      : ""
-    }
-${additionalRequirements ? `Yêu cầu bổ sung: ${additionalRequirements}` : ""}
-${tasksSection}
-
-============================================================
-NLS THEO CHỦ ĐỀ
-============================================================
-
-${taoContextNLSChiTiet(gradeNumber, topic)}
-
-============================================================
-TIÊU CHÍ ĐÁNH GIÁ NLS THEO CHỦ ĐỀ
-============================================================
-
-${goiYNLSTheoChuDe(topic)}
-
-${INTEGRATION_RULES}
-
-${ACTIVITY_STRUCTURE}
-
-KHUNG NĂNG LỰC SỐ (chọn 2-4 phù hợp):
-${nlsFramework}
-
-KHUNG PHẨM CHẤT (chọn 1-2 phù hợp):
-${moralThemes}
-
-${FORMAT_RULES}
-
-ĐỊNH DẠNG ĐẦU RA (OUTPUT FORMAT) - ĐỊNH DẠNG BẢNG 2 CỘT:
-
-*** QUAN TRỌNG: SỬ DỤNG MARKER {{cot_1}} VÀ {{cot_2}} ***
-
-Mỗi hoạt động (hoat_dong_khoi_dong, hoat_dong_kham_pha, hoat_dong_luyen_tap, hoat_dong_van_dung) 
-PHẢI sử dụng marker {{cot_1}} và {{cot_2}} ở phần d) Tổ chức thực hiện để hệ thống tự động điền vào 2 cột của bảng Word.
-
-Hãy soạn Kế hoạch dạy học và trả về JSON thuần túy với cấu trúc sau:
-
+\`\`\`json
 {
-  "ma_chu_de": "Mã chủ đề (VD: 10.1, 11.3, 12.5)",
-  "ten_bai": "Tên bài học theo SGK",
-  "muc_tieu_kien_thuc": "- Yêu cầu cần đạt 1: [Chi tiết cụ thể, đo lường được].\\n\\n- Yêu cầu cần đạt 2: [Chi tiết].\\n\\n- Yêu cầu cần đạt 3: [Chi tiết].",
-  "muc_tieu_nang_luc": "a) Năng lực chung:\\n\\n- Tự chủ và tự học: [Mô tả hành vi HS cụ thể].\\n\\n- Giao tiếp và hợp tác: [Mô tả hành vi HS].\\n\\nb) Năng lực đặc thù HĐTN:\\n\\n- Thích ứng với cuộc sống: [Mô tả hành vi HS].\\n\\n- Định hướng nghề nghiệp: [Mô tả hành vi HS].",
-  "muc_tieu_pham_chat": "- Trách nhiệm: [Mô tả hành vi HS thể hiện qua hoạt động cụ thể].\\n\\n- [Phẩm chất 2]: [Mô tả hành vi cụ thể].",
-  "gv_chuan_bi": "- [Thiết bị/học liệu 1]\\n- [Thiết bị/học liệu 2 - TÍCH HỢP NLS]\\n- [Video/tình huống đạo đức mẫu]",
-  "hs_chuan_bi": "- [Dụng cụ học tập cần mang]\\n- [Nhiệm vụ chuẩn bị cụ thể từ tiết trước]\\n- [Nội dung cần sưu tầm/tìm hiểu trước]",
-  "shdc": "- Tuần 1: [Tên hoạt động]\\n  + Mục tiêu: [...]\\n  + Tiến trình: B1-[...], B2-[...], B3-[...]\\n\\n- Tuần 2: [Tên hoạt động]\\n  [Tương tự]",
-  "shl": "- Tuần 1: [Tên hoạt động]\\n  + Đánh giá tuần qua: [...]\\n  + Sinh hoạt chủ đề: [...]\\n  + Kế hoạch tuần tới: [...]",
-  "hoat_dong_khoi_dong": "a) Mục tiêu: [Mô tả]\\n\\nb) Nội dung: [Mô tả]\\n\\nc) Sản phẩm: [Mô tả]\\n\\nd) Tổ chức thực hiện: {{cot_1}} GV: [Chi tiết] {{cot_2}} HS: [Chi tiết]",
-  "hoat_dong_kham_pha": "a) Mục tiêu: [Mô tả]\\n\\nb) Nội dung: [Mô tả]\\n\\nc) Sản phẩm: [Mô tả]\\n\\nd) Tổ chức thực hiện: {{cot_1}} GV: [Chi tiết] {{cot_2}} HS: [Chi tiết]",
-  "hoat_dong_luyen_tap": "a) Mục tiêu: [Mô tả]\\n\\nb) Nội dung: [Mô tả]\\n\\nc) Sản phẩm: [Mô tả]\\n\\nd) Tổ chức thực hiện: {{cot_1}} GV: [Chi tiết] {{cot_2}} HS: [Chi tiết]",
-  "hoat_dong_van_dung": "a) Mục tiêu: [Mô tả]\\n\\nb) Nội dung: [Mô tả]\\n\\nc) Sản phẩm: [Mô tả]\\n\\nd) Tổ chức thực hiện: {{cot_1}} GV: [Chi tiết] {{cot_2}} HS: [Chi tiết]",
-  "ho_so_day_hoc": "PHIẾU HỌC TẬP:\\n[Tiêu đề và nội dung]\\n\\nRUBRIC ĐÁNH GIÁ:\\n- Tiêu chí 1: [Mức Tốt] | [Mức Đạt] | [Mức Cần cố gắng]\\n- Tiêu chí 2: [...]",
-  "tich_hop_nls": "- Khởi động: NLS [Mã] - [Mô tả]\\n- Khám phá: NLS [Mã] - [Mô tả]\\n- Luyen tập: NLS [Mã] - [Mô tả]\\n- Vận dụng: NLS [Mã] - [Mô tả]",
-  "tich_hop_dao_duc": "- Khám phá: [Phẩm chất] - [Tình huống]\\n- Luyện tập: [Phẩm chất] - [Bài tập]\\n- Vận dụng: [Phẩm chất] - [Cam kết]",
-  "ky_thuat_day_hoc": "- [Kỹ thuật 1]: [Mô tả cách áp dụng]\\n- [Kỹ thuật 2]: [Mô tả cách áp dụng]",
-  "tich_hop_dao_duc_va_bai_hat": "- Khởi động: [Tên bài hát/video gợi mở]\\n- Kết thúc: [Tên bài hát/video kết thúc]",
-  "huong_dan_ve_nha": "1. Bài tập về nhà và thực hành: [Mô tả chi tiết bài tập/nhiệm vụ HS cần hoàn thành tại nhà].\\n\\n2. Chuẩn bị cho nội dung/chủ đề kế tiếp: [Ghi rõ tên chủ đề tiếp theo, các tài liệu cần đọc, học liệu cần mang hoặc nhiệm vụ sưu tầm cụ thể]."
+  "ma_chu_de": "${grade}.${chuDeSo}",
+  "ten_bai": "${tenChuDe}",
+  "so_tiet": "${duration}",
+  "muc_tieu_kien_thuc": "- [Động từ hành động] ... (Bám sát YCCĐ)\\n- [Động từ hành động] ...",
+  "muc_tieu_nang_luc": "a) Năng lực chung:\\n- Tự chủ và tự học: ...\\n- Giao tiếp và hợp tác: ...\\n\\nb) Năng lực đặc thù:\\n- Thích ứng...: ...\\n- Thiết kế...: ...",
+  "muc_tieu_pham_chat": "- Trách nhiệm: ...\\n- Nhân ái: ...",
+  "gv_chuan_bi": "- Máy tính, Tivi\\n- [Công cụ số từ mục 2c]...\\n- Phiếu học tập...",
+  "hs_chuan_bi": "- SGK, Smartphone (hỗ trợ học tập)...",
+  "shdc": "Tên hoạt động: [Tên từ gợi ý].\\nHình thức: [Sân khấu hóa/Diễn đàn].\\nMô tả: [Tóm tắt kịch bản hấp dẫn].",
+  "shl": "Tên hoạt động: [Tên từ gợi ý].\\nHình thức: [Thảo luận/Sơ kết].\\nMô tả: [Tóm tắt kịch bản hấp dẫn].",
+  "hoat_dong_khoi_dong": "a) Mục tiêu: ...\\nb) Nội dung: ...\\nc) Sản phẩm: ...\\nd) Tổ chức thực hiện: {{cot_1}} GV: ... {{cot_2}} HS: ...",
+  "hoat_dong_kham_pha": "a) Mục tiêu: ...\\nb) Nội dung: ...\\nc) Sản phẩm: ...\\nd) Tổ chức thực hiện: {{cot_1}} GV: ... {{cot_2}} HS: ...",
+  "hoat_dong_luyen_tap": "a) Mục tiêu: ...\\nb) Nội dung: ...\\nc) Sản phẩm: ...\\nd) Tổ chức thực hiện: {{cot_1}} GV: ... {{cot_2}} HS: ...",
+  "hoat_dong_van_dung": "a) Mục tiêu: ...\\nb) Nội dung: ...\\nc) Sản phẩm: ...\\nd) Tổ chức thực hiện: {{cot_1}} GV: ... {{cot_2}} HS: ...",
+  "ho_so_day_hoc": "PHIẾU HỌC TẬP:\\n...\\nRUBRIC ĐÁNH GIÁ:\\n...",
+  "tich_hop_nls": "- [Hoạt động]: Sử dụng [Công cụ] để [Mục đích]...",
+  "tich_hop_dao_duc": "- [Hoạt động]: Giáo dục phẩm chất [Tên] qua tình huống...",
+  "huong_dan_ve_nha": "..."
 }
-} `;
+\`\`\`
+QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON hợp lệ. Không được viết thêm lời dẫn như "Đây là kết quả...", "Dưới đây là JSON...". Bắt đầu ngay bằng ký tự { và kết thúc bằng }.
+`;
 }
 
 // ============================================================
