@@ -43,11 +43,17 @@ export async function callAI(
   if (proxyUrl && !proxyUrl.includes("example.com")) {
     try {
       console.log(`[AI-RELAY] 🛰️ Attempting Cloudflare Proxy...`);
-      const response = await fetch(`${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent`, {
+      // FIX: Ensure protocol exists
+      const protocol = proxyUrl.startsWith('http') ? '' : 'https://';
+      const fullProxyUrl = `${protocol}${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent`;
+
+      console.log(`[AI-RELAY] Proxy Target: ${fullProxyUrl}`);
+
+      const response = await fetch(fullProxyUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(20000)
+        signal: AbortSignal.timeout(25000)
       });
       if (response.ok) {
         const json = await response.json();
@@ -63,7 +69,7 @@ export async function callAI(
           console.error(`[AI-RELAY] ❌ ${msg}`);
           errorLogs.push(msg);
         } else {
-          const msg = `Proxy Error: ${response.status} - ${errText}`;
+          const msg = `Proxy Error: ${response.status} - ${errText.substring(0, 200)}`;
           console.warn(`[AI-RELAY] ⚠️ ${msg}`);
           errorLogs.push(msg);
         }
@@ -86,7 +92,7 @@ export async function callAI(
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(15000)
+        signal: AbortSignal.timeout(20000)
       });
 
       if (response.ok) {
@@ -108,6 +114,7 @@ export async function callAI(
           console.error(`[AI-RELAY] 💀 ${statusMsg}`);
         } else {
           statusMsg += ` - ${errText.substring(0, 100)}`;
+          if (response.status === 429) statusMsg = "Gemini Quota Exceeded (429)";
           console.warn(`[AI-RELAY] ⚠️ ${statusMsg}`);
         }
         errorLogs.push(`Key ${i + 1}: ${statusMsg}`);
@@ -127,18 +134,22 @@ export async function callAI(
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openAIKey}` },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model: "gpt-4o-mini", // Cost-effective fallback
           messages: [{ role: "system", content: systemContent }, { role: "user", content: prompt }],
           temperature: 0.7
         }),
-        signal: AbortSignal.timeout(20000)
+        signal: AbortSignal.timeout(25000)
       });
       if (response.ok) {
         const data = await response.json();
-        console.log("[AI-RELAY] ✅ OpenAI SUCCESS");
-        return data.choices[0].message.content || "";
+        const text = data.choices[0].message.content || "";
+        if (text) {
+          console.log("[AI-RELAY] ✅ OpenAI SUCCESS");
+          return text;
+        }
       } else {
-        errorLogs.push(`OpenAI Error: ${response.status} ${await response.text()}`);
+        const errText = await response.text();
+        errorLogs.push(`OpenAI Error: ${response.status} - ${errText.substring(0, 150)}`);
       }
     } catch (e: any) { errorLogs.push(`OpenAI Ex: ${e.message}`); }
   }
@@ -148,22 +159,27 @@ export async function callAI(
   if (groqKey) {
     try {
       console.log(`[AI-RELAY] 🦊 Falling back to Groq...`);
+      // FIX: Use current Llama model, llama3-70b-8192 is decommissioned
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${groqKey}` },
         body: JSON.stringify({
-          model: "llama3-70b-8192",
+          model: "llama-3.3-70b-versatile",
           messages: [{ role: "system", content: systemContent }, { role: "user", content: prompt }],
           temperature: 0.7
         }),
-        signal: AbortSignal.timeout(20000)
+        signal: AbortSignal.timeout(25000)
       });
       if (response.ok) {
         const data = await response.json();
-        console.log("[AI-RELAY] ✅ Groq SUCCESS");
-        return data.choices[0].message.content || "";
+        const text = data.choices[0].message.content || "";
+        if (text) {
+          console.log("[AI-RELAY] ✅ Groq SUCCESS");
+          return text;
+        }
       } else {
-        errorLogs.push(`Groq Error: ${response.status} ${await response.text()}`);
+        const errText = await response.text();
+        errorLogs.push(`Groq Error: ${response.status} - ${errText.substring(0, 150)}`);
       }
     } catch (e: any) { errorLogs.push(`Groq Ex: ${e.message}`); }
   }
