@@ -139,6 +139,8 @@ export function ManualProcessingHub() {
                 hoat_dong_kham_pha: ProfessionalContentProcessor.optimizeForActivity('kham_pha', activityContent),
                 hoat_dong_luyen_tap: ProfessionalContentProcessor.optimizeForActivity('luyen_tap', activityContent),
                 hoat_dong_van_dung: ProfessionalContentProcessor.optimizeForActivity('van_dung', activityContent),
+                shdc: ProfessionalContentProcessor.optimizeForActivity('shdc', activityContent),
+                shl: ProfessionalContentProcessor.optimizeForActivity('shl', activityContent),
             };
             store.setLessonResult({ ...initialResult, ...struct });
 
@@ -186,7 +188,7 @@ export function ManualProcessingHub() {
                 topic: lessonAutoFilledTheme,
                 grade: lessonGrade,
                 fileSummary: fileSummaryToUse, // CRITICAL: Sending 65k chars directly to Clipboard (Browser Memory)
-                optimizedFileSummary: cleanData,
+                optimizedFileSummary: store.lesson.result || cleanData,
                 smartData: smartData
             };
 

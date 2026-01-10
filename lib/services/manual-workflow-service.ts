@@ -31,13 +31,13 @@ export const ManualWorkflowService = {
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia thẩm định và phát triển chương trình HĐTN, HN 12 (v32.1).
+# VAI TRÒ: Chuyên gia thẩm định và phát triển chương trình HĐTN, HN 12 (v32.2).
 
 # DỮ LIỆU THAM KHẢO (INPUT):
 1. **Nội dung từ KHBH cũ (PDF Input):**
 """${JSON.stringify(data.thong_tin_chung || data)}"""
-- Dòng SHDC cũ: """${JSON.stringify(data.shdc || "")}"""
-- Dòng SHL cũ: """${JSON.stringify(data.shl || "")}"""
+- Dòng SHDC cũ: """${JSON.stringify(data.shdc || data.shdc_cot_1 || "")}"""
+- Dòng SHL cũ: """${JSON.stringify(data.shl || data.shl_cot_1 || "")}"""
 - Toàn bộ nội dung thô (Tham khảo): """${context.fileSummary}"""
 
 2. **Dữ liệu chuẩn từ Hệ thống (Database Standard):**
@@ -76,12 +76,12 @@ QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON h
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Kiến trúc sư sư phạm HĐTN, HN (Digital Native - v32.1).
+# VAI TRÒ: Kiến trúc sư sư phạm HĐTN, HN (Digital Native - v32.2).
 
 # DỮ LIỆU THAM KHẢO (INPUT):
 1. **Nội dung cũ (PDF Input):**
-- Khởi động: """${JSON.stringify(data.khoi_dong || "")}"""
-- Khám phá: """${JSON.stringify(data.kham_pha || "")}"""
+- Khởi động: """${JSON.stringify(data.hoat_dong_khoi_dong || data.khoi_dong || "")}"""
+- Khám phá: """${JSON.stringify(data.hoat_dong_kham_pha || data.kham_pha || "")}"""
 - Nội dung gốc toàn văn (Dùng nếu các mục trên trống): """${context.fileSummary}"""
 
 2. **Chỉ dẫn phương pháp chuẩn (Database Standard):**
@@ -120,12 +120,12 @@ QUAN TRỌNG: Bạn chỉ được trả về DUY NHẤT một khối mã JSON h
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia đánh giá và thực tiễn (v32.1).
+# VAI TRÒ: Chuyên gia đánh giá và thực tiễn (v32.2).
 
 # DỮ LIỆU THAM KHẢO (INPUT):
 1. **Nội dung cũ (PDF Input):**
-- Luyện tập: """${JSON.stringify(data.luyen_tap || "")}"""
-- Vận dụng: """${JSON.stringify(data.van_dung || "")}"""
+- Luyện tập: """${JSON.stringify(data.hoat_dong_luyen_tap || data.luyen_tap || "")}"""
+- Vận dụng: """${JSON.stringify(data.hoat_dong_van_dung || data.van_dung || "")}"""
 - Nội dung gốc toàn văn (Dùng nếu các mục trên trống): """${context.fileSummary}"""
 
 2. **Kho dữ liệu chuẩn (Database Standard):**
