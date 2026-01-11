@@ -265,19 +265,22 @@ export function TemplateEngine() {
           break;
         case "meeting":
           if (!meeting.result) throw new Error("Chưa có kết quả biên bản để xuất");
-          success = await exportSystem.exportMeeting(meeting.result, meeting.month);
+          success = await TemplateExportService.exportMeetingToTemplate(meeting.result);
           break;
         case "event":
           if (!event.result) throw new Error("Chưa có kết quả kịch bản để xuất");
-          success = await exportSystem.exportEvent(event.result, { grade: event.grade, month: event.month });
+          success = await TemplateExportService.exportEventToTemplate(event.result);
           break;
         case "ncbh":
           if (!ncbh.result) throw new Error("Chưa có kết quả NCBH để xuất");
-          success = await exportSystem.exportNCBH(ncbh.result, { grade: ncbh.grade, month: ncbh.month });
+          success = await TemplateExportService.exportNCBHToTemplate(ncbh.result);
           break;
         case "assessment":
           if (!assessment.result) throw new Error("Chưa có kết quả đánh giá để xuất");
-          success = await exportSystem.exportAssessmentPlan(assessment.result, { grade: assessment.grade, term: assessment.term });
+          const templateInput = assessment.template?.data || "/templates/mau-ke-hoach-day-hoc.docx";
+          // If we have a custom arrayBuffer from upload, docxtemplater needs a different handling, 
+          // but for now we follow the template path pattern.
+          success = await TemplateExportService.exportAssessmentToTemplate(assessment.result, typeof templateInput === 'string' ? templateInput : undefined);
           break;
         default:
           throw new Error(`Chế độ xuất "${mode}" chưa được hỗ trợ trong phiên bản tinh gọn.`);
