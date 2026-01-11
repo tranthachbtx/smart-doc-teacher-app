@@ -39,29 +39,30 @@ export const ManualWorkflowService = {
         id: "single",
         name: "Toàn bộ bài học",
         range: `Tiết 1 - ${totalPeriods}`,
-        focus: "Phát triển toàn diện kiến thức và kỹ năng thực hành.",
+        focus: "Phát triển toàn diện kiến thức và kỹ năng thực hành theo chuẩn 5512.",
         prompt_type: "STANDARD"
       });
     } else {
+      // CHIẾN THUẬT "NHÂN BẢN" (ITERATION) CHO BÀI DÀI TIẾT
       phases.push({
         id: "phase_1",
-        name: "Giai đoạn 1: Khơi gợi & Khám phá",
-        range: `Tiết 1 - ${Math.ceil(totalPeriods * 0.3)}`,
-        focus: "Tập trung vào Gamification (Khởi động) và Trạm thông tin/Mảnh ghép (Khám phá kiến thức).",
+        name: "Giai đoạn 1: Khám phá thực trạng & Giải pháp",
+        range: `Tiết 1-2`,
+        focus: "Tập trung vào Gamification (Khởi động) và Trạm thông tin (Khám phá). Yêu cầu AI viết chi tiết các phiếu khảo sát thực trạng, sơ đồ tư duy giải quyết vấn đề.",
         prompt_type: "SEGMENTED"
       });
       phases.push({
         id: "phase_2",
-        name: "Giai đoạn 2: Luyện tập & Kỹ năng",
-        range: `Tiết ${Math.ceil(totalPeriods * 0.3) + 1} - ${Math.floor(totalPeriods * 0.7)}`,
-        focus: "Tập trung vào Tình huống giả định (Case Study) và Đóng vai xử lý mâu thuẫn chuyên sâu.",
+        name: "Giai đoạn 2: Tuyên truyền & Lan tỏa",
+        range: `Tiết 3-4`,
+        focus: "Tập trung vào nội dung 'Viral'. Thiết kế hoạt động làm Poster, Storyboard cho Video/Podcast. Yêu cầu AI viết chi tiết các thông điệp truyền thông và kịch bản thuyết trình.",
         prompt_type: "SEGMENTED"
       });
       phases.push({
         id: "phase_3",
-        name: "Giai đoạn 3: Vận dụng & Đánh giá",
-        range: `Tiết ${Math.floor(totalPeriods * 0.7) + 1} - ${totalPeriods}`,
-        focus: "Tập trung vào Dự án thực tế (Project-based), Tổ chức sự kiện và Rubric đánh giá 4 mức độ.",
+        name: "Giai đoạn 3: Thực hành địa phương & Tổng kết",
+        range: `Tiết 5-6`,
+        focus: "Tập trung vào 'Social Action'. Thiết kế dự án ra quân thực tế (dọn dẹp, bảo tồn). Yêu cầu AI viết chi tiết timeline triển khai, bảng phân công nhiệm vụ và Rubric đánh giá dự án.",
         prompt_type: "SEGMENTED"
       });
     }
@@ -70,15 +71,22 @@ export const ManualWorkflowService = {
 
   validateContext(context: PromptContext, pillarId: string) {
     const errors: string[] = [];
-    if (!context.topic) errors.push("Chủ đề bài học (Topic) đang trống.");
-    if (!context.smartData || !context.smartData.objectives) errors.push("Dữ liệu chuẩn (Database) không tồn tại.");
+    if (!context.topic) errors.push("CRITICAL: Chủ đề bài học (Topic) đang trống.");
+    if (!context.smartData || !context.smartData.objectives) errors.push("CRITICAL: Dữ liệu chuẩn (Database) không tồn tại.");
 
-    if (pillarId !== 'pillar_1' && (!context.pdfReference || Object.keys(context.pdfReference).length === 0)) {
-      errors.push("Không tìm thấy dữ liệu phân tích từ PDF.");
+    // Fail Fast: Ensure phaseContext exists for Pillar 2 & 3 if lesson is long
+    if ((pillarId === 'pillar_2' || pillarId === 'pillar_3') && !context.phaseContext) {
+      errors.push("CRITICAL: Chưa xác định Giai đoạn (Phase). Vui lòng chạy 'Deep Trace PDF' hoặc kiểm tra lộ trình tiết.");
+    }
+
+    if (pillarId !== 'pillar_1' && (!context.fileSummary || context.fileSummary.length < 100)) {
+      errors.push("CRITICAL: Dữ liệu PDF rỗng hoặc quá ngắn để thực hiện phẫu thuật chuyên sâu.");
     }
 
     if (errors.length > 0) {
-      throw new Error(`[FAIL-LOUD] 💥 Vi phạm toàn vẹn dữ liệu:\n- ${errors.join('\n- ')}`);
+      const errorMsg = `[FAIL-LOUD] 💥 VI PHẠM TOÀN VẸN DỮ LIỆU:\n- ${errors.join('\n- ')}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
   },
 
@@ -142,9 +150,15 @@ QUAN TRỌNG: Chỉ trả về JSON.
     return `
 # VAI TRÒ: Chuyên gia Phương pháp dạy học tích cực (Constructivism Scriptwriter - v39.1).
 
-# 🎯 PHẠM VI & TRỌNG TÂM:
-- **Giai đoạn:** ${phaseContext ? phaseContext.name : "Khởi động & Khám phá"}
-- **Kỹ thuật bắt buộc:** Gamification (Khởi động) và Kỹ thuật Trạm/Mảnh ghép (Khám phá).
+# 🎯 CHẾ ĐỘ PHÂN ĐOẠN (SEGMENTATION MODE - BẮT BUỘC):
+Đây là GIAI ĐOẠN 1 của một chủ đề dài (${context.smartData.grade} - ${context.topic}).
+- **PHẠM VI SOẠN THẢO:** Chỉ tập trung soạn nội dung cho **${phaseContext?.range || "Tiết 1-2"}**.
+- **TRỌNG TÂM:** Tập trung hoàn toàn vào **Khởi động & Khám phá kiến thức mới**.
+- **LƯU Ý:** Tuyệt đối chưa soạn Luyện tập hay Vận dụng. Hãy dành toàn bộ tài nguyên để viết thật sâu, thật chi tiết các nhiệm vụ khám phá, trạm thông tin và kịch bản dẫn dắt của GV cho đúng phạm số tiết này.
+
+# 🏮 TRIẾT LÝ SƯ PHẠM:
+- **Constructivism:** HS là trung tâm kiến tạo tri thức.
+- **Fail-Safe:** Nếu dữ liệu PDF cũ không đủ sâu, bạn BẮT BUỘC phải tự sáng tạo nội dung dựa trên Database MOET để đảm bảo đủ dung lượng 15-20 trang cho giai đoạn này.
 
 # DỮ LIỆU CỐT LÕI (CHỈ LẤY PHẦN KHÁM PHÁ):
 - **Bản kế hoạch hiện tại (Từ Trụ cột 1):** """${JSON.stringify(context.optimizedFileSummary || {})}"""
@@ -166,6 +180,12 @@ QUAN TRỌNG: Chỉ trả về JSON.
    - Không chỉ ghi "GV tổ chức", hãy viết lời thoại: **GV: '...' (Hành động, cử chỉ)**.
    - Viết câu trả lời dự kiến của HS theo 3 hướng: Đúng chuẩn - Sáng tạo - Sai lệch.
 
+# CHỈ THỊ "BƠM" DUNG LƯỢNG (INFLATION DIRECTIVES):
+- **Độ dày:** Bạn đang viết cho một giai đoạn quan trọng (15-20 trang). PHẢI diễn giải chi tiết mọi chỉ dẫn.
+- **Micro-Actions:** Mô tả kỹ hành động của GV khi quan sát lớp (ví dụ: 'GV đứng ở trạm 1, quan sát nhóm A đang tranh luận về...').
+- **Tâm lý học sinh:** Viết 1-2 câu về cảm xúc/tư duy của HS trong từng bước thực hiện.
+- **Tài liệu tại trạm:** Mỗi trạm phải là một bản tóm tắt kiến thức/ngữ liệu ít nhất 300 chữ.
+
 # YÊU CẦU OUTPUT JSON:
 {
   "hoat_dong_khoi_dong_cot_1": "...",
@@ -184,11 +204,16 @@ QUAN TRỌNG: Chỉ trả về JSON.
     this.validateContext(context, 'pillar_3');
     const { smartData, phaseContext } = context;
 
+    const isLuyenTap = phaseContext?.id === 'phase_2' || phaseContext?.name.includes("Luyện tập");
+
     return `
 # VAI TRÒ: Chuyên gia Đánh giá & Dự án (Authentic Assessment specialist - v39.1).
 
-# 🎯 PHẠM VI: 
-- **Trọng tâm:** ${phaseContext ? phaseContext.focus : "Luyện tập & Vận dụng dự án"}
+# 🎯 CHẾ ĐỘ PHÂN ĐOẠN (SEGMENTATION MODE - BẮT BUỘC):
+Đây là **${phaseContext?.name || "Giai đoạn Thực chiến"}** của chủ đề.
+- **PHẠM VI SOẠN THẢO:** Chỉ tập trung soạn nội dung cho **${phaseContext?.range || "Các tiết thực hành"}**.
+- **TRỌNG TÂM:** ${isLuyenTap ? "Hoạt động Luyện tập & Thực hành kỹ năng chuyên sâu" : "Hoạt động Dự án Vận dụng & Báo cáo thực địa"}.
+- **YÊU CẦU ĐẶC BIỆT:** Tuyệt đối không viết tóm tắt. Hãy viết chi tiết mỗi bước như một kịch bản tổ chức sự kiện/dự án thực tế.
 
 # DỮ LIỆU CỐT LÕI (CHỈ LẤY PHẦN LT/VD):
 - **Bản kế hoạch hiện tại (Từ Trụ cột 1 & 2):** """${JSON.stringify(context.optimizedFileSummary || {})}"""
@@ -203,6 +228,11 @@ QUAN TRỌNG: Chỉ trả về JSON.
 2. **Vận dụng (Project STEM/Social):** Thiết kế dự án thực tế với timeline tuần 1, tuần 2 rõ ràng.
 3. **Phiếu học tập:** Tạo nội dung mẫu cho "Phiếu học tập số 1" và "Phiếu giao việc số 2" ngay trong nội dung.
 4. **Đánh giá:** Tạo Rubric 4 mức độ (A, B, C, D) sắc bén cho bài dạy này.
+
+# CHỈ THỊ "BƠM" DUNG LƯỢNG (INFLATION DIRECTIVES):
+- **Case Study:** Phải viết như một câu chuyện ngắn có bối cảnh, nhân vật và mâu thuẫn cao trào (ít nhất 200-300 chữ).
+- **Dự án Social:** Chia nhỏ timeline thành từng ngày/tuần. Viết rõ GV hỗ trợ nhóm nào, ở đâu.
+- **Chi tiết hóa:** Mọi bảng biểu phải có tiêu đề và hướng dẫn điền cụ thể.
 
 # YÊU CẦU OUTPUT JSON (Tách biệt rõ ràng):
 {
