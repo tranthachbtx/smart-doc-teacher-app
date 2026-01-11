@@ -236,8 +236,17 @@ export function ManualProcessingHub() {
                 mergeValue('shl', data.shl);
             }
 
-            // Pillar 3 specifically
-            if (data.ho_so_day_hoc) mergeValue('ho_so_day_hoc', data.ho_so_day_hoc);
+            // Pillar 3 specifically (v39.1 separated fields)
+            if (data.phieu_hoc_tap || data.rubric_danh_gia) {
+                const combinedHoSo = [
+                    data.phieu_hoc_tap || "",
+                    data.rubric_danh_gia || ""
+                ].filter(Boolean).join("\n\n");
+                mergeValue('ho_so_day_hoc', combinedHoSo);
+            } else if (data.ho_so_day_hoc) {
+                mergeValue('ho_so_day_hoc', data.ho_so_day_hoc);
+            }
+
             if (data.huong_dan_ve_nha) mergeValue('huong_dan_ve_nha', data.huong_dan_ve_nha);
 
             if (data.khoi_dong || data.kham_pha || data.luyen_tap || data.van_dung) {

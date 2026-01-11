@@ -81,15 +81,27 @@ MỤC TIÊU TỔNG QUÁT: ${chuDe.muc_tieu.join("; ")}
 KẾT QUẢ CẦN ĐẠT: ${chuDe.ket_qua_can_dat?.join("; ") || "Theo quy định chương trình GDPT 2018"}
 `;
 
-            // Map activities to specific 5512 stages
+            // Reset core missions to empty strings to accumulate
+            coreMissions.khoiDong = "";
+            coreMissions.khamPha = "";
+            coreMissions.luyenTap = "";
+            coreMissions.vanDung = "";
+
+            // Map ALL activities to specific 5512 stages (v39.1 Improvement)
+            const totalHĐ = chuDe.hoat_dong.length;
             chuDe.hoat_dong.forEach((hd, index) => {
                 const tasksText = hd.nhiem_vu.map(n => `- ${n.ten}: ${n.mo_ta} (Sản phẩm: ${n.san_pham_du_kien || "Kết quả thảo luận/báo cáo"})`).join("\n");
-                const fullContent = `[HĐ ${hd.so_thu_tu}: ${hd.ten}]\n${hd.mo_ta}\n${tasksText}\n* Lưu ý: ${hd.luu_y_su_pham || "Thúc đẩy học sinh tích cực trải nghiệm."}`;
+                const fullContent = `[HĐ ${hd.so_thu_tu}: ${hd.ten}]\n${hd.mo_ta}\n${tasksText}\n* Lưu ý: ${hd.luu_y_su_pham || "Thúc đẩy học sinh tích cực trải nghiệm."}\n\n`;
 
-                if (index === 0) coreMissions.khoiDong = fullContent;
-                else if (index === 1) coreMissions.khamPha = fullContent;
-                else if (index === 2) coreMissions.luyenTap = fullContent;
-                else if (index === 3) coreMissions.vanDung = fullContent;
+                if (index === 0) {
+                    coreMissions.khoiDong += fullContent;
+                } else if (index === totalHĐ - 1) {
+                    coreMissions.vanDung += fullContent;
+                } else if (index < Math.ceil(totalHĐ / 2)) {
+                    coreMissions.khamPha += fullContent;
+                } else {
+                    coreMissions.luyenTap += fullContent;
+                }
             });
         } else {
             curriculumContext = "Không tìm thấy dữ liệu chương trình cụ thể cho chủ đề: " + topicName;

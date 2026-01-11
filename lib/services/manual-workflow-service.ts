@@ -83,14 +83,18 @@ export const ManualWorkflowService = {
   },
 
   /**
-   * PROMPT 1: KHUNG & ĐỊNH HƯỚNG CHIẾN LƯỢC (v39.0 - Chief Architect Mode)
+   * PROMPT 1: KHUNG & ĐỊNH HƯỚNG CHIẾN LƯỢC (v39.1 - FINAL - Chief Architect Mode)
    */
   async generatePillar1Prompt(context: PromptContext): Promise<string> {
     this.validateContext(context, 'pillar_1');
-    const { smartData, auditAnalysis } = context;
+    const { smartData, auditAnalysis, phaseContext } = context;
+
+    // Determine actual periods from phaseContext or smartData or context
+    const actualPeriods = phaseContext ? phaseContext.range : "3 tiết";
 
     return `
-# VAI TRÒ: Kiến trúc sư trưởng Chương trình Giáo dục (Liberal Arts & Digital Transformation - v39.0).
+# VAI TRÒ: Kiến trúc sư trưởng Chương trình Giáo dục (Liberal Arts & Digital Transformation - v39.1).
+
 # NHIỆM VỤ: Thiết lập "Bộ não trung tâm" cho giáo án, lột xác hoàn toàn file PDF cũ.
 
 # DỮ LIỆU ĐẦU VÀO:
@@ -111,39 +115,40 @@ export const ManualWorkflowService = {
 
 # YÊU CẦU OUTPUT JSON:
 {
-  "ten_truong": "[Tên trường]",
+  "ten_truong": "Trường THPT [Tên trường trong PDF hoặc để trống]",
   "to_chuyen_mon": "[Tổ chuyên môn]",
   "ten_giao_vien": "[Tên giáo viên]",
   "ten_bai": "${smartData.topicName}",
-  "so_tiet": "${context.phaseContext ? "Segmented" : "Full"}",
+  "so_tiet": "${actualPeriods}",
   "muc_tieu_kien_thuc": "...\\n...",
   "muc_tieu_nang_luc": "...\\n...",
   "muc_tieu_pham_chat": "...\\n...",
   "gv_chuan_bi": "...\\n...",
   "hs_chuan_bi": "...\\n...",
-  "shdc": "**KỊCH BẢN MC CHI TIẾT:**\\n...",
-  "shl": "**KỊCH BẢN SINH HOẠT LỚP:**\\n..."
+  "shdc": "**KỊCH BẢN MC CHI TIẾT (Phân vai MC1, MC2):**\\n...",
+  "shl": "**KỊCH BẢN ĐIỀU HÀNH SINH HOẠT LỚP:**\\n..."
 }
 QUAN TRỌNG: Chỉ trả về JSON.
     `.trim();
   },
 
   /**
-   * PROMPT 2: KIẾN TẠO TRI THỨC (v39.0 - Active Learning Script)
+   * PROMPT 2: KIẾN TẠO TRI THỨC (v39.1 - FINAL - Active Learning Script)
    */
   async generatePillar2Prompt(context: PromptContext): Promise<string> {
     this.validateContext(context, 'pillar_2');
     const { smartData, auditAnalysis, phaseContext } = context;
 
     return `
-# VAI TRÒ: Chuyên gia Phương pháp dạy học tích cực (Constructivism Scriptwriter - v39.0).
+# VAI TRÒ: Chuyên gia Phương pháp dạy học tích cực (Constructivism Scriptwriter - v39.1).
 
 # 🎯 PHẠM VI & TRỌNG TÂM:
 - **Giai đoạn:** ${phaseContext ? phaseContext.name : "Khởi động & Khám phá"}
 - **Kỹ thuật bắt buộc:** Gamification (Khởi động) và Kỹ thuật Trạm/Mảnh ghép (Khám phá).
 
 # DỮ LIỆU CỐT LÕI (CHỈ LẤY PHẦN KHÁM PHÁ):
-- **Nghiệm vụ dạy học (Database):** """${JSON.stringify({
+- **Bản kế hoạch hiện tại (Từ Trụ cột 1):** """${JSON.stringify(context.optimizedFileSummary || {})}"""
+- **Nhiệm vụ dạy học (Database):** """${JSON.stringify({
       khoi_dong: smartData.coreMissions.khoiDong,
       kham_pha: smartData.coreMissions.khamPha,
       notes: smartData.pedagogicalNotes,
@@ -154,7 +159,8 @@ QUAN TRỌNG: Chỉ trả về JSON.
 # YÊU CẦU NÂNG CẤP "PERFECT MODE":
 1. **Khởi động (Gamification):** Thiết kế trò chơi có luật chơi, cách tính điểm và lời dẫn bùng nổ.
 2. **Khám phá (Station Rotation/Jigsaw):** 
-   - Chia lớp thành 4 trạm/nhóm. 
+   - Nếu là kỹ thuật Trạm: Hãy thiết kế nội dung cho 4 Trạm (Trạm Đọc, Trạm Xem, Trạm Viết, Trạm Thực hành).
+   - Viết rõ nội dung trong "PHIẾU HỌC TẬP SỐ 1" phát cho HS tại trạm.
    - **Mô tả chi tiết tài liệu và nhiệm vụ tại từng trạm.** AI hãy viết cụ thể từng phiếu thông tin tại trạm.
 3. **Kịch bản sư phạm (Pedagogical Script):** 
    - Không chỉ ghi "GV tổ chức", hãy viết lời thoại: **GV: '...' (Hành động, cử chỉ)**.
@@ -172,19 +178,20 @@ QUAN TRỌNG: Chỉ trả về JSON.
   },
 
   /**
-   * PROMPT 3: THỰC CHIẾN & ĐÁNH GIÁ (v39.0 - Project & Assessment Expert)
+   * PROMPT 3: THỰC CHIẾN & ĐÁNH GIÁ (v39.1 - FINAL - Project & Assessment Expert)
    */
   async generatePillar3Prompt(context: PromptContext): Promise<string> {
     this.validateContext(context, 'pillar_3');
     const { smartData, phaseContext } = context;
 
     return `
-# VAI TRÒ: Chuyên gia Đánh giá & Dự án (Authentic Assessment specialist - v39.0).
+# VAI TRÒ: Chuyên gia Đánh giá & Dự án (Authentic Assessment specialist - v39.1).
 
 # 🎯 PHẠM VI: 
 - **Trọng tâm:** ${phaseContext ? phaseContext.focus : "Luyện tập & Vận dụng dự án"}
 
 # DỮ LIỆU CỐT LÕI (CHỈ LẤY PHẦN LT/VD):
+- **Bản kế hoạch hiện tại (Từ Trụ cột 1 & 2):** """${JSON.stringify(context.optimizedFileSummary || {})}"""
 - **Database LT/VD:** """${JSON.stringify({
       luyen_tap: smartData.coreMissions.luyenTap,
       van_dung: smartData.coreMissions.vanDung,
@@ -197,11 +204,12 @@ QUAN TRỌNG: Chỉ trả về JSON.
 3. **Phiếu học tập:** Tạo nội dung mẫu cho "Phiếu học tập số 1" và "Phiếu giao việc số 2" ngay trong nội dung.
 4. **Đánh giá:** Tạo Rubric 4 mức độ (A, B, C, D) sắc bén cho bài dạy này.
 
-# YÊU CẦU OUTPUT JSON:
+# YÊU CẦU OUTPUT JSON (Tách biệt rõ ràng):
 {
   "luyen_tap": { "cot_gv": "**CASE STUDY 200 CHỮ:**\\n...", "cot_hs": "..." },
   "van_dung": { "cot_gv": "**DỰ ÁN STEM/XÃ HỘI:**\\n...", "cot_hs": "..." },
-  "ho_so_day_hoc": "**RUBRIC & PHIẾU HỌC TẬP:**\\n...",
+  "phieu_hoc_tap": "**NỘI DUNG PHIẾU HỌC TẬP SỐ 1:**\\n...\\n**NỘI DUNG PHIẾU GIAO VIỆC SỐ 2:**\\n...",
+  "rubric_danh_gia": "**RUBRIC ĐÁNH GIÁ DỰ ÁN (Thang điểm 10):**\\n...",
   "huong_dan_ve_nha": "..."
 }
 QUAN TRỌNG: Chỉ trả về JSON.
