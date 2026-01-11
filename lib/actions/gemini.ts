@@ -18,7 +18,32 @@ export interface ActionResult<T = any> {
   content?: string;
 }
 
-// --- CORE AI CALLER (ROBUST MULTI-PROVIDER STRATEGY) ---
+// --- RESILIENCE: CIRCUIT BREAKER STATE ---
+// Stores timestamp of when a key failed to skip it for 10 minutes
+const FAILED_KEYS_REGISTRY: Record<string, number> = {};
+const CIRCUIT_BREAKER_TIME = 10 * 60 * 1000; // 10 minutes
+
+function isKeyBlocked(key: string): boolean {
+  if (!key) return true;
+  const lastError = FAILED_KEYS_REGISTRY[key];
+  if (!lastError) return false;
+  if (Date.now() - lastError > CIRCUIT_BREAKER_TIME) {
+    delete FAILED_KEYS_REGISTRY[key]; // Reset after 10 mins
+    return false;
+  }
+  return true;
+}
+
+function registerKeyFailure(key: string) {
+  if (!key) return;
+  FAILED_KEYS_REGISTRY[key] = Date.now();
+  console.warn(`[CIRCUIT-BREAKER] 🚨 Trip registered for key: ${key.slice(0, 8)}...`);
+}
+
+// Helper to deep clean API keys
+const clean = (k: string | undefined) => k?.trim().replace(/^["']|["']$/g, '') || "";
+
+// --- CORE AI CALLER v37.0 (ROBUST MULTI-PROVIDER STRATEGY) ---
 export async function callAI(
   prompt: string,
   modelName = "gemini-1.5-flash",
@@ -26,7 +51,9 @@ export async function callAI(
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
   const errorLogs: string[] = [];
-  const body = {
+
+  // Prepare Payload for Gemini-style APIs
+  const geminiBody = {
     contents: [{
       parts: [
         { text: `${systemContent}\n\nPROMPT:\n${prompt}` },
@@ -36,58 +63,76 @@ export async function callAI(
     generationConfig: { temperature: 0.85, maxOutputTokens: 8192 }
   };
 
-  // 1. STRATEGY: PROXY
+  // 1. STRATEGY: PROXY (With Circuit Breaker)
   const proxyUrl = process.env.GEMINI_PROXY_URL;
-  if (proxyUrl && !proxyUrl.includes("example.com")) {
+  if (proxyUrl && !proxyUrl.includes("example.com") && !isKeyBlocked(proxyUrl)) {
     try {
       const url = `${proxyUrl.startsWith('http') ? '' : 'https://'}${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent`;
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(25000)
+        body: JSON.stringify(geminiBody),
+        signal: AbortSignal.timeout(15000)
       });
       if (response.ok) {
         const json = await response.json();
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) return text;
+      } else {
+        if (response.status !== 401) registerKeyFailure(proxyUrl);
       }
     } catch (e: any) { errorLogs.push(`Proxy: ${e.message}`); }
   }
 
-  // 2. STRATEGY: GEMINI ROTATION (Free Tier - Random Balanced)
-  let geminiKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3].filter(k => !!k && k.length > 5);
+  // 2. STRATEGY: GEMINI ROTATION (Free Tier - Randomized & Balanced)
+  let geminiKeys = [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3
+  ].map(k => clean(k)).filter(k => k.length > 5);
 
-  // Shuffle keys to distribute traffic across potentially different projects/limits
-  geminiKeys = geminiKeys.sort(() => Math.random() - 0.5);
+  // Filter out blocked keys & Shuffle
+  geminiKeys = geminiKeys.filter(k => !isKeyBlocked(k)).sort(() => Math.random() - 0.5);
 
-  for (let i = 0; i < geminiKeys.length; i++) {
+  if (geminiKeys.length === 0) console.warn("[AI-RELAY] ⚠️ All Gemini keys currently blocked by Circuit Breaker.");
+
+  for (const key of geminiKeys) {
     try {
-      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKeys[i]}`, {
+      // FIX Based on Gemini Pro Report: Use proper identifier
+      const modelIdentifier = modelName.includes('models/') ? modelName : `models/${modelName}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/${modelIdentifier}:generateContent?key=${key}`;
+
+      const resp = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        body: JSON.stringify(geminiBody),
         signal: AbortSignal.timeout(15000)
       });
+
       if (resp.ok) {
         const json = await resp.json();
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
         if (text) return text;
+      } else {
+        if (resp.status === 403 || resp.status === 429) registerKeyFailure(key);
+        errorLogs.push(`Gemini ${resp.status}`);
       }
-      if (resp.status === 403 || resp.status === 429) continue;
-    } catch (e: any) { errorLogs.push(`Gemini K${i + 1}: ${e.message}`); }
+    } catch (e: any) { errorLogs.push(`Gemini Ex: ${e.message}`); }
   }
 
-  // 3. STRATEGY: GROQ FALLBACK (Highest priority Free Fallback)
-  const groqKey = process.env.GROQ_API_KEY?.trim();
-  if (groqKey) {
+  // 3. STRATEGY: GROQ FALLBACK (Stable Free Backup)
+  const groqKey = clean(process.env.GROQ_API_KEY);
+  if (groqKey && !isKeyBlocked(groqKey)) {
     try {
       const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${groqKey}` },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
-          messages: [{ role: "system", content: systemContent }, { role: "user", content: prompt }],
+          messages: [
+            { role: "system", content: systemContent },
+            { role: "user", content: prompt }
+          ],
           temperature: 0.7
         }),
         signal: AbortSignal.timeout(25000)
@@ -95,13 +140,15 @@ export async function callAI(
       if (resp.ok) {
         const data = await resp.json();
         return data.choices[0].message.content || "";
+      } else if (resp.status === 429) {
+        registerKeyFailure(groqKey);
       }
     } catch (e: any) { errorLogs.push(`Groq: ${e.message}`); }
   }
 
-  // 4. STRATEGY: OPENAI FALLBACK (Last resort - Paid)
-  const openAIKey = process.env.OPENAI_API_KEY?.trim();
-  if (openAIKey) {
+  // 4. STRATEGY: OPENAI FALLBACK (Last Resort)
+  const openAIKey = clean(process.env.OPENAI_API_KEY);
+  if (openAIKey && !isKeyBlocked(openAIKey)) {
     try {
       const resp = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
@@ -116,11 +163,13 @@ export async function callAI(
       if (resp.ok) {
         const data = await resp.json();
         return data.choices[0].message.content || "";
+      } else if (resp.status === 401 || resp.status === 429) {
+        registerKeyFailure(openAIKey);
       }
     } catch (e: any) { errorLogs.push(`OpenAI: ${e.message}`); }
   }
 
-  throw new Error(`ALL_PROVIDERS_FAILED: ${errorLogs.join(' | ')}`);
+  throw new Error(`ALL_AI_PROVIDERS_EXHAUSTED: ${errorLogs.join(' | ')}`);
 }
 
 // --- API WRAPPERS ---

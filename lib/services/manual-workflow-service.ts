@@ -25,9 +25,30 @@ export const ManualWorkflowService = {
   },
 
   /**
+   * 🛑 FAIL FAST VALIDATION
+   * Chứng minh dữ liệu đủ điều kiện trước khi tạo Prompt
+   */
+  validateContext(context: PromptContext, pillarId: string) {
+    const errors: string[] = [];
+    if (!context.topic) errors.push("Chủ đề bài học (Topic) đang trống.");
+    if (!context.smartData || !context.smartData.objectives) errors.push("Dữ liệu chuẩn (Database) cho chủ đề này không tồn tại.");
+
+    if (pillarId !== 'pillar_1') {
+      if (!context.pdfReference || Object.keys(context.pdfReference).length === 0) {
+        errors.push("Không tìm thấy dữ liệu phân tích từ PDF. Vui lòng upload lại file.");
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`[FAIL-LOUD] 💥 Vi phạm toàn vẹn dữ liệu:\n- ${errors.join('\n- ')}`);
+    }
+  },
+
+  /**
    * PROMPT 1: KHUNG & VỆ TINH (RAG: Audit & Upgrade - Database Standard)
    */
   async generatePillar1Prompt(context: PromptContext): Promise<string> {
+    this.validateContext(context, 'pillar_1');
     const data = context.optimizedFileSummary || {};
     const smartData = context.smartData;
 
@@ -86,6 +107,7 @@ QUAN TRỌNG: Chỉ trả về JSON.
    * PROMPT 2: KIẾN TẠO TRI THỨC (RAG: Rewrite & Enrich - Digital Integration)
    */
   async generatePillar2Prompt(context: PromptContext): Promise<string> {
+    this.validateContext(context, 'pillar_2');
     const data = context.optimizedFileSummary || {};
     const smartData = context.smartData;
 
@@ -159,6 +181,7 @@ QUAN TRỌNG: Chỉ trả về JSON.
    * PROMPT 3: THỰC CHIẾN (RAG: Optimize & Fill Gaps - Authentic Assessment)
    */
   async generatePillar3Prompt(context: PromptContext): Promise<string> {
+    this.validateContext(context, 'pillar_3');
     const data = context.optimizedFileSummary || {};
     const smartData = context.smartData;
 
