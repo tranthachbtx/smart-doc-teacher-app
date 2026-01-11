@@ -53,7 +53,7 @@ export const ManualWorkflowService = {
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia Thẩm định & Phát triển Chương trình HĐTN, HN 12 (Chuẩn 5512 - v36.1).
+# VAI TRÒ: Chuyên gia Thẩm định & Phát triển Chương trình HĐTN, HN 12 (Chuẩn 5512 - v38.1).
 
 # PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
 1. **DỮ LIỆU CHUẨN (Database):** Là "Mệnh lệnh" tối cao. Mọi mục tiêu, nhiệm vụ phải bám sát dữ liệu này.
@@ -112,7 +112,7 @@ QUAN TRỌNG: Chỉ trả về JSON.
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Kiến trúc sư Sư phạm (Deep Dive & Constructivism - v36.2).
+# VAI TRÒ: Kiến trúc sư Sư phạm (Deep Dive & Constructivism - v38.1).
 
 # PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
 1. **NHIỆM VỤ CHIẾN LƯỢC (Database):** Bạn phải thiết kế hoạt động dựa trên Database này. Đây là "Nội dung bài học" bắt buộc.
@@ -136,23 +136,27 @@ QUAN TRỌNG: Chỉ trả về JSON.
 
 # NHIỆM VỤ: Thiết kế Hoạt động 1 (Khởi động) & Hoạt động 2 (Khám phá).
 
-🛑 **QUY TẮC XỬ LÝ MÂU THUẪN (QUAN TRỌNG NHẤT):**
-Hãy so sánh chủ đề của "PDF cũ" và "Dữ liệu Chuẩn".
 - Nếu PDF nói về chủ đề khác (VD: Môi trường) so với Database (VD: Quan hệ xã hội) -> **HÃY BỎ QUA PDF HOÀN TOÀN.**
 - **Tuyệt đối không tìm cách gượng ép** kết hợp 2 chủ đề.
 - Chỉ sử dụng "Dữ liệu Chuẩn" để sáng tạo nội dung mới.
+
+# CHIẾN LƯỢC TÁI PHÂN PHỐI NỘI DUNG (CONTENT REDISTRIBUTION):
+1. **Khởi động (Warm-up):** Rà soát \`[HĐ Khởi động - Dự kiến]\`. Nếu nội dung này quá nặng (thường là HĐ 1 bị map sai vào Khởi động), hãy:
+   - CHỈ lấy tinh thần hoặc một phần nhỏ để biến thành **Trò chơi/Tình huống** (Sử dụng thêm dữ liệu từ \`Gợi ý trò chơi & Sinh hoạt\`).
+   - Đảm bảo thời lượng chỉ 5-7 phút.
+2. **Khám phá (Discovery):** Toàn bộ nội dung "nặng" và kiến thức lõi của \`HĐ Khởi động - Dự kiến\` (nếu có) phải được đẩy xuống hoặc lồng ghép tinh tế vào phần đầu của **Hoạt động Khám phá**. Tuyệt đối không để mất kiến thức nhưng cũng không để Khởi động quá tải.
 
 # NGUYÊN TẮC "MAX CONTENT" (VIẾT DÀI & SÂU):
 Để giáo án đạt chuẩn 5512 cao cấp, hãy tuân thủ công thức mở rộng sau:
 
 ### 1. HOẠT ĐỘNG KHỞI ĐỘNG (Warm-up - Cần vui vẻ, nhẹ nhàng):
-- **Nội dung:** Kết hợp nội dung **[HĐ Khởi động - Dự kiến]** với các ý tưởng từ **[Gợi ý trò chơi & Sinh hoạt]**.
-- **Chiến thuật "Gamification":** Nếu HĐ 1 trong Database quá nặng về kiến thức, hãy biến nó thành một trò chơi (Nhìn hình đoán chữ, Kể chuyện tiếp sức, Đuổi hình bắt bóng) để tạo tâm thế thoải mái.
+- **Nội dung:** Kết hợp nội dung \`[HĐ Khởi động - Dự kiến]\` với các ý tưởng từ \`[Gợi ý trò chơi & Sinh hoạt]\`.
+- **Chiến thuật "Gamification":** Ưu tiên biến nội dung dẫn dắt thành trò chơi (Mảnh ghép, Đuổi hình bắt bóng, Quiz nhanh).
 - **Mục tiêu:** Tạo tâm thế hào hứng, kết nối vào chủ đề mới (theo Database).
 - **Yêu cầu:** Viết rõ lời dẫn (Script) của GV để dẫn dắt khéo léo từ trò chơi vào nội dung bài học.
 
 ### 2. HOẠT ĐỘNG KHÁM PHÁ (Formation of Knowledge):
-- **Nội dung:** Dựa trên nội dung **[HĐ Khám phá - Dự kiến]** trong phần "Nghiệp vụ dạy học" của Database.
+- **Nội dung:** Dựa trên nội dung \`[HĐ Khám phá - Dự kiến]\` trong phần "Nghiệp vụ dạy học" của Database.
 - **Triển khai Cột GV (3 lớp thông tin):**
   + **Lớp 1 (Chuyển giao):** Mô tả kỹ thuật cụ thể (VD: "Sử dụng kỹ thuật KWL..."). Viết câu hỏi thảo luận chi tiết.
   + **Lớp 2 (Tổ chức):** Quy định thời gian (phút), cách chia nhóm.
@@ -186,7 +190,7 @@ QUAN TRỌNG: Chỉ trả về JSON.
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia Đánh giá & Thực chiến (Strict Mode - v36.1).
+# VAI TRÒ: Chuyên gia Soạn thảo & Thẩm định (Audit Mode - v38.1).
 
 # PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
 1. **NHIỆM VỤ THỰC CHIẾN (Database):** Sử dụng các yêu cầu dưới đây để thiết kế hoạt động luyện tập và vận dụng.
@@ -215,9 +219,11 @@ Hãy so sánh chủ đề của "PDF cũ" và "Dữ liệu Chuẩn".
 
 # NGUYÊN TẮC "BƠM PHỒNG" (INFLATION - VIẾT DÀI & SÂU):
 
-### 1. HOẠT ĐỘNG LUYỆN TẬP (Practice):
-- **Cột GV (Lớp 3 - Tình huống giả định):** Bắt buộc sáng tác một **Tình huống giả định (Case Study)** chi tiết liên quan đến chủ đề bài học, dài ít nhất 150 chữ. Tình huống phải có nhân vật, có mâu thuẫn cần giải quyết.
-- **Cột HS (Sản phẩm dự kiến):** Liệt kê ít nhất **3 phương án** giải quyết tình huống (Phương án tối ưu, Phương án sáng tạo, Phương án thiếu sót).
+### 1. HOẠT ĐỘNG LUYỆN TẬP (Practice - Linh hoạt theo Database):
+- rà soát \`[HĐ Luyện tập]\` từ Database:
+  - **Trường hợp 1 (HĐ lao động/thực hành/ngoại khóa):** Nếu nội dung là dọn dẹp, trồng cây, biểu diễn nghệ thuật... -> **HÃY VIẾT KẾ HOẠCH TỔ CHỨC CHI TIẾT** (Phân công, dụng cụ, các bước thực hiện tại hiện trường).
+  - **Trường hợp 2 (HĐ tư duy/thái độ/xử lý):** Nếu nội dung là hình thành thái độ, rèn luyện hành vi -> **BẮT BUỘC sáng tác một TÌNH HUỐNG GIẢ ĐỊNH (Case Study)** chi tiết liên quan đến chủ đề bài học, dài ít nhất 150 chữ.
+- **Cột HS (Sản phẩm dự kiến):** Liệt kê sản phẩm tương ứng (Phương án xử lý tình huống HOẶC Kết quả thực hành dự kiến).
 
 ### 2. HOẠT ĐỘNG VẬN DỤNG (Application):
 - **Cột GV (Phiếu giao dự án):** Thiết kế một **PHIẾU GIAO NHIỆM VỤ VỀ NHÀ** chuyên nghiệp. Gồm: Tên dự án, Mục tiêu, Các bước thực hiện chi tiết, Hạn nộp và Hình thức báo cáo.
@@ -231,8 +237,8 @@ Hãy so sánh chủ đề của "PDF cũ" và "Dữ liệu Chuẩn".
 
 {
   "luyen_tap": {
-    "cot_gv": "**1. Chuyển giao nhiệm vụ (Kỹ thuật ...):**\\n- GV chia lớp...\\n- **TÌNH HUỐNG GIẢ ĐỊNH (150+ từ):** [Nội dung tình huống chi tiết...]...\\n\\n**2. Tổ chức thực hiện:**\\n- GV quan sát...\\n\\n**3. Dự kiến hỗ trợ:**\\n- Nếu HS bí, GV gợi ý: '...' ",
-    "cot_hs": "**1. Thảo luận & Phân vai:**\\n- ...\\n\\n**2. Sản phẩm dự kiến:**\\n- Phương án 1 (Tối ưu): ...\\n- Phương án 2 (Sáng tạo): ...\\n- Phương án 3 (Hạn chế): ..."
+    "cot_gv": "**1. Chuyển giao nhiệm vụ (Kỹ thuật ...):**\\n- GV chia lớp...\\n- [Nếu là HĐ thực hành: Viết kế hoạch. Nếu là HĐ tư duy: Viết TÌNH HUỐNG GIẢ ĐỊNH 150+ từ]\\n\\n**2. Tổ chức thực hiện:**\\n- GV quan sát...\\n\\n**3. Dự kiến hỗ trợ:**\\n- Nếu HS bí, GV gợi ý: '...' ",
+    "cot_hs": "**1. Thực hiện nhiệm vụ:**\\n- ...\\n\\n**2. Sản phẩm/Kết quả dự kiến:**\\n- [Liệt kê các phương án xử lý (nếu là tình huống) HOẶC kết quả công việc/phiếu học tập (nếu là thực hành)]"
   },
   "van_dung": {
     "cot_gv": "**GIAO DỰ ÁN VỀ NHÀ**\\n\\n**PHIẾU GIAO NHIỆM VỤ:**\\n---------------------------\\n**1. Tên dự án:** ...\\n**2. Mục tiêu:** ...\\n**3. Các bước thực hiện:**\\n- Bước 1: ...\\n- Bước 2: ...\\n**4. Hạn nộp:** Tiết Sinh hoạt lớp tuần sau.\\n---------------------------",
