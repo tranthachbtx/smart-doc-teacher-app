@@ -105,15 +105,27 @@ export async function callAI(
           signal: AbortSignal.timeout(20000)
         });
 
+        const data = await response.json().catch(() => ({}));
+
         if (response.ok) {
-          const json = await response.json();
-          const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
           if (text) return text;
         } else {
-          // CLASSIFIED ERROR HANDLING
-          if (response.status === 403 || response.status === 429) registerKeyFailure(key);
-          if (response.status === 404 || response.status >= 500) registerKeyFailure(proxyUrl);
-          errorLogs.push(`Proxy ${response.status}: ${model}@${version}`);
+          const errMsg = data.error?.message || "";
+          // 429 Limit 0 Detection
+          if (response.status === 429 && errMsg.includes("limit: 0")) {
+            errorLogs.push(`💳 Lỗi 429: Bạn chưa liên kết thẻ VISA vào Google Cloud cho Key ${key.slice(0, 5)}...`);
+            registerKeyFailure(key);
+          } else if (response.status === 403) {
+            errorLogs.push(`🌏 Lỗi 403: Chặn vùng địa lý (Geo-block). Hãy dùng AI Gateway.`);
+            registerKeyFailure(key);
+          } else if (response.status === 404) {
+            // Keep trying next model in pool if 404
+            errorLogs.push(`Model ${model} not found on ${version}`);
+          } else {
+            if (response.status >= 400) registerKeyFailure(key);
+            errorLogs.push(`Proxy ${response.status}: ${errMsg || 'Unknown error'}`);
+          }
         }
       } catch (e: any) {
         errorLogs.push(`Proxy Ex: ${e.message}`);
@@ -134,27 +146,52 @@ export async function callAI(
 
   if (geminiKeys.length === 0) console.warn("[AI-RELAY] ⚠️ All Gemini keys blocked.");
 
+  // EXPANDED MODEL POOL FOR FALLBACK (Fix 404)
+  const modelFallbackPool = [
+    modelName,
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-latest",
+    "gemini-2.0-flash-exp",
+    "gemini-1.5-pro"
+  ];
+
   for (const key of geminiKeys) {
-    try {
-      const { version, model } = getApiConfig(modelName);
-      const url = `https://generativelanguage.googleapis.com/${version}/${model}:generateContent?key=${key}`;
+    // Try each model in the fallback pool for this key
+    for (const currentModel of modelFallbackPool) {
+      try {
+        const { version, model } = getApiConfig(currentModel);
+        const url = `https://generativelanguage.googleapis.com/${version}/${model}:generateContent?key=${key}`;
 
-      const resp = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(geminiBody),
-        signal: AbortSignal.timeout(15000)
-      });
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(geminiBody),
+          signal: AbortSignal.timeout(15000)
+        });
 
-      if (resp.ok) {
-        const json = await resp.json();
-        const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text;
-      } else {
-        if (resp.status === 403 || resp.status === 429) registerKeyFailure(key);
-        errorLogs.push(`Gemini ${resp.status}: ${model}@${version}`);
+        const data = await resp.json().catch(() => ({}));
+
+        if (resp.ok) {
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text;
+        } else {
+          const errMsg = data.error?.message || "";
+          if (resp.status === 429 && errMsg.includes("limit: 0")) {
+            errorLogs.push(`💳 Lỗi 429: Bạn cần liên kết thẻ VISA để mở khóa Key ${key.slice(0, 5)}...`);
+            registerKeyFailure(key);
+            break; // Skip models for this key
+          }
+          if (resp.status === 403 || resp.status === 429) {
+            registerKeyFailure(key);
+            break;
+          }
+          errorLogs.push(`Gemini ${resp.status}: ${model}@${version}`);
+        }
+      } catch (e: any) {
+        errorLogs.push(`Gemini Ex: ${e.message}`);
+        break; // Connection error, try next key
       }
-    } catch (e: any) { errorLogs.push(`Gemini Ex: ${e.message}`); }
+    }
   }
 
   // 3. STRATEGY: GROQ FALLBACK (Stable Free Backup)
