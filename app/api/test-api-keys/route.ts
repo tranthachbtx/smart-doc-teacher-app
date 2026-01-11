@@ -27,59 +27,48 @@ export async function GET(req: NextRequest) {
             if (!key) continue;
             const keyNum = i + 1;
 
-            // Test with stable and latest models
-            const models = [
-                "gemini-1.5-flash",
-                "gemini-1.5-pro",
-                "gemini-2.0-flash-exp"
-            ];
+            // 🔍 MODEL DISCOVERY v43.0: Thay vì đoán, hãy hỏi Google Key này dùng được gì
+            try {
+                const listUrl = `https://generativelanguage.googleapis.com/v1/models?key=${key}`;
+                const listResp = await fetch(listUrl);
+                const listData = await listResp.json();
 
-            for (const model of models) {
-                try {
-                    // DYNAMIC ENDPOINT LOGIC v40.0
-                    const isExperimental = model.includes("2.0") || model.includes("exp");
-                    const version = isExperimental ? "v1beta" : "v1";
-                    const modelId = `models/${model}`;
+                const availableModels = (listData.models || []).map((m: any) => m.name.replace("models/", ""));
 
-                    const url = `https://generativelanguage.googleapis.com/${version}/${modelId}:generateContent?key=${key}`;
-                    const response = await fetch(url, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: "test" }] }]
-                        }),
-                        signal: AbortSignal.timeout(15000)
-                    });
+                // Thử nghiệm model đầu tiên có trong danh sách khả dụng
+                const modelToTest = availableModels.find((m: string) => m.includes("flash")) || availableModels[0] || "gemini-1.5-flash";
 
-                    const result: any = {
-                        key: keyNum,
-                        model: model,
-                        status: response.status,
-                        ok: response.ok,
-                        keyPrefix: key.slice(0, 8) + "..."
-                    };
+                const isExperimental = modelToTest.includes("2.0") || modelToTest.includes("exp");
+                const version = isExperimental ? "v1beta" : "v1";
+                const testUrl = `https://generativelanguage.googleapis.com/${version}/models/${modelToTest}:generateContent?key=${key}`;
 
-                    if (response.ok) {
-                        const data = await response.json();
-                        result.hasResponse = !!data.candidates?.[0]?.content?.parts?.[0]?.text;
-                        console.log(`[API-Test] ✅ Gemini Key ${keyNum} - ${model}: SUCCESS`);
-                    } else {
-                        const errorData = await response.json().catch(() => ({ error: { message: "Không thể nhận diện chi tiết lỗi" } }));
-                        result.error = errorData.error?.message || "Lỗi API không xác định";
-                        console.log(`[API-Test] ❌ Gemini Key ${keyNum} - ${model}: ${response.status}`);
-                    }
+                const testResp = await fetch(testUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "test" }] }] }),
+                    signal: AbortSignal.timeout(10000)
+                });
 
-                    results.gemini.push(result);
+                results.gemini.push({
+                    key: keyNum,
+                    primaryModel: modelToTest,
+                    status: testResp.status,
+                    ok: testResp.ok,
+                    availableCount: availableModels.length,
+                    capabilities: availableModels.slice(0, 5), // Hiện 5 model tiêu biểu
+                    keyPrefix: key.slice(0, 8) + "...",
+                    error: testResp.ok ? null : (await testResp.json().catch(() => ({}))).error?.message
+                });
 
-                } catch (e: any) {
-                    results.gemini.push({
-                        key: keyNum,
-                        model: model,
-                        status: "ERROR",
-                        error: e.message,
-                        keyPrefix: key.slice(0, 8) + "..."
-                    });
-                }
+                console.log(`[API-Test] 🔑 Key ${keyNum} discovered ${availableModels.length} models. Tested: ${modelToTest}`);
+
+            } catch (e: any) {
+                results.gemini.push({
+                    key: keyNum,
+                    status: "ERROR",
+                    error: e.message,
+                    keyPrefix: key.slice(0, 8) + "..."
+                });
             }
         }
 
