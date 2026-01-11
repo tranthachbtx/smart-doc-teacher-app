@@ -43,9 +43,20 @@ function registerKeyFailure(key: string) {
 // Helper to deep clean API keys
 const clean = (k: string | undefined) => k?.trim().replace(/^["']|["']$/g, '') || "";
 
-// --- DYNAMIC ROUTING CONFIGURATION v40.0 ---
+// --- DYNAMIC ROUTING CONFIGURATION v45.0 ---
 function getApiConfig(modelName: string) {
-  const cleanName = modelName.replace("models/", "");
+  let cleanName = modelName.replace("models/", "");
+
+  // CANONICAL ID MAPPING: Fix 404 on v1 endpoint
+  const CANONICAL_MAP: Record<string, string> = {
+    "gemini-1.5-flash": "gemini-1.5-flash-001",
+    "gemini-1.5-pro": "gemini-1.5-pro-001",
+    "gemini-1.0-pro": "gemini-1.0-pro-001"
+  };
+
+  if (CANONICAL_MAP[cleanName]) {
+    cleanName = CANONICAL_MAP[cleanName];
+  }
 
   // Model 2.0 or Experimental MUST use v1beta
   if (cleanName.includes("2.0") || cleanName.includes("exp")) {
@@ -55,7 +66,7 @@ function getApiConfig(modelName: string) {
     };
   }
 
-  // Stable Models (1.5, 1.0) use v1 to avoid 404 mapping errors
+  // Stable Models (1.5, 1.0) use v1 with Canonical ID
   return {
     version: "v1",
     model: `models/${cleanName}`

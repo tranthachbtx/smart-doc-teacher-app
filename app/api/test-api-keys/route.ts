@@ -162,20 +162,21 @@ export async function GET(req: NextRequest) {
         const proxyUrl = process.env.GEMINI_PROXY_URL;
         if (proxyUrl) {
             try {
+                // 🔍 ADAPTIVE PROXY TEST v44.0: Dùng model đã thành công ở trên để test proxy
                 const keyToTest = geminiKeys[0] || "";
-                const modelName = "gemini-1.5-flash";
-                const isExperimental = modelName.includes("2.0") || modelName.includes("exp");
-                const version = isExperimental ? "v1beta" : "v1";
-                const modelId = `models/${modelName}`;
+                const successfulGemini = results.gemini.find(r => r.ok);
+                const modelToUse = successfulGemini?.primaryModel || "gemini-1.5-flash";
 
-                const url = `${proxyUrl.replace(/\/$/, '')}/${version}/${modelId}:generateContent?key=${keyToTest}`;
+                const isExp = modelToUse.includes("2.0") || modelToUse.includes("exp");
+                const ver = isExp ? "v1beta" : "v1";
+                const mid = `models/${modelToUse}`;
+
+                const url = `${proxyUrl.replace(/\/$/, '')}/${ver}/${mid}:generateContent?key=${keyToTest}`;
 
                 const response = await fetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: "test" }] }]
-                    }),
+                    body: JSON.stringify({ contents: [{ parts: [{ text: "test" }] }] }),
                     signal: AbortSignal.timeout(20000)
                 });
 
