@@ -21,7 +21,7 @@ export interface ActionResult<T = any> {
 // --- CORE AI CALLER (ROBUST MULTI-PROVIDER STRATEGY) ---
 export async function callAI(
   prompt: string,
-  modelName = "gemini-2.0-flash",
+  modelName = "gemini-1.5-flash",
   file?: { mimeType: string, data: string },
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
@@ -79,7 +79,7 @@ export async function callAI(
   }
 
   // 3. STRATEGY: GROQ FALLBACK (Highest priority Free Fallback)
-  const groqKey = process.env.GROQ_API_KEY;
+  const groqKey = process.env.GROQ_API_KEY?.trim();
   if (groqKey) {
     try {
       const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -100,7 +100,7 @@ export async function callAI(
   }
 
   // 4. STRATEGY: OPENAI FALLBACK (Last resort - Paid)
-  const openAIKey = process.env.OPENAI_API_KEY;
+  const openAIKey = process.env.OPENAI_API_KEY?.trim();
   if (openAIKey) {
     try {
       const resp = await fetch("https://api.openai.com/v1/chat/completions", {

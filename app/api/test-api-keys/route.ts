@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Helper to clean keys from potential quotes and spaces
+const clean = (k: string | undefined) => k?.trim().replace(/^["']|["']$/g, '') || "";
+
 export async function GET(req: NextRequest) {
     try {
         console.log("[API-Test] 🚀 Starting API key test...");
@@ -11,12 +14,11 @@ export async function GET(req: NextRequest) {
             proxy: null as any
         };
 
-        // Test Gemini Keys
         const geminiKeys = [
             process.env.GEMINI_API_KEY,
             process.env.GEMINI_API_KEY_2,
             process.env.GEMINI_API_KEY_3
-        ].filter(k => k && k.trim());
+        ].filter(k => !!k).map(k => clean(k));
 
         console.log(`[API-Test] 🔑 Testing ${geminiKeys.length} Gemini keys...`);
 
@@ -25,11 +27,11 @@ export async function GET(req: NextRequest) {
             if (!key) continue;
             const keyNum = i + 1;
 
-            // Test with different models - Using stable aliases
+            // Test with stable and latest models
             const models = [
-                "gemini-2.0-flash",
                 "gemini-1.5-flash",
-                "gemini-1.5-pro"
+                "gemini-1.5-pro",
+                "gemini-2.0-flash-exp"
             ];
 
             for (const model of models) {
@@ -77,8 +79,8 @@ export async function GET(req: NextRequest) {
         }
 
         // Test OpenAI
-        const openaiKey = process.env.OPENAI_API_KEY;
-        if (openaiKey && openaiKey.trim()) {
+        const openaiKey = clean(process.env.OPENAI_API_KEY);
+        if (openaiKey) {
             try {
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: "POST",
@@ -105,7 +107,7 @@ export async function GET(req: NextRequest) {
                     results.openai.hasResponse = !!data.choices?.[0]?.message?.content;
                     console.log(`[API-Test] ✅ OpenAI: SUCCESS`);
                 } else {
-                    const errorData = await response.json().catch(() => ({ error: { message: "Không thể nhận diện chi tiết lỗi OpenAI" } }));
+                    const errorData = await response.json().catch(() => ({ error: { message: "Lỗi kết nối hoặc hết số dư OpenAI" } }));
                     results.openai.error = errorData.error?.message || "Lỗi OpenAI không xác định";
                     console.log(`[API-Test] ❌ OpenAI: ${response.status}`);
                 }
@@ -120,8 +122,8 @@ export async function GET(req: NextRequest) {
         }
 
         // Test Groq
-        const groqKey = process.env.GROQ_API_KEY;
-        if (groqKey && groqKey.trim()) {
+        const groqKey = clean(process.env.GROQ_API_KEY);
+        if (groqKey) {
             try {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: "POST",
@@ -148,7 +150,7 @@ export async function GET(req: NextRequest) {
                     results.groq.hasResponse = !!data.choices?.[0]?.message?.content;
                     console.log(`[API-Test] ✅ Groq: SUCCESS`);
                 } else {
-                    const errorData = await response.json().catch(() => ({ error: { message: "Không thể nhận diện chi tiết lỗi Groq" } }));
+                    const errorData = await response.json().catch(() => ({ error: { message: "Lỗi cấu hình hoặc thông số Groq" } }));
                     results.groq.error = errorData.error?.message || "Lỗi Groq không xác định";
                     console.log(`[API-Test] ❌ Groq: ${response.status}`);
                 }
