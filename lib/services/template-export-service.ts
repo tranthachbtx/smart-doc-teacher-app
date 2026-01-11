@@ -11,16 +11,27 @@ const cleaner = TextCleaningService.getInstance();
  * Clean data values for safe injection into docxtemplater.
  * Prevents AI-generated characters from being interpreted as tags.
  */
-const clean = (val: any) => {
-    if (!val) return "...";
-    if (typeof val === 'object') return JSON.stringify(val, null, 2);
+const clean = (val: any): string => {
+    if (val === undefined || val === null) return "...";
+    if (Array.isArray(val)) {
+        return val.map(item => {
+            if (typeof item === 'object') {
+                // Handle complex objects like rubrics or matrix rows
+                return Object.entries(item).map(([k, v]) => `${k}: ${v}`).join(", ");
+            }
+            return String(item);
+        }).join("\n");
+    }
+    if (typeof val === 'object') {
+        return Object.entries(val).map(([k, v]) => `${k}: ${v}`).join("\n");
+    }
     const text = cleaner.cleanFinalOutput(String(val));
     // Neutralize any {{ or }} inside the content to prevent them from being seen as nested tags
     return text.replace(/{{/g, "{ { ").replace(/}}/g, " } } ");
 };
 
 /**
- * �️ SURGICAL TAG REPAIR ENGINE
+ * 🛡️ SURGICAL TAG REPAIR ENGINE
  * Penetrates XML nodes to repair fragmented docxtemplater tags
  */
 const repairTags = (zip: PizZip) => {
@@ -122,14 +133,18 @@ export const TemplateExportService = {
 
             const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true, delimiters: { start: "{{", end: "}}" }, nullGetter: () => "" });
 
+            // FULL SYNC with meeting-prompts.ts
             const data = {
                 thang: new Date().getMonth() + 1,
-                noi_dung_chinh: clean(meeting.noi_dung_chinh || meeting.title || meeting.content),
+                noi_dung_chinh: clean(meeting.noi_dung_chinh || meeting.content),
                 uu_diem: clean(meeting.uu_diem),
                 han_che: clean(meeting.han_che),
-                y_kien: clean(meeting.y_kien_dong_gop),
-                ke_hoach: clean(meeting.ke_hoach_thang_toi),
-                ket_luan: clean(meeting.ket_luan_cuoc_hop || meeting.conclusion)
+                y_kien_dong_gop: clean(meeting.y_kien_dong_gop),
+                y_kien: clean(meeting.y_kien_dong_gop), // Alias
+                ke_hoach_thang_toi: clean(meeting.ke_hoach_thang_toi),
+                ke_hoach: clean(meeting.ke_hoach_thang_toi), // Alias
+                ket_luan_cuoc_hop: clean(meeting.ket_luan_cuoc_hop || meeting.conclusion),
+                ket_luan: clean(meeting.ket_luan_cuoc_hop || meeting.conclusion) // Alias
             };
 
             doc.render(data);
@@ -150,15 +165,20 @@ export const TemplateExportService = {
 
             const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true, delimiters: { start: "{{", end: "}}" }, nullGetter: () => "" });
 
+            // FULL SYNC with ai-prompts.ts (EventSection)
             const data = {
-                ten_ke_hoach: clean(event.ten_ke_hoach || event.title || event.ten_chu_de),
+                ten_chu_de: clean(event.ten_chu_de || event.title || event.ten_ke_hoach),
+                ten_ke_hoach: clean(event.ten_ke_hoach || event.ten_chu_de || event.title), // Alias
                 thoi_gian: clean(event.thoi_gian),
                 dia_diem: clean(event.dia_diem),
                 doi_tuong: clean(event.doi_tuong),
-                muc_tieu: clean(event.muc_tieu),
+                muc_tieu: clean(event.muc_tieu || event.muc_dich_yeu_cau),
+                muc_dich_yeu_cau: clean(event.muc_dich_yeu_cau || event.muc_tieu), // Alias
                 noi_dung: clean(event.noi_dung || event.content),
-                kich_ban: clean(event.kich_ban_chi_tiet),
-                du_toan: clean(event.du_toan_kinh_phi)
+                kich_ban_chi_tiet: clean(event.kich_ban_chi_tiet),
+                kich_ban: clean(event.kich_ban_chi_tiet), // Alias
+                thong_diep_ket_thuc: clean(event.thong_diep_ket_thuc),
+                du_toan_kinh_phi: clean(event.du_toan_kinh_phi)
             };
 
             doc.render(data);
@@ -179,12 +199,19 @@ export const TemplateExportService = {
 
             const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true, delimiters: { start: "{{", end: "}}" }, nullGetter: () => "" });
 
+            // FULL SYNC with ncbh-prompts.ts
             const data = {
                 ten_bai: clean(ncbh.ten_bai || ncbh.title),
+                ly_do_chon: clean(ncbh.ly_do_chon),
+                ly_do: clean(ncbh.ly_do_chon), // Alias
                 muc_tieu: clean(ncbh.muc_tieu || ncbh.objectives),
-                ly_do: clean(ncbh.ly_do_chon),
                 chuoi_hoat_dong: clean(ncbh.chuoi_hoat_dong),
-                bai_hoc: clean(ncbh.bai_hoc_kinh_nghiem)
+                phuong_an_ho_tro: clean(ncbh.phuong_an_ho_tro),
+                chia_se_nguoi_day: clean(ncbh.chia_se_nguoi_day),
+                nhan_xet_nguoi_du: clean(ncbh.nhan_xet_nguoi_du),
+                nguyen_nhan_giai_phap: clean(ncbh.nguyen_nhan_giai_phap),
+                bai_hoc_kinh_nghiem: clean(ncbh.bai_hoc_kinh_nghiem),
+                bai_hoc: clean(ncbh.bai_hoc_kinh_nghiem) // Alias
             };
 
             doc.render(data);
@@ -205,11 +232,17 @@ export const TemplateExportService = {
 
             const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true, delimiters: { start: "{{", end: "}}" }, nullGetter: () => "" });
 
+            // FULL SYNC with assessment-prompts.ts
             const data = {
                 ten_ke_hoach: clean(assessment.ten_ke_hoach || assessment.title),
                 muc_tieu: clean(assessment.muc_tieu),
-                matrix: clean(assessment.matrix),
-                rubric: clean(assessment.rubric_text)
+                noi_dung_nhiem_vu: clean(assessment.noi_dung_nhiem_vu),
+                hinh_thuc_to_chuc: clean(assessment.metadata?.hinh_thuc_to_chuc || (assessment as any).hinh_thuc_to_chuc), // Extracted from result if available
+                ma_tran_dac_ta: clean(assessment.matrix || (assessment as any).ma_tran_dac_ta),
+                matrix: clean(assessment.matrix || (assessment as any).ma_tran_dac_ta), // Alias
+                bang_kiem_rubric: clean(assessment.rubric_text || (assessment as any).bang_kiem_rubric),
+                rubric: clean(assessment.rubric_text || (assessment as any).bang_kiem_rubric), // Alias
+                loi_khuyen: clean(assessment.loi_khuyen)
             };
 
             doc.render(data);
