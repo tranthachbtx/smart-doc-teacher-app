@@ -296,8 +296,14 @@ export function ManualProcessingHub() {
                 // Hoặc nếu nó là dữ liệu có cấu trúc mới hoàn toàn.
                 if (!r[targetKey] || r[targetKey].length < 10) {
                     r[targetKey] = newValue;
-                } else {
+                } else if (r[targetKey] !== newValue) {
                     console.log(`[Merge] Preserving manual edit for ${targetKey}`);
+                    // Chỉ báo Toast nếu dữ liệu khác nhau
+                    toast({
+                        title: "Bảo vệ dữ liệu",
+                        description: `Mục "${targetKey.replace(/_/g, ' ')}" đã được giữ lại bản sửa tay của bạn.`,
+                        variant: "default"
+                    });
                 }
             };
 

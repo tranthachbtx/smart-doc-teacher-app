@@ -139,10 +139,10 @@ export class TextCleaningService {
 
         cleanText = cleanText.substring(objStart, objEnd + 1);
 
-        // 2. Xử lý xuống dòng bên trong JSON string
-        // Thay thế \n trong JSON string (giữa các dấu ngoặc kép) thành marker an toàn
-        // Cảnh báo: Logic này đơn giản hóa, có thể cần cải thiện nếu có nested quotes
-        cleanText = cleanText.replace(/\\n/g, "||LINE_BREAK||");
+        // 2. Xử lý xuống dòng bên trong JSON string (v34.3: Robust Normalization)
+        cleanText = cleanText.replace(/\r\n/g, "\\n")
+            .replace(/\r/g, "\\n")
+            .replace(/\\n/g, "||LINE_BREAK||");
 
         // 3. Vá lỗi dấu phẩy cuối (Trailing commas)
         cleanText = cleanText.replace(/,\s*}/g, '}')

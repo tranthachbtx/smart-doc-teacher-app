@@ -27,6 +27,11 @@ export function LessonResultPreview({ result }: PreviewProps) {
         </div>
     );
 
+    const decodeForPreview = (text: string) => {
+        if (!text) return "";
+        return text.replace(/\|\|LINE_BREAK\|\|/g, "\n");
+    };
+
     const renderActivityTable = (title: string, content1: string, content2: string) => {
         if (!content1 && !content2) return null;
 
@@ -46,10 +51,10 @@ export function LessonResultPreview({ result }: PreviewProps) {
                         <tbody>
                             <tr className="divide-x">
                                 <td className="p-4 text-xs leading-relaxed whitespace-pre-wrap align-top">
-                                    {content1 || <span className="text-rose-300 italic">Thiếu dữ liệu GV</span>}
+                                    {decodeForPreview(content1) || <span className="text-rose-300 italic">Thiếu dữ liệu GV</span>}
                                 </td>
                                 <td className="p-4 text-xs leading-relaxed whitespace-pre-wrap align-top">
-                                    {content2 || <span className="text-rose-300 italic">Thiếu dữ liệu HS</span>}
+                                    {decodeForPreview(content2) || <span className="text-rose-300 italic">Thiếu dữ liệu HS</span>}
                                 </td>
                             </tr>
                         </tbody>
@@ -71,7 +76,7 @@ export function LessonResultPreview({ result }: PreviewProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="text-xs leading-relaxed">
-                            {result.muc_tieu_kien_thuc || "..."}
+                            {decodeForPreview(result.muc_tieu_kien_thuc) || "..."}
                         </CardContent>
                     </Card>
                     <Card className="rounded-3xl border-slate-100 bg-slate-50/50 shadow-none">
@@ -81,8 +86,8 @@ export function LessonResultPreview({ result }: PreviewProps) {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="text-xs leading-relaxed space-y-2">
-                            <p><b>Năng lực:</b> {result.muc_tieu_nang_luc || "..."}</p>
-                            <p><b>Phẩm chất:</b> {result.muc_tieu_pham_chat || "..."}</p>
+                            <p><b>Năng lực:</b> {decodeForPreview(result.muc_tieu_nang_luc) || "..."}</p>
+                            <p><b>Phẩm chất:</b> {decodeForPreview(result.muc_tieu_pham_chat) || "..."}</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -102,14 +107,14 @@ export function LessonResultPreview({ result }: PreviewProps) {
                     {result.shdc && (
                         <div className="p-4 bg-slate-50 rounded-2xl text-xs whitespace-pre-wrap">
                             <h5 className="font-bold mb-2">Sinh hoạt dưới cờ:</h5>
-                            {result.shdc}
+                            {decodeForPreview(result.shdc)}
                         </div>
                     )}
 
                     {result.shl && (
                         <div className="p-4 bg-slate-50 rounded-2xl text-xs whitespace-pre-wrap">
                             <h5 className="font-bold mb-2">Sinh hoạt lớp:</h5>
-                            {result.shl}
+                            {decodeForPreview(result.shl)}
                         </div>
                     )}
                 </div>
@@ -122,11 +127,11 @@ export function LessonResultPreview({ result }: PreviewProps) {
                     <div className="text-xs leading-relaxed space-y-4">
                         <div>
                             <p className="font-bold text-amber-800">Hồ sơ dạy học (AI-written):</p>
-                            <p className="mt-1">{result.ho_so_day_hoc || "Chưa có nội dung phụ lục từ AI."}</p>
+                            <p className="mt-1">{decodeForPreview(result.ho_so_day_hoc) || "Chưa có nội dung phụ lục từ AI."}</p>
                         </div>
                         <div>
                             <p className="font-bold text-amber-800">Hướng dẫn về nhà:</p>
-                            <p className="mt-1">{result.huong_dan_ve_nha || "..."}</p>
+                            <p className="mt-1">{decodeForPreview(result.huong_dan_ve_nha) || "..."}</p>
                         </div>
                     </div>
                 </div>
