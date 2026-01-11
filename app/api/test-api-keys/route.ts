@@ -105,8 +105,8 @@ export async function GET(req: NextRequest) {
                     results.openai.hasResponse = !!data.choices?.[0]?.message?.content;
                     console.log(`[API-Test] ✅ OpenAI: SUCCESS`);
                 } else {
-                    const error = await response.text();
-                    results.openai.error = error.slice(0, 100);
+                    const errorData = await response.json().catch(() => ({ error: { message: "Không thể nhận diện chi tiết lỗi OpenAI" } }));
+                    results.openai.error = errorData.error?.message || "Lỗi OpenAI không xác định";
                     console.log(`[API-Test] ❌ OpenAI: ${response.status}`);
                 }
 
@@ -130,7 +130,7 @@ export async function GET(req: NextRequest) {
                         "Authorization": `Bearer ${groqKey}`
                     },
                     body: JSON.stringify({
-                        model: "llama3-8b-8192",
+                        model: "llama-3.3-70b-versatile",
                         messages: [{ role: "user", content: "test" }],
                         max_tokens: 10
                     }),
@@ -148,8 +148,8 @@ export async function GET(req: NextRequest) {
                     results.groq.hasResponse = !!data.choices?.[0]?.message?.content;
                     console.log(`[API-Test] ✅ Groq: SUCCESS`);
                 } else {
-                    const error = await response.text();
-                    results.groq.error = error.slice(0, 100);
+                    const errorData = await response.json().catch(() => ({ error: { message: "Không thể nhận diện chi tiết lỗi Groq" } }));
+                    results.groq.error = errorData.error?.message || "Lỗi Groq không xác định";
                     console.log(`[API-Test] ❌ Groq: ${response.status}`);
                 }
 

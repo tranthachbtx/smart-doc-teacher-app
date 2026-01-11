@@ -21,35 +21,27 @@ export interface ActionResult<T = any> {
 // --- CORE AI CALLER (ROBUST MULTI-PROVIDER STRATEGY) ---
 export async function callAI(
   prompt: string,
-  modelName = "gemini-2.0-flash", // Upgraded default model
+  modelName = "gemini-2.0-flash",
   file?: { mimeType: string, data: string },
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
-  console.log(`[AI-RELAY] Starting callAI with model: ${modelName}`);
   const errorLogs: string[] = [];
-
-  // 1. Prepare Payload
-  const parts: any[] = [{ text: `${systemContent}\n\nPROMPT:\n${prompt}` }];
-  if (file && file.data) {
-    parts.push({ inlineData: { mimeType: file.mimeType || "application/pdf", data: file.data } });
-  }
   const body = {
-    contents: [{ parts }],
+    contents: [{
+      parts: [
+        { text: `${systemContent}\n\nPROMPT:\n${prompt}` },
+        ...(file?.data ? [{ inlineData: { mimeType: file.mimeType || "application/pdf", data: file.data } }] : [])
+      ]
+    }],
     generationConfig: { temperature: 0.85, maxOutputTokens: 8192 }
   };
 
-  // 2. STRATEGY: PROXY (First priority if configured)
+  // 1. STRATEGY: PROXY
   const proxyUrl = process.env.GEMINI_PROXY_URL;
   if (proxyUrl && !proxyUrl.includes("example.com")) {
     try {
-      console.log(`[AI-RELAY] 🛰️ Attempting Cloudflare Proxy...`);
-      // FIX: Ensure protocol exists
-      const protocol = proxyUrl.startsWith('http') ? '' : 'https://';
-      const fullProxyUrl = `${protocol}${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent`;
-
-      console.log(`[AI-RELAY] Proxy Target: ${fullProxyUrl}`);
-
-      const response = await fetch(fullProxyUrl, {
+      const url = `${proxyUrl.startsWith('http') ? '' : 'https://'}${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent`;
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -58,109 +50,39 @@ export async function callAI(
       if (response.ok) {
         const json = await response.json();
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          console.log("[AI-RELAY] ✅ Proxy SUCCESS");
-          return text;
-        }
-      } else {
-        const errText = await response.text();
-        if (errText.includes("Hello World") || errText.includes("error code: 1020")) {
-          const msg = "Proxy Configuration Error: Endpoint returning default Cloudflare page (Hello World). Check GEMINI_PROXY_URL.";
-          console.error(`[AI-RELAY] ❌ ${msg}`);
-          errorLogs.push(msg);
-        } else {
-          const msg = `Proxy Error: ${response.status} - ${errText.substring(0, 200)}`;
-          console.warn(`[AI-RELAY] ⚠️ ${msg}`);
-          errorLogs.push(msg);
-        }
+        if (text) return text;
       }
-    } catch (e: any) {
-      console.warn(`[AI-RELAY] ⚠️ Proxy failed: ${e.message}`);
-      errorLogs.push(`Proxy Ex: ${e.message}`);
-    }
+    } catch (e: any) { errorLogs.push(`Proxy: ${e.message}`); }
   }
 
-  // 3. STRATEGY: DIRECT GEMINI ROTATION
-  const geminiKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3].filter(k => !!k && k.length > 5);
-  console.log(`[AI-RELAY] Found ${geminiKeys.length} Gemini keys.`);
+  // 2. STRATEGY: GEMINI ROTATION (Free Tier - Random Balanced)
+  let geminiKeys = [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY_2, process.env.GEMINI_API_KEY_3].filter(k => !!k && k.length > 5);
+
+  // Shuffle keys to distribute traffic across potentially different projects/limits
+  geminiKeys = geminiKeys.sort(() => Math.random() - 0.5);
 
   for (let i = 0; i < geminiKeys.length; i++) {
-    const key = geminiKeys[i];
     try {
-      console.log(`[AI-RELAY] 💎 Attempting Direct Gemini Key ${i + 1}/${geminiKeys.length}...`);
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`, {
+      const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKeys[i]}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(20000)
+        signal: AbortSignal.timeout(15000)
       });
-
-      if (response.ok) {
-        const json = await response.json();
+      if (resp.ok) {
+        const json = await resp.json();
         const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          console.log("[AI-RELAY] ✅ Gemini SUCCESS");
-          return text;
-        } else {
-          console.warn(`[AI-RELAY] ⚠️ Gemini Response OK but NO TEXT. Blocked?`, JSON.stringify(json));
-          errorLogs.push(`Gemini No Text: ${JSON.stringify(json).substring(0, 100)}`);
-        }
-      } else {
-        const errText = await response.text();
-        let statusMsg = `Gemini API Error: ${response.status} ${response.statusText}`;
-
-        if (errText.includes("API key was reported as leaked")) {
-          statusMsg = "CRITICAL: API KEY LEAKED & REVOKED by Google. Please rotate keys immediately.";
-          console.error(`[AI-RELAY] 💀 ${statusMsg}`);
-        } else {
-          statusMsg += ` - ${errText.substring(0, 100)}`;
-          if (response.status === 429) statusMsg = "Gemini Quota Exceeded (429)";
-          console.warn(`[AI-RELAY] ⚠️ ${statusMsg}`);
-        }
-        errorLogs.push(`Key ${i + 1}: ${statusMsg}`);
+        if (text) return text;
       }
-    } catch (e: any) {
-      console.warn(`[AI-RELAY] ⚠️ Gemini Key failed: ${e.message}`);
-      errorLogs.push(`Gemini Net/Ex: ${e.message}`);
-    }
+      if (resp.status === 403 || resp.status === 429) continue;
+    } catch (e: any) { errorLogs.push(`Gemini K${i + 1}: ${e.message}`); }
   }
 
-  // 4. STRATEGY: OPENAI FALLBACK
-  const openAIKey = process.env.OPENAI_API_KEY;
-  if (openAIKey) {
-    try {
-      console.log(`[AI-RELAY] 🤖 Falling back to OpenAI...`);
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openAIKey}` },
-        body: JSON.stringify({
-          model: "gpt-4o-mini", // Cost-effective fallback
-          messages: [{ role: "system", content: systemContent }, { role: "user", content: prompt }],
-          temperature: 0.7
-        }),
-        signal: AbortSignal.timeout(25000)
-      });
-      if (response.ok) {
-        const data = await response.json();
-        const text = data.choices[0].message.content || "";
-        if (text) {
-          console.log("[AI-RELAY] ✅ OpenAI SUCCESS");
-          return text;
-        }
-      } else {
-        const errText = await response.text();
-        errorLogs.push(`OpenAI Error: ${response.status} - ${errText.substring(0, 150)}`);
-      }
-    } catch (e: any) { errorLogs.push(`OpenAI Ex: ${e.message}`); }
-  }
-
-  // 5. STRATEGY: GROQ FALLBACK
+  // 3. STRATEGY: GROQ FALLBACK (Highest priority Free Fallback)
   const groqKey = process.env.GROQ_API_KEY;
   if (groqKey) {
     try {
-      console.log(`[AI-RELAY] 🦊 Falling back to Groq...`);
-      // FIX: Use current Llama model, llama3-70b-8192 is decommissioned
-      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${groqKey}` },
         body: JSON.stringify({
@@ -170,23 +92,35 @@ export async function callAI(
         }),
         signal: AbortSignal.timeout(25000)
       });
-      if (response.ok) {
-        const data = await response.json();
-        const text = data.choices[0].message.content || "";
-        if (text) {
-          console.log("[AI-RELAY] ✅ Groq SUCCESS");
-          return text;
-        }
-      } else {
-        const errText = await response.text();
-        errorLogs.push(`Groq Error: ${response.status} - ${errText.substring(0, 150)}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        return data.choices[0].message.content || "";
       }
-    } catch (e: any) { errorLogs.push(`Groq Ex: ${e.message}`); }
+    } catch (e: any) { errorLogs.push(`Groq: ${e.message}`); }
   }
 
-  console.error(`[AI-RELAY] 💀 ALL PROVIDERS FAILED.`);
-  console.error(`[AI-RELAY] Checked: Proxy (${!!proxyUrl}), Gemini Keys (${geminiKeys.length}), OpenAI (${!!openAIKey}), Groq (${!!groqKey})`);
-  throw new Error(`ALL_PROVIDERS_FAILED: ${errorLogs.join(' | ') || 'Unknown errors'}`);
+  // 4. STRATEGY: OPENAI FALLBACK (Last resort - Paid)
+  const openAIKey = process.env.OPENAI_API_KEY;
+  if (openAIKey) {
+    try {
+      const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openAIKey}` },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "system", content: systemContent }, { role: "user", content: prompt }],
+          temperature: 0.7
+        }),
+        signal: AbortSignal.timeout(25000)
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        return data.choices[0].message.content || "";
+      }
+    } catch (e: any) { errorLogs.push(`OpenAI: ${e.message}`); }
+  }
+
+  throw new Error(`ALL_PROVIDERS_FAILED: ${errorLogs.join(' | ')}`);
 }
 
 // --- API WRAPPERS ---
