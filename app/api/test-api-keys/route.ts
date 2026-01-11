@@ -25,11 +25,10 @@ export async function GET(req: NextRequest) {
             if (!key) continue;
             const keyNum = i + 1;
 
-            // Test with different models
+            // Test with different models - Using stable aliases
             const models = [
                 "gemini-2.0-flash",
-                "gemini-1.5-flash-8b",
-                "gemini-1.5-flash-latest",
+                "gemini-1.5-flash",
                 "gemini-1.5-pro"
             ];
 
@@ -42,7 +41,7 @@ export async function GET(req: NextRequest) {
                         body: JSON.stringify({
                             contents: [{ parts: [{ text: "test" }] }]
                         }),
-                        signal: AbortSignal.timeout(5000)
+                        signal: AbortSignal.timeout(15000)
                     });
 
                     const result: any = {
@@ -58,8 +57,8 @@ export async function GET(req: NextRequest) {
                         result.hasResponse = !!data.candidates?.[0]?.content?.parts?.[0]?.text;
                         console.log(`[API-Test] ✅ Gemini Key ${keyNum} - ${model}: SUCCESS`);
                     } else {
-                        const error = await response.text();
-                        result.error = error.slice(0, 100);
+                        const errorData = await response.json().catch(() => ({ error: { message: "Không thể nhận diện chi tiết lỗi" } }));
+                        result.error = errorData.error?.message || "Lỗi API không xác định";
                         console.log(`[API-Test] ❌ Gemini Key ${keyNum} - ${model}: ${response.status}`);
                     }
 
@@ -92,7 +91,7 @@ export async function GET(req: NextRequest) {
                         messages: [{ role: "user", content: "test" }],
                         max_tokens: 10
                     }),
-                    signal: AbortSignal.timeout(5000)
+                    signal: AbortSignal.timeout(20000)
                 });
 
                 results.openai = {
@@ -135,7 +134,7 @@ export async function GET(req: NextRequest) {
                         messages: [{ role: "user", content: "test" }],
                         max_tokens: 10
                     }),
-                    signal: AbortSignal.timeout(5000)
+                    signal: AbortSignal.timeout(20000)
                 });
 
                 results.groq = {
@@ -173,7 +172,7 @@ export async function GET(req: NextRequest) {
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: "test" }] }]
                     }),
-                    signal: AbortSignal.timeout(5000)
+                    signal: AbortSignal.timeout(20000)
                 });
 
                 results.proxy = {
