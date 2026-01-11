@@ -19,8 +19,17 @@ import {
     Database,
     Binary,
     Sparkles,
-    LayoutDashboard
+    LayoutDashboard,
+    Eye
 } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { LessonResultPreview } from './LessonResultPreview';
 import { useToast } from '@/hooks/use-toast';
 import { SmartPromptService } from '@/lib/services/smart-prompt-service';
 import { ContentStructureAnalyzer } from '@/lib/services/content-structure-analyzer';
@@ -252,56 +261,58 @@ export function ManualProcessingHub() {
         }
     };
 
-    // HÀM DÁN THÔNG MINH ELITE (Arch 31.0 - The 3-Pillar Dissection)
-    const handleSmartPaste = (moduleId: string, rawValue: string) => {
+    // HÀM DÁN THÔNG MINH ELITE (Arch 34.0 - Smart Merge & Sanitize)
+    const handleSmartPaste = async (moduleId: string, rawValue: string) => {
         console.log(`[ManualHub] 3. PASTE TRACE: Processing input from ${moduleId}`);
         try {
-            const objStart = rawValue.indexOf('{');
-            const objEnd = rawValue.lastIndexOf('}');
+            const { TextCleaningService } = await import('@/lib/services/text-cleaning-service');
+            const cleaner = TextCleaningService.getInstance();
 
-            if (objStart === -1 || objEnd === -1) {
-                console.error("[ManualHub] 3. BREAKING POINT: No JSON object found in paste.");
-                toast({
-                    title: "Lỗi Định Dạng JSON",
-                    description: "Không tìm thấy khối { } trong nội dung bạn vừa dán. Hãy đảm bảo bạn copy toàn bộ kết quả từ Gemini.",
-                    variant: "destructive"
-                });
-                return;
-            }
+            // 1. SANITIZATION (Kiến trúc v34.0 - Buồng khử trùng)
+            const sanitizedJson = cleaner.sanitizeAIResponse(rawValue);
 
             let data;
             try {
-                // Attempt to fix common JSON errors from LLMs (trailing commas, etc.)
-                const jsonStr = rawValue.substring(objStart, objEnd + 1)
-                    .replace(/,\s*}/g, '}')
-                    .replace(/,\s*]/g, ']');
-                data = JSON.parse(jsonStr);
+                data = JSON.parse(sanitizedJson);
                 console.log("[ManualHub] 3. PARSE SUCCESS:", Object.keys(data));
             } catch (parseErr: any) {
                 console.error("[ManualHub] 3. BREAKING POINT: JSON Parse Error", parseErr);
                 toast({
                     title: "Lỗi Cú Pháp JSON",
-                    description: `Dữ liệu AI trả về bị lỗi định dạng: ${parseErr.message}. Vui lòng kiểm tra lại cấu trúc file.`,
+                    description: `Dữ liệu AI trả về bị lỗi định dạng: ${parseErr.message}. Vui lòng kiểm tra lại kết quả từ AI.`,
                     variant: "destructive"
                 });
                 return;
             }
 
-            let r = { ...(store.lesson.result || {}) } as any;
-            let capturedAny = false;
+            // 2. SMART MERGE (Kiến trúc v34.0 - Chống ghi đè hủy diệt)
+            const currentResult = { ...(store.lesson.result || {}) };
+            let r = { ...currentResult } as any;
 
-            // TYPE 1: FRAMEWORK (Flexible Architecture v33.0 - Supports both Wrapper & Flat)
+            // Helper function for Deep Merging values (preserving manual edits)
+            const mergeValue = (targetKey: string, newValue: any) => {
+                if (!newValue) return;
+                // Nếu User chưa có dữ liệu hoặc dữ liệu mỏng (< 5 chars), ta mới cập nhật
+                // Hoặc nếu nó là dữ liệu có cấu trúc mới hoàn toàn.
+                if (!r[targetKey] || r[targetKey].length < 10) {
+                    r[targetKey] = newValue;
+                } else {
+                    console.log(`[Merge] Preserving manual edit for ${targetKey}`);
+                }
+            };
+
+            // TYPE 1: FRAMEWORK (Flexible Architecture v34.0 - Supports both Wrapper & Flat)
             // Check for wrapper type
             if (data.type === 'framework' && data.data) {
                 const d = data.data;
-                r.muc_tieu_kien_thuc = d.muc_tieu?.kien_thuc;
-                r.muc_tieu_nang_luc = d.muc_tieu?.nang_luc;
-                r.muc_tieu_pham_chat = d.muc_tieu?.pham_chat;
-                r.tich_hop_nls = d.muc_tieu?.nls;
-                r.gv_chuan_bi = d.thiet_bi?.gv;
-                r.hs_chuan_bi = d.thiet_bi?.hs;
-                r.shdc = d.hoat_dong_shdc;
-                r.shl = d.hoat_dong_shl;
+                mergeValue('muc_tieu_kien_thuc', d.muc_tieu?.kien_thuc);
+                mergeValue('muc_tieu_nang_luc', d.muc_tieu?.nang_luc);
+                mergeValue('muc_tieu_pham_chat', d.muc_tieu?.pham_chat);
+                mergeValue('tich_hop_nls', d.muc_tieu?.nls);
+                mergeValue('gv_chuan_bi', d.thiet_bi?.gv);
+                mergeValue('hs_chuan_bi', d.thiet_bi?.hs);
+                mergeValue('shdc', d.hoat_dong_shdc);
+                mergeValue('shl', d.hoat_dong_shl);
                 if (d.ten_bai) r.ten_bai = d.ten_bai;
                 if (d.so_tiet) r.duration = d.so_tiet;
             }
@@ -309,13 +320,13 @@ export function ManualProcessingHub() {
             else if (data.ten_bai || data.muc_tieu_kien_thuc || data.shdc) {
                 if (data.ten_bai) r.ten_bai = data.ten_bai;
                 if (data.so_tiet) r.duration = data.so_tiet;
-                if (data.muc_tieu_kien_thuc) r.muc_tieu_kien_thuc = data.muc_tieu_kien_thuc;
-                if (data.muc_tieu_nang_luc) r.muc_tieu_nang_luc = data.muc_tieu_nang_luc;
-                if (data.muc_tieu_pham_chat) r.muc_tieu_pham_chat = data.muc_tieu_pham_chat;
-                if (data.gv_chuan_bi) r.gv_chuan_bi = data.gv_chuan_bi;
-                if (data.hs_chuan_bi) r.hs_chuan_bi = data.hs_chuan_bi;
-                if (data.shdc) r.shdc = data.shdc;
-                if (data.shl) r.shl = data.shl;
+                mergeValue('muc_tieu_kien_thuc', data.muc_tieu_kien_thuc);
+                mergeValue('muc_tieu_nang_luc', data.muc_tieu_nang_luc);
+                mergeValue('muc_tieu_pham_chat', data.muc_tieu_pham_chat);
+                mergeValue('gv_chuan_bi', data.gv_chuan_bi);
+                mergeValue('hs_chuan_bi', data.hs_chuan_bi);
+                mergeValue('shdc', data.shdc);
+                mergeValue('shl', data.shl);
             }
 
             // TYPE 2 & 3: MAIN ACTIVITIES (FLEXIBLE ARCHITECTURE v34.0 - Flat & Nested)
@@ -334,10 +345,12 @@ export function ManualProcessingHub() {
 
                 // 2. Handle Flat Structure (hoat_dong_khoi_dong_cot_1, hoat_dong_khoi_dong_cot_2)
                 const mapFlatActivity = (prefix: string) => {
-                    if (data[`${prefix}_cot_1`] || data[`${prefix}_cot_2`]) {
-                        r[`${prefix}_cot_1`] = data[`${prefix}_cot_1`];
-                        r[`${prefix}_cot_2`] = data[`${prefix}_cot_2`];
-                        r[prefix] = `HOẠT ĐỘNG\n\n{{cot_1}}\n${data[`${prefix}_cot_1`]}\n{{cot_2}}\n${data[`${prefix}_cot_2`]}`;
+                    const c1 = data[`${prefix}_cot_1`];
+                    const c2 = data[`${prefix}_cot_2`];
+                    if (c1 || c2) {
+                        mergeValue(`${prefix}_cot_1`, c1);
+                        mergeValue(`${prefix}_cot_2`, c2);
+                        r[prefix] = `HOẠT ĐỘNG\n\n{{cot_1}}\n${r[`${prefix}_cot_1`]}\n{{cot_2}}\n${r[`${prefix}_cot_2`]}`;
                     }
                 };
 
@@ -466,6 +479,30 @@ export function ManualProcessingHub() {
                             <p className="font-black text-base text-amber-800 tracking-tighter">Chuẩn 5512</p>
                         </div>
                     </Button>
+
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="h-24 rounded-3xl bg-indigo-50/50 border-2 border-indigo-200 text-indigo-900 gap-4 hover:bg-indigo-100 transition-colors"
+                            >
+                                <Eye className="w-8 h-8 text-indigo-600" />
+                                <div className="text-left">
+                                    <p className="text-[10px] uppercase font-black opacity-50 px-1 bg-indigo-200/50 rounded">X-RAY VIEW</p>
+                                    <p className="font-black text-base text-indigo-800 tracking-tighter">Bản xem trước</p>
+                                </div>
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-5xl rounded-[3rem] p-8">
+                            <DialogHeader>
+                                <DialogTitle className="text-2xl font-black text-slate-900 flex items-center gap-3">
+                                    <Eye className="w-8 h-8 text-indigo-600" />
+                                    GIÁO ÁN X-RAY PREVIEW v34.0
+                                </DialogTitle>
+                            </DialogHeader>
+                            <LessonResultPreview result={lesson.result} />
+                        </DialogContent>
+                    </Dialog>
                 </div>
 
                 {detectedTopicName && detectedTopicName !== lessonAutoFilledTheme && (

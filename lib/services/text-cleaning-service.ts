@@ -119,6 +119,38 @@ export class TextCleaningService {
             // 4. Chuẩn hóa khoảng trắng
             .replace(/[ \t]+/g, " ")
             .replace(/\n\s*\n\s*\n+/g, "\n\n")
+            .replace(/\|\|LINE_BREAK\|\|/g, "\n") // Fix mapping back for export
             .trim();
+    }
+
+    /**
+     * 🧪 SANITIZE AI RESPONSE v34.0
+     * Buồng khử trùng dữ liệu trước khi parse JSON.
+     */
+    public sanitizeAIResponse(rawText: string): string {
+        if (!rawText) return "{}";
+
+        let cleanText = rawText;
+
+        // 1. Tìm khối JSON (Tìm { đầu tiên và } cuối cùng)
+        const objStart = cleanText.indexOf('{');
+        const objEnd = cleanText.lastIndexOf('}');
+        if (objStart === -1 || objEnd === -1) return "{}";
+
+        cleanText = cleanText.substring(objStart, objEnd + 1);
+
+        // 2. Xử lý xuống dòng bên trong JSON string
+        // Thay thế \n trong JSON string (giữa các dấu ngoặc kép) thành marker an toàn
+        // Cảnh báo: Logic này đơn giản hóa, có thể cần cải thiện nếu có nested quotes
+        cleanText = cleanText.replace(/\\n/g, "||LINE_BREAK||");
+
+        // 3. Vá lỗi dấu phẩy cuối (Trailing commas)
+        cleanText = cleanText.replace(/,\s*}/g, '}')
+            .replace(/,\s*]/g, ']');
+
+        // 4. Khử các ký tự điều khiển (trừ space)
+        cleanText = cleanText.replace(/[\x00-\x1F\x7F-\x9F]/g, " ");
+
+        return cleanText;
     }
 }

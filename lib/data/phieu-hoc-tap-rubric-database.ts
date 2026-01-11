@@ -18,6 +18,7 @@ export interface PhieuHocTap {
     cau_hoi_mau: string[]
   }[]
   luu_y_su_dung: string[]
+  tu_khoa: string[] // TAGS cho Context-Aware Injection
 }
 
 export interface TieuChiRubric {
@@ -37,6 +38,7 @@ export interface RubricDanhGia {
   tieu_chi: TieuChiRubric[]
   cach_tinh_diem: string
   luu_y: string[]
+  tu_khoa: string[] // TAGS cho Context-Aware Injection
 }
 
 // ==================== MẪU PHIẾU HỌC TẬP ====================
@@ -93,6 +95,7 @@ export const MAU_PHIEU_HOC_TAP: PhieuHocTap[] = [
       "Không chấm đúng/sai - đây là công cụ phát triển cá nhân",
       "Khuyến khích HS giữ lại để theo dõi tiến bộ",
     ],
+    tu_khoa: ["bản thân", "nghề nghiệp", "thấu hiểu", "đặc điểm", "tâm lý", "tính cách"],
   },
 
   // Mẫu 2: Phiếu Action (Thực hành xã hội)
@@ -156,6 +159,7 @@ export const MAU_PHIEU_HOC_TAP: PhieuHocTap[] = [
       "Phần 3 cập nhật liên tục trong quá trình",
       "Phần 4 hoàn thành sau khi kết thúc để trình bày",
     ],
+    tu_khoa: ["nhóm", "hợp tác", "sự kiện", "dự án", "cộng đồng", "xã hội", "môi trường", "giao tiếp"],
   },
 
   // Mẫu 3: Phiếu Research (Nghiên cứu tìm hiểu)
@@ -219,6 +223,7 @@ export const MAU_PHIEU_HOC_TAP: PhieuHocTap[] = [
       "Khuyến khích trích dẫn nguồn",
       "Có thể kết hợp với bài thuyết trình",
     ],
+    tu_khoa: ["nghiên cứu", "tìm hiểu", "khảo sát", "thu thập", "dữ liệu", "thông tin", "thị trường"],
   },
 
   // Mẫu 4: Phiếu Planning (Lập kế hoạch cá nhân)
@@ -283,6 +288,7 @@ export const MAU_PHIEU_HOC_TAP: PhieuHocTap[] = [
       "Khuyến khích HS chia sẻ với bạn bè để cam kết",
       "Nhắc HS giữ phiếu để review sau 1 tháng",
     ],
+    tu_khoa: ["kế hoạch", "mục tiêu", "smart", "tài chính", "thời gian", "quản lý", "sắp xếp"],
   },
 ]
 
@@ -333,6 +339,7 @@ export const MAU_RUBRIC: RubricDanhGia[] = [
       "Nên kết hợp với tự đánh giá của học sinh",
       "Cho học sinh xem rubric trước để định hướng",
     ],
+    tu_khoa: ["tự chủ", "tự học", "điều chỉnh", "phản tư", "bản thân", "quản lý cảm xúc"],
   },
 
   // Rubric 2: Đánh giá năng lực giao tiếp và hợp tác
@@ -379,6 +386,7 @@ export const MAU_RUBRIC: RubricDanhGia[] = [
       "Quan sát trong suốt quá trình, không chỉ kết quả cuối",
       "Ghi chú cụ thể hành vi để phản hồi cho học sinh",
     ],
+    tu_khoa: ["giao tiếp", "hợp tác", "nhóm", "xung đột", "lắng nghe", "trình bày"],
   },
 
   // Rubric 3: Đánh giá sản phẩm dự án
@@ -420,10 +428,9 @@ export const MAU_RUBRIC: RubricDanhGia[] = [
     ],
     cach_tinh_diem: "Tổng điểm = (Nội dung x 2 + Cấu trúc + Ứng dụng + Sáng tạo) / 5. Nội dung được tính hệ số 2.",
     luu_y: [
-      "Điều chỉnh tiêu chí theo loại sản phẩm cụ thể",
-      "Có thể thêm tiêu chí đặc thù (VD: kỹ thuật video)",
       "Cho học sinh tự đánh giá trước khi nộp",
     ],
+    tu_khoa: ["sản phẩm", "dự án", "thiết kế", "poster", "video", "thuyết trình", "sáng tạo", "kế hoạch"],
   },
 
   // Rubric 4: Đánh giá quá trình tham gia
@@ -466,10 +473,10 @@ export const MAU_RUBRIC: RubricDanhGia[] = [
     cach_tinh_diem:
       "Tổng điểm = (TC1 + TC2 + TC3 + TC4) / 4. Mức Xuất sắc: 3.5-4, Tốt: 2.5-3.4, Đạt: 1.5-2.4, Chưa đạt: <1.5",
     luu_y: [
-      "Quan sát thường xuyên, ghi chép nhanh",
       "Tránh đánh giá dựa trên ấn tượng chung",
       "Có thể dùng checklist để theo dõi hàng tuần",
     ],
+    tu_khoa: ["thái độ", "tham gia", "chủ động", "nhiệt tình", "kiên trì", "quy định", "sinh hoạt"],
   },
 ]
 
@@ -505,7 +512,27 @@ export function getRubricTheoLoai(loai: RubricDanhGia["loai"]): RubricDanhGia[] 
 export function getRubricTheoHoatDong(tenHoatDong: string): RubricDanhGia[] {
   const tenLower = tenHoatDong.toLowerCase()
   return MAU_RUBRIC.filter((r) =>
-    r.ap_dung_cho.some((hd) => hd.toLowerCase().includes(tenLower) || tenLower.includes(hd.toLowerCase())),
+    r.ap_dung_cho.some((hd) => hd.toLowerCase().includes(tenLower) || tenLower.includes(hd.toLowerCase()))
+  )
+}
+
+/**
+ * Lấy phiếu học tập phù hợp với từ khóa chủ đề (Context-Aware)
+ */
+export function getPhieuHocTapTheoTuKhoa(chuDe: string): PhieuHocTap[] {
+  const textMatches = chuDe.toLowerCase()
+  return MAU_PHIEU_HOC_TAP.filter((p) =>
+    p.tu_khoa.some((tk) => textMatches.includes(tk.toLowerCase()))
+  )
+}
+
+/**
+ * Lấy rubric phù hợp với từ khóa chủ đề (Context-Aware)
+ */
+export function getRubricTheoTuKhoa(chuDe: string): RubricDanhGia[] {
+  const textMatches = chuDe.toLowerCase()
+  return MAU_RUBRIC.filter((r) =>
+    r.tu_khoa.some((tk) => textMatches.includes(tk.toLowerCase()))
   )
 }
 

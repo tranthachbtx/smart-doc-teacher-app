@@ -1,4 +1,4 @@
-import { PHIEU_HOC_TAP_RUBRIC_DATABASE, getPhieuHocTapTheoHoatDong, getRubricTheoHoatDong } from "@/lib/data/phieu-hoc-tap-rubric-database";
+import { PHIEU_HOC_TAP_RUBRIC_DATABASE, getPhieuHocTapTheoHoatDong, getRubricTheoHoatDong, getPhieuHocTapTheoTuKhoa, getRubricTheoTuKhoa } from "@/lib/data/phieu-hoc-tap-rubric-database";
 import { IntegrityService } from './integrity-service';
 import { TextCleaningService } from './text-cleaning-service';
 import {
@@ -510,73 +510,85 @@ export class DocumentExportSystem {
         searchTargets.forEach(target => {
             if (!target.field) return;
 
-            // Truy vấn Phiếu học tập phù hợp
+            // STRATEGY 1: Activity-based search
             const phieuList = getPhieuHocTapTheoHoatDong(target.name);
-            phieuList.forEach(phieu => {
-                if (!foundMaterials.has(phieu.ma)) {
-                    foundMaterials.add(phieu.ma);
-                    blocks.push(new Paragraph({
-                        children: [new TextRun({ text: `\n\nPHỤ LỤC: ${phieu.ten.toUpperCase()} (${phieu.ma})`, bold: true, size: 28 })],
-                        heading: HeadingLevel.HEADING_3
-                    }));
-                    blocks.push(new Paragraph({
-                        children: [new TextRun({ text: `Mô tả: ${phieu.mo_ta}`, italics: true, size: 22 })]
-                    }));
-
-                    phieu.cau_truc.forEach(section => {
-                        blocks.push(new Paragraph({
-                            children: [new TextRun({ text: `\n${section.phan}`, bold: true, size: 24 })],
-                            spacing: { before: 100 }
-                        }));
-                        blocks.push(new Paragraph({
-                            children: [new TextRun({ text: `Hướng dẫn: ${section.huong_dan}`, size: 22 })]
-                        }));
-                        const questions = section.cau_hoi_mau.map(q => new Paragraph({
-                            children: [new TextRun({ text: `- ${q}`, size: 22 })],
-                            bullet: { level: 0 }
-                        }));
-                        blocks.push(...questions);
-                    });
-                    blocks.push(new Paragraph({
-                        children: [new TextRun({ text: `Lưu ý sử dụng: ${phieu.luu_y_su_dung.join('. ')}`, color: "666666", size: 20 })],
-                        spacing: { before: 100 }
-                    }));
-                }
-            });
-
-            // Truy vấn Rubric phù hợp
             const rubricList = getRubricTheoHoatDong(target.name);
-            rubricList.forEach(rubric => {
-                if (!foundMaterials.has(rubric.ma)) {
-                    foundMaterials.add(rubric.ma);
-                    blocks.push(new Paragraph({
-                        children: [new TextRun({ text: `\n\nPHỤ LỤC: ${rubric.ten.toUpperCase()} (${rubric.ma})`, bold: true, size: 28 })],
-                        heading: HeadingLevel.HEADING_3
-                    }));
 
-                    // Render Rubric Table
-                    const tableRows = [
-                        new TableRow({
-                            children: [
-                                this.createTableCell("Tiêu chí", true, "E0E0E0"),
-                                this.createTableCell("Mức 4 (Xuất sắc)", true, "E0E0E0"),
-                                this.createTableCell("Mức 1 (Chưa đạt)", true, "E0E0E0")
-                            ]
-                        }),
-                        ...rubric.tieu_chi.map(tc => new TableRow({
-                            children: [
-                                this.createTableCell(tc.ten, true),
-                                this.createTableCell(tc.muc_4_xuat_sac),
-                                this.createTableCell(tc.muc_1_chua_dat)
-                            ]
-                        }))
-                    ];
-                    blocks.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }));
-                }
-            });
+            this.appendMaterials(blocks, phieuList, rubricList, foundMaterials);
         });
 
+        // STRATEGY 2: Context-Aware (Theme-based) search v34.0
+        const theme = result.ten_bai || result.title || "";
+        if (theme) {
+            console.log(`[ExportSystem] 🧪 Context-Aware Search for: ${theme}`);
+            const themePhieus = getPhieuHocTapTheoTuKhoa(theme);
+            const themeRubrics = getRubricTheoTuKhoa(theme);
+            this.appendMaterials(blocks, themePhieus, themeRubrics, foundMaterials);
+        }
+
         return blocks;
+    }
+
+    private appendMaterials(blocks: any[], phieus: any[], rubrics: any[], foundSet: Set<string>) {
+        phieus.forEach(phieu => {
+            if (!foundSet.has(phieu.ma)) {
+                foundSet.add(phieu.ma);
+                blocks.push(new Paragraph({
+                    children: [new TextRun({ text: `\n\nPHỤ LỤC: ${phieu.ten.toUpperCase()} (${phieu.ma})`, bold: true, size: 28 })],
+                    heading: HeadingLevel.HEADING_3
+                }));
+                blocks.push(new Paragraph({
+                    children: [new TextRun({ text: `Mô tả: ${phieu.mo_ta}`, italics: true, size: 22 })]
+                }));
+
+                phieu.cau_truc.forEach((section: any) => {
+                    blocks.push(new Paragraph({
+                        children: [new TextRun({ text: `\n${section.phan}`, bold: true, size: 24 })],
+                        spacing: { before: 100 }
+                    }));
+                    blocks.push(new Paragraph({
+                        children: [new TextRun({ text: `Hướng dẫn: ${section.huong_dan}`, size: 22 })]
+                    }));
+                    const questions = section.cau_hoi_mau.map((q: string) => new Paragraph({
+                        children: [new TextRun({ text: `- ${q}`, size: 22 })],
+                        bullet: { level: 0 }
+                    }));
+                    blocks.push(...questions);
+                });
+                blocks.push(new Paragraph({
+                    children: [new TextRun({ text: `Lưu ý sử dụng: ${phieu.luu_y_su_dung.join('. ')}`, color: "666666", size: 20 })],
+                    spacing: { before: 100 }
+                }));
+            }
+        });
+
+        rubrics.forEach(rubric => {
+            if (!foundSet.has(rubric.ma)) {
+                foundSet.add(rubric.ma);
+                blocks.push(new Paragraph({
+                    children: [new TextRun({ text: `\n\nPHỤ LỤC: ${rubric.ten.toUpperCase()} (${rubric.ma})`, bold: true, size: 28 })],
+                    heading: HeadingLevel.HEADING_3
+                }));
+
+                const tableRows = [
+                    new TableRow({
+                        children: [
+                            this.createTableCell("Tiêu chí", true, "E0E0E0"),
+                            this.createTableCell("Mức 4 (Xuất sắc)", true, "E0E0E0"),
+                            this.createTableCell("Mức 1 (Chưa đạt)", true, "E0E0E0")
+                        ]
+                    }),
+                    ...rubric.tieu_chi.map((tc: any) => new TableRow({
+                        children: [
+                            this.createTableCell(tc.ten, true),
+                            this.createTableCell(tc.muc_4_xuat_sac),
+                            this.createTableCell(tc.muc_1_chua_dat)
+                        ]
+                    }))
+                ];
+                blocks.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: tableRows }));
+            }
+        });
     }
 
     private createTableCell(text: string, bold = false, fill?: string): TableCell {
