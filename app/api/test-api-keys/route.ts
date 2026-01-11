@@ -1,38 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(req: NextRequest) {
+export async function GET(req: NextRequest) {
     try {
         console.log("[API-Test] 🚀 Starting API key test...");
-        
+
         const results = {
             gemini: [] as any[],
             openai: null as any,
             groq: null as any,
             proxy: null as any
         };
-        
+
         // Test Gemini Keys
         const geminiKeys = [
             process.env.GEMINI_API_KEY,
             process.env.GEMINI_API_KEY_2,
             process.env.GEMINI_API_KEY_3
         ].filter(k => k && k.trim());
-        
+
         console.log(`[API-Test] 🔑 Testing ${geminiKeys.length} Gemini keys...`);
-        
+
         for (let i = 0; i < geminiKeys.length; i++) {
             const key = geminiKeys[i];
             if (!key) continue;
             const keyNum = i + 1;
-            
+
             // Test with different models
             const models = [
                 "gemini-2.0-flash",
-                "gemini-1.5-flash-8b", 
+                "gemini-1.5-flash-8b",
                 "gemini-1.5-flash-latest",
                 "gemini-1.5-pro"
             ];
-            
+
             for (const model of models) {
                 try {
                     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
                         }),
                         signal: AbortSignal.timeout(5000)
                     });
-                    
+
                     const result: any = {
                         key: keyNum,
                         model: model,
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
                         ok: response.ok,
                         keyPrefix: key.slice(0, 8) + "..."
                     };
-                    
+
                     if (response.ok) {
                         const data = await response.json();
                         result.hasResponse = !!data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -62,9 +62,9 @@ export async function POST(req: NextRequest) {
                         result.error = error.slice(0, 100);
                         console.log(`[API-Test] ❌ Gemini Key ${keyNum} - ${model}: ${response.status}`);
                     }
-                    
+
                     results.gemini.push(result);
-                    
+
                 } catch (e: any) {
                     results.gemini.push({
                         key: keyNum,
@@ -76,14 +76,14 @@ export async function POST(req: NextRequest) {
                 }
             }
         }
-        
+
         // Test OpenAI
         const openaiKey = process.env.OPENAI_API_KEY;
         if (openaiKey && openaiKey.trim()) {
             try {
                 const response = await fetch('https://api.openai.com/v1/chat/completions', {
                     method: "POST",
-                    headers: { 
+                    headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${openaiKey}`
                     },
@@ -94,13 +94,13 @@ export async function POST(req: NextRequest) {
                     }),
                     signal: AbortSignal.timeout(5000)
                 });
-                
+
                 results.openai = {
                     status: response.status,
                     ok: response.ok,
                     keyPrefix: openaiKey.slice(0, 8) + "..."
                 };
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     results.openai.hasResponse = !!data.choices?.[0]?.message?.content;
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
                     results.openai.error = error.slice(0, 100);
                     console.log(`[API-Test] ❌ OpenAI: ${response.status}`);
                 }
-                
+
             } catch (e: any) {
                 results.openai = {
                     status: "ERROR",
@@ -119,14 +119,14 @@ export async function POST(req: NextRequest) {
                 };
             }
         }
-        
+
         // Test Groq
         const groqKey = process.env.GROQ_API_KEY;
         if (groqKey && groqKey.trim()) {
             try {
                 const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                     method: "POST",
-                    headers: { 
+                    headers: {
                         "Content-Type": "application/json",
                         "Authorization": `Bearer ${groqKey}`
                     },
@@ -137,13 +137,13 @@ export async function POST(req: NextRequest) {
                     }),
                     signal: AbortSignal.timeout(5000)
                 });
-                
+
                 results.groq = {
                     status: response.status,
                     ok: response.ok,
                     keyPrefix: groqKey.slice(0, 8) + "..."
                 };
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     results.groq.hasResponse = !!data.choices?.[0]?.message?.content;
@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
                     results.groq.error = error.slice(0, 100);
                     console.log(`[API-Test] ❌ Groq: ${response.status}`);
                 }
-                
+
             } catch (e: any) {
                 results.groq = {
                     status: "ERROR",
@@ -162,7 +162,7 @@ export async function POST(req: NextRequest) {
                 };
             }
         }
-        
+
         // Test Proxy
         const proxyUrl = process.env.GEMINI_PROXY_URL;
         if (proxyUrl) {
@@ -175,13 +175,13 @@ export async function POST(req: NextRequest) {
                     }),
                     signal: AbortSignal.timeout(5000)
                 });
-                
+
                 results.proxy = {
                     url: proxyUrl,
                     status: response.status,
                     ok: response.ok
                 };
-                
+
                 if (response.ok) {
                     console.log(`[API-Test] ✅ Proxy: SUCCESS`);
                 } else {
@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
                     results.proxy.error = error.slice(0, 100);
                     console.log(`[API-Test] ❌ Proxy: ${response.status}`);
                 }
-                
+
             } catch (e: any) {
                 results.proxy = {
                     url: proxyUrl,
@@ -198,10 +198,10 @@ export async function POST(req: NextRequest) {
                 };
             }
         }
-        
+
         console.log(`[API-Test] 📊 Test completed`);
         return NextResponse.json(results);
-        
+
     } catch (error: any) {
         console.error("[API-Test] 💥 Error:", error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });

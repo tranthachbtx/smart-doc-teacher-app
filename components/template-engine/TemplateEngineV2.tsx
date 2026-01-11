@@ -565,7 +565,7 @@ export function TemplateEngine() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open('/api/test-api-keys', '_blank')}
+              onClick={() => window.open('/test-keys', '_blank')}
               className="gap-2"
             >
               <Settings className="w-4 h-4" />

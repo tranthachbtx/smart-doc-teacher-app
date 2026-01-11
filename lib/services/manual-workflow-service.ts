@@ -32,7 +32,7 @@ export const ManualWorkflowService = {
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia Thẩm định & Phát triển Chương trình HĐTN, HN 12 (Chuẩn 5512 - v36.0).
+# VAI TRÒ: Chuyên gia Thẩm định & Phát triển Chương trình HĐTN, HN 12 (Chuẩn 5512 - v36.1).
 
 # PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
 1. **DỮ LIỆU CHUẨN (Database):** Là "Mệnh lệnh" tối cao. Mọi mục tiêu, nhiệm vụ phải bám sát dữ liệu này.
@@ -40,12 +40,13 @@ export const ManualWorkflowService = {
 
 # DỮ LIỆU ĐẦU VÀO (INPUT):
 1. **Nhiệm vụ Cốt lõi (Database - ƯU TIÊN 1):**
-- **Yêu cầu cần đạt (YCCĐ):** """${smartData.objectives}"""
-- **Năng lực & Phẩm chất cốt lõi:** """${smartData.studentCharacteristics}"""
-- **Gợi ý SHDC & SHL (Chuẩn SGK):** """${smartData.shdc_shl_suggestions}"""
+- **YCCĐ:** """${smartData.objectives}"""
+- **Năng lực & Phẩm chất:** """${smartData.studentCharacteristics}"""
+- **Gợi ý SHDC & SHL:** """${smartData.shdc_shl_suggestions}"""
 
-2. **Dữ liệu tham khảo (PDF - ƯU TIÊN 2):**
-- Nội dung trích lọc từ PDF cũ: """${JSON.stringify(context.pdfReference || {})}"""
+2. **Dữ liệu tham khảo từ PDF cũ (CHỈ THAM KHẢO - CÓ THỂ SAI CHỦ ĐỀ):**
+*(Lưu ý: Dữ liệu dưới đây được trích xuất tự động từ file PDF cũ. Nó có thể chứa nội dung sai lệch so với chủ đề Database. Hãy áp dụng Quy tắc xử lý mâu thuẫn để lọc bỏ nếu cần thiết)*
+- Nội dung trích lọc: """${JSON.stringify(context.pdfReference || {})}"""
 - Tóm tắt PDF (Raw): """${context.fileSummary.substring(0, 100000)}"""
 
 # NHIỆM VỤ (AUDIT & UPGRADE):
@@ -89,7 +90,7 @@ QUAN TRỌNG: Chỉ trả về JSON.
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Kiến trúc sư Sư phạm (Deep Dive & Constructivism - v36.0).
+# VAI TRÒ: Kiến trúc sư Sư phạm (Deep Dive & Constructivism - v36.2).
 
 # PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
 1. **NHIỆM VỤ CHIẾN LƯỢC (Database):** Bạn phải thiết kế hoạt động dựa trên Database này. Đây là "Nội dung bài học" bắt buộc.
@@ -99,15 +100,17 @@ QUAN TRỌNG: Chỉ trả về JSON.
 1. **Nhiệm vụ Chiến lược (Database - BẮT BUỘC):**
 - **Chủ đề bài học:** ${smartData.topicName}
 - **Nghiệp vụ dạy học (Master Activities):** """
-[HĐ Khởi động]: ${smartData.coreMissions.khoiDong}
-[HĐ Khám phá]: ${smartData.coreMissions.khamPha}
+[HĐ Khởi động - Dự kiến]: ${smartData.coreMissions.khoiDong}
+[HĐ Khám phá - Dự kiến]: ${smartData.coreMissions.khamPha}
 """
+- **Gợi ý trò chơi & Sinh hoạt (Dùng cho Khởi động):** """${smartData.shdc_shl_suggestions}"""
 - **Phương pháp chủ đạo:** """${smartData.pedagogicalNotes}"""
 - **Năng lực số tích hợp:** """${smartData.digitalCompetency}"""
 
-2. **Dữ liệu tham khảo (PDF - THAM KHẢO):**
-- Trích lọc từ PDF: """${JSON.stringify(context.pdfReference || {})}"""
-- Nội dung Raw PDF: """${context.fileSummary.substring(0, 100000)}"""
+2. **Dữ liệu tham khảo từ PDF cũ (CHỈ THAM KHẢO - CÓ THỂ SAI CHỦ ĐỀ):**
+*(Lưu ý: Dữ liệu dưới đây được trích xuất tự động từ file PDF cũ. Nó có thể chứa nội dung sai lệch so với chủ đề Database. Hãy áp dụng Quy tắc xử lý mâu thuẫn để lọc bỏ nếu cần thiết)*
+- Nội dung trích lọc: """${JSON.stringify(context.pdfReference || {})}"""
+- Tóm tắt PDF (Raw): """${context.fileSummary.substring(0, 100000)}"""
 
 # NHIỆM VỤ: Thiết kế Hoạt động 1 (Khởi động) & Hoạt động 2 (Khám phá).
 
@@ -120,14 +123,14 @@ Hãy so sánh chủ đề của "PDF cũ" và "Dữ liệu Chuẩn".
 # NGUYÊN TẮC "MAX CONTENT" (VIẾT DÀI & SÂU):
 Để giáo án đạt chuẩn 5512 cao cấp, hãy tuân thủ công thức mở rộng sau:
 
-### 1. HOẠT ĐỘNG KHỞI ĐỘNG (Warm-up):
-- **Nội dung:** Dựa trên nội dung **[HĐ Khởi động]** trong phần "Nghiệp vụ dạy học" của Database.
+### 1. HOẠT ĐỘNG KHỞI ĐỘNG (Warm-up - Cần vui vẻ, nhẹ nhàng):
+- **Nội dung:** Kết hợp nội dung **[HĐ Khởi động - Dự kiến]** với các ý tưởng từ **[Gợi ý trò chơi & Sinh hoạt]**.
+- **Chiến thuật "Gamification":** Nếu HĐ 1 trong Database quá nặng về kiến thức, hãy biến nó thành một trò chơi (Nhìn hình đoán chữ, Kể chuyện tiếp sức, Đuổi hình bắt bóng) để tạo tâm thế thoải mái.
 - **Mục tiêu:** Tạo tâm thế hào hứng, kết nối vào chủ đề mới (theo Database).
-- **Kỹ thuật:** Sử dụng Video/Trò chơi/Tình huống.
-- **Yêu cầu:** Viết rõ lời dẫn (Script) của GV để dẫn dắt từ hoạt động khởi động vào bài học.
+- **Yêu cầu:** Viết rõ lời dẫn (Script) của GV để dẫn dắt khéo léo từ trò chơi vào nội dung bài học.
 
 ### 2. HOẠT ĐỘNG KHÁM PHÁ (Formation of Knowledge):
-- **Nội dung:** Dựa trên nội dung **[HĐ Khám phá]** trong phần "Nghiệp vụ dạy học" của Database.
+- **Nội dung:** Dựa trên nội dung **[HĐ Khám phá - Dự kiến]** trong phần "Nghiệp vụ dạy học" của Database.
 - **Triển khai Cột GV (3 lớp thông tin):**
   + **Lớp 1 (Chuyển giao):** Mô tả kỹ thuật cụ thể (VD: "Sử dụng kỹ thuật KWL..."). Viết câu hỏi thảo luận chi tiết.
   + **Lớp 2 (Tổ chức):** Quy định thời gian (phút), cách chia nhóm.
@@ -160,7 +163,7 @@ QUAN TRỌNG: Chỉ trả về JSON.
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia Đánh giá & Thực chiến (Strict Mode - v36.0).
+# VAI TRÒ: Chuyên gia Đánh giá & Thực chiến (Strict Mode - v36.1).
 
 # PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
 1. **NHIỆM VỤ THỰC CHIẾN (Database):** Sử dụng các yêu cầu dưới đây để thiết kế hoạt động luyện tập và vận dụng.
@@ -175,9 +178,10 @@ QUAN TRỌNG: Chỉ trả về JSON.
 """
 - **Ngân hàng Rubric chuẩn:** """${smartData.assessmentTools}""" 
 
-2. **Tư liệu tham khảo (PDF - THAM KHẢO):**
-- Trích lọc từ PDF: """${JSON.stringify(context.pdfReference || {})}"""
-- Nội dung Raw PDF: """${context.fileSummary.substring(0, 100000)}"""
+2. **Dữ liệu tham khảo từ PDF cũ (CHỈ THAM KHẢO - CÓ THỂ SAI CHỦ ĐỀ):**
+*(Lưu ý: Dữ liệu dưới đây được trích xuất tự động từ file PDF cũ. Nó có thể chứa nội dung sai lệch so với chủ đề Database. Hãy áp dụng Quy tắc xử lý mâu thuẫn để lọc bỏ nếu cần thiết)*
+- Nội dung trích lọc: """${JSON.stringify(context.pdfReference || {})}"""
+- Tóm tắt PDF (Raw): """${context.fileSummary.substring(0, 100000)}"""
 
 # NHIỆM VỤ: Thiết kế Hoạt động 3 (Luyện tập) & Hoạt động 4 (Vận dụng).
 
