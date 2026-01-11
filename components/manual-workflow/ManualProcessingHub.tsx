@@ -61,6 +61,19 @@ export function ManualProcessingHub() {
             const fullText = processResult.content;
             console.log(`[ManualHub] 1. EXTRACTION SUCCESS: ${fullText.length} chars available on Client.`);
 
+            if (!fullText || fullText.length < 100) {
+                console.error("[ManualHub] 1. BREAKING POINT: Extracted text is too short or empty.");
+                toast({
+                    title: "Lỗi Trích Xuất Dữ Liệu",
+                    description: "Hệ thống không thể đọc được nội dung từ file này (có thể là file ảnh/scan chưa OCR). Vui lòng kiểm tra lại file gốc.",
+                    variant: "destructive",
+                    duration: 10000
+                });
+                setIsAnalyzing(false);
+                setAnalyzingStatus("");
+                return;
+            }
+
             // 2. SMART SLICING: Prepare Header for AI (Server Limit Protection)
             setAnalyzingStatus("🔪 Đang cắt lát dữ liệu thông minh (Smart Slicing)...");
             // Take first 6000 chars for Metadata Analysis (Title, Grade, Objectives usually appear first)
@@ -104,56 +117,76 @@ export function ManualProcessingHub() {
                 };
 
                 setDetectedTopicName(struct.ten_bai);
-                store.updateLessonField('theme', struct.ten_bai);
+
+                // CRITICAL FIX: DO NOT overwrite the selected theme if it's already set 
+                // and differs from the detected one. Instead, just store it in context.
+                const currentTheme = store.lesson.theme;
+                if (!currentTheme || currentTheme === "Chưa chọn chủ đề") {
+                    store.updateLessonField('theme', struct.ten_bai);
+                } else if (currentTheme.toLowerCase() !== struct.ten_bai.toLowerCase()) {
+                    console.warn(`[ManualHub] TOPIC CONFLICT: UI has "${currentTheme}", PDF has "${struct.ten_bai}"`);
+                    toast({
+                        title: "Phát hiện xung đột chủ đề",
+                        description: `Bạn đang chọn "${currentTheme}" nhưng PDF là "${struct.ten_bai}". Hệ thống sẽ ưu tiên chủ đề bạn ĐÃ CHỌN để tra cứu Database.`,
+                        variant: "default",
+                        duration: 10000
+                    });
+                }
+
                 store.updateLessonField('processedContext', {
                     cleanData: cleanStruct,
-                    fullRawText: fullText
+                    fullRawText: fullText,
+                    detectedTheme: struct.ten_bai // Preserve detection for UI display
                 });
 
+                // INITIALIZE RESULT: Only with metadata like Title, but NOT activity content from PDF
                 store.setLessonResult({
                     ...(store.lesson.result || {}),
-                    ...struct
+                    ten_bai: currentTheme || struct.ten_bai,
+                });
+
+                // 5. INJECT DATABASE CONTEXT (Client Side Lookup based on AI Result)
+                setAnalyzingStatus("💉 Tiêm dữ liệu chuyên môn (Database Injection)...");
+                // The existing flow already did some DB lookup, let's ensure we use the AI-detected theme
+                const { CurriculumService } = await import('@/lib/services/curriculum-service');
+                const curriculum = CurriculumService.getInstance();
+                const detectedTheme = struct?.ten_bai || store.lesson.theme;
+
+                // We can now update the Smart Data context
+                // Note: The handleCopyPrompt function will re-fetch SmartData based on the updated theme.
+
+                // 6. PROCESS PREVIEW (Professional Content Processor - Regex on FULL TEXT)
+                setAnalyzingStatus("⚡ Xử lý RegEx trên toàn bộ văn bản (Client Side)...");
+                const { ProfessionalContentProcessor } = await import('@/lib/services/professional-content-processor');
+                const activityContent = ProfessionalContentProcessor.extractActivityContent(fullText);
+
+                // LOGIC REVERSAL: Store PDF optimized content as REFERENCE, not as the RESULT.
+                const pdfReference = {
+                    hoat_dong_khoi_dong: ProfessionalContentProcessor.optimizeForActivity('khoi_dong', activityContent),
+                    hoat_dong_kham_pha: ProfessionalContentProcessor.optimizeForActivity('kham_pha', activityContent),
+                    hoat_dong_luyen_tap: ProfessionalContentProcessor.optimizeForActivity('luyen_tap', activityContent),
+                    hoat_dong_van_dung: ProfessionalContentProcessor.optimizeForActivity('van_dung', activityContent),
+                    shdc: ProfessionalContentProcessor.optimizeForActivity('shdc', activityContent),
+                    shl: ProfessionalContentProcessor.optimizeForActivity('shl', activityContent),
+                };
+
+                store.updateLessonField('processedContext', {
+                    ...(store.lesson.processedContext || {}),
+                    pdfReference: pdfReference
+                });
+
+                // Save manual modules analysis metadata
+                const modules = await ManualWorkflowService.analyzeStructure(
+                    fullText,
+                    JSON.stringify(activityContent)
+                );
+                store.updateLessonField('manualModules', modules);
+
+                toast({
+                    title: `✅ Đã phân tích PDF (Smart Slicing Active)`,
+                    description: `Đã phân tích 6k ký tự đầu trên Server & Xử lý ${fullText.length} ký tự tại Client.`
                 });
             }
-
-            // 5. INJECT DATABASE CONTEXT (Client Side Lookup based on AI Result)
-            setAnalyzingStatus("💉 Tiêm dữ liệu chuyên môn (Database Injection)...");
-            // The existing flow already did some DB lookup, let's ensure we use the AI-detected theme
-            const { CurriculumService } = await import('@/lib/services/curriculum-service');
-            const curriculum = CurriculumService.getInstance();
-            const detectedTheme = struct?.ten_bai || store.lesson.theme;
-
-            // We can now update the Smart Data context
-            // Note: The handleCopyPrompt function will re-fetch SmartData based on the updated theme.
-
-            // 6. PROCESS PREVIEW (Professional Content Processor - Regex on FULL TEXT)
-            setAnalyzingStatus("⚡ Xử lý RegEx trên toàn bộ văn bản (Client Side)...");
-            const { ProfessionalContentProcessor } = await import('@/lib/services/professional-content-processor');
-            const activityContent = ProfessionalContentProcessor.extractActivityContent(fullText); // Process FULL TEXT locally!
-
-            const initialResult: any = {
-                ...(store.lesson.result || {}),
-                ten_bai: file.name.replace('.pdf', ''),
-                hoat_dong_khoi_dong: ProfessionalContentProcessor.optimizeForActivity('khoi_dong', activityContent),
-                hoat_dong_kham_pha: ProfessionalContentProcessor.optimizeForActivity('kham_pha', activityContent),
-                hoat_dong_luyen_tap: ProfessionalContentProcessor.optimizeForActivity('luyen_tap', activityContent),
-                hoat_dong_van_dung: ProfessionalContentProcessor.optimizeForActivity('van_dung', activityContent),
-                shdc: ProfessionalContentProcessor.optimizeForActivity('shdc', activityContent),
-                shl: ProfessionalContentProcessor.optimizeForActivity('shl', activityContent),
-            };
-            store.setLessonResult({ ...initialResult, ...struct });
-
-            // Save manual modules analysis (Regex based)
-            const modules = await ManualWorkflowService.analyzeStructure(
-                fullText, // Analyze FULL TEXT locally
-                JSON.stringify(activityContent)
-            );
-            store.updateLessonField('manualModules', modules);
-
-            toast({
-                title: `✅ Đã phân tích PDF (Smart Slicing Active)`,
-                description: `Đã phân tích 6k ký tự đầu trên Server & Xử lý ${fullText.length} ký tự tại Client.`
-            });
 
         } catch (error: any) {
             console.error("[ManualProcessingHub] Pipeline Error:", error);
@@ -172,6 +205,7 @@ export function ManualProcessingHub() {
     // BƯỚC 2 & 3: COPY SIÊU PROMPT 3 TRỤ CỘT (Arch 31.0)
     const handleCopyPrompt = async (pillarId: string) => {
         try {
+            console.log(`[ManualHub] 2. PROMPT FLOW TRACE: Generating Pillar ${pillarId}`);
             toast({ title: "Đang nén dữ liệu...", description: "Đang tạo Siêu Prompt theo Trụ cột..." });
 
             const smartData = await SmartPromptService.lookupSmartData(lessonGrade, lessonAutoFilledTheme);
@@ -179,15 +213,26 @@ export function ManualProcessingHub() {
             const fullText = processedContext.fullRawText || "";
             const cleanData = processedContext.cleanData;
 
-            // STRATEGIC DECISION: If we have Full Text (> 500 chars), we inject it ALL into the prompt.
-            // This is "Client-Side Assembly" - bypassing server limits.
-            const fileSummaryToUse = fullText.length > 500 ? fullText : (cleanData || "");
+            if (!lessonAutoFilledTheme) {
+                console.warn("[ManualHub] DATA INTEGRITY ALERT: Theme is empty. Prompt will be generic.");
+                toast({ title: "Cảnh báo dữ liệu", description: "Chủ đề bài học đang trống. Prompt có thể không tối ưu.", variant: "destructive" });
+            }
 
-            const context = {
+            // STRATEGIC DECISION: If we have Full Text (> 500 chars), we inject it ALL into the prompt.
+            // SANITIZATION: Clean up characters that break LLM Heredoc or JSON blocks
+            const sanitizedFullText = fullText
+                .replace(/"""/g, "'''")
+                .replace(/\r/g, "");
+
+            const fileSummaryToUse = sanitizedFullText.length > 500 ? sanitizedFullText : (cleanData || "");
+            console.log(`[ManualHub] 2. FLOW: Injecting ${fileSummaryToUse.length} chars of PDF context.`);
+
+            const context: any = {
                 topic: lessonAutoFilledTheme,
                 grade: lessonGrade,
-                fileSummary: fileSummaryToUse, // CRITICAL: Sending 65k chars directly to Clipboard (Browser Memory)
+                fileSummary: fileSummaryToUse,
                 optimizedFileSummary: store.lesson.result || cleanData,
+                pdfReference: processedContext.pdfReference,
                 smartData: smartData
             };
 
@@ -196,22 +241,54 @@ export function ManualProcessingHub() {
             else if (pillarId === 'pillar_2') prompt = await ManualWorkflowService.generatePillar2Prompt(context);
             else if (pillarId === 'pillar_3') prompt = await ManualWorkflowService.generatePillar3Prompt(context);
 
+            if (!prompt) throw new Error("Prompt generation returned EMPTY string.");
+
             await navigator.clipboard.writeText(prompt);
             toast({ title: "Đã Copy Siêu Prompt Trụ Cột!", description: "Dán vào Gemini Pro để lấy kết quả chuyên biệt." });
-        } catch (e) {
-            toast({ title: "Lỗi tạo Prompt", variant: "destructive" });
+            console.log(`[ManualHub] 2. PROMPT SUCCESS: Pillar ${pillarId} copied to clipboard.`);
+        } catch (e: any) {
+            console.error("[ManualHub] PROMPT BREAKING POINT:", e);
+            toast({ title: "Lỗi tạo Prompt", description: e.message, variant: "destructive" });
         }
     };
 
     // HÀM DÁN THÔNG MINH ELITE (Arch 31.0 - The 3-Pillar Dissection)
     const handleSmartPaste = (moduleId: string, rawValue: string) => {
+        console.log(`[ManualHub] 3. PASTE TRACE: Processing input from ${moduleId}`);
         try {
             const objStart = rawValue.indexOf('{');
             const objEnd = rawValue.lastIndexOf('}');
-            if (objStart === -1) return;
 
-            const data = JSON.parse(rawValue.substring(objStart, objEnd + 1));
+            if (objStart === -1 || objEnd === -1) {
+                console.error("[ManualHub] 3. BREAKING POINT: No JSON object found in paste.");
+                toast({
+                    title: "Lỗi Định Dạng JSON",
+                    description: "Không tìm thấy khối { } trong nội dung bạn vừa dán. Hãy đảm bảo bạn copy toàn bộ kết quả từ Gemini.",
+                    variant: "destructive"
+                });
+                return;
+            }
+
+            let data;
+            try {
+                // Attempt to fix common JSON errors from LLMs (trailing commas, etc.)
+                const jsonStr = rawValue.substring(objStart, objEnd + 1)
+                    .replace(/,\s*}/g, '}')
+                    .replace(/,\s*]/g, ']');
+                data = JSON.parse(jsonStr);
+                console.log("[ManualHub] 3. PARSE SUCCESS:", Object.keys(data));
+            } catch (parseErr: any) {
+                console.error("[ManualHub] 3. BREAKING POINT: JSON Parse Error", parseErr);
+                toast({
+                    title: "Lỗi Cú Pháp JSON",
+                    description: `Dữ liệu AI trả về bị lỗi định dạng: ${parseErr.message}. Vui lòng kiểm tra lại cấu trúc file.`,
+                    variant: "destructive"
+                });
+                return;
+            }
+
             let r = { ...(store.lesson.result || {}) } as any;
+            let capturedAny = false;
 
             // TYPE 1: FRAMEWORK (Flexible Architecture v33.0 - Supports both Wrapper & Flat)
             // Check for wrapper type
@@ -322,7 +399,7 @@ export function ManualProcessingHub() {
             console.warn("[ManualHub] Dissection error:", e);
         }
 
-        store.updateLessonField('manualModules', manualModules.map(m =>
+        store.updateLessonField('manualModules', manualModules.map((m: ProcessingModule) =>
             m.id === moduleId ? { ...m, content: rawValue, isCompleted: true } : m
         ));
     };

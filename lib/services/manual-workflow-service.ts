@@ -6,7 +6,8 @@ export interface PromptContext {
   topic: string;
   grade: string;
   fileSummary: string;
-  optimizedFileSummary?: any;
+  optimizedFileSummary?: any; // Selected original result context
+  pdfReference?: any;        // Extracted reference from PDF
   smartData: SmartPromptData;
 }
 
@@ -31,24 +32,21 @@ export const ManualWorkflowService = {
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia Thẩm định & Phát triển Chương trình HĐTN, HN 12 (Chuẩn 5512 - v35.0).
+# VAI TRÒ: Chuyên gia Thẩm định & Phát triển Chương trình HĐTN, HN 12 (Chuẩn 5512 - v36.0).
+
+# PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
+1. **DỮ LIỆU CHUẨN (Database):** Là "Mệnh lệnh" tối cao. Mọi mục tiêu, nhiệm vụ phải bám sát dữ liệu này.
+2. **DỮ LIỆU THAM KHẢO (PDF):** Chỉ dùng để kế thừa phong cách, cách diễn đạt hoặc các tư liệu hay NẾU phù hợp với chủ đề Database.
 
 # DỮ LIỆU ĐẦU VÀO (INPUT):
-1. **Nội dung từ KHBH cũ (PDF):**
-"""
-${context.fileSummary.substring(0, 10000)}
-"""
-- Nội dung SHDC cũ: """${data.noi_dung_shdc || "N/A"}"""
-- Nội dung SHL cũ: """${data.noi_dung_shl || "N/A"}"""
-
-2. **Dữ liệu Chuẩn từ Hệ thống (Database):**
+1. **Nhiệm vụ Cốt lõi (Database - ƯU TIÊN 1):**
 - **Yêu cầu cần đạt (YCCĐ):** """${smartData.objectives}"""
 - **Năng lực & Phẩm chất cốt lõi:** """${smartData.studentCharacteristics}"""
-- **Danh mục Năng lực & Phẩm chất chuẩn (BẮT BUỘC SỬ DỤNG):**
-  + **Năng lực chung:** Tự chủ và tự học, Giao tiếp và hợp tác, Giải quyết vấn đề và sáng tạo.
-  + **Năng lực đặc thù (HĐTN):** Thích ứng với cuộc sống, Thiết kế và tổ chức hoạt động, Định hướng nghề nghiệp.
-  + **Phẩm chất:** Yêu nước, Nhân ái, Chăm chỉ, Trung thực, Trách nhiệm.
 - **Gợi ý SHDC & SHL (Chuẩn SGK):** """${smartData.shdc_shl_suggestions}"""
+
+2. **Dữ liệu tham khảo (PDF - ƯU TIÊN 2):**
+- Nội dung trích lọc từ PDF cũ: """${JSON.stringify(context.pdfReference || {})}"""
+- Tóm tắt PDF (Raw): """${context.fileSummary.substring(0, 100000)}"""
 
 # NHIỆM VỤ (AUDIT & UPGRADE):
 Hãy tái cấu trúc thông tin bài dạy.
@@ -91,25 +89,25 @@ QUAN TRỌNG: Chỉ trả về JSON.
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Kiến trúc sư Sư phạm (Phong cách: Deep Dive & Constructivism - v35.0).
+# VAI TRÒ: Kiến trúc sư Sư phạm (Deep Dive & Constructivism - v36.0).
+
+# PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
+1. **NHIỆM VỤ CHIẾN LƯỢC (Database):** Bạn phải thiết kế hoạt động dựa trên Database này. Đây là "Nội dung bài học" bắt buộc.
+2. **NGỮ LIỆU THAM KHẢO (PDF):** Bạn có thể mổ xẻ PDF để lấy ý tưởng kịch bản, lời thoại, tình huống NẾU PDF đó cùng chủ đề hoặc có thể chuyển đổi sang chủ đề hiện tại.
 
 # DỮ LIỆU ĐẦU VÀO:
-1. **Nội dung PDF cũ (Tham khảo - Cảnh báo sai lệch):**
-"""
-${context.fileSummary.substring(0, 15000)}
-"""
-*(Lưu ý: Dữ liệu PDF này có thể thuộc chủ đề cũ. Chỉ tham khảo phong cách trình bày, KHÔNG lấy nội dung nếu sai chủ đề).*
-
-2. **Dữ liệu CHUẨN từ Database (BẮT BUỘC TUÂN THỦ):**
+1. **Nhiệm vụ Chiến lược (Database - BẮT BUỘC):**
 - **Chủ đề bài học:** ${smartData.topicName}
-- **Nghiệp vụ dạy học (Core Activities):** """
+- **Nghiệp vụ dạy học (Master Activities):** """
 [HĐ Khởi động]: ${smartData.coreMissions.khoiDong}
 [HĐ Khám phá]: ${smartData.coreMissions.khamPha}
 """
-*(Đây là xương sống của HĐ Khám phá. Hãy dùng nội dung [HĐ Khám phá] trong này để thiết kế).*
-
 - **Phương pháp chủ đạo:** """${smartData.pedagogicalNotes}"""
-- **Năng lực số tích hợp:** """${smartData.digitalCompetency}""" (Ưu tiên: Padlet, Mentimeter, Canva).
+- **Năng lực số tích hợp:** """${smartData.digitalCompetency}"""
+
+2. **Dữ liệu tham khảo (PDF - THAM KHẢO):**
+- Trích lọc từ PDF: """${JSON.stringify(context.pdfReference || {})}"""
+- Nội dung Raw PDF: """${context.fileSummary.substring(0, 100000)}"""
 
 # NHIỆM VỤ: Thiết kế Hoạt động 1 (Khởi động) & Hoạt động 2 (Khám phá).
 
@@ -123,6 +121,7 @@ Hãy so sánh chủ đề của "PDF cũ" và "Dữ liệu Chuẩn".
 Để giáo án đạt chuẩn 5512 cao cấp, hãy tuân thủ công thức mở rộng sau:
 
 ### 1. HOẠT ĐỘNG KHỞI ĐỘNG (Warm-up):
+- **Nội dung:** Dựa trên nội dung **[HĐ Khởi động]** trong phần "Nghiệp vụ dạy học" của Database.
 - **Mục tiêu:** Tạo tâm thế hào hứng, kết nối vào chủ đề mới (theo Database).
 - **Kỹ thuật:** Sử dụng Video/Trò chơi/Tình huống.
 - **Yêu cầu:** Viết rõ lời dẫn (Script) của GV để dẫn dắt từ hoạt động khởi động vào bài học.
@@ -161,23 +160,24 @@ QUAN TRỌNG: Chỉ trả về JSON.
     const smartData = context.smartData;
 
     return `
-# VAI TRÒ: Chuyên gia Đánh giá & Phục hình Giáo án (Strict Mode - v35.0).
+# VAI TRÒ: Chuyên gia Đánh giá & Thực chiến (Strict Mode - v36.0).
+
+# PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
+1. **NHIỆM VỤ THỰC CHIẾN (Database):** Sử dụng các yêu cầu dưới đây để thiết kế hoạt động luyện tập và vận dụng.
+2. **TƯ LIỆU THAM KHẢO (PDF):** Sử dụng các bài tập, tình huống cũ trong PDF để nâng cấp, cải tiến NẾU phù hợp.
 
 # DỮ LIỆU ĐẦU VÀO:
-1. **Nội dung PDF cũ (Tham khảo - Cảnh báo sai lệch):**
-"""
-${context.fileSummary.substring(0, 15000)}
-"""
-*(Lưu ý: Dữ liệu PDF này có thể thuộc chủ đề cũ. Chỉ tham khảo phong cách trình bày, KHÔNG lấy nội dung nếu sai chủ đề).*
-
-2. **Dữ liệu CHUẨN từ Database (BẮT BUỘC TUÂN THỦ):**
+1. **Nhiệm vụ Thực chiến (Database - BẮT BUỘC):**
 - **Chủ đề chính:** ${smartData.topicName}
 - **Nghiệp vụ dạy học (LT & VD):** """
 [HĐ Luyện tập]: ${smartData.coreMissions.luyenTap}
 [HĐ Vận dụng]: ${smartData.coreMissions.vanDung}
 """
-- **Ngân hàng Rubric chuẩn (BẮT BUỘC SỬ DỤNG):** """${smartData.assessmentTools}""" 
-*(Đặc biệt lưu ý Rubric Giao tiếp & Hợp tác RB-02 nếu có trong dữ liệu).*
+- **Ngân hàng Rubric chuẩn:** """${smartData.assessmentTools}""" 
+
+2. **Tư liệu tham khảo (PDF - THAM KHẢO):**
+- Trích lọc từ PDF: """${JSON.stringify(context.pdfReference || {})}"""
+- Nội dung Raw PDF: """${context.fileSummary.substring(0, 100000)}"""
 
 # NHIỆM VỤ: Thiết kế Hoạt động 3 (Luyện tập) & Hoạt động 4 (Vận dụng).
 
@@ -196,7 +196,7 @@ Hãy so sánh chủ đề của "PDF cũ" và "Dữ liệu Chuẩn".
 - **Cột GV (Phiếu giao dự án):** Thiết kế một **PHIẾU GIAO NHIỆM VỤ VỀ NHÀ** chuyên nghiệp. Gồm: Tên dự án, Mục tiêu, Các bước thực hiện chi tiết, Hạn nộp và Hình thức báo cáo.
 
 ### 3. HỒ SƠ DẠY HỌC (Assessment Tools):
-- Tạo bảng **RUBRIC 4 MỨC ĐỘ** (Xuất sắc - Tốt - Đạt - Chưa đạt). Sử dụng dữ liệu từ "Ngân hàng Rubric chuẩn" để xây dựng các chỉ báo hành vi cụ thể cho hoạt động trên.
+- Tại phần Đánh giá: Sử dụng dữ liệu từ "Ngân hàng Rubric chuẩn" (ưu tiên Rubric Giao tiếp & Hợp tác RB-02 nếu có) để xây dựng bảng tiêu chí chấm điểm 4 mức độ (Xuất sắc - Tốt - Đạt - Chưa đạt) cho hoạt động Luyện tập/Vận dụng.
 
 # YÊU CẦU OUTPUT JSON (Strict Format):
 - Trả về DUY NHẤT một khối JSON.

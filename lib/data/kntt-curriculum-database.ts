@@ -2756,22 +2756,38 @@ export function timChuDeTheoTen(
         ? CHUONG_TRINH_LOP_11
         : CHUONG_TRINH_LOP_12;
 
-  const searchLower = tenHoacTuKhoa.trim().toLowerCase();
-  if (!searchLower) return null;
+  // 0. Pre-process: Remove noise words like "Bài", "Chủ đề", "Tiết" to get the core topic name
+  const noiseWords = [/Bài \d+[:]?/gi, /Chủ đề \d+[:]?/gi, /Tiết \d+[:]?/gi, /Hoạt động trải nghiệm/gi];
+  let cleanSearch = tenHoacTuKhoa.trim();
+  noiseWords.forEach(regex => { cleanSearch = cleanSearch.replace(regex, ''); });
+  const searchLower = cleanSearch.trim().toLowerCase();
 
-  // 1. Prioritize Exact/Partial Name Match (High Confidence)
-  const nameMatch = chuongTrinh.chu_de.find(cd =>
-    cd.ten.toLowerCase().includes(searchLower) ||
-    searchLower.includes(cd.ten.toLowerCase())
+  if (!searchLower || searchLower.length < 2) return null;
+
+  // 1. STRATEGIC RELEVANCE: Exact Name Match (Highest Confidence)
+  const exactMatch = chuongTrinh.chu_de.find(cd =>
+    cd.ten.toLowerCase() === searchLower
   );
-  if (nameMatch) return nameMatch;
+  if (exactMatch) return exactMatch;
 
-  // 2. Fallback to Keyword Search (Lower Confidence)
+  // 2. High Confidence Partial Match (Longer strings only to avoid generic noise)
+  if (searchLower.length > 4) {
+    const partialMatch = chuongTrinh.chu_de.find(cd =>
+      cd.ten.toLowerCase().includes(searchLower) ||
+      searchLower.includes(cd.ten.toLowerCase())
+    );
+    if (partialMatch) return partialMatch;
+  }
+
+  // 3. Last Resort: Keyword Search (Stricter)
   return (
     chuongTrinh.chu_de.find(
       (cd) =>
         cd.tu_khoa_tim_kiem &&
-        cd.tu_khoa_tim_kiem.some((tk) => searchLower.includes(tk.toLowerCase()))
+        cd.tu_khoa_tim_kiem.some((tk) => {
+          const tkLower = tk.toLowerCase();
+          return searchLower === tkLower || (searchLower.length > 5 && searchLower.includes(tkLower));
+        })
     ) || null
   );
 }
