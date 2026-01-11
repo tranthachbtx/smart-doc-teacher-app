@@ -265,21 +265,19 @@ export function TemplateEngine() {
           break;
         case "meeting":
           if (!meeting.result) throw new Error("Chưa có kết quả biên bản để xuất");
-          success = await TemplateExportService.exportMeetingToTemplate(meeting.result);
+          success = await exportSystem.exportMeeting(meeting.result, meeting.month);
           break;
         case "event":
           if (!event.result) throw new Error("Chưa có kết quả kịch bản để xuất");
-          success = await TemplateExportService.exportEventToTemplate(event.result);
+          success = await exportSystem.exportEvent(event.result, { grade: event.grade, month: event.month });
           break;
         case "ncbh":
           if (!ncbh.result) throw new Error("Chưa có kết quả NCBH để xuất");
-          success = await TemplateExportService.exportNCBHToTemplate(ncbh.result);
+          success = await exportSystem.exportNCBH(ncbh.result, { grade: ncbh.grade, month: ncbh.month });
           break;
         case "assessment":
           if (!assessment.result) throw new Error("Chưa có kết quả đánh giá để xuất");
-          // Use uploaded template if available, otherwise default path
-          const templateInput = assessment.template?.data || "/templates/mau-ke-hoach-day-hoc.docx";
-          success = await TemplateExportService.exportAssessmentToTemplate(assessment.result, templateInput);
+          success = await exportSystem.exportAssessmentPlan(assessment.result, { grade: assessment.grade, term: assessment.term });
           break;
         default:
           throw new Error(`Chế độ xuất "${mode}" chưa được hỗ trợ trong phiên bản tinh gọn.`);

@@ -105,6 +105,10 @@ export interface LessonResult {
   blueprint?: any;
   expertGuidance?: string; // Gemini Pro analysis
   expert_instructions?: string; // Legacy compatibility
+  ten_truong?: string;
+  to_chuyen_mon?: string;
+  ten_giao_vien?: string;
+  so_tiet?: string;
 }
 
 export interface SagaTask {

@@ -94,33 +94,91 @@ export class TextCleaningService {
     }
 
     /**
-     * 🧼 CLEAN FINAL OUTPUT
-     * Loại bỏ các marker kỹ thuật [AI-SUGGESTION], [PDF] và dọn dẹp markdown rác.
+     * 🧼 CLEAN FINAL OUTPUT v34.24
+     * Loại bỏ các marker kỹ thuật, meta-comments của AI và các tiêu đề dư thừa.
      */
     public cleanFinalOutput(text: string): string {
         if (!text) return "";
 
-        return text
-            // 1. Loại bỏ các marker kỹ thuật (GIỮ LẠI {{cot_1}}, {{cot_2}} CHO EXPORT SYSTEM)
+        let cleaned = text;
+
+        // 1. Loại bỏ Page Markers và Technical Snippets
+        cleaned = cleaned
+            .replace(/---+\s*Page\s*\d+\s*---+/gi, "") // --- Page 5 ---
+            .replace(/(\()?Trang\s*\d+(\))?/gi, "")     // (Trang 5)
+            .replace(/(\()?Page\s*\d+(\))?/gi, "")      // (Page 5)
+            .replace(/##\s*🏛️\s*(SHDC|SHL|HĐGD|KHÓA|KHTN|HĐTN)\s*\(.*?\)/gi, "") // ## 🏛️ SHDC (DỮ LIỆU TỪ PDF)
+            .replace(/##\s*DỮ LIỆU.*?:\s*(KHỞI ĐỘNG|KHÁM PHÁ|LUYỆN TẬP|VẬN DỤNG)/gi, "")
+            .replace(/##\s*(MỤC TIÊU|HOẠT ĐỘNG|THIẾT BỊ|HỌC LIỆU|PHỤ LỤC|PHÂN TÍCH).*?\(.*?\)/gi, "");
+
+        // 2. Loại bỏ Meta-comments trong ngoặc đơn/kép của AI (Deep Filtering)
+        cleaned = cleaned
+            .replace(/\(DỮ LIỆU TỪ PDF\)/gi, "")
+            .replace(/\(đã lọc từ PDF\)/gi, "")
+            .replace(/\(trích xuất từ PDF\)/gi, "")
+            .replace(/\(theo yêu cầu Database\)/gi, "")
+            .replace(/\(Dữ liệu Database\)/gi, "")
+            .replace(/\(Dự án Database\)/gi, "")
+            .replace(/\(Database chuẩn\)/gi, "")
+            .replace(/\(Script\):?/gi, "")
+            .replace(/\(TÌNH HUỐNG GIẢ ĐỊNG\):?/gi, "")
+            .replace(/\(Case Study\):?/gi, "")
+            .replace(/\(Gamification.*?\):?/gi, "")
+            .replace(/\(Kỹ thuật.*?\):?/gi, "");
+
+        // 3. Loại bỏ các Tiêu đề chương mục đã có sẵn trong file Word (Tránh lặp lại)
+        cleaned = cleaned
+            .replace(/^#+\s*.*?$/gm, (match) => {
+                // Chỉ xóa nếu header chứa các từ khóa hệ thống hoặc trùng lặp 5512
+                if (/(MỤC TIÊU|THIẾT BỊ|TIẾN TRÌNH|HỒ SƠ|HƯỚNG DẪN|SINH HOẠT|HOẠT ĐỘNG \d+)/i.test(match)) {
+                    return "";
+                }
+                return match;
+            })
+            .replace(/^I\.\s*MỤC TIÊU$/gm, "")
+            .replace(/^II\.\s*THIẾT BỊ DẠY HỌC.*?$/gm, "")
+            .replace(/^III\.\s*TIẾN TRÌNH DẠY HỌC$/gm, "")
+            .replace(/^IV\.\s*HỒ SƠ DẠY HỌC$/gm, "")
+            .replace(/^V\.\s*HƯỚNG DẪN VỀ NHÀ$/gm, "")
+            .replace(/^[A-C]\.\s*SINH HOẠT.*?$/gm, "")
+            .replace(/^[A-D]\.\s*HOẠT ĐỘNG GIÁO DỤC.*?$/gm, "")
+            .replace(/^HOẠT ĐỘNG \d+:.*?$/gm, "")
+            // Footer rác
+            .replace(/^TỔ TRƯỞNG CHUYÊN MÔN$/gm, "")
+            .replace(/^NGƯỜI SOẠN$/gm, "")
+            .replace(/^\(Ký và ghi rõ họ tên\)$/gm, "")
+            .replace(/^─────────────────$/gm, "");
+
+        // 4. Các Marker nội bộ (GIỮ LẠI {{cot_1}}, {{cot_2}} cho Export System)
+        cleaned = cleaned
             .replace(/\[AI-SUGGESTION\]/gi, "")
             .replace(/\[PDF\]/gi, "")
             .replace(/\[KHTN\]/gi, "")
-            .replace(/\[HĐTN\]/gi, "")
-            // .replace(/{{cot_1}}/g, "") // DISABLED: Cần giữ để phân cột
-            // .replace(/{{cot_2}}/g, "") // DISABLED: Cần giữ để phân cột
+            .replace(/\[HĐTN\]/gi, "");
 
-            // 2. Sửa lỗi thừa dấu **
+        // 5. Làm sạch Markdown dư thừa và Khoảng trắng
+        cleaned = cleaned
             .replace(/\*\*\s*\*\*/g, "**") // ** ** -> **
             .replace(/\*\*\*\*/g, "**")    // **** -> **
-
-            // 3. Normalize các bullet point
-            .replace(/^[•●○◘◙] /gm, "- ")
-
-            // 4. Chuẩn hóa khoảng trắng
-            .replace(/[ \t]+/g, " ")
-            .replace(/\n\s*\n\s*\n+/g, "\n\n")
-            .replace(/\|\|LINE_BREAK\|\|/g, "\n") // Fix mapping back for export
+            .replace(/^[•●○◘◙] /gm, "- ")   // Normalize bullets
+            .replace(/[ \t]+/g, " ")       // Gộp space
+            .replace(/\|\|LINE_BREAK\|\|/g, "\n")
+            .replace(/\n\s*\n\s*\n+/g, "\n\n") // Giới hạn 2 dòng trống
             .trim();
+
+        // 6. Loại bỏ các dòng chỉ chứa rác hoặc placeholder
+        cleaned = cleaned.split('\n')
+            .filter(line => {
+                const t = line.trim();
+                if (!t) return true;
+                if (/^\.*$/.test(t)) return false; // Chỉ toàn dấu chấm
+                if (/^[-*_\s]*$/.test(t) && t.length > 2) return false; // Chỉ toàn gạch ngang
+                return true;
+            })
+            .join('\n')
+            .trim();
+
+        return cleaned;
     }
 
     /**
@@ -139,17 +197,52 @@ export class TextCleaningService {
 
         cleanText = cleanText.substring(objStart, objEnd + 1);
 
-        // 2. Xử lý xuống dòng bên trong JSON string (v34.3: Robust Normalization)
-        cleanText = cleanText.replace(/\r\n/g, "\\n")
-            .replace(/\r/g, "\\n")
-            .replace(/\\n/g, "||LINE_BREAK||");
+        // 2. Chuẩn hóa xuống dòng sơ bộ thành \n
+        cleanText = cleanText.replace(/\r\n/g, "\n")
+            .replace(/\r/g, "\n");
 
-        // 3. Vá lỗi dấu phẩy cuối (Trailing commas)
+        // 3. STATE-AWARE SANITIZER v2 (v34.6): Xử lý Nested Quotes
+        let result = "";
+        let insideString = false;
+
+        for (let i = 0; i < cleanText.length; i++) {
+            const char = cleanText[i];
+
+            if (char === '"') {
+                // Kiểm tra xem đây có phải là quote của JSON structure không
+                const before = cleanText.substring(Math.max(0, i - 10), i).trim();
+                const after = cleanText.substring(i + 1, i + 10).trim();
+
+                const isStructural =
+                    (!insideString && (before.endsWith('{') || before.endsWith(',') || before === "")) || // Bắt đầu Key
+                    (insideString && after.startsWith(':')) || // Kết thúc Key
+                    (!insideString && before.endsWith(':')) || // Bắt đầu Value
+                    (insideString && (after.startsWith(',') || after.startsWith('}') || after.startsWith(']') || after === "")); // Kết thúc Value
+
+                if (isStructural) {
+                    insideString = !insideString;
+                    result += '"';
+                } else {
+                    // Dấu ngoặc kép lồng trong nội dung -> dùng dấu đơn để an toàn
+                    result += "'";
+                }
+            } else if (char === '\n') {
+                // Nếu đang trong chuỗi, biến xuống dòng thành marker an toàn
+                if (insideString) {
+                    result += "||LINE_BREAK||";
+                } else {
+                    result += "\n";
+                }
+            } else {
+                result += char;
+            }
+        }
+        cleanText = result;
+
+        // 4. Vá lỗi dấu phẩy cuối & Khử ký tự điều khiển
         cleanText = cleanText.replace(/,\s*}/g, '}')
-            .replace(/,\s*]/g, ']');
-
-        // 4. Khử các ký tự điều khiển (trừ space)
-        cleanText = cleanText.replace(/[\x00-\x1F\x7F-\x9F]/g, " ");
+            .replace(/,\s*]/g, ']')
+            .replace(/[\x00-\x1F\x7F-\x9F]/g, " ");
 
         return cleanText;
     }

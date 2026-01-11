@@ -242,7 +242,6 @@ export class ProfessionalContentProcessor {
     if (activity === 'shdc' || activity === 'shl') {
       const data = content[activity as 'shdc' | 'shl'];
       if (data && data.length > 0) {
-        optimized.push(`## 🏛️ ${activity.toUpperCase()} (DỮ LIỆU TỪ PDF)`);
         optimized.push(...data.slice(0, 15));
         return optimized.join('\n');
       }
@@ -259,41 +258,38 @@ export class ProfessionalContentProcessor {
 
     switch (activity) {
       case 'khoi_dong':
-        addSection('## 🎯 MỤC TIÊU KHỞI ĐỘNG', content.khoi_dong.mucTieu);
-        addSection('\n## 🎮 HOẠT ĐỘNG KHỞI ĐỘNG (DỰA TRÊN PDF)', content.khoi_dong.hoatDong);
-        addSection('\n## 🛠️ THIẾT BỊ', content.khoi_dong.thietBi);
+        addSection('## MỤC TIÊU', content.khoi_dong.mucTieu);
+        addSection('\n## NỘI DUNG GỢI Ý', content.khoi_dong.hoatDong);
+        addSection('\n## THIẾT BỊ', content.khoi_dong.thietBi);
         break;
       case 'kham_pha':
-        addSection('## 🎯 MỤC TIÊU KHÁM PHÁ', content.kham_pha.mucTieu);
-        addSection('\n## 📚 KIẾN THỨC CẦN HÌNH THÀNH', content.kham_pha.kiemThuc);
-        addSection('\n## 🔬 HOẠT ĐỘNG KHÁM PHÁ (DỰA TRÊN PDF)', content.kham_pha.hoatDong);
-        addSection('\n## 🛠️ THIẾT BỊ', content.kham_pha.thietBi);
+        addSection('## MỤC TIÊU', content.kham_pha.mucTieu);
+        addSection('\n## KIẾN THỨC CỐT LÕI', content.kham_pha.kiemThuc);
+        addSection('\n## NỘI DUNG GỢI Ý', content.kham_pha.hoatDong);
+        addSection('\n## THIẾT BỊ', content.kham_pha.thietBi);
         break;
       case 'luyen_tap':
-        addSection('## 🎯 MỤC TIÊU LUYỆN TẬP', content.luyen_tap.mucTieu);
-        addSection('\n## 📝 BÀI TẬP LUYỆN TẬP', content.luyen_tap.baiTap);
-        addSection('\n## 🛠️ HOẠT ĐỘNG LUYỆN TẬP (DỰA TRÊN PDF)', content.luyen_tap.hoatDong);
+        addSection('## MỤC TIÊU', content.luyen_tap.mucTieu);
+        addSection('\n## BÀI TẬP', content.luyen_tap.baiTap);
+        addSection('\n## NỘI DUNG GỢI Ý', content.luyen_tap.hoatDong);
         break;
       case 'van_dung':
-        addSection('## 🎯 MỤC TIÊU VẬN DỤNG', content.van_dung.mucTieu);
-        addSection('\n## 🚀 DỰ ÁN VẬN DỤNG', content.van_dung.duAn);
-        addSection('\n## 🌟 HOẠT ĐỘNG VẬN DỤNG (DỰA TRÊN PDF)', content.van_dung.hoatDong);
+        addSection('## MỤC TIÊU', content.van_dung.mucTieu);
+        addSection('\n## DỰ ÁN', content.van_dung.duAn);
+        addSection('\n## NỘI DUNG GỢI Ý', content.van_dung.hoatDong);
         break;
       case 'setup':
-        optimized.push('## 🏗️ THÔNG TIN CỐT LÕI (Từ PDF)');
         addSection('MỤC TIÊU: ', universalObjectives);
         if (content.learningAssets.length > 0) {
           optimized.push(`- Học liệu: ${content.learningAssets.join(', ')}`);
         }
         break;
       case 'appendix':
-        optimized.push('## 📑 PHỤ LỤC & ĐÁNH GIÁ (Từ PDF)');
         addSection('TIÊU CHÍ ĐÁNH GIÁ: ', content.semanticTags.assessment);
         break;
     }
 
     if (content.learningAssets.length > 0 || content.legacyMappingNotes.length > 0) {
-      optimized.push('## 📑 PHÂN TÍCH TÀI LIỆU GỐC (ASSETS & LEGACY)');
       if (content.learningAssets.length > 0) {
         optimized.push(`- Học liệu được nhận diện: ${content.learningAssets.join(', ')}`);
       }

@@ -29,7 +29,15 @@ export function LessonResultPreview({ result }: PreviewProps) {
 
     const decodeForPreview = (text: string) => {
         if (!text) return "";
-        return text.replace(/\|\|LINE_BREAK\|\|/g, "\n");
+        try {
+            // Use the professional cleaner to strip meta-tags and system headers
+            const { TextCleaningService } = require('@/lib/services/text-cleaning-service');
+            const cleaner = TextCleaningService.getInstance();
+            return cleaner.cleanFinalOutput(text);
+        } catch (e) {
+            // Fallback to simple replace if service is not available (should not happen on client)
+            return text.replace(/\|\|LINE_BREAK\|\|/g, "\n");
+        }
     };
 
     const renderActivityTable = (title: string, content1: string, content2: string) => {

@@ -6,37 +6,75 @@ export interface PromptContext {
   topic: string;
   grade: string;
   fileSummary: string;
-  optimizedFileSummary?: any; // Selected original result context
-  pdfReference?: any;        // Extracted reference from PDF
+  optimizedFileSummary?: any;
+  pdfReference?: any;
   smartData: SmartPromptData;
+  auditAnalysis?: any;       // New: Result from AIAuditorService
+  phaseContext?: any;        // New: Segmented phase info
 }
 
 /**
- * 🛠️ MANUAL WORKFLOW SERVICE v35.0 (ELITE ASSEMBLY)
- * Chuyên dụng cho môn HĐTN, HN với quy trình Mapping 1:1 vào Template Word 2 cột.
+ * 🛠️ MANUAL WORKFLOW SERVICE v35.1 (SEGMENTATION ARCHITECTURE)
+ * Chuyên dụng cho môn HĐTN, HN với quy trình "Chia để trị" và "Phê bình sư phạm".
  */
 export const ManualWorkflowService = {
   async analyzeStructure(text: string, analyzedJson?: string): Promise<ProcessingModule[]> {
     return [
-      { id: "pillar_1", title: "Trụ cột 1: Khung & Vệ tinh (Metadata)", type: "setup", prompt: "", content: "", isCompleted: false },
-      { id: "pillar_2", title: "Trụ cột 2: Kiến tạo Tri thức (HĐ 1+2)", type: "khac", prompt: "", content: "", isCompleted: false },
-      { id: "pillar_3", title: "Trụ cột 3: Thực chiến (HĐ 3+4)", type: "khac", prompt: "", content: "", isCompleted: false },
+      { id: "pillar_1", title: "Trụ cột 1: Khung & Vệ tinh (Audit Mode)", type: "setup", prompt: "", content: "", isCompleted: false },
+      { id: "pillar_2", title: "Trụ cột 2: Kiến tạo & Khám phá (Deep)", type: "khac", prompt: "", content: "", isCompleted: false },
+      { id: "pillar_3", title: "Trụ cột 3: Thực chiến & Đánh giá (Premium)", type: "khac", prompt: "", content: "", isCompleted: false },
     ];
   },
 
   /**
-   * 🛑 FAIL FAST VALIDATION
-   * Chứng minh dữ liệu đủ điều kiện trước khi tạo Prompt
+   * 💻 MODULE 2: SEGMENTATION ENGINE
+   * Chia nhỏ bài học dựa trên số tiết để đạt độ dài 60 trang.
    */
+  generateExecutionPlan(so_tiet: string) {
+    const totalPeriods = parseInt(so_tiet.replace(/\D/g, '')) || 3;
+    let phases = [];
+
+    if (totalPeriods < 6) {
+      phases.push({
+        id: "single",
+        name: "Toàn bộ bài học",
+        range: `Tiết 1 - ${totalPeriods}`,
+        focus: "Phát triển toàn diện kiến thức và kỹ năng thực hành.",
+        prompt_type: "STANDARD"
+      });
+    } else {
+      phases.push({
+        id: "phase_1",
+        name: "Giai đoạn 1: Khơi gợi & Khám phá",
+        range: `Tiết 1 - ${Math.ceil(totalPeriods * 0.3)}`,
+        focus: "Tập trung vào Gamification (Khởi động) và Trạm thông tin/Mảnh ghép (Khám phá kiến thức).",
+        prompt_type: "SEGMENTED"
+      });
+      phases.push({
+        id: "phase_2",
+        name: "Giai đoạn 2: Luyện tập & Kỹ năng",
+        range: `Tiết ${Math.ceil(totalPeriods * 0.3) + 1} - ${Math.floor(totalPeriods * 0.7)}`,
+        focus: "Tập trung vào Tình huống giả định (Case Study) và Đóng vai xử lý mâu thuẫn chuyên sâu.",
+        prompt_type: "SEGMENTED"
+      });
+      phases.push({
+        id: "phase_3",
+        name: "Giai đoạn 3: Vận dụng & Đánh giá",
+        range: `Tiết ${Math.floor(totalPeriods * 0.7) + 1} - ${totalPeriods}`,
+        focus: "Tập trung vào Dự án thực tế (Project-based), Tổ chức sự kiện và Rubric đánh giá 4 mức độ.",
+        prompt_type: "SEGMENTED"
+      });
+    }
+    return phases;
+  },
+
   validateContext(context: PromptContext, pillarId: string) {
     const errors: string[] = [];
     if (!context.topic) errors.push("Chủ đề bài học (Topic) đang trống.");
-    if (!context.smartData || !context.smartData.objectives) errors.push("Dữ liệu chuẩn (Database) cho chủ đề này không tồn tại.");
+    if (!context.smartData || !context.smartData.objectives) errors.push("Dữ liệu chuẩn (Database) không tồn tại.");
 
-    if (pillarId !== 'pillar_1') {
-      if (!context.pdfReference || Object.keys(context.pdfReference).length === 0) {
-        errors.push("Không tìm thấy dữ liệu phân tích từ PDF. Vui lòng upload lại file.");
-      }
+    if (pillarId !== 'pillar_1' && (!context.pdfReference || Object.keys(context.pdfReference).length === 0)) {
+      errors.push("Không tìm thấy dữ liệu phân tích từ PDF.");
     }
 
     if (errors.length > 0) {
@@ -45,208 +83,129 @@ export const ManualWorkflowService = {
   },
 
   /**
-   * PROMPT 1: KHUNG & VỆ TINH (RAG: Audit & Upgrade - Database Standard)
+   * PROMPT 1: KHUNG & ĐỊNH HƯỚNG CHIẾN LƯỢC (v39.0 - Chief Architect Mode)
    */
   async generatePillar1Prompt(context: PromptContext): Promise<string> {
     this.validateContext(context, 'pillar_1');
-    const data = context.optimizedFileSummary || {};
-    const smartData = context.smartData;
+    const { smartData, auditAnalysis } = context;
 
     return `
-# VAI TRÒ: Chuyên gia Thẩm định & Phát triển Chương trình HĐTN, HN 12 (Chuẩn 5512 - v38.1).
+# VAI TRÒ: Kiến trúc sư trưởng Chương trình Giáo dục (Liberal Arts & Digital Transformation - v39.0).
+# NHIỆM VỤ: Thiết lập "Bộ não trung tâm" cho giáo án, lột xác hoàn toàn file PDF cũ.
 
-# PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
-1. **DỮ LIỆU CHUẨN (Database):** Là "Mệnh lệnh" tối cao. Mọi mục tiêu, nhiệm vụ phải bám sát dữ liệu này.
-2. **DỮ LIỆU THAM KHẢO (PDF):** Chỉ dùng để kế thừa phong cách, cách diễn đạt hoặc các tư liệu hay NẾU phù hợp với chủ đề Database.
+# DỮ LIỆU ĐẦU VÀO:
+1. **Thông tin bài dạy:** Khối ${context.grade}, Chủ đề: ${context.topic}.
+2. **Database chuẩn MOET:** """${JSON.stringify({
+      objectives: smartData.objectives,
+      characteristics: smartData.studentCharacteristics,
+      shdc_shl: smartData.shdc_shl_suggestions
+    })}"""
+3. **KẾT QUẢ ĐỐI SOÁT & PHÊ BÌNH (Audit):** 
+"""${auditAnalysis ? JSON.stringify(auditAnalysis) : "Chưa có dữ liệu phê bình."}"""
 
-# DỮ LIỆU ĐẦU VÀO (INPUT):
-1. **Nhiệm vụ Cốt lõi (Database - ƯU TIÊN 1):**
-- **YCCĐ:** """${smartData.objectives}"""
-- **Năng lực & Phẩm chất:** """${smartData.studentCharacteristics}"""
-- **Gợi ý SHDC & SHL:** """${smartData.shdc_shl_suggestions}"""
+# YÊU CẦU CHIẾN LƯỢC (CRITICAL):
+1. **Phê bình mạnh mẽ:** Đóng vai Hiệu trưởng khó tính, rà soát PDF cũ và trích thẳng các điểm "lạc hậu", "sơ sài".
+2. **Learning Path (Mạch truyện):** Xác định mô hình sư phạm chủ đạo (VD: Giải quyết vấn đề hoặc 5E).
+3. **Mục tiêu SMART:** Viết lại mục tiêu theo tư duy Khai phóng, tập trung vào Năng lực số và thích ứng xã hội.
+4. **Kịch bản Vệ tinh (SHDC/SHL):** Viết chi tiết Lời dẫn MC truyền cảm hứng (Script), phân công nhiệm vụ cụ thể cho từng lớp/tổ.
 
-2. **Dữ liệu tham khảo từ PDF cũ (CHỈ THAM KHẢO - CÓ THỂ SAI CHỦ ĐỀ):**
-*(Lưu ý: Dữ liệu dưới đây được trích xuất tự động từ file PDF cũ. Nó có thể chứa nội dung sai lệch so với chủ đề Database. Hãy áp dụng Quy tắc xử lý mâu thuẫn để lọc bỏ nếu cần thiết)*
-- Nội dung trích lọc: """${JSON.stringify(context.pdfReference || {})}"""
-- Tóm tắt PDF (Raw): """${context.fileSummary.substring(0, 100000)}"""
-
-# NHIỆM VỤ (AUDIT & UPGRADE):
-Hãy tái cấu trúc thông tin bài dạy.
-1. **Mục tiêu (Audit):**
-   - So sánh PDF cũ với YCCĐ chuẩn.
-   - Viết lại toàn bộ mục tiêu bằng động từ hành động (Action Verbs) mạnh mẽ: "Phân tích", "Thiết kế", "Thực hiện", "Tuyên truyền". Tuyệt đối không dùng "Hiểu/Biết".
-   - **Đặc biệt:** Phải khớp chính xác tên Năng lực & Phẩm chất từ danh mục chuẩn phía trên.
-2. **Thiết bị (Digital Upgrade & Clean-up):**
-   - Bổ sung các công cụ số: Padlet, Canva, Google Forms, Mentimeter.
-   - **🛑 LỌC SẠCH THIẾT BỊ:** Rà soát danh sách thiết bị từ PDF cũ. Nếu thấy thiết bị nào KHÔNG PHÙ HỢP với chủ đề "${smartData.topicName}" (Ví dụ: Tranh ảnh động vật trong bài về Tình bạn), hãy MẠNH DẠN LOẠI BỎ.
-3. **SHDC & SHL (Scripting):**
-   - Viết thành kịch bản tổ chức chi tiết (có lời dẫn MC, phân công cụ thể).
-
-🛑 **QUY TẮC XỬ LÝ MÂU THUẪN (LUẬT ƯU TIÊN):**
-- ƯU TIÊN 100% DATABASE nếu chủ đề trong PDF khác với "${smartData.topicName}".
-
-# YÊU CẦU OUTPUT JSON (Khớp Template Word):
-- Trả về DUY NHẤT một khối JSON. Xuống dòng bằng \\n.
-
+# YÊU CẦU OUTPUT JSON:
 {
+  "ten_truong": "[Tên trường]",
+  "to_chuyen_mon": "[Tổ chuyên môn]",
+  "ten_giao_vien": "[Tên giáo viên]",
   "ten_bai": "${smartData.topicName}",
-  "so_tiet": "03",
-  "muc_tieu_kien_thuc": "- [Động từ hành động] ...\\n- [Động từ hành động] ...",
-  "muc_tieu_nang_luc": "- **Năng lực Giao tiếp và hợp tác:** ...\\n- **Năng lực Thích ứng với cuộc sống:** ...",
-  "muc_tieu_pham_chat": "- **Nhân ái:** ...\\n- **Trách nhiệm:** ...",
-  "gv_chuan_bi": "- Máy tính, Tivi...\\n- [Danh sách thiết bị đã được lọc sạch và nâng cấp]...",
-  "hs_chuan_bi": "- SGK, Smartphone...\\n- [Chuẩn bị nội dung phù hợp chủ đề]...",
-  "shdc": "**Chủ đề:** ...\\n**Hình thức:** ...\\n**Tiến trình:**\\n1. Chào cờ.\\n2. Nhận xét.\\n3. **Hoạt động chủ điểm:** [Kịch bản chi tiết + Lời dẫn MC]...\\n4. Dặn dò.",
-  "shl": "**Chủ đề:** ...\\n**Tiến trình:**\\n1. Sơ kết.\\n2. **Sinh hoạt theo chủ đề:** [Hoạt động thảo luận/trò chơi gắn với bài học]...\\n3. Nhận xét."
+  "so_tiet": "${context.phaseContext ? "Segmented" : "Full"}",
+  "muc_tieu_kien_thuc": "...\\n...",
+  "muc_tieu_nang_luc": "...\\n...",
+  "muc_tieu_pham_chat": "...\\n...",
+  "gv_chuan_bi": "...\\n...",
+  "hs_chuan_bi": "...\\n...",
+  "shdc": "**KỊCH BẢN MC CHI TIẾT:**\\n...",
+  "shl": "**KỊCH BẢN SINH HOẠT LỚP:**\\n..."
 }
 QUAN TRỌNG: Chỉ trả về JSON.
     `.trim();
   },
 
   /**
-   * PROMPT 2: KIẾN TẠO TRI THỨC (RAG: Rewrite & Enrich - Digital Integration)
+   * PROMPT 2: KIẾN TẠO TRI THỨC (v39.0 - Active Learning Script)
    */
   async generatePillar2Prompt(context: PromptContext): Promise<string> {
     this.validateContext(context, 'pillar_2');
-    const data = context.optimizedFileSummary || {};
-    const smartData = context.smartData;
+    const { smartData, auditAnalysis, phaseContext } = context;
 
     return `
-# VAI TRÒ: Kiến trúc sư Sư phạm (Deep Dive & Constructivism - v38.1).
+# VAI TRÒ: Chuyên gia Phương pháp dạy học tích cực (Constructivism Scriptwriter - v39.0).
 
-# PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
-1. **NHIỆM VỤ CHIẾN LƯỢC (Database):** Bạn phải thiết kế hoạt động dựa trên Database này. Đây là "Nội dung bài học" bắt buộc.
-2. **NGỮ LIỆU THAM KHẢO (PDF):** Bạn có thể mổ xẻ PDF để lấy ý tưởng kịch bản, lời thoại, tình huống NẾU PDF đó cùng chủ đề hoặc có thể chuyển đổi sang chủ đề hiện tại.
+# 🎯 PHẠM VI & TRỌNG TÂM:
+- **Giai đoạn:** ${phaseContext ? phaseContext.name : "Khởi động & Khám phá"}
+- **Kỹ thuật bắt buộc:** Gamification (Khởi động) và Kỹ thuật Trạm/Mảnh ghép (Khám phá).
 
-# DỮ LIỆU ĐẦU VÀO:
-1. **Nhiệm vụ Chiến lược (Database - BẮT BUỘC):**
-- **Chủ đề bài học:** ${smartData.topicName}
-- **Nghiệp vụ dạy học (Master Activities):** """
-[HĐ Khởi động - Dự kiến]: ${smartData.coreMissions.khoiDong}
-[HĐ Khám phá - Dự kiến]: ${smartData.coreMissions.khamPha}
-"""
-- **Gợi ý trò chơi & Sinh hoạt (Dùng cho Khởi động):** """${smartData.shdc_shl_suggestions}"""
-- **Phương pháp chủ đạo:** """${smartData.pedagogicalNotes}"""
-- **Năng lực số tích hợp:** """${smartData.digitalCompetency}"""
+# DỮ LIỆU CỐT LÕI (CHỈ LẤY PHẦN KHÁM PHÁ):
+- **Nghiệm vụ dạy học (Database):** """${JSON.stringify({
+      khoi_dong: smartData.coreMissions.khoiDong,
+      kham_pha: smartData.coreMissions.khamPha,
+      notes: smartData.pedagogicalNotes,
+      digital: smartData.digitalCompetency
+    })}"""
+- **Audit PDF cũ:** ${JSON.stringify(auditAnalysis?.phan_tich_chi_tiet?.filter((a: any) => a.tieu_chi === "Phương pháp" || a.tieu_chi === "Tiến trình"))}
 
-2. **Dữ liệu tham khảo từ PDF cũ (CHỈ THAM KHẢO - CÓ THỂ SAI CHỦ ĐỀ):**
-*(Lưu ý: Dữ liệu dưới đây được trích xuất tự động từ file PDF cũ. Nó có thể chứa nội dung sai lệch so với chủ đề Database. Hãy áp dụng Quy tắc xử lý mâu thuẫn để lọc bỏ nếu cần thiết)*
-- Nội dung trích lọc: """${JSON.stringify(context.pdfReference || {})}"""
-- Tóm tắt PDF (Raw): """${context.fileSummary.substring(0, 100000)}"""
+# YÊU CẦU NÂNG CẤP "PERFECT MODE":
+1. **Khởi động (Gamification):** Thiết kế trò chơi có luật chơi, cách tính điểm và lời dẫn bùng nổ.
+2. **Khám phá (Station Rotation/Jigsaw):** 
+   - Chia lớp thành 4 trạm/nhóm. 
+   - **Mô tả chi tiết tài liệu và nhiệm vụ tại từng trạm.** AI hãy viết cụ thể từng phiếu thông tin tại trạm.
+3. **Kịch bản sư phạm (Pedagogical Script):** 
+   - Không chỉ ghi "GV tổ chức", hãy viết lời thoại: **GV: '...' (Hành động, cử chỉ)**.
+   - Viết câu trả lời dự kiến của HS theo 3 hướng: Đúng chuẩn - Sáng tạo - Sai lệch.
 
-# NHIỆM VỤ: Thiết kế Hoạt động 1 (Khởi động) & Hoạt động 2 (Khám phá).
-
-- Nếu PDF nói về chủ đề khác (VD: Môi trường) so với Database (VD: Quan hệ xã hội) -> **HÃY BỎ QUA PDF HOÀN TOÀN.**
-- **Tuyệt đối không tìm cách gượng ép** kết hợp 2 chủ đề.
-- Chỉ sử dụng "Dữ liệu Chuẩn" để sáng tạo nội dung mới.
-
-# CHIẾN LƯỢC TÁI PHÂN PHỐI NỘI DUNG (CONTENT REDISTRIBUTION):
-1. **Khởi động (Warm-up):** Rà soát \`[HĐ Khởi động - Dự kiến]\`. Nếu nội dung này quá nặng (thường là HĐ 1 bị map sai vào Khởi động), hãy:
-   - CHỈ lấy tinh thần hoặc một phần nhỏ để biến thành **Trò chơi/Tình huống** (Sử dụng thêm dữ liệu từ \`Gợi ý trò chơi & Sinh hoạt\`).
-   - Đảm bảo thời lượng chỉ 5-7 phút.
-2. **Khám phá (Discovery):** Toàn bộ nội dung "nặng" và kiến thức lõi của \`HĐ Khởi động - Dự kiến\` (nếu có) phải được đẩy xuống hoặc lồng ghép tinh tế vào phần đầu của **Hoạt động Khám phá**. Tuyệt đối không để mất kiến thức nhưng cũng không để Khởi động quá tải.
-
-# NGUYÊN TẮC "MAX CONTENT" (VIẾT DÀI & SÂU):
-Để giáo án đạt chuẩn 5512 cao cấp, hãy tuân thủ công thức mở rộng sau:
-
-### 1. HOẠT ĐỘNG KHỞI ĐỘNG (Warm-up - Cần vui vẻ, nhẹ nhàng):
-- **Nội dung:** Kết hợp nội dung \`[HĐ Khởi động - Dự kiến]\` với các ý tưởng từ \`[Gợi ý trò chơi & Sinh hoạt]\`.
-- **Chiến thuật "Gamification":** Ưu tiên biến nội dung dẫn dắt thành trò chơi (Mảnh ghép, Đuổi hình bắt bóng, Quiz nhanh).
-- **Mục tiêu:** Tạo tâm thế hào hứng, kết nối vào chủ đề mới (theo Database).
-- **Yêu cầu:** Viết rõ lời dẫn (Script) của GV để dẫn dắt khéo léo từ trò chơi vào nội dung bài học.
-
-### 2. HOẠT ĐỘNG KHÁM PHÁ (Formation of Knowledge):
-- **Nội dung:** Dựa trên nội dung \`[HĐ Khám phá - Dự kiến]\` trong phần "Nghiệp vụ dạy học" của Database.
-- **Triển khai Cột GV (3 lớp thông tin):**
-  + **Lớp 1 (Chuyển giao):** Mô tả kỹ thuật cụ thể (VD: "Sử dụng kỹ thuật KWL..."). Viết câu hỏi thảo luận chi tiết.
-  + **Lớp 2 (Tổ chức):** Quy định thời gian (phút), cách chia nhóm.
-  + **Lớp 3 (Hỗ trợ & Xử lý - BẮT BUỘC):** Viết mục *"Dự kiến khó khăn"*: (VD: "Nếu HS bí ý tưởng, GV gợi ý bằng cách...").
-- **Triển khai Cột HS (Sản phẩm đa chiều):**
-  + Mô tả hành động cụ thể (Di chuyển, Quét mã QR, Thảo luận).
-  + **Sản phẩm dự kiến:** Liệt kê **3 phương án trả lời** (Phương án đúng chuẩn, Phương án sáng tạo, và Phương án còn thiếu sót để GV chỉnh sửa).
-- **Tích hợp Năng lực số:** Bắt buộc có bước HS dùng điện thoại/máy tính (Tra cứu, làm việc trên Padlet/Canva) như Database gợi ý.
-
-# YÊU CẦU OUTPUT JSON (Strict Format):
-- Trả về DUY NHẤT một khối JSON.
-- Xuống dòng = \\n. Không dùng ngoặc kép " trong nội dung (dùng ' thay thế).
-
+# YÊU CẦU OUTPUT JSON:
 {
-  "hoat_dong_khoi_dong_cot_1": "**1. Chuyển giao nhiệm vụ:**\\n- GV tổ chức trò chơi/chiếu video [Tên hoạt động phù hợp chủ đề]...\\n- **Lời dẫn:** '...'\\n\\n**2. Kết luận & Dẫn dắt:**\\n- GV nhận xét...\\n- Dẫn vào bài: '...'",
-  "hoat_dong_khoi_dong_cot_2": "- HS tham gia...\\n- **Cảm nhận/Câu trả lời dự kiến:**\\n  + HS A: ...\\n  + HS B: ...",
-  
-  "hoat_dong_kham_pha_cot_1": "**HOẠT ĐỘNG: [Tên hoạt động trong Database]**\\n\\n**Bước 1: Chuyển giao (Kỹ thuật ...)**\\n- GV chia lớp thành... nhóm.\\n- Yêu cầu: [Nội dung yêu cầu]...\\n- **Công cụ hỗ trợ:** Yêu cầu HS truy cập Padlet qua mã QR...\\n\\n**Bước 2: Thực hiện & Hỗ trợ**\\n- GV quan sát...\\n- **Dự kiến tình huống:** Nếu lớp trầm, GV kích thích bằng câu hỏi: '...'\\n\\n**Bước 3: Báo cáo & Đánh giá**\\n- Mời đại diện nhóm...\\n- GV chốt kiến thức: ...",
-  "hoat_dong_kham_pha_cot_2": "**1. Thực hiện:**\\n- Nhóm trưởng phân công...\\n- Các thành viên tìm kiếm thông tin trên mạng...\\n- Tổng hợp ý kiến lên Padlet/Giấy A0...\\n\\n**2. Sản phẩm dự kiến:**\\n- **Nhóm 1 (Trình bày):** Nêu được các ý...\\n- **Nhóm 2 (Sơ đồ tư duy):** Vẽ được...\\n- **Lưu ý:** HS sử dụng Canva để thiết kế slide..."
+  "hoat_dong_khoi_dong_cot_1": "...",
+  "hoat_dong_khoi_dong_cot_2": "...",
+  "hoat_dong_kham_pha_cot_1": "**KỸ THUẬT TRẠM/MẢNH GHÉP CHI TIẾT:**\\n...",
+  "hoat_dong_kham_pha_cot_2": "**SẢN PHẨM HS TỪNG TRẠM:**\\n..."
 }
 QUAN TRỌNG: Chỉ trả về JSON.
     `.trim();
   },
 
   /**
-   * PROMPT 3: THỰC CHIẾN (RAG: Optimize & Fill Gaps - Authentic Assessment)
+   * PROMPT 3: THỰC CHIẾN & ĐÁNH GIÁ (v39.0 - Project & Assessment Expert)
    */
   async generatePillar3Prompt(context: PromptContext): Promise<string> {
     this.validateContext(context, 'pillar_3');
-    const data = context.optimizedFileSummary || {};
-    const smartData = context.smartData;
+    const { smartData, phaseContext } = context;
 
     return `
-# VAI TRÒ: Chuyên gia Soạn thảo & Thẩm định (Audit Mode - v38.1).
+# VAI TRÒ: Chuyên gia Đánh giá & Dự án (Authentic Assessment specialist - v39.0).
 
-# PHÂN CẤP DỮ LIỆU (DATA HIERARCHY):
-1. **NHIỆM VỤ THỰC CHIẾN (Database):** Sử dụng các yêu cầu dưới đây để thiết kế hoạt động luyện tập và vận dụng.
-2. **TƯ LIỆU THAM KHẢO (PDF):** Sử dụng các bài tập, tình huống cũ trong PDF để nâng cấp, cải tiến NẾU phù hợp.
+# 🎯 PHẠM VI: 
+- **Trọng tâm:** ${phaseContext ? phaseContext.focus : "Luyện tập & Vận dụng dự án"}
 
-# DỮ LIỆU ĐẦU VÀO:
-1. **Nhiệm vụ Thực chiến (Database - BẮT BUỘC):**
-- **Chủ đề chính:** ${smartData.topicName}
-- **Nghiệp vụ dạy học (LT & VD):** """
-[HĐ Luyện tập]: ${smartData.coreMissions.luyenTap}
-[HĐ Vận dụng]: ${smartData.coreMissions.vanDung}
-"""
-- **Ngân hàng Rubric chuẩn:** """${smartData.assessmentTools}""" 
+# DỮ LIỆU CỐT LÕI (CHỈ LẤY PHẦN LT/VD):
+- **Database LT/VD:** """${JSON.stringify({
+      luyen_tap: smartData.coreMissions.luyenTap,
+      van_dung: smartData.coreMissions.vanDung,
+      rubrics: smartData.assessmentTools
+    })}"""
 
-2. **Dữ liệu tham khảo từ PDF cũ (CHỈ THAM KHẢO - CÓ THỂ SAI CHỦ ĐỀ):**
-*(Lưu ý: Dữ liệu dưới đây được trích xuất tự động từ file PDF cũ. Nó có thể chứa nội dung sai lệch so với chủ đề Database. Hãy áp dụng Quy tắc xử lý mâu thuẫn để lọc bỏ nếu cần thiết)*
-- Nội dung trích lọc: """${JSON.stringify(context.pdfReference || {})}"""
-- Tóm tắt PDF (Raw): """${context.fileSummary.substring(0, 100000)}"""
+# NHIỆM VỤ CỐT LÕI (UPGRADE):
+1. **Luyện tập (Case Study):** Bắt buộc sáng tác một **Tình huống giả định đầy kịch tính (200+ chữ)** để HS tranh luận/đóng vai.
+2. **Vận dụng (Project STEM/Social):** Thiết kế dự án thực tế với timeline tuần 1, tuần 2 rõ ràng.
+3. **Phiếu học tập:** Tạo nội dung mẫu cho "Phiếu học tập số 1" và "Phiếu giao việc số 2" ngay trong nội dung.
+4. **Đánh giá:** Tạo Rubric 4 mức độ (A, B, C, D) sắc bén cho bài dạy này.
 
-# NHIỆM VỤ: Thiết kế Hoạt động 3 (Luyện tập) & Hoạt động 4 (Vận dụng).
-
-🛑 **QUY TẮC XỬ LÝ MÂU THUẪN (FIREWALL):**
-Hãy so sánh chủ đề của "PDF cũ" và "Dữ liệu Chuẩn".
-- Nếu PDF nói về chủ đề khác (VD: Môi trường) so với Database (VD: Quan hệ thầy trò) -> **HÃY BỎ QUA PDF HOÀN TOÀN.**
-- Gạt bỏ sự "lệch pha", chỉ dùng "Dữ liệu Chuẩn" để viết mới 100%.
-
-# NGUYÊN TẮC "BƠM PHỒNG" (INFLATION - VIẾT DÀI & SÂU):
-
-### 1. HOẠT ĐỘNG LUYỆN TẬP (Practice - Linh hoạt theo Database):
-- rà soát \`[HĐ Luyện tập]\` từ Database:
-  - **Trường hợp 1 (HĐ lao động/thực hành/ngoại khóa):** Nếu nội dung là dọn dẹp, trồng cây, biểu diễn nghệ thuật... -> **HÃY VIẾT KẾ HOẠCH TỔ CHỨC CHI TIẾT** (Phân công, dụng cụ, các bước thực hiện tại hiện trường).
-  - **Trường hợp 2 (HĐ tư duy/thái độ/xử lý):** Nếu nội dung là hình thành thái độ, rèn luyện hành vi -> **BẮT BUỘC sáng tác một TÌNH HUỐNG GIẢ ĐỊNH (Case Study)** chi tiết liên quan đến chủ đề bài học, dài ít nhất 150 chữ.
-- **Cột HS (Sản phẩm dự kiến):** Liệt kê sản phẩm tương ứng (Phương án xử lý tình huống HOẶC Kết quả thực hành dự kiến).
-
-### 2. HOẠT ĐỘNG VẬN DỤNG (Application):
-- **Cột GV (Phiếu giao dự án):** Thiết kế một **PHIẾU GIAO NHIỆM VỤ VỀ NHÀ** chuyên nghiệp. Gồm: Tên dự án, Mục tiêu, Các bước thực hiện chi tiết, Hạn nộp và Hình thức báo cáo.
-
-### 3. HỒ SƠ DẠY HỌC (Assessment Tools):
-- Tại phần Đánh giá: Sử dụng dữ liệu từ "Ngân hàng Rubric chuẩn" (ưu tiên Rubric Giao tiếp & Hợp tác RB-02 nếu có) để xây dựng bảng tiêu chí chấm điểm 4 mức độ (Xuất sắc - Tốt - Đạt - Chưa đạt) cho hoạt động Luyện tập/Vận dụng.
-
-# YÊU CẦU OUTPUT JSON (Strict Format):
-- Trả về DUY NHẤT một khối JSON.
-- Xuống dòng = \\n. Không dùng ngoặc kép " trong nội dung.
-
+# YÊU CẦU OUTPUT JSON:
 {
-  "luyen_tap": {
-    "cot_gv": "**1. Chuyển giao nhiệm vụ (Kỹ thuật ...):**\\n- GV chia lớp...\\n- [Nếu là HĐ thực hành: Viết kế hoạch. Nếu là HĐ tư duy: Viết TÌNH HUỐNG GIẢ ĐỊNH 150+ từ]\\n\\n**2. Tổ chức thực hiện:**\\n- GV quan sát...\\n\\n**3. Dự kiến hỗ trợ:**\\n- Nếu HS bí, GV gợi ý: '...' ",
-    "cot_hs": "**1. Thực hiện nhiệm vụ:**\\n- ...\\n\\n**2. Sản phẩm/Kết quả dự kiến:**\\n- [Liệt kê các phương án xử lý (nếu là tình huống) HOẶC kết quả công việc/phiếu học tập (nếu là thực hành)]"
-  },
-  "van_dung": {
-    "cot_gv": "**GIAO DỰ ÁN VỀ NHÀ**\\n\\n**PHIẾU GIAO NHIỆM VỤ:**\\n---------------------------\\n**1. Tên dự án:** ...\\n**2. Mục tiêu:** ...\\n**3. Các bước thực hiện:**\\n- Bước 1: ...\\n- Bước 2: ...\\n**4. Hạn nộp:** Tiết Sinh hoạt lớp tuần sau.\\n---------------------------",
-    "cot_hs": "- Nhóm trưởng...\\n- Phân công: ...\\n- Cam kết: ..."
-  },
-  "ho_so_day_hoc": "**RUBRIC ĐÁNH GIÁ NĂNG LỰC ... (Dựa trên Database chuẩn)**\\n\\n**Mức 4 (Xuất sắc):**\\n- ...\\n\\n**Mức 3 (Tốt):**\\n- ...\\n\\n**Mức 2 (Đạt):**\\n- ...\\n\\n**Mức 1 (Chưa đạt):**\\n- ..."
+  "luyen_tap": { "cot_gv": "**CASE STUDY 200 CHỮ:**\\n...", "cot_hs": "..." },
+  "van_dung": { "cot_gv": "**DỰ ÁN STEM/XÃ HỘI:**\\n...", "cot_hs": "..." },
+  "ho_so_day_hoc": "**RUBRIC & PHIẾU HỌC TẬP:**\\n...",
+  "huong_dan_ve_nha": "..."
 }
 QUAN TRỌNG: Chỉ trả về JSON.
     `.trim();
   }
 };
+

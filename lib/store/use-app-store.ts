@@ -48,6 +48,8 @@ interface AppState {
         customInstructions: string;
         auditResult: string | null;
         auditScore: number;
+        auditAnalysis: any | null; // Detailed AI Audit (Strengths/Weaknesses)
+        executionPlan: any[] | null; // Segmented phases for long-form content
         processedContext: any | null; // Cache for analyzed PDF structure
         fileSummary: string;
     };
@@ -150,6 +152,8 @@ export const useAppStore = create<AppState>()(
                 customInstructions: "",
                 auditResult: null,
                 auditScore: 0,
+                auditAnalysis: null,
+                executionPlan: null,
                 processedContext: null,
                 fileSummary: "",
             },

@@ -25,5 +25,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated docs/temp
 *.docx
-*.docx
+Giaiphap_AI
+Context Injection
+geminipro_prompt
+AUTO DEEP DRIVE .md
+*.log
+tsc_output*.txt
+extracted_content.txt
+extracted_prompts_content.txt
+moral_integration_raw.txt
+muc_luc_raw.txt
