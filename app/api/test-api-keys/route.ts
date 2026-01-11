@@ -36,7 +36,12 @@ export async function GET(req: NextRequest) {
 
             for (const model of models) {
                 try {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+                    // DYNAMIC ENDPOINT LOGIC v40.0
+                    const isExperimental = model.includes("2.0") || model.includes("exp");
+                    const version = isExperimental ? "v1beta" : "v1";
+                    const modelId = `models/${model}`;
+
+                    const url = `https://generativelanguage.googleapis.com/${version}/${modelId}:generateContent?key=${key}`;
                     const response = await fetch(url, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -168,7 +173,15 @@ export async function GET(req: NextRequest) {
         const proxyUrl = process.env.GEMINI_PROXY_URL;
         if (proxyUrl) {
             try {
-                const response = await fetch(`${proxyUrl}/v1beta/models/gemini-2.0-flash:generateContent`, {
+                const keyToTest = geminiKeys[0] || "";
+                const modelName = "gemini-1.5-flash";
+                const isExperimental = modelName.includes("2.0") || modelName.includes("exp");
+                const version = isExperimental ? "v1beta" : "v1";
+                const modelId = `models/${modelName}`;
+
+                const url = `${proxyUrl.replace(/\/$/, '')}/${version}/${modelId}:generateContent?key=${keyToTest}`;
+
+                const response = await fetch(url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -180,14 +193,15 @@ export async function GET(req: NextRequest) {
                 results.proxy = {
                     url: proxyUrl,
                     status: response.status,
-                    ok: response.ok
+                    ok: response.ok,
+                    usingKey: keyToTest.slice(0, 8) + "..."
                 };
 
                 if (response.ok) {
                     console.log(`[API-Test] ✅ Proxy: SUCCESS`);
                 } else {
                     const error = await response.text();
-                    results.proxy.error = error.slice(0, 100);
+                    results.proxy.error = error.slice(0, 150);
                     console.log(`[API-Test] ❌ Proxy: ${response.status}`);
                 }
 

@@ -43,7 +43,26 @@ function registerKeyFailure(key: string) {
 // Helper to deep clean API keys
 const clean = (k: string | undefined) => k?.trim().replace(/^["']|["']$/g, '') || "";
 
-// --- CORE AI CALLER v37.0 (ROBUST MULTI-PROVIDER STRATEGY) ---
+// --- DYNAMIC ROUTING CONFIGURATION v40.0 ---
+function getApiConfig(modelName: string) {
+  const cleanName = modelName.replace("models/", "");
+
+  // Model 2.0 or Experimental MUST use v1beta
+  if (cleanName.includes("2.0") || cleanName.includes("exp")) {
+    return {
+      version: "v1beta",
+      model: `models/${cleanName}`
+    };
+  }
+
+  // Stable Models (1.5, 1.0) use v1 to avoid 404 mapping errors
+  return {
+    version: "v1",
+    model: `models/${cleanName}`
+  };
+}
+
+// --- CORE AI CALLER v40.0 (ROBUST MULTI-PROVIDER STRATEGY) ---
 export async function callAI(
   prompt: string,
   modelName = "gemini-1.5-flash",
@@ -63,25 +82,45 @@ export async function callAI(
     generationConfig: { temperature: 0.85, maxOutputTokens: 8192 }
   };
 
-  // 1. STRATEGY: PROXY (With Circuit Breaker)
-  const proxyUrl = process.env.GEMINI_PROXY_URL;
-  if (proxyUrl && !proxyUrl.includes("example.com") && !isKeyBlocked(proxyUrl)) {
-    try {
-      const url = `${proxyUrl.startsWith('http') ? '' : 'https://'}${proxyUrl.replace(/\/$/, '')}/v1beta/models/${modelName}:generateContent`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(geminiBody),
-        signal: AbortSignal.timeout(15000)
-      });
-      if (response.ok) {
-        const json = await response.json();
-        const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text;
-      } else {
-        if (response.status !== 401) registerKeyFailure(proxyUrl);
+  // 1. STRATEGY: PROXY (With Circuit Breaker & Key Forwarding)
+  const proxyUrl = clean(process.env.GEMINI_PROXY_URL);
+  const geminiKeysForProxy = [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3
+  ].map(k => clean(k)).filter(k => k.length > 5 && !isKeyBlocked(k));
+
+  if (proxyUrl && !proxyUrl.includes("example.com") && !isKeyBlocked(proxyUrl) && geminiKeysForProxy.length > 0) {
+    const { version, model } = getApiConfig(modelName);
+    const shuffledProxyKeys = [...geminiKeysForProxy].sort(() => Math.random() - 0.5);
+
+    for (const key of shuffledProxyKeys) {
+      try {
+        const url = `${proxyUrl.startsWith('http') ? '' : 'https://'}${proxyUrl.replace(/\/$/, '')}/${version}/${model}:generateContent?key=${key}`;
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(geminiBody),
+          signal: AbortSignal.timeout(20000)
+        });
+
+        if (response.ok) {
+          const json = await response.json();
+          const text = json.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) return text;
+        } else {
+          // CLASSIFIED ERROR HANDLING
+          if (response.status === 403 || response.status === 429) registerKeyFailure(key);
+          if (response.status === 404 || response.status >= 500) registerKeyFailure(proxyUrl);
+          errorLogs.push(`Proxy ${response.status}: ${model}@${version}`);
+        }
+      } catch (e: any) {
+        errorLogs.push(`Proxy Ex: ${e.message}`);
+        registerKeyFailure(proxyUrl);
+        break;
       }
-    } catch (e: any) { errorLogs.push(`Proxy: ${e.message}`); }
+    }
   }
 
   // 2. STRATEGY: GEMINI ROTATION (Free Tier - Randomized & Balanced)
@@ -91,16 +130,14 @@ export async function callAI(
     process.env.GEMINI_API_KEY_3
   ].map(k => clean(k)).filter(k => k.length > 5);
 
-  // Filter out blocked keys & Shuffle
   geminiKeys = geminiKeys.filter(k => !isKeyBlocked(k)).sort(() => Math.random() - 0.5);
 
-  if (geminiKeys.length === 0) console.warn("[AI-RELAY] ⚠️ All Gemini keys currently blocked by Circuit Breaker.");
+  if (geminiKeys.length === 0) console.warn("[AI-RELAY] ⚠️ All Gemini keys blocked.");
 
   for (const key of geminiKeys) {
     try {
-      // FIX Based on Gemini Pro Report: Use proper identifier
-      const modelIdentifier = modelName.includes('models/') ? modelName : `models/${modelName}`;
-      const url = `https://generativelanguage.googleapis.com/v1beta/${modelIdentifier}:generateContent?key=${key}`;
+      const { version, model } = getApiConfig(modelName);
+      const url = `https://generativelanguage.googleapis.com/${version}/${model}:generateContent?key=${key}`;
 
       const resp = await fetch(url, {
         method: 'POST',
@@ -115,7 +152,7 @@ export async function callAI(
         if (text) return text;
       } else {
         if (resp.status === 403 || resp.status === 429) registerKeyFailure(key);
-        errorLogs.push(`Gemini ${resp.status}`);
+        errorLogs.push(`Gemini ${resp.status}: ${model}@${version}`);
       }
     } catch (e: any) { errorLogs.push(`Gemini Ex: ${e.message}`); }
   }
