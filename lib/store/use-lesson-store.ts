@@ -1,7 +1,7 @@
 /**
- * 🌉 BACKWARD COMPATIBILITY BRIDGE
- * Chuyển hướng useLessonStore sang useAppStore để tránh lỗi build 
- * trong khi vẫn giữ cấu trúc Slice mới.
+ * ðŸŒ‰ BACKWARD COMPATIBILITY BRIDGE
+ * Chuyá»ƒn hÆ°á»›ng useLessonStore sang useAppStore Ä‘á»ƒ trÃ¡nh lá»—i build 
+ * trong khi váº«n giá»¯ cáº¥u trÃºc Slice má»›i.
  */
 
 import { useAppStore } from './use-app-store';

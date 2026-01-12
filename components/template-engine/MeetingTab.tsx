@@ -49,14 +49,14 @@ export function MeetingTab({
             <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="meeting-month-select">Chọn Tháng</Label>
+                        <Label htmlFor="meeting-month-select">Chá»n ThÃ¡ng</Label>
                         <Select
                             value={selectedMonth}
                             onValueChange={setSelectedMonth}
                             name="meetingMonth"
                         >
                             <SelectTrigger id="meeting-month-select">
-                                <SelectValue placeholder="Chọn tháng..." />
+                                <SelectValue placeholder="Chá»n thÃ¡ng..." />
                             </SelectTrigger>
                             <SelectContent>
                                 {ACADEMIC_MONTHS.map((m) => (
@@ -69,7 +69,7 @@ export function MeetingTab({
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="meeting-session-select">Lần họp</Label>
+                        <Label htmlFor="meeting-session-select">Láº§n há»p</Label>
                         <Select
                             value={selectedSession}
                             onValueChange={setSelectedSession}
@@ -79,8 +79,8 @@ export function MeetingTab({
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="1">Lần 1 (đầu tháng)</SelectItem>
-                                <SelectItem value="2">Lần 2 (cuối tháng)</SelectItem>
+                                <SelectItem value="1">Láº§n 1 (Ä‘áº§u thÃ¡ng)</SelectItem>
+                                <SelectItem value="2">Láº§n 2 (cuá»‘i thÃ¡ng)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -90,19 +90,19 @@ export function MeetingTab({
                 {selectedMonth && (
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <p className="text-sm font-medium text-blue-800 mb-2">
-                            Chủ đề tháng {selectedMonth}:
+                            Chá»§ Ä‘á» thÃ¡ng {selectedMonth}:
                         </p>
                         <ul className="text-sm text-blue-700 space-y-1">
                             <li>
-                                • Khối 10:{" "}
+                                â€¢ Khá»‘i 10:{" "}
                                 {getThemeForMonth("10", selectedMonth) || "N/A"}
                             </li>
                             <li>
-                                • Khối 11:{" "}
+                                â€¢ Khá»‘i 11:{" "}
                                 {getThemeForMonth("11", selectedMonth) || "N/A"}
                             </li>
                             <li>
-                                • Khối 12:{" "}
+                                â€¢ Khá»‘i 12:{" "}
                                 {getThemeForMonth("12", selectedMonth) || "N/A"}
                             </li>
                         </ul>
@@ -110,36 +110,36 @@ export function MeetingTab({
                 )}
 
                 <div className="space-y-2">
-                    <Label htmlFor="meeting-key-content">Nội dung trọng tâm (tùy chọn)</Label>
+                    <Label htmlFor="meeting-key-content">Ná»™i dung trá»ng tÃ¢m (tÃ¹y chá»n)</Label>
                     <Textarea
                         id="meeting-key-content"
                         name="meetingKeyContent"
-                        placeholder="VD: Triển khai hoạt động 20/11, tổ chức sinh hoạt chuyên môn theo nghiên cứu bài học, phân công giáo viên dự giờ, thảo luận về phương pháp dạy học tích cực..."
+                        placeholder="VD: Triá»ƒn khai hoáº¡t Ä‘á»™ng 20/11, tá»• chá»©c sinh hoáº¡t chuyÃªn mÃ´n theo nghiÃªn cá»©u bÃ i há»c, phÃ¢n cÃ´ng giÃ¡o viÃªn dá»± giá», tháº£o luáº­n vá» phÆ°Æ¡ng phÃ¡p dáº¡y há»c tÃ­ch cá»±c..."
                         value={meetingKeyContent}
                         onChange={(e) => setMeetingKeyContent(e.target.value)}
                         rows={5}
                         className="resize-y"
                     />
                     <p className="text-xs text-muted-foreground">
-                        Nhập các nội dung trọng tâm cần thảo luận trong cuộc họp. AI
-                        sẽ phân tích và tạo biên bản chi tiết dựa trên nội dung này.
+                        Nháº­p cÃ¡c ná»™i dung trá»ng tÃ¢m cáº§n tháº£o luáº­n trong cuá»™c há»p. AI
+                        sáº½ phÃ¢n tÃ­ch vÃ  táº¡o biÃªn báº£n chi tiáº¿t dá»±a trÃªn ná»™i dung nÃ y.
                     </p>
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="meeting-conclusion">Kết luận cuộc họp (tùy chọn)</Label>
+                    <Label htmlFor="meeting-conclusion">Káº¿t luáº­n cuá»™c há»p (tÃ¹y chá»n)</Label>
                     <Textarea
                         id="meeting-conclusion"
                         name="meetingConclusion"
-                        placeholder="Nhập nội dung kết luận cuộc họp nếu có sẵn..."
+                        placeholder="Nháº­p ná»™i dung káº¿t luáº­n cuá»™c há»p náº¿u cÃ³ sáºµn..."
                         value={meetingConclusion}
                         onChange={(e) => setMeetingConclusion(e.target.value)}
                         rows={5}
                         className="resize-y"
                     />
                     <p className="text-xs text-muted-foreground">
-                        Nếu bạn có sẵn nội dung kết luận, hãy nhập vào đây. AI sẽ
-                        tham khảo để tạo biên bản phù hợp.
+                        Náº¿u báº¡n cÃ³ sáºµn ná»™i dung káº¿t luáº­n, hÃ£y nháº­p vÃ o Ä‘Ã¢y. AI sáº½
+                        tham kháº£o Ä‘á»ƒ táº¡o biÃªn báº£n phÃ¹ há»£p.
                     </p>
                 </div>
 
@@ -153,12 +153,12 @@ export function MeetingTab({
                     {isGenerating ? (
                         <>
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            Đang tạo biên bản...
+                            Äang táº¡o biÃªn báº£n...
                         </>
                     ) : (
                         <>
                             <Sparkles className="w-5 h-5" />
-                            Tạo Biên bản AI
+                            Táº¡o BiÃªn báº£n AI
                         </>
                     )}
                 </Button>
@@ -167,14 +167,14 @@ export function MeetingTab({
                 {meetingResult && (
                     <div className="space-y-4 mt-6">
                         <h3 className="font-semibold text-lg text-slate-800">
-                            Kết quả tạo biên bản:
+                            Káº¿t quáº£ táº¡o biÃªn báº£n:
                         </h3>
 
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-blue-700 font-medium">
-                                        Nội dung chính:
+                                        Ná»™i dung chÃ­nh:
                                     </Label>
                                     <Button
                                         variant="ghost"
@@ -201,7 +201,7 @@ export function MeetingTab({
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-orange-700 font-medium">
-                                        Ưu điểm:
+                                        Æ¯u Ä‘iá»ƒm:
                                     </Label>
                                     <Button
                                         variant="ghost"
@@ -228,7 +228,7 @@ export function MeetingTab({
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-red-700 font-medium">
-                                        Hạn chế:
+                                        Háº¡n cháº¿:
                                     </Label>
                                     <Button
                                         variant="ghost"
@@ -255,7 +255,7 @@ export function MeetingTab({
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-blue-700 font-medium">
-                                        Ý kiến đóng góp:
+                                        Ã kiáº¿n Ä‘Ã³ng gÃ³p:
                                     </Label>
                                     <Button
                                         variant="ghost"
@@ -282,7 +282,7 @@ export function MeetingTab({
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-blue-700 font-medium">
-                                        Kế hoạch tháng tới:
+                                        Káº¿ hoáº¡ch thÃ¡ng tá»›i:
                                     </Label>
                                     <Button
                                         variant="ghost"
@@ -310,7 +310,7 @@ export function MeetingTab({
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <Label className="font-medium text-purple-700">
-                                            Kết luận cuộc họp
+                                            Káº¿t luáº­n cuá»™c há»p
                                         </Label>
                                         <Button
                                             variant="ghost"
@@ -349,12 +349,12 @@ export function MeetingTab({
                             {isExporting ? (
                                 <>
                                     <Loader2 className="w-5 h-5 animate-spin" />
-                                    Đang xuất file...
+                                    Äang xuáº¥t file...
                                 </>
                             ) : (
                                 <>
                                     <Download className="w-5 h-5" />
-                                    Xuất file Word
+                                    Xuáº¥t file Word
                                 </>
                             )}
                         </Button>

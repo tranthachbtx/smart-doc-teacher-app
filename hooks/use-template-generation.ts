@@ -37,11 +37,11 @@ export function useTemplateGeneration() {
       if (result.success && result.data) {
         return { success: true, data: result.data as MeetingResult };
       } else {
-        setError(result.error || "Lỗi khi tạo biên bản họp");
+        setError(result.error || "Lá»—i khi táº¡o biÃªn báº£n há»p");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
-      setError(err.message || "Lỗi không xác định");
+      setError(err.message || "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh");
       return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);
@@ -70,22 +70,22 @@ export function useTemplateGeneration() {
     const selectedTasks = tasks.filter((t) => t.selected);
 
     if (chuDeInfo && fullPlanMode) {
-      fullInstructions += `\n\n=== PHÂN PHỐI TIẾT THEO PPCT ===
-Tổng số tiết của chủ đề: ${chuDeInfo.tong_tiet} tiết
-- Sinh hoạt dưới cờ (SHDC): ${chuDeInfo.shdc} tiết
-- Hoạt động giáo dục theo chủ đề (HĐGD): ${chuDeInfo.hdgd} tiết  
-- Sinh hoạt lớp (SHL): ${chuDeInfo.shl} tiết
+      fullInstructions += `\n\n=== PHÃ‚N PHá»I TIáº¾T THEO PPCT ===
+Tá»•ng sá»‘ tiáº¿t cá»§a chá»§ Ä‘á»: ${chuDeInfo.tong_tiet} tiáº¿t
+- Sinh hoáº¡t dÆ°á»›i cá» (SHDC): ${chuDeInfo.shdc} tiáº¿t
+- Hoáº¡t Ä‘á»™ng giÃ¡o dá»¥c theo chá»§ Ä‘á» (HÄGD): ${chuDeInfo.hdgd} tiáº¿t  
+- Sinh hoáº¡t lá»›p (SHL): ${chuDeInfo.shl} tiáº¿t
 
-YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT): 
-- Đây là Kế hoạch bài dạy chuyên sâu cấp quốc gia. Yêu cầu nội dung phải CỰC KỲ CHI TIẾT, HAY và SÁNG TẠO cho từng hoạt động.
-- Độ dài sản phẩm cuối cùng khi xuất ra Word phải đạt TỐI THIỂU 12 TRANG A4. 
-- Hãy mô tả kỹ lưỡng kịch bản dẫn dắt của giáo viên (GV), lời giảng chi tiết, các câu hỏi gợi mở "chạm" đến tư duy HS, các tình huống giả định thực tế và cách GV điều phối lớp học.
-- Mỗi bước trong chuỗi hoạt động 5512 (Chuyển giao, Thực hiện, Báo cáo, Kết luận) phải được viết đầy đủ, không bỏ sót bất kỳ chi tiết sư phạm nào.
-- Đảm bảo tính kết nối giữa 3 loại hoạt động: SHDC, HĐGD và SHL để tạo thành một chủ đề thống nhất, giàu tính giáo dục.
+YÃŠU Cáº¦U Äáº¶C BIá»†T Vá»€ CHáº¤T LÆ¯á»¢NG & Äá»˜ DÃ€I (QUAN TRá»ŒNG NHáº¤T): 
+- ÄÃ¢y lÃ  Káº¿ hoáº¡ch bÃ i dáº¡y chuyÃªn sÃ¢u cáº¥p quá»‘c gia. YÃªu cáº§u ná»™i dung pháº£i Cá»°C Ká»² CHI TIáº¾T, HAY vÃ  SÃNG Táº O cho tá»«ng hoáº¡t Ä‘á»™ng.
+- Äá»™ dÃ i sáº£n pháº©m cuá»‘i cÃ¹ng khi xuáº¥t ra Word pháº£i Ä‘áº¡t Tá»I THIá»‚U 12 TRANG A4. 
+- HÃ£y mÃ´ táº£ ká»¹ lÆ°á»¡ng ká»‹ch báº£n dáº«n dáº¯t cá»§a giÃ¡o viÃªn (GV), lá»i giáº£ng chi tiáº¿t, cÃ¡c cÃ¢u há»i gá»£i má»Ÿ "cháº¡m" Ä‘áº¿n tÆ° duy HS, cÃ¡c tÃ¬nh huá»‘ng giáº£ Ä‘á»‹nh thá»±c táº¿ vÃ  cÃ¡ch GV Ä‘iá»u phá»‘i lá»›p há»c.
+- Má»—i bÆ°á»›c trong chuá»—i hoáº¡t Ä‘á»™ng 5512 (Chuyá»ƒn giao, Thá»±c hiá»‡n, BÃ¡o cÃ¡o, Káº¿t luáº­n) pháº£i Ä‘Æ°á»£c viáº¿t Ä‘áº§y Ä‘á»§, khÃ´ng bá» sÃ³t báº¥t ká»³ chi tiáº¿t sÆ° pháº¡m nÃ o.
+- Äáº£m báº£o tÃ­nh káº¿t ná»‘i giá»¯a 3 loáº¡i hoáº¡t Ä‘á»™ng: SHDC, HÄGD vÃ  SHL Ä‘á»ƒ táº¡o thÃ nh má»™t chá»§ Ä‘á» thá»‘ng nháº¥t, giÃ u tÃ­nh giÃ¡o dá»¥c.
 `;
 
       if (chuDeInfo.hoat_dong && chuDeInfo.hoat_dong.length > 0) {
-        fullInstructions += `\n\nCác hoạt động gợi ý từ SGK:\n${chuDeInfo.hoat_dong.map((h, i) => `${i + 1}. ${h}`).join('\n')}`;
+        fullInstructions += `\n\nCÃ¡c hoáº¡t Ä‘á»™ng gá»£i Ã½ tá»« SGK:\n${chuDeInfo.hoat_dong.map((h, i) => `${i + 1}. ${h}`).join('\n')}`;
       }
     }
 
@@ -93,11 +93,11 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
       const tasksPrompt = selectedTasks
         .map(
           (task, index) =>
-            `NHIỆM VỤ ${index + 1}: ${task.name}\nNội dung: ${task.content}`
+            `NHIá»†M Vá»¤ ${index + 1}: ${task.name}\nNá»™i dung: ${task.content}`
         )
         .join("\n\n");
 
-      fullInstructions += `\n\n=== CÁC NHIỆM VỤ CẦN THIẾT KẾ ===\n${tasksPrompt}\n\nYÊU CẦU: Hãy thiết kế tiến trình dạy học RIÊNG CHO TỪNG NHIỆM VỤ. Mỗi nhiệm vụ cần có đầy đủ 4 bước (Chuyển giao - Thực hiện - Báo cáo - Kết luận).`;
+      fullInstructions += `\n\n=== CÃC NHIá»†M Vá»¤ Cáº¦N THIáº¾T Káº¾ ===\n${tasksPrompt}\n\nYÃŠU Cáº¦U: HÃ£y thiáº¿t káº¿ tiáº¿n trÃ¬nh dáº¡y há»c RIÃŠNG CHO Tá»ªNG NHIá»†M Vá»¤. Má»—i nhiá»‡m vá»¥ cáº§n cÃ³ Ä‘áº§y Ä‘á»§ 4 bÆ°á»›c (Chuyá»ƒn giao - Thá»±c hiá»‡n - BÃ¡o cÃ¡o - Káº¿t luáº­n).`;
     }
 
     // Attempt to find month
@@ -112,7 +112,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
 
     try {
       const simplifiedTasks = selectedTasks.map(
-        (t) => `${t.name}: ${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`
+        (t) => `${t.name}: ${t.content}${t.time ? `\n(Thá»i gian phÃ¢n bá»•: ${t.time} phÃºt)` : ""}`
       );
 
       const result = await generateLessonPlan(
@@ -130,11 +130,11 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
       if (result.success && result.data) {
         return { success: true, data: result.data as LessonResult };
       } else {
-        setError(result.error || "Lỗi khi tạo nội dung");
+        setError(result.error || "Lá»—i khi táº¡o ná»™i dung");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
-      setError(err.message || "Lỗi không xác định");
+      setError(err.message || "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh");
       return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);
@@ -157,11 +157,11 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
       if (result.success && result.data) {
         return { success: true, data: result.data as EventResult };
       } else {
-        setError(result.error || "Lỗi khi tạo kế hoạch ngoại khóa");
+        setError(result.error || "Lá»—i khi táº¡o káº¿ hoáº¡ch ngoáº¡i khÃ³a");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
-      setError(err.message || "Lỗi không xác định");
+      setError(err.message || "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh");
       return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);
@@ -181,11 +181,11 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
       if (result.success && result.data) {
         return { success: true, data: result.data as NCBHResult };
       } else {
-        setError(result.error || "Lỗi khi tạo nội dung NCBH");
+        setError(result.error || "Lá»—i khi táº¡o ná»™i dung NCBH");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
-      setError(err.message || "Lỗi không xác định");
+      setError(err.message || "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh");
       return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);
@@ -204,11 +204,11 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
       if (result.success && result.audit) {
         return { success: true, audit: result.audit, score: result.score };
       } else {
-        setError(result.error || "Lỗi khi kiểm định giáo án");
+        setError(result.error || "Lá»—i khi kiá»ƒm Ä‘á»‹nh giÃ¡o Ã¡n");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
-      setError(err.message || "Lỗi không xác định");
+      setError(err.message || "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh");
       return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);
@@ -223,16 +223,16 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     setIsGenerating(true);
     setError(null);
     try {
-      const prompt = `Bạn là một biên tập viên giáo dục chuyên nghiệp. Hãy chỉnh sửa nội dung sau đây dựa trên yêu cầu.\n\nNỘI DUNG GỐC:\n${content}\n\nYÊU CẦU CHỈNH SỬA: ${instruction}\n\nLưu ý: Chỉ trả về nội dung đã chỉnh sửa, không kèm lời dẫn.`;
+      const prompt = `Báº¡n lÃ  má»™t biÃªn táº­p viÃªn giÃ¡o dá»¥c chuyÃªn nghiá»‡p. HÃ£y chá»‰nh sá»­a ná»™i dung sau Ä‘Ã¢y dá»±a trÃªn yÃªu cáº§u.\n\nNá»˜I DUNG Gá»C:\n${content}\n\nYÃŠU Cáº¦U CHá»ˆNH Sá»¬A: ${instruction}\n\nLÆ°u Ã½: Chá»‰ tráº£ vá» ná»™i dung Ä‘Ã£ chá»‰nh sá»­a, khÃ´ng kÃ¨m lá»i dáº«n.`;
       const result = await generateAIContent(prompt, model);
       if (result.success && result.content) {
         return { success: true, content: result.content };
       } else {
-        setError(result.error || "Lỗi khi chỉnh sửa nội dung");
+        setError(result.error || "Lá»—i khi chá»‰nh sá»­a ná»™i dung");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
-      setError(err.message || "Lỗi không xác định");
+      setError(err.message || "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh");
       return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);
@@ -242,7 +242,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
   const generateLessonSectionStage = async (
     grade: string,
     topic: string,
-    section: "setup" | "khởi động" | "khám phá" | "luyện tập" | "vận dụng" | "shdc_shl" | "final",
+    section: "setup" | "khá»Ÿi Ä‘á»™ng" | "khÃ¡m phÃ¡" | "luyá»‡n táº­p" | "váº­n dá»¥ng" | "shdc_shl" | "final",
     context?: any,
     duration?: string,
     customInstructions?: string,
@@ -257,7 +257,7 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
     setError(null);
     try {
       const simplifiedTasks = tasks?.map(
-        (t) => `${t.name}: ${t.content}${t.time ? `\n(Thời gian phân bổ: ${t.time} phút)` : ""}`
+        (t) => `${t.name}: ${t.content}${t.time ? `\n(Thá»i gian phÃ¢n bá»•: ${t.time} phÃºt)` : ""}`
       );
 
       const result = await generateLessonSection(
@@ -278,11 +278,11 @@ YÊU CẦU ĐẶC BIỆT VỀ CHẤT LƯỢNG & ĐỘ DÀI (QUAN TRỌNG NHẤT)
       if (result.success && result.data) {
         return { success: true, data: result.data };
       } else {
-        setError(result.error || `Lỗi khi tạo phần ${section}`);
+        setError(result.error || `Lá»—i khi táº¡o pháº§n ${section}`);
         return { success: false, error: result.error };
       }
     } catch (err: any) {
-      setError(err.message || "Lỗi không xác định");
+      setError(err.message || "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh");
       return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);

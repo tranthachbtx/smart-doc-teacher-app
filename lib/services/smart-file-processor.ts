@@ -30,7 +30,7 @@ export class SmartFileProcessor {
         const { SmartCacheV2 } = await import('@/lib/services/smart-cache-v2');
         const cacheEngine = SmartCacheV2.getInstance();
 
-        if (onProgress) onProgress("🔐 Layering Security & Checking Cache...");
+        if (onProgress) onProgress("ðŸ” Layering Security & Checking Cache...");
 
         // 2. Hash & Cache
         const hash = await this.generateFileHash(file);
@@ -39,8 +39,8 @@ export class SmartFileProcessor {
 
         if (cachedContent) {
             console.log(`[SmartFileProcessor] Smart Cache V2 hit for ${file.name}. Content Length: ${cachedContent.length}`);
-            console.log(`[SmartFileProcessor] 🚨 AUDIT MODE: IGNORING CACHE to force clean extraction.`);
-            // if (onProgress) onProgress("⚡ Found in Smart Cache!");
+            console.log(`[SmartFileProcessor] ðŸš¨ AUDIT MODE: IGNORING CACHE to force clean extraction.`);
+            // if (onProgress) onProgress("âš¡ Found in Smart Cache!");
             // await new Promise(r => setTimeout(r, 500));
             // return { content: cachedContent, source: 'cache' };
         }
@@ -60,7 +60,7 @@ export class SmartFileProcessor {
         const extractionResult = await extractor.extract(file, base64Data);
         console.log(`[SmartFileProcessor] Extraction complete. Length: ${extractionResult.content?.length || 0} chars. Source: ${extractionResult.source}`);
 
-        if (onProgress) onProgress("🧠 Offloading Pedagogical Analysis to Background Worker...");
+        if (onProgress) onProgress("ðŸ§  Offloading Pedagogical Analysis to Background Worker...");
 
         // --- 9.1 PERFORMANCE: WORKER OFFLOAD ---
         let analyzed = null;

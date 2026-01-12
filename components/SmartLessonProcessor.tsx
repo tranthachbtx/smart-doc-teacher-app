@@ -1,6 +1,6 @@
 /**
- * 🎯 SMART LESSON PROCESSOR 2.0 - ARCHITECTURE 18.0
- * Nâng cấp hoàn chỉnh với database integration và advanced AI processing
+ * ðŸŽ¯ SMART LESSON PROCESSOR 2.0 - ARCHITECTURE 18.0
+ * NÃ¢ng cáº¥p hoÃ n chá»‰nh vá»›i database integration vÃ  advanced AI processing
  */
 
 "use client";
@@ -31,40 +31,40 @@ export default function SmartLessonProcessor() {
   
   const handleProcess = async () => {
     if (!file) {
-      setError('Vui lòng chọn file PDF hoặc DOCX');
+      setError('Vui lÃ²ng chá»n file PDF hoáº·c DOCX');
       return;
     }
     
     setProcessing(true);
     setError(null);
     setSuccess(null);
-    setProcessingSteps(['Bắt đầu xử lý...']);
+    setProcessingSteps(['Báº¯t Ä‘áº§u xá»­ lÃ½...']);
     
     try {
       const formData = new FormData();
       formData.append('file', file);
       
-      setProcessingSteps(prev => [...prev, 'Đang tải file lên server...']);
+      setProcessingSteps(prev => [...prev, 'Äang táº£i file lÃªn server...']);
       
       const response = await fetch('/api/process-lesson-enhanced', {
         method: 'POST',
         body: formData
       });
       
-      setProcessingSteps(prev => [...prev, 'Đang xử lý với AI...']);
+      setProcessingSteps(prev => [...prev, 'Äang xá»­ lÃ½ vá»›i AI...']);
       
       const data = await response.json();
       
       if (data.success) {
         setResult(data);
-        setSuccess('✅ Đã tạo giáo án thành công với Database Integration!');
+        setSuccess('âœ… ÄÃ£ táº¡o giÃ¡o Ã¡n thÃ nh cÃ´ng vá»›i Database Integration!');
         
         // Show processing steps
         if (data.processing_steps) {
           setProcessingSteps(prev => [...prev, ...data.processing_steps.map((step: any) => step.name)]);
         }
         
-        setProcessingSteps(prev => [...prev, 'Đang tạo file Word...']);
+        setProcessingSteps(prev => [...prev, 'Äang táº¡o file Word...']);
         
         // Auto download Word file
         if (data.wordFile) {
@@ -80,13 +80,13 @@ export default function SmartLessonProcessor() {
           URL.revokeObjectURL(url);
         }
         
-        setProcessingSteps(prev => [...prev, '✅ Hoàn thành!']);
+        setProcessingSteps(prev => [...prev, 'âœ… HoÃ n thÃ nh!']);
       } else {
-        setError(data.error || 'Đã xảy ra lỗi khi xử lý giáo án');
+        setError(data.error || 'ÄÃ£ xáº£y ra lá»—i khi xá»­ lÃ½ giÃ¡o Ã¡n');
       }
     } catch (error) {
       console.error('Processing failed:', error);
-      setError('❌ Lỗi kết nối đến server. Vui lòng thử lại.');
+      setError('âŒ Lá»—i káº¿t ná»‘i Ä‘áº¿n server. Vui lÃ²ng thá»­ láº¡i.');
     } finally {
       setProcessing(false);
     }
@@ -120,7 +120,7 @@ export default function SmartLessonProcessor() {
           <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
             <CardTitle className="text-xl font-bold flex items-center gap-3">
               <FileText className="w-6 h-6" />
-              Tạo Giáo Án Thông Minh
+              Táº¡o GiÃ¡o Ãn ThÃ´ng Minh
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
@@ -128,9 +128,9 @@ export default function SmartLessonProcessor() {
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
               <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
               <div className="space-y-2">
-                <p className="text-lg font-medium">Chọn file PDF hoặc DOCX</p>
+                <p className="text-lg font-medium">Chá»n file PDF hoáº·c DOCX</p>
                 <p className="text-sm text-gray-500">
-                  Hệ thống sẽ phân tích nội dung và tích hợp database giáo dục
+                  Há»‡ thá»‘ng sáº½ phÃ¢n tÃ­ch ná»™i dung vÃ  tÃ­ch há»£p database giÃ¡o dá»¥c
                 </p>
               </div>
               <input
@@ -176,12 +176,12 @@ export default function SmartLessonProcessor() {
               {processing ? (
                 <>
                   <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Đang xử lý với AI...
+                  Äang xá»­ lÃ½ vá»›i AI...
                 </>
               ) : (
                 <>
                   <Brain className="w-5 h-5 mr-2" />
-                  Xử lý với Database Integration
+                  Xá»­ lÃ½ vá»›i Database Integration
                 </>
               )}
             </Button>
@@ -209,13 +209,13 @@ export default function SmartLessonProcessor() {
             {/* Result Preview */}
             {result && result.lessonPlan && (
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h3 className="font-medium mb-4">Kết quả xử lý:</h3>
+                <h3 className="font-medium mb-4">Káº¿t quáº£ xá»­ lÃ½:</h3>
                 <div className="space-y-2 text-sm">
-                  <div><strong>Tên bài:</strong> {result.lessonPlan.ten_bai}</div>
-                  <div><strong>Mục tiêu kiến thức:</strong> {result.lessonPlan.muc_tieu_kien_thuc?.substring(0, 100)}...</div>
-                  <div><strong>Mục tiêu năng lực:</strong> {result.lessonPlan.muc_tieu_nang_luc?.substring(0, 100)}...</div>
+                  <div><strong>TÃªn bÃ i:</strong> {result.lessonPlan.ten_bai}</div>
+                  <div><strong>Má»¥c tiÃªu kiáº¿n thá»©c:</strong> {result.lessonPlan.muc_tieu_kien_thuc?.substring(0, 100)}...</div>
+                  <div><strong>Má»¥c tiÃªu nÄƒng lá»±c:</strong> {result.lessonPlan.muc_tieu_nang_luc?.substring(0, 100)}...</div>
                   <div><strong>Confidence:</strong> {Math.round((result.lessonPlan.confidence || 0) * 100)}%</div>
-                  <div><strong>Database Context:</strong> {result.lessonPlan.database_context_used ? '✅ Đã sử dụng' : '❌ Không sử dụng'}</div>
+                  <div><strong>Database Context:</strong> {result.lessonPlan.database_context_used ? 'âœ… ÄÃ£ sá»­ dá»¥ng' : 'âŒ KhÃ´ng sá»­ dá»¥ng'}</div>
                   <div><strong>Processing Time:</strong> {result.lessonPlan.processing_time}ms</div>
                 </div>
               </div>
@@ -231,7 +231,7 @@ export default function SmartLessonProcessor() {
               <h3 className="font-medium">Database Integration</h3>
             </div>
             <p className="text-sm text-gray-600">
-              Tích hợp PPCT, chương trình giảng dạy, năng lực số và các database giáo dục khác
+              TÃ­ch há»£p PPCT, chÆ°Æ¡ng trÃ¬nh giáº£ng dáº¡y, nÄƒng lá»±c sá»‘ vÃ  cÃ¡c database giÃ¡o dá»¥c khÃ¡c
             </p>
           </Card>
           
@@ -241,7 +241,7 @@ export default function SmartLessonProcessor() {
               <h3 className="font-medium">Advanced AI</h3>
             </div>
             <p className="text-sm text-gray-600">
-              Multi-step AI processing với context-aware generation và educational intelligence
+              Multi-step AI processing vá»›i context-aware generation vÃ  educational intelligence
             </p>
           </Card>
           
@@ -251,7 +251,7 @@ export default function SmartLessonProcessor() {
               <h3 className="font-medium">Professional Output</h3>
             </div>
             <p className="text-sm text-gray-600">
-              Kết cấu trúc 2 cột theo Thông tư 5512 và export Word chuyên nghiệp
+              Káº¿t cáº¥u trÃºc 2 cá»™t theo ThÃ´ng tÆ° 5512 vÃ  export Word chuyÃªn nghiá»‡p
             </p>
           </Card>
         </div>

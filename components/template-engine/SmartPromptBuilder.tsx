@@ -102,7 +102,8 @@ export function SmartPromptBuilder({ grade, topicName, chuDeSo, fileSummary }: S
             pedagogicalNotes
         };
 
-        const prompt = SmartPromptService.buildFinalSmartPrompt(currentData, fileSummary);
+        // FIXED: Argument order swapped to match SmartPromptService signature (string, SmartPromptData)
+        const prompt = SmartPromptService.buildFinalSmartPrompt(fileSummary || "", currentData);
         setGeneratedPrompt(prompt);
         setShowPreview(true);
     };

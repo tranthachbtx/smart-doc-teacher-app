@@ -52,58 +52,58 @@ export function AssessmentTab({
             <div className="md:col-span-1 space-y-6">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Cấu hình Kiểm tra</CardTitle>
+                        <CardTitle>Cáº¥u hÃ¬nh Kiá»ƒm tra</CardTitle>
                         <CardDescription>
-                            Thiết lập thông tin cho kế hoạch kiểm tra định kỳ
+                            Thiáº¿t láº­p thÃ´ng tin cho káº¿ hoáº¡ch kiá»ƒm tra Ä‘á»‹nh ká»³
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="assessment-grade-select">Khối lớp</Label>
+                            <Label htmlFor="assessment-grade-select">Khá»‘i lá»›p</Label>
                             <Select
                                 value={assessmentGrade}
                                 onValueChange={setAssessmentGrade}
                                 name="assessmentGrade"
                             >
                                 <SelectTrigger id="assessment-grade-select">
-                                    <SelectValue placeholder="Chọn khối" />
+                                    <SelectValue placeholder="Chá»n khá»‘i" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="10">Khối 10</SelectItem>
-                                    <SelectItem value="11">Khối 11</SelectItem>
-                                    <SelectItem value="12">Khối 12</SelectItem>
+                                    <SelectItem value="10">Khá»‘i 10</SelectItem>
+                                    <SelectItem value="11">Khá»‘i 11</SelectItem>
+                                    <SelectItem value="12">Khá»‘i 12</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="assessment-term-select">Kỳ đánh giá</Label>
+                            <Label htmlFor="assessment-term-select">Ká»³ Ä‘Ã¡nh giÃ¡</Label>
                             <Select
                                 value={assessmentTerm}
                                 onValueChange={setAssessmentTerm}
                                 name="assessmentTerm"
                             >
                                 <SelectTrigger id="assessment-term-select">
-                                    <SelectValue placeholder="Chọn kỳ" />
+                                    <SelectValue placeholder="Chá»n ká»³" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Giữa kì 1">Giữa kì 1</SelectItem>
-                                    <SelectItem value="Cuối kì 1">Cuối kì 1</SelectItem>
-                                    <SelectItem value="Giữa kì 2">Giữa kì 2</SelectItem>
-                                    <SelectItem value="Cuối kì 2">Cuối kì 2</SelectItem>
+                                    <SelectItem value="Giá»¯a kÃ¬ 1">Giá»¯a kÃ¬ 1</SelectItem>
+                                    <SelectItem value="Cuá»‘i kÃ¬ 1">Cuá»‘i kÃ¬ 1</SelectItem>
+                                    <SelectItem value="Giá»¯a kÃ¬ 2">Giá»¯a kÃ¬ 2</SelectItem>
+                                    <SelectItem value="Cuá»‘i kÃ¬ 2">Cuá»‘i kÃ¬ 2</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="assessment-product-select">Loại sản phẩm</Label>
+                            <Label htmlFor="assessment-product-select">Loáº¡i sáº£n pháº©m</Label>
                             <Select
                                 value={assessmentProductType}
                                 onValueChange={setAssessmentProductType}
                                 name="assessmentProductType"
                             >
                                 <SelectTrigger id="assessment-product-select">
-                                    <SelectValue placeholder="Chọn loại sản phẩm" />
+                                    <SelectValue placeholder="Chá»n loáº¡i sáº£n pháº©m" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {Object.entries(ASSESSMENT_PRODUCT_TYPES).map(([key, group]) => (
@@ -123,18 +123,18 @@ export function AssessmentTab({
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="assessment-topic-input">Chủ đề / Nội dung trọng tâm</Label>
+                            <Label htmlFor="assessment-topic-input">Chá»§ Ä‘á» / Ná»™i dung trá»ng tÃ¢m</Label>
                             <Input
                                 id="assessment-topic-input"
                                 name="assessmentTopic"
                                 value={assessmentTopic}
                                 onChange={(e) => setAssessmentTopic(e.target.value)}
-                                placeholder="VD: Chủ đề 3 - Xây dựng tình bạn..."
+                                placeholder="VD: Chá»§ Ä‘á» 3 - XÃ¢y dá»±ng tÃ¬nh báº¡n..."
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="assessment-template-upload">Mẫu văn bản (Tùy chọn)</Label>
+                            <Label htmlFor="assessment-template-upload">Máº«u vÄƒn báº£n (TÃ¹y chá»n)</Label>
                             <div className="flex gap-2 items-center">
                                 <Input
                                     type="file"
@@ -153,7 +153,7 @@ export function AssessmentTab({
                                     onClick={() => document.getElementById("assessment-template-upload")?.click()}
                                 >
                                     <Upload className="mr-2 h-4 w-4" />
-                                    {assessmentTemplate ? assessmentTemplate.name : "Tải mẫu lên (.docx)"}
+                                    {assessmentTemplate ? assessmentTemplate.name : "Táº£i máº«u lÃªn (.docx)"}
                                 </Button>
                             </div>
                         </div>
@@ -166,12 +166,12 @@ export function AssessmentTab({
                             {isGenerating ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Đang nghiên cứu chương trình...
+                                    Äang nghiÃªn cá»©u chÆ°Æ¡ng trÃ¬nh...
                                 </>
                             ) : (
                                 <>
                                     <Sparkles className="mr-2 h-4 w-4" />
-                                    Tạo Kế hoạch Kiểm tra
+                                    Táº¡o Káº¿ hoáº¡ch Kiá»ƒm tra
                                 </>
                             )}
                         </Button>
@@ -192,10 +192,10 @@ export function AssessmentTab({
                                         <CardTitle className="text-xl text-indigo-900">
                                             {typeof assessmentResult.ten_ke_hoach === 'string'
                                                 ? assessmentResult.ten_ke_hoach
-                                                : 'Kế hoạch kiểm tra'}
+                                                : 'Káº¿ hoáº¡ch kiá»ƒm tra'}
                                         </CardTitle>
                                         <CardDescription>
-                                            Mục tiêu: {Array.isArray(assessmentResult.muc_tieu) ? assessmentResult.muc_tieu.length : 0} yêu cầu cần đạt
+                                            Má»¥c tiÃªu: {Array.isArray(assessmentResult.muc_tieu) ? assessmentResult.muc_tieu.length : 0} yÃªu cáº§u cáº§n Ä‘áº¡t
                                         </CardDescription>
                                     </div>
                                 </div>
@@ -205,7 +205,7 @@ export function AssessmentTab({
                                     ) : (
                                         <Download className="mr-2 h-4 w-4" />
                                     )}
-                                    Xuất Word
+                                    Xuáº¥t Word
                                 </Button>
                             </div>
                         </CardHeader>
@@ -214,7 +214,7 @@ export function AssessmentTab({
                             <div className="space-y-3">
                                 <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                     <ListOrdered className="h-4 w-4 text-indigo-600" />
-                                    Nội dung nhiệm vụ giao cho học sinh
+                                    Ná»™i dung nhiá»‡m vá»¥ giao cho há»c sinh
                                 </h3>
 
                                 {assessmentResult.noi_dung_nhiem_vu ? (
@@ -235,7 +235,7 @@ export function AssessmentTab({
                                                 <div className="font-medium text-slate-900 mb-1">{idx + 1}. {nv?.ten_nhiem_vu || nv?.yeu_cau || 'N/A'}</div>
                                                 <div className="text-sm text-slate-600 mb-2">{nv?.mo_ta || ''}</div>
                                                 <div className="text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded inline-block">
-                                                    Tiêu chí: {nv?.tieu_chi_danh_gia || 'N/A'}
+                                                    TiÃªu chÃ­: {nv?.tieu_chi_danh_gia || 'N/A'}
                                                 </div>
                                             </div>
                                         ))}
@@ -247,14 +247,14 @@ export function AssessmentTab({
                             <div className="space-y-3">
                                 <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                                     <BookOpen className="h-4 w-4 text-indigo-600" />
-                                    Công cụ đánh giá (Rubric)
+                                    CÃ´ng cá»¥ Ä‘Ã¡nh giÃ¡ (Rubric)
                                 </h3>
                                 <div className="border rounded-md overflow-hidden">
                                     <table className="w-full text-sm">
                                         <thead className="bg-slate-100 text-slate-700">
                                             <tr>
-                                                <th className="p-2 text-left border-r w-1/4">Tiêu chí</th>
-                                                <th className="p-2 text-center border-r w-3/4" colSpan={3}>Các mức độ</th>
+                                                <th className="p-2 text-left border-r w-1/4">TiÃªu chÃ­</th>
+                                                <th className="p-2 text-center border-r w-3/4" colSpan={3}>CÃ¡c má»©c Ä‘á»™</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y">
@@ -262,18 +262,18 @@ export function AssessmentTab({
                                                 <tr key={idx}>
                                                     <td className="p-2 border-r font-medium align-top">
                                                         {typeof r?.tieu_chi === 'string' ? r.tieu_chi : (r?.tieu_chi ? JSON.stringify(r.tieu_chi) : 'N/A')}
-                                                        <div className="text-xs text-muted-foreground mt-1 font-normal">Trọng số: {r?.trong_so || 'N/A'}</div>
+                                                        <div className="text-xs text-muted-foreground mt-1 font-normal">Trá»ng sá»‘: {r?.trong_so || 'N/A'}</div>
                                                     </td>
                                                     <td className="p-2 text-slate-600 col-span-3">
                                                         {!r?.muc_do ? 'N/A' : typeof r.muc_do === 'string' ? r.muc_do : (
                                                             <div className="grid grid-cols-1 gap-2">
-                                                                {r.muc_do?.dat && <div><span className="font-semibold text-green-600">Đạt:</span> {String(r.muc_do.dat)}</div>}
-                                                                {r.muc_do?.tot && <div><span className="font-semibold text-blue-600">Tốt:</span> {String(r.muc_do.tot)}</div>}
-                                                                {r.muc_do?.xuat_sac && <div><span className="font-semibold text-purple-600">Xuất sắc:</span> {String(r.muc_do.xuat_sac)}</div>}
-                                                                {r.muc_do?.chua_dat && <div><span className="font-semibold text-red-600">Chưa đạt:</span> {String(r.muc_do.chua_dat)}</div>}
-                                                                {r.muc_do?.muc_1 && <div><span className="font-semibold text-green-600">Mức 1:</span> {String(r.muc_do.muc_1)}</div>}
-                                                                {r.muc_do?.muc_2 && <div><span className="font-semibold text-blue-600">Mức 2:</span> {String(r.muc_do.muc_2)}</div>}
-                                                                {r.muc_do?.muc_3 && <div><span className="font-semibold text-purple-600">Mức 3:</span> {String(r.muc_do.muc_3)}</div>}
+                                                                {r.muc_do?.dat && <div><span className="font-semibold text-green-600">Äáº¡t:</span> {String(r.muc_do.dat)}</div>}
+                                                                {r.muc_do?.tot && <div><span className="font-semibold text-blue-600">Tá»‘t:</span> {String(r.muc_do.tot)}</div>}
+                                                                {r.muc_do?.xuat_sac && <div><span className="font-semibold text-purple-600">Xuáº¥t sáº¯c:</span> {String(r.muc_do.xuat_sac)}</div>}
+                                                                {r.muc_do?.chua_dat && <div><span className="font-semibold text-red-600">ChÆ°a Ä‘áº¡t:</span> {String(r.muc_do.chua_dat)}</div>}
+                                                                {r.muc_do?.muc_1 && <div><span className="font-semibold text-green-600">Má»©c 1:</span> {String(r.muc_do.muc_1)}</div>}
+                                                                {r.muc_do?.muc_2 && <div><span className="font-semibold text-blue-600">Má»©c 2:</span> {String(r.muc_do.muc_2)}</div>}
+                                                                {r.muc_do?.muc_3 && <div><span className="font-semibold text-purple-600">Má»©c 3:</span> {String(r.muc_do.muc_3)}</div>}
                                                             </div>
                                                         )}
                                                     </td>
@@ -283,7 +283,7 @@ export function AssessmentTab({
                                     </table>
                                     {(assessmentResult.bang_kiem_rubric || assessmentResult.cong_cu_danh_gia?.rubric || []).length > 5 && (
                                         <div className="text-center p-2 text-xs text-muted-foreground bg-slate-50">
-                                            ... và {(assessmentResult.bang_kiem_rubric || assessmentResult.cong_cu_danh_gia?.rubric || []).length - 5} tiêu chí khác
+                                            ... vÃ  {(assessmentResult.bang_kiem_rubric || assessmentResult.cong_cu_danh_gia?.rubric || []).length - 5} tiÃªu chÃ­ khÃ¡c
                                         </div>
                                     )}
                                 </div>
@@ -292,13 +292,13 @@ export function AssessmentTab({
                             <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 flex gap-3">
                                 <Info className="h-5 w-5 text-yellow-600 shrink-0" />
                                 <div>
-                                    <h4 className="font-medium text-yellow-800 text-sm">Lời khuyên chuyên môn</h4>
+                                    <h4 className="font-medium text-yellow-800 text-sm">Lá»i khuyÃªn chuyÃªn mÃ´n</h4>
                                     <p className="text-sm text-yellow-700 mt-1">
                                         {typeof assessmentResult.loi_khuyen === 'string'
                                             ? assessmentResult.loi_khuyen
                                             : assessmentResult.loi_khuyen
                                                 ? JSON.stringify(assessmentResult.loi_khuyen)
-                                                : 'Không có lời khuyên'}
+                                                : 'KhÃ´ng cÃ³ lá»i khuyÃªn'}
                                     </p>
                                 </div>
                             </div>
@@ -311,10 +311,10 @@ export function AssessmentTab({
                             <Sparkles className="h-8 w-8 text-indigo-400" />
                         </div>
                         <h3 className="text-lg font-medium text-gray-900 mb-1">
-                            Chưa có kế hoạch kiểm tra
+                            ChÆ°a cÃ³ káº¿ hoáº¡ch kiá»ƒm tra
                         </h3>
                         <p className="text-sm text-gray-500 max-w-sm mx-auto">
-                            Chọn kỳ đánh giá, loại sản phẩm và chủ đề ở cột bên trái, sau đó nhấn "Tạo Kế hoạch" để AI thiết kế ma trận và rubric.
+                            Chá»n ká»³ Ä‘Ã¡nh giÃ¡, loáº¡i sáº£n pháº©m vÃ  chá»§ Ä‘á» á»Ÿ cá»™t bÃªn trÃ¡i, sau Ä‘Ã³ nháº¥n "Táº¡o Káº¿ hoáº¡ch" Ä‘á»ƒ AI thiáº¿t káº¿ ma tráº­n vÃ  rubric.
                         </p>
                     </div>
                 )}

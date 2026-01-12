@@ -1,67 +1,67 @@
 /**
- * 🧪 MEGA TEST - AUTOMATED TESTING SCRIPT
- * Chạy test tự động trong browser console
+ * ðŸ§ª MEGA TEST - AUTOMATED TESTING SCRIPT
+ * Cháº¡y test tá»± Ä‘á»™ng trong browser console
  */
 
 // Test data
 const testData = {
     small: {
-        ten_bai: "Bài kiểm tra nhỏ",
-        muc_tieu_kien_thuc: "Kiến thức cơ bản",
-        muc_tieu_nang_luc: "Năng lực giải quyết vấn đề",
-        muc_tieu_pham_chat: "Phẩm chất trách nhiệm",
-        tich_hop_nls: "Tích hợp công nghệ",
-        tich_hop_dao_duc: "Giáo dục đạo đức",
-        gv_chuan_bi: "Giáo viên chuẩn bị",
-        hs_chuan_bi: "Học sinh chuẩn bị",
-        hoat_dong_khoi_dong: "Hoạt động khởi động đơn giản",
-        hoat_dong_kham_pha: "Hoạt động khám phá cơ bản",
-        hoat_dong_luyen_tap: "Hoạt động luyện tập",
-        hoat_dong_van_dung: "Hoạt động vận dụng",
-        ho_so_day_hoc: "Hồ sơ dạy học",
-        huong_dan_ve_nha: "Hướng dẫn về nhà"
+        ten_bai: "BÃ i kiá»ƒm tra nhá»",
+        muc_tieu_kien_thuc: "Kiáº¿n thá»©c cÆ¡ báº£n",
+        muc_tieu_nang_luc: "NÄƒng lá»±c giáº£i quyáº¿t váº¥n Ä‘á»",
+        muc_tieu_pham_chat: "Pháº©m cháº¥t trÃ¡ch nhiá»‡m",
+        tich_hop_nls: "TÃ­ch há»£p cÃ´ng nghá»‡",
+        tich_hop_dao_duc: "GiÃ¡o dá»¥c Ä‘áº¡o Ä‘á»©c",
+        gv_chuan_bi: "GiÃ¡o viÃªn chuáº©n bá»‹",
+        hs_chuan_bi: "Há»c sinh chuáº©n bá»‹",
+        hoat_dong_khoi_dong: "Hoáº¡t Ä‘á»™ng khá»Ÿi Ä‘á»™ng Ä‘Æ¡n giáº£n",
+        hoat_dong_kham_pha: "Hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡ cÆ¡ báº£n",
+        hoat_dong_luyen_tap: "Hoáº¡t Ä‘á»™ng luyá»‡n táº­p",
+        hoat_dong_van_dung: "Hoáº¡t Ä‘á»™ng váº­n dá»¥ng",
+        ho_so_day_hoc: "Há»“ sÆ¡ dáº¡y há»c",
+        huong_dan_ve_nha: "HÆ°á»›ng dáº«n vá» nhÃ "
     },
     medium: {
-        ten_bai: "Bài kiểm tra trung bình với nội dung chi tiết và phức tạp hơn",
-        muc_tieu_kien_thuc: "Kiến thức: " + "Nội dung kiến thức chi tiết ".repeat(20),
-        muc_tieu_nang_luc: "Năng lực: " + "Mô tả năng lực chi tiết ".repeat(15),
-        muc_tieu_pham_chat: "Phẩm chất: " + "Phát triển phẩm chất ".repeat(10),
-        hoat_dong_khoi_dong: "Hoạt động khởi động: " + "Chi tiết hoạt động ".repeat(30),
-        hoat_dong_kham_pha: "Hoạt động khám phá: " + "Nội dung chi tiết ".repeat(40),
-        hoat_dong_luyen_tap: "Hoạt động luyện tập: " + "Bài tập chi tiết ".repeat(35),
-        hoat_dong_van_dung: "Hoạt động vận dụng: " + "Vận dụng thực tế ".repeat(25),
-        ho_so_day_hoc: "Hồ sơ dạy học: " + "Tài liệu chi tiết ".repeat(50),
-        huong_dan_ve_nha: "Hướng dẫn về nhà: " + "Bài tập về nhà ".repeat(20)
+        ten_bai: "BÃ i kiá»ƒm tra trung bÃ¬nh vá»›i ná»™i dung chi tiáº¿t vÃ  phá»©c táº¡p hÆ¡n",
+        muc_tieu_kien_thuc: "Kiáº¿n thá»©c: " + "Ná»™i dung kiáº¿n thá»©c chi tiáº¿t ".repeat(20),
+        muc_tieu_nang_luc: "NÄƒng lá»±c: " + "MÃ´ táº£ nÄƒng lá»±c chi tiáº¿t ".repeat(15),
+        muc_tieu_pham_chat: "Pháº©m cháº¥t: " + "PhÃ¡t triá»ƒn pháº©m cháº¥t ".repeat(10),
+        hoat_dong_khoi_dong: "Hoáº¡t Ä‘á»™ng khá»Ÿi Ä‘á»™ng: " + "Chi tiáº¿t hoáº¡t Ä‘á»™ng ".repeat(30),
+        hoat_dong_kham_pha: "Hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡: " + "Ná»™i dung chi tiáº¿t ".repeat(40),
+        hoat_dong_luyen_tap: "Hoáº¡t Ä‘á»™ng luyá»‡n táº­p: " + "BÃ i táº­p chi tiáº¿t ".repeat(35),
+        hoat_dong_van_dung: "Hoáº¡t Ä‘á»™ng váº­n dá»¥ng: " + "Váº­n dá»¥ng thá»±c táº¿ ".repeat(25),
+        ho_so_day_hoc: "Há»“ sÆ¡ dáº¡y há»c: " + "TÃ i liá»‡u chi tiáº¿t ".repeat(50),
+        huong_dan_ve_nha: "HÆ°á»›ng dáº«n vá» nhÃ : " + "BÃ i táº­p vá» nhÃ  ".repeat(20)
     },
     large: {
-        ten_bai: "BÀI KIỂM TRA LỚN - NỘI DUNG RẤT CHI TIẾT VÀ PHỨC TẠP",
-        muc_tieu_kien_thuc: "Kiến thức: " + "Nội dung kiến thức cực kỳ chi tiết ".repeat(100),
-        muc_tieu_nang_luc: "Năng lực: " + "Mô tả năng lực rất chi tiết ".repeat(80),
-        muc_tieu_pham_chat: "Phẩm chất: " + "Phát triển phẩm chất toàn diện ".repeat(60),
-        hoat_dong_khoi_dong: "Hoạt động khởi động: " + "Chi tiết hoạt động mở rộng ".repeat(150),
-        hoat_dong_kham_pha: "Hoạt động khám phá: " + "Nội dung khám phá sâu rộng ".repeat(200),
-        hoat_dong_luyen_tap: "Hoạt động luyện tập: " + "Bài tập luyện tập nâng cao ".repeat(180),
-        hoat_dong_van_dung: "Hoạt động vận dụng: " + "Vận dụng thực tế phức tạp ".repeat(120),
-        ho_so_day_hoc: "Hồ sơ dạy học: " + "Tài liệu dạy học đầy đủ ".repeat(300),
-        huong_dan_ve_nha: "Hướng dẫn về nhà: " + "Bài tập về nhà nâng cao ".repeat(100)
+        ten_bai: "BÃ€I KIá»‚M TRA Lá»šN - Ná»˜I DUNG Ráº¤T CHI TIáº¾T VÃ€ PHá»¨C Táº P",
+        muc_tieu_kien_thuc: "Kiáº¿n thá»©c: " + "Ná»™i dung kiáº¿n thá»©c cá»±c ká»³ chi tiáº¿t ".repeat(100),
+        muc_tieu_nang_luc: "NÄƒng lá»±c: " + "MÃ´ táº£ nÄƒng lá»±c ráº¥t chi tiáº¿t ".repeat(80),
+        muc_tieu_pham_chat: "Pháº©m cháº¥t: " + "PhÃ¡t triá»ƒn pháº©m cháº¥t toÃ n diá»‡n ".repeat(60),
+        hoat_dong_khoi_dong: "Hoáº¡t Ä‘á»™ng khá»Ÿi Ä‘á»™ng: " + "Chi tiáº¿t hoáº¡t Ä‘á»™ng má»Ÿ rá»™ng ".repeat(150),
+        hoat_dong_kham_pha: "Hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡: " + "Ná»™i dung khÃ¡m phÃ¡ sÃ¢u rá»™ng ".repeat(200),
+        hoat_dong_luyen_tap: "Hoáº¡t Ä‘á»™ng luyá»‡n táº­p: " + "BÃ i táº­p luyá»‡n táº­p nÃ¢ng cao ".repeat(180),
+        hoat_dong_van_dung: "Hoáº¡t Ä‘á»™ng váº­n dá»¥ng: " + "Váº­n dá»¥ng thá»±c táº¿ phá»©c táº¡p ".repeat(120),
+        ho_so_day_hoc: "Há»“ sÆ¡ dáº¡y há»c: " + "TÃ i liá»‡u dáº¡y há»c Ä‘áº§y Ä‘á»§ ".repeat(300),
+        huong_dan_ve_nha: "HÆ°á»›ng dáº«n vá» nhÃ : " + "BÃ i táº­p vá» nhÃ  nÃ¢ng cao ".repeat(100)
     },
     mega: {
-        ten_bai: "🚀 BÀI KIỂM TRA MEGA - STRESS TEST NỘI DUNG KHỦNG LỖ",
-        muc_tieu_kien_thuc: "Kiến thức: " + "Nội dung kiến thức siêu chi tiết ".repeat(500),
-        muc_tieu_nang_luc: "Năng lực: " + "Mô tả năng lực siêu chi tiết ".repeat(400),
-        muc_tieu_pham_chat: "Phẩm chất: " + "Phát triển phẩm chất siêu toàn diện ".repeat(300),
-        hoat_dong_khoi_dong: "Hoạt động khởi động: " + "Chi tiết hoạt động siêu mở rộng ".repeat(750),
-        hoat_dong_kham_pha: "Hoạt động khám phá: " + "Nội dung khám phá siêu sâu rộng ".repeat(1000),
-        hoat_dong_luyen_tap: "Hoạt động luyện tập: " + "Bài tập luyện tập siêu nâng cao ".repeat(900),
-        hoat_dong_van_dung: "Hoạt động vận dụng: " + "Vận dụng thực tế siêu phức tạp ".repeat(600),
-        ho_so_day_hoc: "Hồ sơ dạy học: " + "Tài liệu dạy học siêu đầy đủ ".repeat(1500),
-        huong_dan_ve_nha: "Hướng dẫn về nhà: " + "Bài tập về nhà siêu nâng cao ".repeat(500)
+        ten_bai: "ðŸš€ BÃ€I KIá»‚M TRA MEGA - STRESS TEST Ná»˜I DUNG KHá»¦NG Lá»–",
+        muc_tieu_kien_thuc: "Kiáº¿n thá»©c: " + "Ná»™i dung kiáº¿n thá»©c siÃªu chi tiáº¿t ".repeat(500),
+        muc_tieu_nang_luc: "NÄƒng lá»±c: " + "MÃ´ táº£ nÄƒng lá»±c siÃªu chi tiáº¿t ".repeat(400),
+        muc_tieu_pham_chat: "Pháº©m cháº¥t: " + "PhÃ¡t triá»ƒn pháº©m cháº¥t siÃªu toÃ n diá»‡n ".repeat(300),
+        hoat_dong_khoi_dong: "Hoáº¡t Ä‘á»™ng khá»Ÿi Ä‘á»™ng: " + "Chi tiáº¿t hoáº¡t Ä‘á»™ng siÃªu má»Ÿ rá»™ng ".repeat(750),
+        hoat_dong_kham_pha: "Hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡: " + "Ná»™i dung khÃ¡m phÃ¡ siÃªu sÃ¢u rá»™ng ".repeat(1000),
+        hoat_dong_luyen_tap: "Hoáº¡t Ä‘á»™ng luyá»‡n táº­p: " + "BÃ i táº­p luyá»‡n táº­p siÃªu nÃ¢ng cao ".repeat(900),
+        hoat_dong_van_dung: "Hoáº¡t Ä‘á»™ng váº­n dá»¥ng: " + "Váº­n dá»¥ng thá»±c táº¿ siÃªu phá»©c táº¡p ".repeat(600),
+        ho_so_day_hoc: "Há»“ sÆ¡ dáº¡y há»c: " + "TÃ i liá»‡u dáº¡y há»c siÃªu Ä‘áº§y Ä‘á»§ ".repeat(1500),
+        huong_dan_ve_nha: "HÆ°á»›ng dáº«n vá» nhÃ : " + "BÃ i táº­p vá» nhÃ  siÃªu nÃ¢ng cao ".repeat(500)
     }
 };
 
 // Test runner function
 async function runMegaTest() {
-    console.log("🧪 BẮT ĐẦU MEGA TEST SUITE");
+    console.log("ðŸ§ª Báº®T Äáº¦U MEGA TEST SUITE");
     console.log("=" + "=".repeat(49));
     
     const tests = [
@@ -74,20 +74,20 @@ async function runMegaTest() {
     const results = [];
     
     for (const test of tests) {
-        console.log(`\n🚀 Testing: ${test.name}`);
+        console.log(`\nðŸš€ Testing: ${test.name}`);
         console.log("-".repeat(30));
         
         try {
             // Calculate content size
             const contentSize = JSON.stringify(test.data).length;
-            console.log(`📏 Content Size: ${Math.round(contentSize / 1024)}KB`);
+            console.log(`ðŸ“ Content Size: ${Math.round(contentSize / 1024)}KB`);
             
             // Determine strategy
             const useWorker = contentSize > 50000; // LARGE_CONTENT_THRESHOLD
             const actualStrategy = useWorker ? "worker" : "main-thread";
-            console.log(`🎯 Expected Strategy: ${test.expectedStrategy}`);
-            console.log(`🎯 Actual Strategy: ${actualStrategy}`);
-            console.log(`✅ Strategy Match: ${test.expectedStrategy === actualStrategy ? "YES" : "NO"}`);
+            console.log(`ðŸŽ¯ Expected Strategy: ${test.expectedStrategy}`);
+            console.log(`ðŸŽ¯ Actual Strategy: ${actualStrategy}`);
+            console.log(`âœ… Strategy Match: ${test.expectedStrategy === actualStrategy ? "YES" : "NO"}`);
             
             // Memory check
             const memoryInfo = (performance as any).memory;
@@ -95,11 +95,11 @@ async function runMegaTest() {
                 const usedMB = Math.round(memoryInfo.usedJSHeapSize / 1024 / 1024);
                 const limitMB = Math.round(memoryInfo.jsHeapSizeLimit / 1024 / 1024);
                 const usagePercent = Math.round((usedMB / limitMB) * 100);
-                console.log(`🧠 Memory Usage: ${usedMB}MB / ${limitMB}MB (${usagePercent}%)`);
+                console.log(`ðŸ§  Memory Usage: ${usedMB}MB / ${limitMB}MB (${usagePercent}%)`);
             }
             
             // Worker support check
-            console.log(`🔧 Worker Support: ${typeof Worker !== 'undefined' ? '✅ Available' : '❌ Not Available'}`);
+            console.log(`ðŸ”§ Worker Support: ${typeof Worker !== 'undefined' ? 'âœ… Available' : 'âŒ Not Available'}`);
             
             results.push({
                 testName: test.name,
@@ -110,10 +110,10 @@ async function runMegaTest() {
                 status: 'passed'
             });
             
-            console.log(`✅ ${test.name} - PASSED`);
+            console.log(`âœ… ${test.name} - PASSED`);
             
         } catch (error) {
-            console.error(`❌ ${test.name} - FAILED:`, error);
+            console.error(`âŒ ${test.name} - FAILED:`, error);
             results.push({
                 testName: test.name,
                 error: error instanceof Error ? error.message : 'Unknown error',
@@ -125,11 +125,11 @@ async function runMegaTest() {
         await new Promise(resolve => setTimeout(resolve, 500));
     }
     
-    console.log("\n🎊 MEGA TEST SUITE RESULTS:");
+    console.log("\nðŸŽŠ MEGA TEST SUITE RESULTS:");
     console.log("=" + "=".repeat(49));
     
     results.forEach((result, index) => {
-        console.log(`${index + 1}. ${result.testName}: ${result.status === 'failed' ? '❌ FAILED' : '✅ PASSED'}`);
+        console.log(`${index + 1}. ${result.testName}: ${result.status === 'failed' ? 'âŒ FAILED' : 'âœ… PASSED'}`);
         if (result.status === 'passed') {
             console.log(`   Size: ${result.contentSize}KB, Strategy: ${result.actualStrategy}, Match: ${result.strategyMatch ? 'YES' : 'NO'}`);
         } else {
@@ -140,12 +140,12 @@ async function runMegaTest() {
     const passedTests = results.filter(r => r.status === 'passed').length;
     const totalTests = results.length;
     
-    console.log(`\n🎯 SUMMARY: ${passedTests}/${totalTests} tests passed`);
+    console.log(`\nðŸŽ¯ SUMMARY: ${passedTests}/${totalTests} tests passed`);
     
     if (passedTests === totalTests) {
-        console.log("🎊 ALL TESTS PASSED! System is working correctly!");
+        console.log("ðŸŽŠ ALL TESTS PASSED! System is working correctly!");
     } else {
-        console.log("⚠️ Some tests failed. Please check the system.");
+        console.log("âš ï¸ Some tests failed. Please check the system.");
     }
     
     return results;
@@ -155,6 +155,6 @@ async function runMegaTest() {
 if (typeof window !== 'undefined') {
     (window as any).runMegaTest = runMegaTest;
     (window as any).testData = testData;
-    console.log("🧪 Mega Test loaded! Use runMegaTest() to start testing.");
-    console.log("📊 Test data available in testData.small, testData.medium, testData.large, testData.mega");
+    console.log("ðŸ§ª Mega Test loaded! Use runMegaTest() to start testing.");
+    console.log("ðŸ“Š Test data available in testData.small, testData.medium, testData.large, testData.mega");
 }

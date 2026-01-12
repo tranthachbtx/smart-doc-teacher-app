@@ -1,6 +1,6 @@
 /**
- * 🎯 SIMPLE WORD EXPORTER - BACK TO BASICS ARCHITECTURE 17.0
- * Xuất file Word một cách đơn giản và hiệu quả
+ * ðŸŽ¯ SIMPLE WORD EXPORTER - BACK TO BASICS ARCHITECTURE 17.0
+ * Xuáº¥t file Word má»™t cÃ¡ch Ä‘Æ¡n giáº£n vÃ  hiá»‡u quáº£
  */
 
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
@@ -10,15 +10,15 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
   try {
     // Determine data structure
     const isEnhanced = !!lessonPlan.ten_bai;
-    const title = isEnhanced ? lessonPlan.ten_bai : (lessonPlan.title || 'Giáo án');
-    const grade = isEnhanced ? (lessonPlan.grade || 'Không xác định') : (lessonPlan.grade || 'Không xác định');
+    const title = isEnhanced ? lessonPlan.ten_bai : (lessonPlan.title || 'GiÃ¡o Ã¡n');
+    const grade = isEnhanced ? (lessonPlan.grade || 'KhÃ´ng xÃ¡c Ä‘á»‹nh') : (lessonPlan.grade || 'KhÃ´ng xÃ¡c Ä‘á»‹nh');
 
     // Normalize objectives
     let objectives: string[] = [];
     if (isEnhanced) {
-      if (lessonPlan.muc_tieu_kien_thuc) objectives.push(`Kiến thức: ${lessonPlan.muc_tieu_kien_thuc}`);
-      if (lessonPlan.muc_tieu_nang_luc) objectives.push(`Năng lực: ${lessonPlan.muc_tieu_nang_luc}`);
-      if (lessonPlan.muc_tieu_pham_chat) objectives.push(`Phẩm chất: ${lessonPlan.muc_tieu_pham_chat}`);
+      if (lessonPlan.muc_tieu_kien_thuc) objectives.push(`Kiáº¿n thá»©c: ${lessonPlan.muc_tieu_kien_thuc}`);
+      if (lessonPlan.muc_tieu_nang_luc) objectives.push(`NÄƒng lá»±c: ${lessonPlan.muc_tieu_nang_luc}`);
+      if (lessonPlan.muc_tieu_pham_chat) objectives.push(`Pháº©m cháº¥t: ${lessonPlan.muc_tieu_pham_chat}`);
     } else {
       objectives = lessonPlan.objectives || [];
     }
@@ -26,13 +26,13 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
     // Normalize activities
     let activities: { title: string, content: string }[] = [];
     if (isEnhanced) {
-      if (lessonPlan.hoat_dong_khoi_dong) activities.push({ title: "Khởi động", content: lessonPlan.hoat_dong_khoi_dong });
-      if (lessonPlan.hoat_dong_kham_pha) activities.push({ title: "Khám phá", content: lessonPlan.hoat_dong_kham_pha });
-      if (lessonPlan.hoat_dong_luyen_tap) activities.push({ title: "Luyện tập", content: lessonPlan.hoat_dong_luyen_tap });
-      if (lessonPlan.hoat_dong_van_dung) activities.push({ title: "Vận dụng", content: lessonPlan.hoat_dong_van_dung });
+      if (lessonPlan.hoat_dong_khoi_dong) activities.push({ title: "Khá»Ÿi Ä‘á»™ng", content: lessonPlan.hoat_dong_khoi_dong });
+      if (lessonPlan.hoat_dong_kham_pha) activities.push({ title: "KhÃ¡m phÃ¡", content: lessonPlan.hoat_dong_kham_pha });
+      if (lessonPlan.hoat_dong_luyen_tap) activities.push({ title: "Luyá»‡n táº­p", content: lessonPlan.hoat_dong_luyen_tap });
+      if (lessonPlan.hoat_dong_van_dung) activities.push({ title: "Váº­n dá»¥ng", content: lessonPlan.hoat_dong_van_dung });
     } else {
       activities = (lessonPlan.activities || []).map((a: any, i: number) => ({
-        title: `Hoạt động ${i + 1}`,
+        title: `Hoáº¡t Ä‘á»™ng ${i + 1}`,
         content: a
       }));
     }
@@ -60,7 +60,7 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
           new Paragraph({
             children: [
               new TextRun({
-                text: `Lớp: ${grade}`,
+                text: `Lá»›p: ${grade}`,
                 bold: true,
                 size: 24
               })
@@ -73,7 +73,7 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
           new Paragraph({
             children: [
               new TextRun({
-                text: "I. MỤC TIÊU HỌC TẬP",
+                text: "I. Má»¤C TIÃŠU Há»ŒC Táº¬P",
                 bold: true,
                 size: 28,
                 color: "4F81BD"
@@ -99,7 +99,7 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
           new Paragraph({
             children: [
               new TextRun({
-                text: "II. HOẠT ĐỘNG DẠY HỌC",
+                text: "II. HOáº T Äá»˜NG Dáº Y Há»ŒC",
                 bold: true,
                 size: 28,
                 color: "4F81BD"
@@ -137,7 +137,7 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "III. KIỂM TRA ĐÁNH GIÁ",
+                  text: "III. KIá»‚M TRA ÄÃNH GIÃ",
                   bold: true,
                   size: 28,
                   color: "4F81BD"
@@ -162,7 +162,7 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
           // Extra sections for Enhanced
           ...(isEnhanced ? [
             new Paragraph({
-              children: [new TextRun({ text: "III. HỒ SƠ DẠY HỌC", bold: true, size: 28, color: "4F81BD" })],
+              children: [new TextRun({ text: "III. Há»’ SÆ  Dáº Y Há»ŒC", bold: true, size: 28, color: "4F81BD" })],
               heading: HeadingLevel.HEADING_1,
               spacing: { before: 400, after: 200 }
             }),
@@ -171,7 +171,7 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
               spacing: { after: 200 }
             }),
             new Paragraph({
-              children: [new TextRun({ text: "IV. HƯỚNG DẪN VỀ NHÀ", bold: true, size: 28, color: "4F81BD" })],
+              children: [new TextRun({ text: "IV. HÆ¯á»šNG DáºªN Vá»€ NHÃ€", bold: true, size: 28, color: "4F81BD" })],
               heading: HeadingLevel.HEADING_1,
               spacing: { before: 400, after: 200 }
             }),
@@ -197,7 +197,7 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
           new Paragraph({
             children: [
               new TextRun({
-                text: `Giáo án được tạo tự động bởi Smart Doc Teacher App`,
+                text: `GiÃ¡o Ã¡n Ä‘Æ°á»£c táº¡o tá»± Ä‘á»™ng bá»Ÿi Smart Doc Teacher App`,
                 size: 18,
                 color: "999999",
                 italics: true
@@ -210,7 +210,7 @@ export async function exportToWord(lessonPlan: any): Promise<Buffer> {
           new Paragraph({
             children: [
               new TextRun({
-                text: `Ngày tạo: ${new Date().toLocaleDateString('vi-VN')}`,
+                text: `NgÃ y táº¡o: ${new Date().toLocaleDateString('vi-VN')}`,
                 size: 18,
                 color: "999999",
                 italics: true

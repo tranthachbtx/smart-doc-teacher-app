@@ -1,6 +1,6 @@
 /**
- * 🎉 EVENT ENGINE COMPONENT
- * Xử lý tab Ngoại khóa
+ * ðŸŽ‰ EVENT ENGINE COMPONENT
+ * Xá»­ lÃ½ tab Ngoáº¡i khÃ³a
  */
 
 import React from "react";

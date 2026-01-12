@@ -1,6 +1,6 @@
 /**
- * 🎯 ENHANCED PDF EXTRACTOR API - ARCHITECTURE 18.0
- * Sử dụng MultiStrategyExtractor đã có sẵn trong hệ thống
+ * ðŸŽ¯ ENHANCED PDF EXTRACTOR API - ARCHITECTURE 18.0
+ * Sá»­ dá»¥ng MultiStrategyExtractor Ä‘Ã£ cÃ³ sáºµn trong há»‡ thá»‘ng
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json(
-        { success: false, error: 'Vui lòng chọn file PDF hoặc DOCX' },
+        { success: false, error: 'Vui lÃ²ng chá»n file PDF hoáº·c DOCX' },
         { status: 400 }
       );
     }
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { success: false, error: 'File quá lớn. Vui lòng chọn file nhỏ hơn 50MB' },
+        { success: false, error: 'File quÃ¡ lá»›n. Vui lÃ²ng chá»n file nhá» hÆ¡n 50MB' },
         { status: 400 }
       );
     }
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: 'Chỉ hỗ trợ file PDF và DOCX' },
+        { success: false, error: 'Chá»‰ há»— trá»£ file PDF vÃ  DOCX' },
         { status: 400 }
       );
     }
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
         console.log('[PDF-EXTRACTOR] Fallback to Gemini Vision for better extraction...');
         const geminiResult = await extractTextFromFile(
           filePayload,
-          "Hãy phân tích tài liệu này và trích xuất nội dung theo cấu trúc giáo án. Tập trung vào các phần: Mục tiêu, Chuẩn bị, Hoạt động (Khởi động, Khám phá, Luyện tập, Vận dụng), Kiểm tra, Hướng dẫn về nhà."
+          "HÃ£y phÃ¢n tÃ­ch tÃ i liá»‡u nÃ y vÃ  trÃ­ch xuáº¥t ná»™i dung theo cáº¥u trÃºc giÃ¡o Ã¡n. Táº­p trung vÃ o cÃ¡c pháº§n: Má»¥c tiÃªu, Chuáº©n bá»‹, Hoáº¡t Ä‘á»™ng (Khá»Ÿi Ä‘á»™ng, KhÃ¡m phÃ¡, Luyá»‡n táº­p, Váº­n dá»¥ng), Kiá»ƒm tra, HÆ°á»›ng dáº«n vá» nhÃ ."
         );
 
         if (geminiResult.success) {
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     console.error('[PDF-EXTRACTOR] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { success: false, error: `Đã xảy ra lỗi: ${errorMessage}` },
+      { success: false, error: `ÄÃ£ xáº£y ra lá»—i: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -143,50 +143,50 @@ function extractKHBHSections(content: string) {
   const sectionPatterns = [
     {
       key: 'muc_tieu',
-      title: 'Mục tiêu bài học',
-      patterns: [/mục tiêu/i, /tiêu chí/i, /kiến thức/i, /năng lực/i, /phẩm chất/i],
+      title: 'Má»¥c tiÃªu bÃ i há»c',
+      patterns: [/má»¥c tiÃªu/i, /tiÃªu chÃ­/i, /kiáº¿n thá»©c/i, /nÄƒng lá»±c/i, /pháº©m cháº¥t/i],
       priority: 1
     },
     {
-      key: 'chuẩn_bị',
-      title: 'Chuẩn bị bài học',
-      patterns: [/chuẩn bị/i, /thiết bị/i, /giáo cụ/i, /học liệu/i],
+      key: 'chuáº©n_bá»‹',
+      title: 'Chuáº©n bá»‹ bÃ i há»c',
+      patterns: [/chuáº©n bá»‹/i, /thiáº¿t bá»‹/i, /giÃ¡o cá»¥/i, /há»c liá»‡u/i],
       priority: 2
     },
     {
-      key: 'hoat_động_khởi_động',
-      title: 'HOẠT ĐỘNG 1: KHỞI ĐỘNG',
-      patterns: [/khởi động/i, /đặt vấn đề/i, /giới thiệu/i, /warm[-]?up/i, /hoạt động 1/i],
+      key: 'hoat_Ä‘á»™ng_khá»Ÿi_Ä‘á»™ng',
+      title: 'HOáº T Äá»˜NG 1: KHá»žI Äá»˜NG',
+      patterns: [/khá»Ÿi Ä‘á»™ng/i, /Ä‘áº·t váº¥n Ä‘á»/i, /giá»›i thiá»‡u/i, /warm[-]?up/i, /hoáº¡t Ä‘á»™ng 1/i],
       priority: 3
     },
     {
-      key: 'hoạt_động_khám_phá',
-      title: 'HOẠT ĐỘNG 2: KHÁM PHÁ',
-      patterns: [/khám phá/i, /hình thành/i, /xây dựng/i, /mới/i, /hoạt động 2/i],
+      key: 'hoáº¡t_Ä‘á»™ng_khÃ¡m_phÃ¡',
+      title: 'HOáº T Äá»˜NG 2: KHÃM PHÃ',
+      patterns: [/khÃ¡m phÃ¡/i, /hÃ¬nh thÃ nh/i, /xÃ¢y dá»±ng/i, /má»›i/i, /hoáº¡t Ä‘á»™ng 2/i],
       priority: 4
     },
     {
-      key: 'hoạt_động_luyện_tập',
-      title: 'HOẠT ĐỘNG 3: LUYỆN TẬP',
-      patterns: [/luyện tập/i, /thực hành/i, /củng cố/i, /bài tập/i, /hoạt động 3/i],
+      key: 'hoáº¡t_Ä‘á»™ng_luyá»‡n_táº­p',
+      title: 'HOáº T Äá»˜NG 3: LUYá»†N Táº¬P',
+      patterns: [/luyá»‡n táº­p/i, /thá»±c hÃ nh/i, /cá»§ng cá»‘/i, /bÃ i táº­p/i, /hoáº¡t Ä‘á»™ng 3/i],
       priority: 5
     },
     {
-      key: 'hoạt_động_vận_dụng',
-      title: 'HOẠT ĐỘNG 4: VẬN DỤNG',
-      patterns: [/vận dụng/i, /mở rộng/i, /sáng tạo/i, /thực tế/i, /hoạt động 4/i],
+      key: 'hoáº¡t_Ä‘á»™ng_váº­n_dá»¥ng',
+      title: 'HOáº T Äá»˜NG 4: Váº¬N Dá»¤NG',
+      patterns: [/váº­n dá»¥ng/i, /má»Ÿ rá»™ng/i, /sÃ¡ng táº¡o/i, /thá»±c táº¿/i, /hoáº¡t Ä‘á»™ng 4/i],
       priority: 6
     },
     {
-      key: 'kiểm_tra',
-      title: 'Kiểm tra đánh giá',
-      patterns: [/kiểm tra/i, /đánh giá/i, /tự luận/i, /bài kiểm tra/i],
+      key: 'kiá»ƒm_tra',
+      title: 'Kiá»ƒm tra Ä‘Ã¡nh giÃ¡',
+      patterns: [/kiá»ƒm tra/i, /Ä‘Ã¡nh giÃ¡/i, /tá»± luáº­n/i, /bÃ i kiá»ƒm tra/i],
       priority: 7
     },
     {
-      key: 'hướng_dẫn',
-      title: 'Hướng dẫn về nhà',
-      patterns: [/hướng dẫn/i, /về nhà/i, /dặn dò/i, /bài tập về nhà/i],
+      key: 'hÆ°á»›ng_dáº«n',
+      title: 'HÆ°á»›ng dáº«n vá» nhÃ ',
+      patterns: [/hÆ°á»›ng dáº«n/i, /vá» nhÃ /i, /dáº·n dÃ²/i, /bÃ i táº­p vá» nhÃ /i],
       priority: 8
     }
   ];

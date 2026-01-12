@@ -1,6 +1,6 @@
 /**
- * 🎯 ENHANCED LESSON PROCESSOR API - ARCHITECTURE 18.0
- * API endpoint với database integration và advanced AI processing
+ * ðŸŽ¯ ENHANCED LESSON PROCESSOR API - ARCHITECTURE 18.0
+ * API endpoint vá»›i database integration vÃ  advanced AI processing
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json(
-        { success: false, error: 'Vui lòng chọn file PDF hoặc DOCX' },
+        { success: false, error: 'Vui lÃ²ng chá»n file PDF hoáº·c DOCX' },
         { status: 400 }
       );
     }
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { success: false, error: 'File quá lớn. Vui lòng chọn file nhỏ hơn 50MB' },
+        { success: false, error: 'File quÃ¡ lá»›n. Vui lÃ²ng chá»n file nhá» hÆ¡n 50MB' },
         { status: 400 }
       );
     }
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: 'Chỉ hỗ trợ file PDF và DOCX' },
+        { success: false, error: 'Chá»‰ há»— trá»£ file PDF vÃ  DOCX' },
         { status: 400 }
       );
     }
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('[ENHANCED-API] PDF analysis failed:', error);
       return NextResponse.json(
-        { success: false, error: 'Không thể phân tích file PDF. Vui lòng kiểm tra lại file.' },
+        { success: false, error: 'KhÃ´ng thá»ƒ phÃ¢n tÃ­ch file PDF. Vui lÃ²ng kiá»ƒm tra láº¡i file.' },
         { status: 400 }
       );
     }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     try {
       context = await databaseIntegrationService.getContextForLesson(
         grade,
-        topic || pdfContent.metadata.title || 'Bài học',
+        topic || pdfContent.metadata.title || 'BÃ i há»c',
         chuDeSo || undefined,
         oldLessonContent
       );
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('[ENHANCED-API] Database context failed:', error);
       return NextResponse.json(
-        { success: false, error: 'Không thể lấy context từ database. Vui lòng thử lại.' },
+        { success: false, error: 'KhÃ´ng thá»ƒ láº¥y context tá»« database. Vui lÃ²ng thá»­ láº¡i.' },
         { status: 500 }
       );
     }
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('[ENHANCED-API] AI processing failed:', error);
       return NextResponse.json(
-        { success: false, error: 'Không thể xử lý với AI. Vui lòng thử lại.' },
+        { success: false, error: 'KhÃ´ng thá»ƒ xá»­ lÃ½ vá»›i AI. Vui lÃ²ng thá»­ láº¡i.' },
         { status: 500 }
       );
     }
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('[ENHANCED-API] Word export failed:', error);
       return NextResponse.json(
-        { success: false, error: 'Không thể tạo file Word. Vui lòng thử lại.' },
+        { success: false, error: 'KhÃ´ng thá»ƒ táº¡o file Word. Vui lÃ²ng thá»­ láº¡i.' },
         { status: 500 }
       );
     }
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
           language: pdfContent.structure.language
         },
         databaseContext: {
-          ppctData: context.ppctData ? `Chủ đề ${context.ppctData.chu_de_so}: ${context.ppctData.ten}` : null,
+          ppctData: context.ppctData ? `Chá»§ Ä‘á» ${context.ppctData.chu_de_so}: ${context.ppctData.ten}` : null,
           referenceMaterials: context.referenceMaterials.length,
           educationalFocus: context.educationalContext.trongTamPhatTrien
         },
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
     console.error('[ENHANCED-API] Unexpected error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { success: false, error: `Đã xảy ra lỗi không mong muốn: ${errorMessage}` },
+      { success: false, error: `ÄÃ£ xáº£y ra lá»—i khÃ´ng mong muá»‘n: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -197,7 +197,7 @@ export async function GET() {
         file: 'PDF or DOCX file (max 50MB)',
         grade: 'Grade level (10, 11, 12)',
         topic: 'Lesson topic',
-        chuDeSo: 'PPCT chủ đề số',
+        chuDeSo: 'PPCT chá»§ Ä‘á» sá»‘',
         oldLessonContent: 'Old lesson content for reference (optional)'
       }
     }

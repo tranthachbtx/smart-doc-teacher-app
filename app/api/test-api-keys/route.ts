@@ -5,7 +5,7 @@ const clean = (k: string | undefined) => k?.trim().replace(/^["']|["']$/g, '') |
 
 export async function GET(req: NextRequest) {
     try {
-        console.log("[API-Test] 🚀 Starting API key test...");
+        console.log("[API-Test] ðŸš€ Starting API key test...");
 
         const results = {
             gemini: [] as any[],
@@ -20,14 +20,14 @@ export async function GET(req: NextRequest) {
             process.env.GEMINI_API_KEY_3
         ].filter(k => !!k).map(k => clean(k));
 
-        console.log(`[API-Test] 🔑 Testing ${geminiKeys.length} Gemini keys...`);
+        console.log(`[API-Test] ðŸ”‘ Testing ${geminiKeys.length} Gemini keys...`);
 
         for (let i = 0; i < geminiKeys.length; i++) {
             const key = geminiKeys[i];
             if (!key) continue;
             const keyNum = i + 1;
 
-            // 🔍 MODEL DISCOVERY v43.0: Thay vì đoán, hãy hỏi Google Key này dùng được gì
+            // ðŸ” MODEL DISCOVERY v43.0: Thay vÃ¬ Ä‘oÃ¡n, hÃ£y há»i Google Key nÃ y dÃ¹ng Ä‘Æ°á»£c gÃ¬
             try {
                 const listUrl = `https://generativelanguage.googleapis.com/v1/models?key=${key}`;
                 const listResp = await fetch(listUrl);
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
 
                 const availableModels = (listData.models || []).map((m: any) => m.name.replace("models/", ""));
 
-                // Thử nghiệm model đầu tiên có trong danh sách khả dụng
+                // Thá»­ nghiá»‡m model Ä‘áº§u tiÃªn cÃ³ trong danh sÃ¡ch kháº£ dá»¥ng
                 const modelToTest = availableModels.find((m: string) => m.includes("flash")) || availableModels[0] || "gemini-1.5-flash";
 
                 const isExperimental = modelToTest.includes("2.0") || modelToTest.includes("exp");
@@ -55,12 +55,12 @@ export async function GET(req: NextRequest) {
                     status: testResp.status,
                     ok: testResp.ok,
                     availableCount: availableModels.length,
-                    capabilities: availableModels.slice(0, 5), // Hiện 5 model tiêu biểu
+                    capabilities: availableModels.slice(0, 5), // Hiá»‡n 5 model tiÃªu biá»ƒu
                     keyPrefix: key.slice(0, 8) + "...",
                     error: testResp.ok ? null : (await testResp.json().catch(() => ({}))).error?.message
                 });
 
-                console.log(`[API-Test] 🔑 Key ${keyNum} discovered ${availableModels.length} models. Tested: ${modelToTest}`);
+                console.log(`[API-Test] ðŸ”‘ Key ${keyNum} discovered ${availableModels.length} models. Tested: ${modelToTest}`);
 
             } catch (e: any) {
                 results.gemini.push({
@@ -99,11 +99,11 @@ export async function GET(req: NextRequest) {
                 if (response.ok) {
                     const data = await response.json();
                     results.openai.hasResponse = !!data.choices?.[0]?.message?.content;
-                    console.log(`[API-Test] ✅ OpenAI: SUCCESS`);
+                    console.log(`[API-Test] âœ… OpenAI: SUCCESS`);
                 } else {
-                    const errorData = await response.json().catch(() => ({ error: { message: "Lỗi kết nối hoặc hết số dư OpenAI" } }));
-                    results.openai.error = errorData.error?.message || "Lỗi OpenAI không xác định";
-                    console.log(`[API-Test] ❌ OpenAI: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({ error: { message: "Lá»—i káº¿t ná»‘i hoáº·c háº¿t sá»‘ dÆ° OpenAI" } }));
+                    results.openai.error = errorData.error?.message || "Lá»—i OpenAI khÃ´ng xÃ¡c Ä‘á»‹nh";
+                    console.log(`[API-Test] âŒ OpenAI: ${response.status}`);
                 }
 
             } catch (e: any) {
@@ -142,11 +142,11 @@ export async function GET(req: NextRequest) {
                 if (response.ok) {
                     const data = await response.json();
                     results.groq.hasResponse = !!data.choices?.[0]?.message?.content;
-                    console.log(`[API-Test] ✅ Groq: SUCCESS`);
+                    console.log(`[API-Test] âœ… Groq: SUCCESS`);
                 } else {
-                    const errorData = await response.json().catch(() => ({ error: { message: "Lỗi cấu hình hoặc thông số Groq" } }));
-                    results.groq.error = errorData.error?.message || "Lỗi Groq không xác định";
-                    console.log(`[API-Test] ❌ Groq: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({ error: { message: "Lá»—i cáº¥u hÃ¬nh hoáº·c thÃ´ng sá»‘ Groq" } }));
+                    results.groq.error = errorData.error?.message || "Lá»—i Groq khÃ´ng xÃ¡c Ä‘á»‹nh";
+                    console.log(`[API-Test] âŒ Groq: ${response.status}`);
                 }
 
             } catch (e: any) {
@@ -162,7 +162,7 @@ export async function GET(req: NextRequest) {
         const proxyUrl = process.env.GEMINI_PROXY_URL;
         if (proxyUrl) {
             try {
-                // 🔍 ADAPTIVE PROXY TEST v44.0: Dùng model đã thành công ở trên để test proxy
+                // ðŸ” ADAPTIVE PROXY TEST v44.0: DÃ¹ng model Ä‘Ã£ thÃ nh cÃ´ng á»Ÿ trÃªn Ä‘á»ƒ test proxy
                 const keyToTest = geminiKeys[0] || "";
                 const successfulGemini = results.gemini.find(r => r.ok);
                 const modelToUse = successfulGemini?.primaryModel || "gemini-1.5-flash";
@@ -188,11 +188,11 @@ export async function GET(req: NextRequest) {
                 };
 
                 if (response.ok) {
-                    console.log(`[API-Test] ✅ Proxy: SUCCESS`);
+                    console.log(`[API-Test] âœ… Proxy: SUCCESS`);
                 } else {
                     const error = await response.text();
                     results.proxy.error = error.slice(0, 150);
-                    console.log(`[API-Test] ❌ Proxy: ${response.status}`);
+                    console.log(`[API-Test] âŒ Proxy: ${response.status}`);
                 }
 
             } catch (e: any) {
@@ -204,11 +204,11 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        console.log(`[API-Test] 📊 Test completed`);
+        console.log(`[API-Test] ðŸ“Š Test completed`);
         return NextResponse.json(results);
 
     } catch (error: any) {
-        console.error("[API-Test] 💥 Error:", error.message);
+        console.error("[API-Test] ðŸ’¥ Error:", error.message);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

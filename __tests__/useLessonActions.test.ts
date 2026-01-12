@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { useLessonActions } from '../lib/hooks/use-lesson-actions';
 import { useLessonStore } from '../lib/store/use-lesson-store';
 
-// 🧪 MOCKING FOR V18.1 ACCURACY
+// ðŸ§ª MOCKING FOR V18.1 ACCURACY
 jest.mock('../lib/services/document-export-system', () => ({
     DocumentExportSystem: {
         getInstance: () => ({
@@ -24,7 +24,7 @@ describe('useLessonActions Hook', () => {
         });
 
         const error = useLessonStore.getState().error;
-        expect(error).toContain("chủ đề");
+        expect(error).toContain("chá»§ Ä‘á»");
     });
 
     it('should handle export flow correctly', async () => {

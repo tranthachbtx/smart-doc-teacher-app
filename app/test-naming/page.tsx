@@ -16,7 +16,7 @@ export default function TestNamingPage() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        setMsg("Đã thử tải file TEXT giả DOCX. Hãy xem tên file có phải là TEST_EXT_TEXT.docx không.");
+        setMsg("ÄÃ£ thá»­ táº£i file TEXT giáº£ DOCX. HÃ£y xem tÃªn file cÃ³ pháº£i lÃ  TEST_EXT_TEXT.docx khÃ´ng.");
     };
 
     const testRealDocxDownload = async () => {
@@ -35,24 +35,24 @@ export default function TestNamingPage() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        setMsg("Đã thử tải file DOCX thật. Hãy xem tên file có phải là TEST_REAL_DOCX.docx không.");
+        setMsg("ÄÃ£ thá»­ táº£i file DOCX tháº­t. HÃ£y xem tÃªn file cÃ³ pháº£i lÃ  TEST_REAL_DOCX.docx khÃ´ng.");
     };
 
     return (
         <div className="p-20 space-y-10">
-            <h1 className="text-2xl font-bold">Kiểm tra cơ chế tải file (GUID vs Name)</h1>
+            <h1 className="text-2xl font-bold">Kiá»ƒm tra cÆ¡ cháº¿ táº£i file (GUID vs Name)</h1>
             <div className="flex gap-4">
                 <button
                     onClick={testTextDownload}
                     className="p-4 bg-slate-200 rounded-lg"
                 >
-                    1. Tải Text giả làm DOCX
+                    1. Táº£i Text giáº£ lÃ m DOCX
                 </button>
                 <button
                     onClick={testRealDocxDownload}
                     className="p-4 bg-blue-600 text-white rounded-lg"
                 >
-                    2. Tải DOCX thật (Thư viện docx)
+                    2. Táº£i DOCX tháº­t (ThÆ° viá»‡n docx)
                 </button>
             </div>
             {msg && <p className="p-4 bg-emerald-50 rounded-lg">{msg}</p>}

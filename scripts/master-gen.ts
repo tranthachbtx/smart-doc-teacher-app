@@ -5,15 +5,15 @@ import {
 } from "../lib/actions/gemini";
 
 const grade = "12";
-const topic = "Chung tay gìn giữ, bảo tồn cảnh quan thiên nhiên";
-const duration = "2 tiết";
+const topic = "Chung tay gÃ¬n giá»¯, báº£o tá»“n cáº£nh quan thiÃªn nhiÃªn";
+const duration = "2 tiáº¿t";
 const month = 2; // Topic 6 is usually February
 
 const steps = [
-    "blueprint", "setup", "shdc_shl", "khởi động",
-    "khám_phá_1", "khám_phá_2", "khám_phá_3", "khám_phá_4",
-    "luyện_tập_1", "luyện_tập_2", "luyện_tập_3",
-    "vận dụng", "final", "preparation"
+    "blueprint", "setup", "shdc_shl", "khá»Ÿi Ä‘á»™ng",
+    "khÃ¡m_phÃ¡_1", "khÃ¡m_phÃ¡_2", "khÃ¡m_phÃ¡_3", "khÃ¡m_phÃ¡_4",
+    "luyá»‡n_táº­p_1", "luyá»‡n_táº­p_2", "luyá»‡n_táº­p_3",
+    "váº­n dá»¥ng", "final", "preparation"
 ];
 
 async function run() {

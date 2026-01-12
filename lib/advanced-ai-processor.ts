@@ -1,3 +1,4 @@
+
 /**
  * 🎯 ADVANCED AI PROCESSOR - ARCHITECTURE 18.0
  * Xử lý AI với database integration và multi-step reasoning
@@ -7,7 +8,7 @@ import { callAI } from './actions/gemini';
 import { JSON_SYSTEM_PROMPT } from './prompts/system-prompts';
 import { AnalyzedPDFContent } from './enhanced-pdf-extractor';
 import { LessonContext } from './database-integration-service';
-import { SmartPromptService } from './services/smart-prompt-service';
+import { SmartPromptService, SmartPromptData } from './services/smart-prompt-service';
 
 export interface StructuredLessonPlan {
   // Basic info
@@ -287,9 +288,10 @@ Return a JSON object with:
     const startTime = Date.now();
 
     // Build enhanced prompt with database integration
+    // FIXED: Argument order swapped to match SmartPromptService signature
     const enhancedPrompt = SmartPromptService.buildFinalSmartPrompt(
-      context.smartPrompts,
-      oldLessonContent
+      oldLessonContent || "",
+      context.smartPrompts as unknown as SmartPromptData // Ensure strict type safety via casting if needed
     );
 
     // Add step results to prompt

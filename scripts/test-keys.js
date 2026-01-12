@@ -19,12 +19,12 @@ async function testKeys() {
             });
             const data = await res.json();
             if (res.ok) {
-                console.log(`✅ Key ${key.slice(0, 8)}... is WORKING.`);
+                console.log(`âœ… Key ${key.slice(0, 8)}... is WORKING.`);
             } else {
-                console.log(`❌ Key ${key.slice(0, 8)}... FAILED: ${data.error?.message || JSON.stringify(data)}`);
+                console.log(`âŒ Key ${key.slice(0, 8)}... FAILED: ${data.error?.message || JSON.stringify(data)}`);
             }
         } catch (e) {
-            console.log(`❌ Key ${key.slice(0, 8)}... ERROR: ${e.message}`);
+            console.log(`âŒ Key ${key.slice(0, 8)}... ERROR: ${e.message}`);
         }
     }
 }

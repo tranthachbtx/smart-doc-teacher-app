@@ -5,8 +5,8 @@ import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Trợ lý TTCM môn HĐTN, HN & GDĐP",
-  description: "Tự động hóa văn bản giáo dục với AI. Hỗ trợ tạo biên bản họp, giáo án và các tài liệu chuyên môn.",
+  title: "Trá»£ lÃ½ TTCM mÃ´n HÄTN, HN & GDÄP",
+  description: "Tá»± Ä‘á»™ng hÃ³a vÄƒn báº£n giÃ¡o dá»¥c vá»›i AI. Há»— trá»£ táº¡o biÃªn báº£n há»p, giÃ¡o Ã¡n vÃ  cÃ¡c tÃ i liá»‡u chuyÃªn mÃ´n.",
   generator: "Tranthachbtx@gmail.com",
   icons: {
     icon: [

@@ -1,7 +1,7 @@
 import { PedagogicalOrchestrator, PedagogicalAuditReport } from "@/lib/services/pedagogical-orchestrator";
 
 /**
- * 🔍 ADVANCED PEDAGOGICAL AUDIT - SERVER ACTION (V7)
+ * ðŸ” ADVANCED PEDAGOGICAL AUDIT - SERVER ACTION (V7)
  * Provides high-fidelity pedagogical auditing using the V7 Orchestrator.
  */
 export async function performAdvancedAudit(lessonResult: any): Promise<{ success: boolean; report?: PedagogicalAuditReport; error?: string }> {

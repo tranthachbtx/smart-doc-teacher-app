@@ -76,9 +76,9 @@ export interface LessonResult {
   duration?: string;
   materials?: string; // Alias for ho_so_day_hoc
   shdc_shl_combined?: string;
-  shdc_gợi_ý?: string;
-  hdgd_gợi_ý?: string;
-  shl_gợi_ý?: string;
+  shdc_goi_y?: string;
+  hdgd_goi_y?: string;
+  shl_goi_y?: string;
   hoat_dong_duoi_co?: string;
   summary?: string;
   introduction?: string;

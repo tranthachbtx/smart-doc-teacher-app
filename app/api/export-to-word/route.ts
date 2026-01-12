@@ -1,6 +1,6 @@
 /**
- * 🎯 WORD EXPORT API - ARCHITECTURE 18.0
- * API endpoint để xuất file Word từ template KHBH
+ * ðŸŽ¯ WORD EXPORT API - ARCHITECTURE 18.0
+ * API endpoint Ä‘á»ƒ xuáº¥t file Word tá»« template KHBH
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     
     if (!templateData) {
       return NextResponse.json(
-        { success: false, error: 'Không có dữ liệu template' },
+        { success: false, error: 'KhÃ´ng cÃ³ dá»¯ liá»‡u template' },
         { status: 400 }
       );
     }
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     console.error('[WORD-EXPORT] Error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { success: false, error: `Đã xảy ra lỗi: ${errorMessage}` },
+      { success: false, error: `ÄÃ£ xáº£y ra lá»—i: ${errorMessage}` },
       { status: 500 }
     );
   }
@@ -61,7 +61,7 @@ function createWordDocument(data: any): Document {
     new Paragraph({
       children: [
         new TextRun({
-          text: data.ten_bai || "GIÁO ÁN",
+          text: data.ten_bai || "GIÃO ÃN",
           bold: true,
           size: 32,
           color: "2E74B5"
@@ -77,7 +77,7 @@ function createWordDocument(data: any): Document {
     new Paragraph({
       children: [
         new TextRun({
-          text: `Khối: ${data.grade || 'N/A'}  |  Chủ đề: ${data.topic || 'N/A'}`,
+          text: `Khá»‘i: ${data.grade || 'N/A'}  |  Chá»§ Ä‘á»: ${data.topic || 'N/A'}`,
           size: 24,
           color: "44546A"
         })
@@ -87,13 +87,13 @@ function createWordDocument(data: any): Document {
     })
   );
   
-  // Section 1: Mục tiêu
+  // Section 1: Má»¥c tiÃªu
   if (data.muc_tieu_kien_thuc || data.muc_tieu_nang_luc || data.muc_tieu_pham_chat) {
     children.push(
       new Paragraph({
         children: [
           new TextRun({
-            text: "I. MỤC TIÊU BÀI HỌC",
+            text: "I. Má»¤C TIÃŠU BÃ€I Há»ŒC",
             bold: true,
             size: 28,
             color: "2E74B5"
@@ -109,7 +109,7 @@ function createWordDocument(data: any): Document {
         new Paragraph({
           children: [
             new TextRun({
-              text: "1. Kiến thức:",
+              text: "1. Kiáº¿n thá»©c:",
               bold: true,
               size: 24
             }),
@@ -128,7 +128,7 @@ function createWordDocument(data: any): Document {
         new Paragraph({
           children: [
             new TextRun({
-              text: "2. Năng lực:",
+              text: "2. NÄƒng lá»±c:",
               bold: true,
               size: 24
             }),
@@ -147,7 +147,7 @@ function createWordDocument(data: any): Document {
         new Paragraph({
           children: [
             new TextRun({
-              text: "3. Phẩm chất:",
+              text: "3. Pháº©m cháº¥t:",
               bold: true,
               size: 24
             }),
@@ -162,13 +162,13 @@ function createWordDocument(data: any): Document {
     }
   }
   
-  // Section 2: Chuẩn bị
+  // Section 2: Chuáº©n bá»‹
   if (data.thiet_bi_day_hoc) {
     children.push(
       new Paragraph({
         children: [
           new TextRun({
-            text: "II. CHUẨN BỊ BÀI HỌC",
+            text: "II. CHUáº¨N Bá»Š BÃ€I Há»ŒC",
             bold: true,
             size: 28,
             color: "2E74B5"
@@ -192,14 +192,14 @@ function createWordDocument(data: any): Document {
     );
   }
   
-  // Section 3: Hoạt động dạy học
+  // Section 3: Hoáº¡t Ä‘á»™ng dáº¡y há»c
   if (data.hoat_dong_khoi_dong || data.hoat_dong_kham_pha || 
       data.hoat_dong_luyen_tap || data.hoat_dong_van_dung) {
     children.push(
       new Paragraph({
         children: [
           new TextRun({
-            text: "III. HOẠT ĐỘNG DẠY HỌC",
+            text: "III. HOáº T Äá»˜NG Dáº Y Há»ŒC",
             bold: true,
             size: 28,
             color: "2E74B5"
@@ -212,10 +212,10 @@ function createWordDocument(data: any): Document {
     
     // Process each activity with 2-column structure
     const activities = [
-      { key: 'hoat_dong_khoi_dong', title: '1. Hoạt động khởi động' },
-      { key: 'hoat_dong_kham_pha', title: '2. Hoạt động khám phá' },
-      { key: 'hoat_dong_luyen_tap', title: '3. Hoạt động luyện tập' },
-      { key: 'hoat_dong_van_dung', title: '4. Hoạt động vận dụng' }
+      { key: 'hoat_dong_khoi_dong', title: '1. Hoáº¡t Ä‘á»™ng khá»Ÿi Ä‘á»™ng' },
+      { key: 'hoat_dong_kham_pha', title: '2. Hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡' },
+      { key: 'hoat_dong_luyen_tap', title: '3. Hoáº¡t Ä‘á»™ng luyá»‡n táº­p' },
+      { key: 'hoat_dong_van_dung', title: '4. Hoáº¡t Ä‘á»™ng váº­n dá»¥ng' }
     ];
     
     activities.forEach(activity => {
@@ -244,13 +244,13 @@ function createWordDocument(data: any): Document {
     });
   }
   
-  // Section 4: Kiểm tra đánh giá
+  // Section 4: Kiá»ƒm tra Ä‘Ã¡nh giÃ¡
   if (data.ho_so_day_hoc) {
     children.push(
       new Paragraph({
         children: [
           new TextRun({
-            text: "IV. KIỂM TRA ĐÁNH GIÁ",
+            text: "IV. KIá»‚M TRA ÄÃNH GIÃ",
             bold: true,
             size: 28,
             color: "2E74B5"
@@ -274,13 +274,13 @@ function createWordDocument(data: any): Document {
     );
   }
   
-  // Section 5: Hướng dẫn về nhà
+  // Section 5: HÆ°á»›ng dáº«n vá» nhÃ 
   if (data.huong_dan_ve_nha) {
     children.push(
       new Paragraph({
         children: [
           new TextRun({
-            text: "V. HƯỚNG DẪN VỀ NHÀ",
+            text: "V. HÆ¯á»šNG DáºªN Vá»€ NHÃ€",
             bold: true,
             size: 28,
             color: "2E74B5"
@@ -351,7 +351,7 @@ function formatActivityContent(content: string): Paragraph[] {
         new Paragraph({
           children: [
             new TextRun({
-              text: "Giáo viên:",
+              text: "GiÃ¡o viÃªn:",
               bold: true,
               size: 24,
               color: "2E74B5"
@@ -385,7 +385,7 @@ function formatActivityContent(content: string): Paragraph[] {
         new Paragraph({
           children: [
             new TextRun({
-              text: "Học sinh:",
+              text: "Há»c sinh:",
               bold: true,
               size: 24,
               color: "70AD47"

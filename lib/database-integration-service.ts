@@ -1,3 +1,4 @@
+
 /**
  * 🎯 DATABASE INTEGRATION SERVICE - ARCHITECTURE 18.0
  * Tích hợp đầy đủ database hệ thống vào quy trình xử lý giáo án
@@ -218,9 +219,10 @@ export class DatabaseIntegrationService {
     context: LessonContext,
     oldLessonContent?: string
   ): string {
+    // FIXED: Argument order
     const smartPrompt = SmartPromptService.buildFinalSmartPrompt(
-      context.smartPrompts,
-      oldLessonContent
+      oldLessonContent || "",
+      context.smartPrompts
     );
 
     // Add database context enhancement

@@ -1,6 +1,6 @@
 /**
- * 🎓 LESSON ENGINE COMPONENT
- * Xử lý tab Bài dạy
+ * ðŸŽ“ LESSON ENGINE COMPONENT
+ * Xá»­ lÃ½ tab BÃ i dáº¡y
  */
 
 import React from "react";

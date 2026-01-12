@@ -147,7 +147,7 @@ export async function getEffectiveTemplate(type: "meeting" | "event" | "lesson" 
   if (generatedBlob) {
     const arrayBuffer = await generatedBlob.arrayBuffer();
     return {
-      name: `Mẫu tạo tự động - ${type}.docx`,
+      name: `Máº«u táº¡o tá»± Ä‘á»™ng - ${type}.docx`,
       data: arrayBuffer
     }
   }

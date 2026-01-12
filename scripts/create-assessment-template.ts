@@ -1,6 +1,6 @@
 /**
- * Script tạo Template Word Kế hoạch Kiểm tra Đánh giá đúng chuẩn bộ GD&ĐT
- * Chạy: npx ts-node scripts/create-assessment-template.ts
+ * Script táº¡o Template Word Káº¿ hoáº¡ch Kiá»ƒm tra ÄÃ¡nh giÃ¡ Ä‘Ãºng chuáº©n bá»™ GD&ÄT
+ * Cháº¡y: npx ts-node scripts/create-assessment-template.ts
  */
 
 import {
@@ -100,19 +100,19 @@ async function createTemplate() {
                                         children: [
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("SỞ GD&ĐT BÌNH THUẬN", { size: FONT_SIZE_HEADER })],
+                                                children: [createText("Sá»ž GD&ÄT BÃŒNH THUáº¬N", { size: FONT_SIZE_HEADER })],
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("TRƯỜNG THPT BÙI THỊ XUÂN", { bold: true, size: FONT_SIZE_HEADER })],
+                                                children: [createText("TRÆ¯á»œNG THPT BÃ™I THá»Š XUÃ‚N", { bold: true, size: FONT_SIZE_HEADER })],
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("TỔ: {to_chuyen_mon}", { bold: true, size: FONT_SIZE_HEADER })],
+                                                children: [createText("Tá»”: {to_chuyen_mon}", { bold: true, size: FONT_SIZE_HEADER })],
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("─────────", { size: FONT_SIZE_HEADER })],
+                                                children: [createText("â”€â”€â”€â”€â”€â”€â”€â”€â”€", { size: FONT_SIZE_HEADER })],
                                             }),
                                         ],
                                     }),
@@ -121,15 +121,15 @@ async function createTemplate() {
                                         children: [
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", { bold: true, size: FONT_SIZE_HEADER })],
+                                                children: [createText("Cá»˜NG HÃ’A XÃƒ Há»˜I CHá»¦ NGHÄ¨A VIá»†T NAM", { bold: true, size: FONT_SIZE_HEADER })],
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("Độc lập - Tự do - Hạnh phúc", { bold: true, size: FONT_SIZE_HEADER })],
+                                                children: [createText("Äá»™c láº­p - Tá»± do - Háº¡nh phÃºc", { bold: true, size: FONT_SIZE_HEADER })],
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("─────────────────", { size: FONT_SIZE_HEADER })],
+                                                children: [createText("â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€", { size: FONT_SIZE_HEADER })],
                                             }),
                                         ],
                                     }),
@@ -144,7 +144,7 @@ async function createTemplate() {
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
                         spacing: { before: 200, after: 200 },
-                        children: [createText("KẾ HOẠCH KIỂM TRA ĐÁNH GIÁ ĐỊNH KỲ", { bold: true, size: 32 })],
+                        children: [createText("Káº¾ HOáº CH KIá»‚M TRA ÄÃNH GIÃ Äá»ŠNH Ká»²", { bold: true, size: 32 })],
                     }),
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
@@ -155,57 +155,57 @@ async function createTemplate() {
                     // General Info
                     new Paragraph({
                         children: [
-                            createText("Học kỳ: ", { bold: true }),
+                            createText("Há»c ká»³: ", { bold: true }),
                             createText("{hoc_ky}"),
                         ],
                     }),
                     new Paragraph({
                         children: [
-                            createText("Khối lớp: ", { bold: true }),
+                            createText("Khá»‘i lá»›p: ", { bold: true }),
                             createText("{khoi}"),
                         ],
                     }),
 
-                    // I. MỤC TIÊU
+                    // I. Má»¤C TIÃŠU
                     new Paragraph({
                         spacing: { before: 200, after: 120 },
-                        children: [createText("I. MỤC TIÊU ĐÁNH GIÁ", { bold: true, size: FONT_SIZE_TITLE })],
+                        children: [createText("I. Má»¤C TIÃŠU ÄÃNH GIÃ", { bold: true, size: FONT_SIZE_TITLE })],
                     }),
                     new Paragraph({
                         children: [createText("{muc_tieu}")],
                     }),
 
-                    // II. NỘI DUNG & NHIỆM VỤ
+                    // II. Ná»˜I DUNG & NHIá»†M Vá»¤
                     new Paragraph({
                         spacing: { before: 200, after: 120 },
-                        children: [createText("II. NỘI DUNG VÀ NHIỆM VỤ KIỂM TRA", { bold: true, size: FONT_SIZE_TITLE })],
+                        children: [createText("II. Ná»˜I DUNG VÃ€ NHIá»†M Vá»¤ KIá»‚M TRA", { bold: true, size: FONT_SIZE_TITLE })],
                     }),
                     new Paragraph({
                         children: [createText("{noi_dung_nhiem_vu}")],
                     }),
 
-                    // III. HÌNH THỨC TỔ CHỨC
+                    // III. HÃŒNH THá»¨C Tá»” CHá»¨C
                     new Paragraph({
                         spacing: { before: 200, after: 120 },
-                        children: [createText("III. HÌNH THỨC TỔ CHỨC", { bold: true, size: FONT_SIZE_TITLE })],
+                        children: [createText("III. HÃŒNH THá»¨C Tá»” CHá»¨C", { bold: true, size: FONT_SIZE_TITLE })],
                     }),
                     new Paragraph({
                         children: [createText("{hinh_thuc_to_chuc}")],
                     }),
 
-                    // IV. MA TRẬN ĐẶC TẢ
+                    // IV. MA TRáº¬N Äáº¶C Táº¢
                     new Paragraph({
                         spacing: { before: 200, after: 120 },
-                        children: [createText("IV. MA TRẬN ĐẶC TẢ", { bold: true, size: FONT_SIZE_TITLE })],
+                        children: [createText("IV. MA TRáº¬N Äáº¶C Táº¢", { bold: true, size: FONT_SIZE_TITLE })],
                     }),
                     new Paragraph({
                         children: [createText("{ma_tran_dac_ta}")],
                     }),
 
-                    // V. RUBRIC ĐÁNH GIÁ
+                    // V. RUBRIC ÄÃNH GIÃ
                     new Paragraph({
                         spacing: { before: 200, after: 120 },
-                        children: [createText("V. RUBRIC ĐÁNH GIÁ CHI TIẾT", { bold: true, size: FONT_SIZE_TITLE })],
+                        children: [createText("V. RUBRIC ÄÃNH GIÃ CHI TIáº¾T", { bold: true, size: FONT_SIZE_TITLE })],
                     }),
                     new Paragraph({
                         children: [createText("{bang_kiem_rubric}")],
@@ -213,10 +213,10 @@ async function createTemplate() {
 
                     new Paragraph({ text: "" }),
 
-                    // VI. LỜI KHUYÊN CHO GIÁO VIÊN
+                    // VI. Lá»œI KHUYÃŠN CHO GIÃO VIÃŠN
                     new Paragraph({
                         spacing: { before: 200, after: 120 },
-                        children: [createText("VI. GHI CHÚ VÀ LỜI KHUYÊN TRIỂN KHAI", { bold: true, size: FONT_SIZE_TITLE })],
+                        children: [createText("VI. GHI CHÃš VÃ€ Lá»œI KHUYÃŠN TRIá»‚N KHAI", { bold: true, size: FONT_SIZE_TITLE })],
                     }),
                     new Paragraph({
                         children: [createText("{loi_khuyen}")],
@@ -241,9 +241,9 @@ async function createTemplate() {
                                         children: [
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("DUYỆT CỦA BGH/TỔ TRƯỞNG", { bold: true })],
+                                                children: [createText("DUYá»†T Cá»¦A BGH/Tá»” TRÆ¯á»žNG", { bold: true })],
                                             }),
-                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("(Ký và ghi rõ họ tên)", { italics: true, size: FONT_SIZE_HEADER })] }),
+                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("(KÃ½ vÃ  ghi rÃµ há» tÃªn)", { italics: true, size: FONT_SIZE_HEADER })] }),
                                         ],
                                     }),
                                     new TableCell({
@@ -251,13 +251,13 @@ async function createTemplate() {
                                         children: [
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("Phan Thiết, ngày .... tháng .... năm 202...", { italics: true, size: FONT_SIZE_HEADER })],
+                                                children: [createText("Phan Thiáº¿t, ngÃ y .... thÃ¡ng .... nÄƒm 202...", { italics: true, size: FONT_SIZE_HEADER })],
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [createText("NGƯỜI LẬP KẾ HOẠCH", { bold: true })],
+                                                children: [createText("NGÆ¯á»œI Láº¬P Káº¾ HOáº CH", { bold: true })],
                                             }),
-                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("(Ký và ghi rõ họ tên)", { italics: true, size: FONT_SIZE_HEADER })] }),
+                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("(KÃ½ vÃ  ghi rÃµ há» tÃªn)", { italics: true, size: FONT_SIZE_HEADER })] }),
                                         ],
                                     }),
                                 ],
@@ -276,7 +276,7 @@ async function createTemplate() {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
     fs.writeFileSync(outputPath, buffer);
-    console.log(`✅ Assessment Template created: ${outputPath}`);
+    console.log(`âœ… Assessment Template created: ${outputPath}`);
 }
 
 createTemplate().catch(console.error);

@@ -16,7 +16,7 @@ export default function TestNamingPageV2() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        setMsg("Đã thử tải via DATA URI. Kiểm tra tên file.");
+        setMsg("ÄÃ£ thá»­ táº£i via DATA URI. Kiá»ƒm tra tÃªn file.");
     };
 
     const testFileConstructorDownload = () => {
@@ -29,12 +29,12 @@ export default function TestNamingPageV2() {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        setMsg("Đã thử tải via FILE CONSTRUCTOR. Kiểm tra tên file.");
+        setMsg("ÄÃ£ thá»­ táº£i via FILE CONSTRUCTOR. Kiá»ƒm tra tÃªn file.");
     };
 
     return (
         <div className="p-20 space-y-10">
-            <h1 className="text-2xl font-bold">Kiểm tra cơ chế tải file (V2)</h1>
+            <h1 className="text-2xl font-bold">Kiá»ƒm tra cÆ¡ cháº¿ táº£i file (V2)</h1>
             <div className="flex gap-4">
                 <button
                     onClick={testDataUriDownload}

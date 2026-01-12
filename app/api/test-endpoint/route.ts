@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
     try {
-        console.log("[TEST] 🚀 Simple test endpoint");
+        console.log("[TEST] ðŸš€ Simple test endpoint");
         return NextResponse.json({ 
             message: "Simple test works",
             timestamp: new Date().toISOString(),
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
             }
         });
     } catch (error: any) {
-        console.error("[TEST] 💥 Error:", error.message);
+        console.error("[TEST] ðŸ’¥ Error:", error.message);
         return NextResponse.json({ 
             error: error.message,
             stack: error.stack 

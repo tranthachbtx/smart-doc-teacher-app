@@ -4,18 +4,18 @@ describe('SmartPromptService', () => {
     it('should format student characteristics based on grade', async () => {
         // This assumes the DB is available or mocked
         // Since it's a static service calling a local DB, we can test the logic
-        const data10 = await SmartPromptService.lookupSmartData("10", "Chủ đề 1");
-        expect(data10.studentCharacteristics).toContain("Khối 10");
+        const data10 = await SmartPromptService.lookupSmartData("10", "Chá»§ Ä‘á» 1");
+        expect(data10.studentCharacteristics).toContain("Khá»‘i 10");
 
-        const data12 = await SmartPromptService.lookupSmartData("12", "Chủ đề 1");
-        expect(data12.studentCharacteristics).toContain("Khối 12");
+        const data12 = await SmartPromptService.lookupSmartData("12", "Chá»§ Ä‘á» 1");
+        expect(data12.studentCharacteristics).toContain("Khá»‘i 12");
     });
 
     it('should build a final prompt containing key instructions', () => {
         const mockData: any = {
             grade: "11",
             topicName: "Test Topic",
-            objectives: "CHỦ ĐỀ: Test Topic",
+            objectives: "CHá»¦ Äá»€: Test Topic",
             studentCharacteristics: "Gen Z students",
             coreMissions: {
                 khoiDong: "Task 1",
@@ -30,8 +30,8 @@ describe('SmartPromptService', () => {
         };
 
         const prompt = SmartPromptService.buildFinalSmartPrompt(mockData);
-        expect(prompt).toContain("Khối lớp: 11");
-        expect(prompt).toContain("CHỦ ĐỀ: Test Topic");
+        expect(prompt).toContain("Khá»‘i lá»›p: 11");
+        expect(prompt).toContain("CHá»¦ Äá»€: Test Topic");
         expect(prompt).toContain("5512");
     });
 });

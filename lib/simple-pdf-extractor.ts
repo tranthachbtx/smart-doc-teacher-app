@@ -1,6 +1,6 @@
 /**
- * 🎯 SIMPLE PDF EXTRACTOR - BACK TO BASICS ARCHITECTURE 17.0
- * Trích xuất nội dung từ PDF và DOCX một cách đơn giản
+ * ðŸŽ¯ SIMPLE PDF EXTRACTOR - BACK TO BASICS ARCHITECTURE 17.0
+ * TrÃ­ch xuáº¥t ná»™i dung tá»« PDF vÃ  DOCX má»™t cÃ¡ch Ä‘Æ¡n giáº£n
  */
 
 // Using require for pdf-parse to avoid TypeScript module resolution issues
@@ -27,12 +27,12 @@ export async function extractPDFContent(file: File): Promise<string> {
       const text = await file.text();
       return text;
     } else {
-      throw new Error('Chỉ hỗ trợ file PDF và DOCX');
+      throw new Error('Chá»‰ há»— trá»£ file PDF vÃ  DOCX');
     }
   } catch (error: any) {
     if (error.message !== "Client-side environment extracted via Fallback.") {
       console.error('PDF extraction error:', error);
-      throw new Error('Không thể trích xuất nội dung từ file. Vui lòng kiểm tra lại file.');
+      throw new Error('KhÃ´ng thá»ƒ trÃ­ch xuáº¥t ná»™i dung tá»« file. Vui lÃ²ng kiá»ƒm tra láº¡i file.');
     }
     throw error;
   }

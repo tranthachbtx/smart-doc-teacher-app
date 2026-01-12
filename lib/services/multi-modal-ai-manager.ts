@@ -2,7 +2,7 @@
 import { generateAIContent } from "@/lib/actions/gemini";
 
 /**
- * 🛰️ MULTI-MODAL AI MANAGER - HYBRID INTELLIGENCE BRIDGE
+ * ðŸ›°ï¸ MULTI-MODAL AI MANAGER - HYBRID INTELLIGENCE BRIDGE
  * Acts as a central orchestrator for advanced engines (Neural, Quantum, etc.)
  * Updated V18.1: Integrating 'AI Alliance' strategy from client-saga tunnel (Gemini -> Groq -> OpenAI -> Smart Mock)
  */
@@ -28,30 +28,30 @@ export class MultiModalAIManager {
         // 1. PRIMARY: GOOGLE GEMINI
         try {
             const preferredModel = tier === 'deep' ? "gemini-1.5-pro" : "gemini-1.5-flash";
-            console.log(`[MultiModalAIManager] 🛡️ Primary: Routing to ${preferredModel}...`);
+            console.log(`[MultiModalAIManager] ðŸ›¡ï¸ Primary: Routing to ${preferredModel}...`);
             return await this.executeAI(input, prompt, preferredModel);
         } catch (geminiError: any) {
-            console.warn(`[MultiModalAIManager] ⚠️ Gemini failed: ${geminiError.message}. Switching to ALLIANCE FALLBACK...`);
+            console.warn(`[MultiModalAIManager] âš ï¸ Gemini failed: ${geminiError.message}. Switching to ALLIANCE FALLBACK...`);
         }
 
         // 2. SECONDARY: GROQ (Llama 3 70B - Fast & Smart)
         // Only works for Text inputs (Files need OCR/Text extraction first, which we did via 'fileSummary')
         try {
-            console.log(`[MultiModalAIManager] ⚡ Secondary: Routing to Groq (Llama3-70b)...`);
+            console.log(`[MultiModalAIManager] âš¡ Secondary: Routing to Groq (Llama3-70b)...`);
             return await this.executeGroq(input, prompt);
         } catch (groqError: any) {
-            console.warn(`[MultiModalAIManager] ⚠️ Groq failed: ${groqError.message}. Switching to LAST RESORT...`);
+            console.warn(`[MultiModalAIManager] âš ï¸ Groq failed: ${groqError.message}. Switching to LAST RESORT...`);
         }
 
         // 3. TERTIARY: OPENAI (GPT-4o Mini)
         try {
-            console.log(`[MultiModalAIManager] 🏳️ Tertiary: Routing to OpenAI (GPT-4o-mini)...`);
+            console.log(`[MultiModalAIManager] ðŸ³ï¸ Tertiary: Routing to OpenAI (GPT-4o-mini)...`);
             return await this.executeOpenAI(input, prompt);
         } catch (openaiError: any) {
-            console.error(`[MultiModalAIManager] ❌ CRITICAL: ALL SYSTEMS FAILED.`, openaiError);
+            console.error(`[MultiModalAIManager] âŒ CRITICAL: ALL SYSTEMS FAILED.`, openaiError);
 
             // 4. QUATERNARY: SMART MOCK (The "Hidden Gem" from Tunnel)
-            console.log("[MultiModalAIManager] 💀 Triggering Smart Mock Response (Preventing Empty File)...");
+            console.log("[MultiModalAIManager] ðŸ’€ Triggering Smart Mock Response (Preventing Empty File)...");
             const mockContent = this.generateSmartMockResponse(prompt);
             return { content: mockContent, success: true };
         }
@@ -136,37 +136,37 @@ export class MultiModalAIManager {
     private generateSmartMockResponse(prompt: string): string {
         const lowerPrompt = prompt.toLowerCase();
 
-        // A. Sinh hoạt dưới cờ
-        if (lowerPrompt.includes('sinh hoạt dưới cờ') || lowerPrompt.includes('shdc')) {
+        // A. Sinh hoáº¡t dÆ°á»›i cá»
+        if (lowerPrompt.includes('sinh hoáº¡t dÆ°á»›i cá»') || lowerPrompt.includes('shdc')) {
             return JSON.stringify({
                 steps: [
-                    { teacher_action: "Ổn định tổ chức, chỉnh đốn trang phục.", student_action: "Tập trung xếp hàng ngay ngắn." },
-                    { teacher_action: "Tổ chức nghi lễ chào cờ trang nghiêm.", student_action: "Hát Quốc ca, Đội ca to, rõ ràng." },
-                    { teacher_action: "Triển khai kế hoạch tuần mới.", student_action: "Lắng nghe và ghi nhớ nhiệm vụ." },
-                    { teacher_action: "Tổ chức chuyên đề 'Học tập tích cực'.", student_action: "Tham gia trả lời câu hỏi và nhận quà." }
+                    { teacher_action: "á»”n Ä‘á»‹nh tá»• chá»©c, chá»‰nh Ä‘á»‘n trang phá»¥c.", student_action: "Táº­p trung xáº¿p hÃ ng ngay ngáº¯n." },
+                    { teacher_action: "Tá»• chá»©c nghi lá»… chÃ o cá» trang nghiÃªm.", student_action: "HÃ¡t Quá»‘c ca, Äá»™i ca to, rÃµ rÃ ng." },
+                    { teacher_action: "Triá»ƒn khai káº¿ hoáº¡ch tuáº§n má»›i.", student_action: "Láº¯ng nghe vÃ  ghi nhá»› nhiá»‡m vá»¥." },
+                    { teacher_action: "Tá»• chá»©c chuyÃªn Ä‘á» 'Há»c táº­p tÃ­ch cá»±c'.", student_action: "Tham gia tráº£ lá»i cÃ¢u há»i vÃ  nháº­n quÃ ." }
                 ]
             });
         }
 
-        // B. Sinh hoạt lớp
-        if (lowerPrompt.includes('sinh hoạt lớp') || lowerPrompt.includes('shl')) {
+        // B. Sinh hoáº¡t lá»›p
+        if (lowerPrompt.includes('sinh hoáº¡t lá»›p') || lowerPrompt.includes('shl')) {
             return JSON.stringify({
                 steps: [
-                    { teacher_action: "Yêu cầu lớp trưởng báo cáo sĩ số.", student_action: "Lớp trưởng báo cáo, cả lớp giữ trật tự." },
-                    { teacher_action: "Nhận xét thi đua tuần qua.", student_action: "Lắng nghe, rút kinh nghiệm." },
-                    { teacher_action: "Triển khai hoạt động theo chủ điểm.", student_action: "Thảo luận nhóm và chia sẻ ý kiến." },
-                    { teacher_action: "Phân công nhiệm vụ tuần tới.", student_action: "Ghi chép vào sổ tay." }
+                    { teacher_action: "YÃªu cáº§u lá»›p trÆ°á»Ÿng bÃ¡o cÃ¡o sÄ© sá»‘.", student_action: "Lá»›p trÆ°á»Ÿng bÃ¡o cÃ¡o, cáº£ lá»›p giá»¯ tráº­t tá»±." },
+                    { teacher_action: "Nháº­n xÃ©t thi Ä‘ua tuáº§n qua.", student_action: "Láº¯ng nghe, rÃºt kinh nghiá»‡m." },
+                    { teacher_action: "Triá»ƒn khai hoáº¡t Ä‘á»™ng theo chá»§ Ä‘iá»ƒm.", student_action: "Tháº£o luáº­n nhÃ³m vÃ  chia sáº» Ã½ kiáº¿n." },
+                    { teacher_action: "PhÃ¢n cÃ´ng nhiá»‡m vá»¥ tuáº§n tá»›i.", student_action: "Ghi chÃ©p vÃ o sá»• tay." }
                 ]
             });
         }
 
-        // C. Hoạt động Vận dụng / Dự án
-        if (lowerPrompt.includes('vận dụng') || lowerPrompt.includes('dự án')) {
+        // C. Hoáº¡t Ä‘á»™ng Váº­n dá»¥ng / Dá»± Ã¡n
+        if (lowerPrompt.includes('váº­n dá»¥ng') || lowerPrompt.includes('dá»± Ã¡n')) {
             return JSON.stringify({
                 steps: [
-                    { teacher_action: "Giao nhiệm vụ dự án thực tế về nhà.", student_action: "Nhận phiếu giao nhiệm vụ." },
-                    { teacher_action: "Hướng dẫn các bước thực hiện.", student_action: "Đặt câu hỏi làm rõ yêu cầu." },
-                    { teacher_action: "Gợi ý tài liệu tham khảo.", student_action: "Ghi lại nguồn tài liệu." }
+                    { teacher_action: "Giao nhiá»‡m vá»¥ dá»± Ã¡n thá»±c táº¿ vá» nhÃ .", student_action: "Nháº­n phiáº¿u giao nhiá»‡m vá»¥." },
+                    { teacher_action: "HÆ°á»›ng dáº«n cÃ¡c bÆ°á»›c thá»±c hiá»‡n.", student_action: "Äáº·t cÃ¢u há»i lÃ m rÃµ yÃªu cáº§u." },
+                    { teacher_action: "Gá»£i Ã½ tÃ i liá»‡u tham kháº£o.", student_action: "Ghi láº¡i nguá»“n tÃ i liá»‡u." }
                 ]
             });
         }
@@ -174,10 +174,10 @@ export class MultiModalAIManager {
         // D. Generic Fallback
         return JSON.stringify({
             steps: [
-                { teacher_action: "Giáo viên giới thiệu mục tiêu bài học (Chế độ Mock).", student_action: "Học sinh lắng nghe và xác định nhiệm vụ." },
-                { teacher_action: "Tổ chức hoạt động khám phá kiến thức.", student_action: "Tham gia thảo luận và hoàn thành phiếu học tập." },
-                { teacher_action: "Yêu cầu học sinh trình bày kết quả.", student_action: "Đại diện nhóm báo cáo, các nhóm khác nhận xét." },
-                { teacher_action: "Kết luận và chốt kiến thức.", student_action: "Ghi nội dung chính vào vở." }
+                { teacher_action: "GiÃ¡o viÃªn giá»›i thiá»‡u má»¥c tiÃªu bÃ i há»c (Cháº¿ Ä‘á»™ Mock).", student_action: "Há»c sinh láº¯ng nghe vÃ  xÃ¡c Ä‘á»‹nh nhiá»‡m vá»¥." },
+                { teacher_action: "Tá»• chá»©c hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡ kiáº¿n thá»©c.", student_action: "Tham gia tháº£o luáº­n vÃ  hoÃ n thÃ nh phiáº¿u há»c táº­p." },
+                { teacher_action: "YÃªu cáº§u há»c sinh trÃ¬nh bÃ y káº¿t quáº£.", student_action: "Äáº¡i diá»‡n nhÃ³m bÃ¡o cÃ¡o, cÃ¡c nhÃ³m khÃ¡c nháº­n xÃ©t." },
+                { teacher_action: "Káº¿t luáº­n vÃ  chá»‘t kiáº¿n thá»©c.", student_action: "Ghi ná»™i dung chÃ­nh vÃ o vá»Ÿ." }
             ]
         });
     }

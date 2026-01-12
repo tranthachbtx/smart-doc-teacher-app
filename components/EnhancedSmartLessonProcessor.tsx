@@ -1,6 +1,6 @@
 /**
- * 🎯 ENHANCED SMART LESSON PROCESSOR - ARCHITECTURE 18.0
- * Nâng cấp hoàn chỉnh với đầy đủ 4 bước theo yêu cầu người dùng
+ * ðŸŽ¯ ENHANCED SMART LESSON PROCESSOR - ARCHITECTURE 18.0
+ * NÃ¢ng cáº¥p hoÃ n chá»‰nh vá»›i Ä‘áº§y Ä‘á»§ 4 bÆ°á»›c theo yÃªu cáº§u ngÆ°á»i dÃ¹ng
  */
 
 "use client";
@@ -89,7 +89,7 @@ export default function EnhancedSmartLessonProcessor() {
       setFile(selectedFile);
       setError(null);
       setSuccess(null);
-      setProcessingSteps(['Đang tải file...']);
+      setProcessingSteps(['Äang táº£i file...']);
 
       try {
         // Extract PDF content
@@ -106,21 +106,21 @@ export default function EnhancedSmartLessonProcessor() {
         if (data.success) {
           setPdfContent(data.content);
           setStructuredContent(data.structured);
-          setProcessingSteps(prev => [...prev, '✅ Phân tích PDF hoàn tất']);
+          setProcessingSteps(prev => [...prev, 'âœ… PhÃ¢n tÃ­ch PDF hoÃ n táº¥t']);
 
           toast({
-            title: "Phân tích thành công",
-            description: `Đã trích xuất ${data.sections.length} phần nội dung từ PDF`
+            title: "PhÃ¢n tÃ­ch thÃ nh cÃ´ng",
+            description: `ÄÃ£ trÃ­ch xuáº¥t ${data.sections.length} pháº§n ná»™i dung tá»« PDF`
           });
         } else {
           throw new Error(data.error);
         }
       } catch (error: any) {
         console.error('PDF extraction failed:', error);
-        setError(`Không thể phân tích file PDF: ${error.message || 'Lỗi không xác định'}`);
+        setError(`KhÃ´ng thá»ƒ phÃ¢n tÃ­ch file PDF: ${error.message || 'Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh'}`);
         toast({
-          title: "Lỗi phân tích",
-          description: error.message || "Đã xảy ra lỗi khi trích xuất nội dung PDF",
+          title: "Lá»—i phÃ¢n tÃ­ch",
+          description: error.message || "ÄÃ£ xáº£y ra lá»—i khi trÃ­ch xuáº¥t ná»™i dung PDF",
           variant: "destructive"
         });
       }
@@ -129,36 +129,36 @@ export default function EnhancedSmartLessonProcessor() {
 
   const handleDatabaseIntegration = async () => {
     if (!grade || !topic) {
-      setError('Vui lòng chọn khối và chủ đề trước khi tích hợp database');
+      setError('Vui lÃ²ng chá»n khá»‘i vÃ  chá»§ Ä‘á» trÆ°á»›c khi tÃ­ch há»£p database');
       return;
     }
 
-    setProcessingSteps(prev => [...prev, 'Đang tích hợp database...']);
+    setProcessingSteps(prev => [...prev, 'Äang tÃ­ch há»£p database...']);
 
     try {
       // Get smart data from database
       const smartData = await SmartPromptService.lookupSmartData(grade, topic, chuDeSo);
       setDatabaseContext(smartData);
 
-      setProcessingSteps(prev => [...prev, '✅ Database integration hoàn tất']);
+      setProcessingSteps(prev => [...prev, 'âœ… Database integration hoÃ n táº¥t']);
 
       toast({
         title: "Database Integration",
-        description: `Đã tích hợp ${smartData.objectives ? 'PPCT' : ''}${smartData.digitalCompetency ? ', NLS' : ''} và các database khác`
+        description: `ÄÃ£ tÃ­ch há»£p ${smartData.objectives ? 'PPCT' : ''}${smartData.digitalCompetency ? ', NLS' : ''} vÃ  cÃ¡c database khÃ¡c`
       });
     } catch (error) {
       console.error('Database integration failed:', error);
-      setError('Không thể tích hợp database. Vui lòng thử lại.');
+      setError('KhÃ´ng thá»ƒ tÃ­ch há»£p database. Vui lÃ²ng thá»­ láº¡i.');
     }
   };
 
   const handleGeneratePrompts = async () => {
     if (!pdfContent || !databaseContext) {
-      setError('Vui lòng upload PDF và tích hợp database trước khi tạo prompt');
+      setError('Vui lÃ²ng upload PDF vÃ  tÃ­ch há»£p database trÆ°á»›c khi táº¡o prompt');
       return;
     }
 
-    setProcessingSteps(prev => [...prev, 'Đang tạo prompts thông minh...']);
+    setProcessingSteps(prev => [...prev, 'Äang táº¡o prompts thÃ´ng minh...']);
 
     try {
       // Process content with ProfessionalContentProcessor
@@ -181,39 +181,39 @@ export default function EnhancedSmartLessonProcessor() {
       });
 
       setModules(updatedModules);
-      setProcessingSteps(prev => [...prev, '✅ Đã tạo prompts tối ưu cho 4 hoạt động']);
+      setProcessingSteps(prev => [...prev, 'âœ… ÄÃ£ táº¡o prompts tá»‘i Æ°u cho 4 hoáº¡t Ä‘á»™ng']);
 
       toast({
         title: "Optimized Prompts Generated",
-        description: "Đã tạo prompts chuyên nghiệp với nội dung được tinh lọc"
+        description: "ÄÃ£ táº¡o prompts chuyÃªn nghiá»‡p vá»›i ná»™i dung Ä‘Æ°á»£c tinh lá»c"
       });
     } catch (error) {
       console.error('Prompt generation failed:', error);
-      setError('Không thể tạo prompts. Vui lòng thử lại.');
+      setError('KhÃ´ng thá»ƒ táº¡o prompts. Vui lÃ²ng thá»­ láº¡i.');
     }
   };
 
   const handleCopyPrompt = async () => {
     if (!generatedPrompt) {
-      setError('Không có prompt để copy');
+      setError('KhÃ´ng cÃ³ prompt Ä‘á»ƒ copy');
       return;
     }
 
     try {
       await navigator.clipboard.writeText(generatedPrompt);
       toast({
-        title: "Đã sao chép",
-        description: "Prompt đã được copy vào clipboard, hãy paste vào Gemini Pro"
+        title: "ÄÃ£ sao chÃ©p",
+        description: "Prompt Ä‘Ã£ Ä‘Æ°á»£c copy vÃ o clipboard, hÃ£y paste vÃ o Gemini Pro"
       });
     } catch (error) {
       console.error('Copy failed:', error);
-      setError('Không thể copy prompt');
+      setError('KhÃ´ng thá»ƒ copy prompt');
     }
   };
 
   const handleProcessJsonResponse = () => {
     if (!jsonResponse) {
-      setError('Vui lòng paste JSON response từ Gemini Pro');
+      setError('Vui lÃ²ng paste JSON response tá»« Gemini Pro');
       return;
     }
 
@@ -239,25 +239,25 @@ export default function EnhancedSmartLessonProcessor() {
       };
 
       setFilledTemplate(template);
-      setProcessingSteps(prev => [...prev, '✅ JSON đã được điền vào template']);
+      setProcessingSteps(prev => [...prev, 'âœ… JSON Ä‘Ã£ Ä‘Æ°á»£c Ä‘iá»n vÃ o template']);
 
       toast({
         title: "Template Filled",
-        description: "Đã điền nội dung từ JSON vào template KHBH"
+        description: "ÄÃ£ Ä‘iá»n ná»™i dung tá»« JSON vÃ o template KHBH"
       });
     } catch (error) {
       console.error('JSON parsing failed:', error);
-      setError('JSON không hợp lệ. Vui lòng kiểm tra lại.');
+      setError('JSON khÃ´ng há»£p lá»‡. Vui lÃ²ng kiá»ƒm tra láº¡i.');
     }
   };
 
   const handleExportWord = async () => {
     if (!filledTemplate) {
-      setError('Vui lòng điền template trước khi xuất Word');
+      setError('Vui lÃ²ng Ä‘iá»n template trÆ°á»›c khi xuáº¥t Word');
       return;
     }
 
-    setProcessingSteps(prev => [...prev, 'Đang xuất file Word...']);
+    setProcessingSteps(prev => [...prev, 'Äang xuáº¥t file Word...']);
 
     try {
       const response = await fetch('/api/export-to-word', {
@@ -279,18 +279,18 @@ export default function EnhancedSmartLessonProcessor() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        setProcessingSteps(prev => [...prev, '✅ Export Word hoàn tất']);
+        setProcessingSteps(prev => [...prev, 'âœ… Export Word hoÃ n táº¥t']);
 
         toast({
           title: "Export Success",
-          description: "File Word đã được tải xuống"
+          description: "File Word Ä‘Ã£ Ä‘Æ°á»£c táº£i xuá»‘ng"
         });
       } else {
         throw new Error('Export failed');
       }
     } catch (error) {
       console.error('Word export failed:', error);
-      setError('Không thể xuất file Word. Vui lòng thử lại.');
+      setError('KhÃ´ng thá»ƒ xuáº¥t file Word. Vui lÃ²ng thá»­ láº¡i.');
     }
   };
 
@@ -303,7 +303,7 @@ export default function EnhancedSmartLessonProcessor() {
             Enhanced Smart Lesson Processor 18.0
           </h1>
           <p className="text-slate-600">
-            Quy trình 4 bước: Upload → Database → Prompt → JSON → Word
+            Quy trÃ¬nh 4 bÆ°á»›c: Upload â†’ Database â†’ Prompt â†’ JSON â†’ Word
           </p>
           <div className="mt-4 inline-flex items-center gap-4">
             <Badge variant="outline" className="bg-blue-100 text-blue-800">
@@ -326,30 +326,30 @@ export default function EnhancedSmartLessonProcessor() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="w-5 h-5" />
-              Bước 1: Cấu hình
+              BÆ°á»›c 1: Cáº¥u hÃ¬nh
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Khối lớp</label>
+                <label className="text-sm font-medium">Khá»‘i lá»›p</label>
                 <Select value={grade} onValueChange={setGrade}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn khối" />
+                    <SelectValue placeholder="Chá»n khá»‘i" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="10">Khối 10</SelectItem>
-                    <SelectItem value="11">Khối 11</SelectItem>
-                    <SelectItem value="12">Khối 12</SelectItem>
+                    <SelectItem value="10">Khá»‘i 10</SelectItem>
+                    <SelectItem value="11">Khá»‘i 11</SelectItem>
+                    <SelectItem value="12">Khá»‘i 12</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Chủ đề (PPCT)</label>
+                <label className="text-sm font-medium">Chá»§ Ä‘á» (PPCT)</label>
                 <Select value={chuDeSo} onValueChange={setChuDeSo} disabled={!grade}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn chủ đề" />
+                    <SelectValue placeholder="Chá»n chá»§ Ä‘á»" />
                   </SelectTrigger>
                   <SelectContent>
                     {chuDeList.map((chuDe) => (
@@ -367,27 +367,27 @@ export default function EnhancedSmartLessonProcessor() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Tên bài học</label>
+                <label className="text-sm font-medium">TÃªn bÃ i há»c</label>
                 <input
                   type="text"
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   className="w-full p-2 border rounded-md"
-                  placeholder="Tên bài học"
+                  placeholder="TÃªn bÃ i há»c"
                 />
               </div>
             </div>
 
             {selectedChuDe && (
               <div className="bg-blue-50 p-4 rounded-lg">
-                <h4 className="font-medium mb-2">Phân bổ tiết học</h4>
+                <h4 className="font-medium mb-2">PhÃ¢n bá»• tiáº¿t há»c</h4>
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <p className="text-sm text-gray-600">SHDC</p>
                     <p className="font-bold text-blue-600">{selectedChuDe.shdc}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">HĐGD</p>
+                    <p className="text-sm text-gray-600">HÄGD</p>
                     <p className="font-bold text-green-600">{selectedChuDe.hdgd}</p>
                   </div>
                   <div>
@@ -403,10 +403,10 @@ export default function EnhancedSmartLessonProcessor() {
         {/* Main Processing Steps */}
         <Tabs defaultValue="upload" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="upload">Bước 2: Upload</TabsTrigger>
-            <TabsTrigger value="database">Bước 3: Database</TabsTrigger>
-            <TabsTrigger value="prompt">Bước 4: Prompt</TabsTrigger>
-            <TabsTrigger value="json">Bước 5: JSON</TabsTrigger>
+            <TabsTrigger value="upload">BÆ°á»›c 2: Upload</TabsTrigger>
+            <TabsTrigger value="database">BÆ°á»›c 3: Database</TabsTrigger>
+            <TabsTrigger value="prompt">BÆ°á»›c 4: Prompt</TabsTrigger>
+            <TabsTrigger value="json">BÆ°á»›c 5: JSON</TabsTrigger>
           </TabsList>
 
           {/* Step 2: Upload & Analysis */}
@@ -415,15 +415,15 @@ export default function EnhancedSmartLessonProcessor() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Upload className="w-5 h-5" />
-                  Upload KHBH cũ
+                  Upload KHBH cÅ©
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-lg font-medium mb-2">Chọn file PDF hoặc DOCX</p>
+                  <p className="text-lg font-medium mb-2">Chá»n file PDF hoáº·c DOCX</p>
                   <p className="text-sm text-gray-500 mb-4">
-                    Hệ thống sẽ phân tích và trích xuất nội dung theo cấu trúc KHBH
+                    Há»‡ thá»‘ng sáº½ phÃ¢n tÃ­ch vÃ  trÃ­ch xuáº¥t ná»™i dung theo cáº¥u trÃºc KHBH
                   </p>
                   <input
                     type="file"
@@ -435,7 +435,7 @@ export default function EnhancedSmartLessonProcessor() {
 
                 {pdfContent && (
                   <div className="bg-green-50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">Nội dung đã trích xuất:</h4>
+                    <h4 className="font-medium mb-2">Ná»™i dung Ä‘Ã£ trÃ­ch xuáº¥t:</h4>
                     <div className="max-h-40 overflow-y-auto text-sm">
                       {pdfContent.substring(0, 500)}...
                     </div>
@@ -448,7 +448,7 @@ export default function EnhancedSmartLessonProcessor() {
                   className="w-full"
                 >
                   <Database className="w-4 h-4 mr-2" />
-                  Tích hợp Database
+                  TÃ­ch há»£p Database
                 </Button>
               </CardContent>
             </Card>
@@ -467,14 +467,14 @@ export default function EnhancedSmartLessonProcessor() {
                 {databaseContext ? (
                   <div className="space-y-4">
                     <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Context từ Database:</h4>
+                      <h4 className="font-medium mb-2">Context tá»« Database:</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm font-medium">Mục tiêu:</p>
+                          <p className="text-sm font-medium">Má»¥c tiÃªu:</p>
                           <p className="text-sm">{databaseContext.objectives?.substring(0, 100)}...</p>
                         </div>
                         <div>
-                          <p className="text-sm font-medium">Năng lực số:</p>
+                          <p className="text-sm font-medium">NÄƒng lá»±c sá»‘:</p>
                           <p className="text-sm">{databaseContext.digitalCompetency?.substring(0, 100)}...</p>
                         </div>
                       </div>
@@ -482,14 +482,14 @@ export default function EnhancedSmartLessonProcessor() {
 
                     <Button onClick={handleGeneratePrompts} className="w-full">
                       <Brain className="w-4 h-4 mr-2" />
-                      Tạo Prompt thông minh
+                      Táº¡o Prompt thÃ´ng minh
                     </Button>
                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <Database className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500">Chưa có dữ liệu database</p>
-                    <p className="text-sm text-gray-400">Vui lòng hoàn thành Bước 2 trước</p>
+                    <p className="text-gray-500">ChÆ°a cÃ³ dá»¯ liá»‡u database</p>
+                    <p className="text-sm text-gray-400">Vui lÃ²ng hoÃ n thÃ nh BÆ°á»›c 2 trÆ°á»›c</p>
                   </div>
                 )}
               </CardContent>
@@ -510,7 +510,7 @@ export default function EnhancedSmartLessonProcessor() {
                   <div className="space-y-4">
                     <div className="bg-yellow-50 p-4 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">Prompt đã tạo:</h4>
+                        <h4 className="font-medium">Prompt Ä‘Ã£ táº¡o:</h4>
                         <Button size="sm" onClick={handleCopyPrompt}>
                           <Copy className="w-4 h-4 mr-2" />
                           Copy Prompt
@@ -524,20 +524,20 @@ export default function EnhancedSmartLessonProcessor() {
                     </div>
 
                     <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Hướng dẫn sử dụng:</h4>
+                      <h4 className="font-medium mb-2">HÆ°á»›ng dáº«n sá»­ dá»¥ng:</h4>
                       <ol className="text-sm space-y-1 list-decimal list-inside">
-                        <li>Copy prompt ở trên</li>
-                        <li>Paste vào Gemini Pro hoặc ChatGPT</li>
-                        <li>Nhận JSON response</li>
-                        <li>Paste JSON vào Bước 5</li>
+                        <li>Copy prompt á»Ÿ trÃªn</li>
+                        <li>Paste vÃ o Gemini Pro hoáº·c ChatGPT</li>
+                        <li>Nháº­n JSON response</li>
+                        <li>Paste JSON vÃ o BÆ°á»›c 5</li>
                       </ol>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center py-8">
                     <Brain className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500">Chưa có prompt</p>
-                    <p className="text-sm text-gray-400">Vui lòng hoàn thành Bước 3 trước</p>
+                    <p className="text-gray-500">ChÆ°a cÃ³ prompt</p>
+                    <p className="text-sm text-gray-400">Vui lÃ²ng hoÃ n thÃ nh BÆ°á»›c 3 trÆ°á»›c</p>
                   </div>
                 )}
               </CardContent>
@@ -556,40 +556,40 @@ export default function EnhancedSmartLessonProcessor() {
               <CardContent className="space-y-4">
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium">Paste JSON response từ Gemini Pro:</label>
+                    <label className="text-sm font-medium">Paste JSON response tá»« Gemini Pro:</label>
                     <Textarea
                       value={jsonResponse}
                       onChange={(e) => setJsonResponse(e.target.value)}
-                      placeholder="Paste JSON response ở đây..."
+                      placeholder="Paste JSON response á»Ÿ Ä‘Ã¢y..."
                       className="min-h-[200px] font-mono text-sm"
                     />
                   </div>
 
                   <Button onClick={handleProcessJsonResponse} disabled={!jsonResponse}>
                     <Play className="w-4 h-4 mr-2" />
-                    Điền vào Template
+                    Äiá»n vÃ o Template
                   </Button>
                 </div>
 
                 {filledTemplate && (
                   <div className="space-y-4">
                     <div className="bg-green-50 p-4 rounded-lg">
-                      <h4 className="font-medium mb-2">Template đã điền:</h4>
+                      <h4 className="font-medium mb-2">Template Ä‘Ã£ Ä‘iá»n:</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="font-medium">Tên bài:</p>
+                          <p className="font-medium">TÃªn bÃ i:</p>
                           <p>{filledTemplate.ten_bai}</p>
                         </div>
                         <div>
-                          <p className="font-medium">Mục tiêu kiến thức:</p>
+                          <p className="font-medium">Má»¥c tiÃªu kiáº¿n thá»©c:</p>
                           <p>{filledTemplate.muc_tieu_kien_thuc?.substring(0, 100)}...</p>
                         </div>
                         <div>
-                          <p className="font-medium">Mục tiêu năng lực:</p>
+                          <p className="font-medium">Má»¥c tiÃªu nÄƒng lá»±c:</p>
                           <p>{filledTemplate.muc_tieu_nang_luc?.substring(0, 100)}...</p>
                         </div>
                         <div>
-                          <p className="font-medium">Mục tiêu phẩm chất:</p>
+                          <p className="font-medium">Má»¥c tiÃªu pháº©m cháº¥t:</p>
                           <p>{filledTemplate.muc_tieu_pham_chat?.substring(0, 100)}...</p>
                         </div>
                       </div>
@@ -597,7 +597,7 @@ export default function EnhancedSmartLessonProcessor() {
 
                     <Button onClick={handleExportWord} className="w-full">
                       <Download className="w-4 h-4 mr-2" />
-                      Xuất file Word
+                      Xuáº¥t file Word
                     </Button>
                   </div>
                 )}
@@ -616,7 +616,7 @@ export default function EnhancedSmartLessonProcessor() {
               <div className="space-y-2">
                 {processingSteps.map((step, index) => (
                   <div key={index} className="flex items-center gap-2 text-sm">
-                    {step.includes('✅') ? (
+                    {step.includes('âœ…') ? (
                       <CheckCircle className="w-4 h-4 text-green-500" />
                     ) : (
                       <Loader2 className="w-4 h-4 animate-spin" />

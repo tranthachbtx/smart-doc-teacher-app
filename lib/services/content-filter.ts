@@ -11,15 +11,15 @@ export interface FilteredContent {
 
 export class ContentFilter {
     /**
-     * Lọc nội dung dựa trên loại hoạt động và giới hạn độ dài
+     * Lá»c ná»™i dung dá»±a trÃªn loáº¡i hoáº¡t Ä‘á»™ng vÃ  giá»›i háº¡n Ä‘á»™ dÃ i
      */
     filterContentForActivity(
         structuredContent: StructuredContent,
         activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung' | 'khac' | 'shdc' | 'shl' | 'setup' | 'appendix',
         maxContentLength: number = 4000
     ): FilteredContent {
-        // 1. Lọc theo độ liên quan
-        // Nếu là 'khac' hoặc các phần bổ trợ, lấy toàn bộ hoặc lọc theo type resource/objective
+        // 1. Lá»c theo Ä‘á»™ liÃªn quan
+        // Náº¿u lÃ  'khac' hoáº·c cÃ¡c pháº§n bá»• trá»£, láº¥y toÃ n bá»™ hoáº·c lá»c theo type resource/objective
         let relevantSections = [];
         if (activityType === 'khoi_dong' || activityType === 'kham_pha' || activityType === 'luyen_tap' || activityType === 'van_dung') {
             const typeKey = activityType;
@@ -27,7 +27,7 @@ export class ContentFilter {
                 .filter(section => (section.relevance[typeKey] || 0) >= 35)
                 .sort((a, b) => (b.relevance[typeKey] || 0) - (a.relevance[typeKey] || 0));
         } else {
-            // Đối với SHDC/SHL/Setup: Lấy các phần có type tương ứng
+            // Äá»‘i vá»›i SHDC/SHL/Setup: Láº¥y cÃ¡c pháº§n cÃ³ type tÆ°Æ¡ng á»©ng
             relevantSections = structuredContent.sections.filter(s => {
                 if (activityType === 'shdc' || activityType === 'shl') return s.title.toLowerCase().includes(activityType);
                 if (activityType === 'setup') return s.type === 'objective' || s.type === 'resource';
@@ -37,11 +37,11 @@ export class ContentFilter {
             if (relevantSections.length === 0) relevantSections = structuredContent.sections.slice(0, 10);
         }
 
-        // 2. Ưu tiên theo loại hoạt động (Dùng logic V10 cải tiến)
+        // 2. Æ¯u tiÃªn theo loáº¡i hoáº¡t Ä‘á»™ng (DÃ¹ng logic V10 cáº£i tiáº¿n)
         // Type assertion to bypass strict activity check for prioritization
         const prioritizedSections = this.prioritizeByActivity(relevantSections, activityType as any);
 
-        // 3. Trích xuất nội dung trong giới hạn độ dài
+        // 3. TrÃ­ch xuáº¥t ná»™i dung trong giá»›i háº¡n Ä‘á»™ dÃ i
         let currentLength = 0;
         const selectedSections: ContentSection[] = [];
 
@@ -53,7 +53,7 @@ export class ContentFilter {
             currentLength += section.content.length;
         }
 
-        // 4. Tạo nội dung cho prompt (Targeted format)
+        // 4. Táº¡o ná»™i dung cho prompt (Targeted format)
         const promptContent = this.generateTargetedPromptContent(selectedSections, activityType as any);
 
         const totalRelevance = selectedSections.length > 0
@@ -101,19 +101,19 @@ export class ContentFilter {
         activityType: 'khoi_dong' | 'kham_pha' | 'luyen_tap' | 'van_dung' | 'shdc' | 'shl' | 'setup' | 'appendix' | 'khac'
     ): string {
         const names: Record<string, string> = {
-            khoi_dong: 'KHỞI ĐỘNG (WARM-UP)',
-            kham_pha: 'KHÁM PHÁ (KNOWLEDGE FORMATION)',
-            luyen_tap: 'LUYỆN TẬP (PRACTICE)',
-            van_dung: 'VẬN DỤNG (APPLICATION)',
-            shdc: 'SINH HOẠT DƯỚI CỜ',
-            shl: 'SINH HOẠT LỚP',
-            setup: 'MỤC TIÊU & THIẾT BỊ',
-            appendix: 'PHỤ LỤC & ĐÁNH GIÁ'
+            khoi_dong: 'KHá»žI Äá»˜NG (WARM-UP)',
+            kham_pha: 'KHÃM PHÃ (KNOWLEDGE FORMATION)',
+            luyen_tap: 'LUYá»†N Táº¬P (PRACTICE)',
+            van_dung: 'Váº¬N Dá»¤NG (APPLICATION)',
+            shdc: 'SINH HOáº T DÆ¯á»šI Cá»œ',
+            shl: 'SINH HOáº T Lá»šP',
+            setup: 'Má»¤C TIÃŠU & THIáº¾T Bá»Š',
+            appendix: 'PHá»¤ Lá»¤C & ÄÃNH GIÃ'
         };
 
         const cleaner = TextCleaningService.getInstance();
-        let content = `## 🎯 DỮ LIỆU ĐÃ TỐI ƯU CHO HOẠT ĐỘNG: ${names[activityType] || activityType}\n`;
-        content += `> Hướng dẫn: Đây là các mảnh kiến thức được trích xuất từ tài liệu gốc, lọc theo mức độ liên quan cao nhất.\n\n`;
+        let content = `## ðŸŽ¯ Dá»® LIá»†U ÄÃƒ Tá»I Æ¯U CHO HOáº T Äá»˜NG: ${names[activityType] || activityType}\n`;
+        content += `> HÆ°á»›ng dáº«n: ÄÃ¢y lÃ  cÃ¡c máº£nh kiáº¿n thá»©c Ä‘Æ°á»£c trÃ­ch xuáº¥t tá»« tÃ i liá»‡u gá»‘c, lá»c theo má»©c Ä‘á»™ liÃªn quan cao nháº¥t.\n\n`;
 
         sections.forEach((s, i) => {
             const sanitizedTitle = cleaner.clean(s.title).toUpperCase();
@@ -122,7 +122,7 @@ export class ContentFilter {
             // Skip if the resulting content is too short or just a marker
             if (sanitizedContent.length < 30 || sanitizedTitle.match(/PAGE\s+\d+/i)) return;
 
-            content += `[MẢNH ${i + 1}: ${sanitizedTitle}] (${s.type})\n`;
+            content += `[Máº¢NH ${i + 1}: ${sanitizedTitle}] (${s.type})\n`;
             content += `${sanitizedContent}\n\n`;
         });
 

@@ -53,6 +53,28 @@ export function ManualProcessingHub() {
     const [activePhaseIndex, setActivePhaseIndex] = React.useState<number>(0);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+    // 🚀 AUTO-INIT SCRATCH MODE (v39.2)
+    // Nếu người dùng chọn bài mới mà không có PDF, tự khởi tạo khung lộ trình
+    useEffect(() => {
+        if (lessonAutoFilledTheme && (!manualModules || manualModules.length === 0)) {
+            console.log("[ManualHub] Initializing Scratch Mode Pipeline...");
+
+            // Giả định mặc định 3 tiết nếu không có PDF
+            const defaultPeriods = "3 tiết";
+            const executionPlan = ManualWorkflowService.generateExecutionPlan(defaultPeriods);
+
+            // Khởi tạo 3 Trụ cột mặc định
+            const defaultModules: ProcessingModule[] = [
+                { id: "pillar_1", title: "Trụ cột 1: Khung & Vệ tinh (Audit Mode)", type: "setup", prompt: "", content: "", isCompleted: false },
+                { id: "pillar_2", title: "Trụ cột 2: Kiến tạo & Khám phá (Deep)", type: "khac", prompt: "", content: "", isCompleted: false },
+                { id: "pillar_3", title: "Trụ cột 3: Thực chiến & Đánh giá (Premium)", type: "khac", prompt: "", content: "", isCompleted: false },
+            ];
+
+            store.updateLessonField('executionPlan', executionPlan);
+            store.updateLessonField('manualModules', defaultModules);
+        }
+    }, [lessonAutoFilledTheme, manualModules, store]);
+
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;

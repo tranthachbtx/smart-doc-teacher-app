@@ -135,12 +135,12 @@ const TemplateEngine = () => {
     null
   ); // Added missing state
   const [lessonCustomInstructions, setLessonCustomInstructions] =
-    useState<string>(`YÊU CẦU ĐẶC BIỆT (CHẾ ĐỘ SIÊU CHI TIẾT 50+ TRANG):
-1. CẤU TRÚC PHÂN TÁCH: Hãy chia nhỏ nội dung phần Khám phá và Luyện tập thành từng Tiết học/Buổi học riêng biệt (VD: Tiết 1, Tiết 2...). Mỗi tiết phải có đủ 4 bước: Mở đầu - Hình thành kiến thức - Luyện tập - Vận dụng nhanh.
-2. KỊCH BẢN SƯ PHẠM: Không viết tóm tắt. Phải viết KỊCH BẢN LỜI THOẠI chi tiết giữa GV và HS. GV đóng vai người "Coaching" (Huấn luyện viên), dùng câu hỏi gợi mở để HS tự chốt kiến thức.
-3. CHIẾN LƯỢC DẠY HỌC: Áp dụng triệt để "Lớp học đảo ngược" (Flipped Classroom) và "Dạy học dự án" (Project Based Learning). Mô tả kỹ cách học sinh hoạt động nhóm.
-4. TÍCH HỢP SÂU: Lồng ghép kỹ năng Công dân số (Digital Citizenship) và Bảo tồn văn hóa/Thiên nhiên vào từng hoạt động nhỏ.
-5. SẢN PHẨM CỤ THỂ: Mô tả chi tiết Rubric đánh giá, Phiếu học tập, và Sản phẩm dự kiến của học sinh ở mức độ cao nhất.`);
+    useState<string>(`YÃŠU Cáº¦U Äáº¶C BIá»†T (CHáº¾ Äá»˜ SIÃŠU CHI TIáº¾T 50+ TRANG):
+1. Cáº¤U TRÃšC PHÃ‚N TÃCH: HÃ£y chia nhá» ná»™i dung pháº§n KhÃ¡m phÃ¡ vÃ  Luyá»‡n táº­p thÃ nh tá»«ng Tiáº¿t há»c/Buá»•i há»c riÃªng biá»‡t (VD: Tiáº¿t 1, Tiáº¿t 2...). Má»—i tiáº¿t pháº£i cÃ³ Ä‘á»§ 4 bÆ°á»›c: Má»Ÿ Ä‘áº§u - HÃ¬nh thÃ nh kiáº¿n thá»©c - Luyá»‡n táº­p - Váº­n dá»¥ng nhanh.
+2. Ká»ŠCH Báº¢N SÆ¯ PHáº M: KhÃ´ng viáº¿t tÃ³m táº¯t. Pháº£i viáº¿t Ká»ŠCH Báº¢N Lá»œI THOáº I chi tiáº¿t giá»¯a GV vÃ  HS. GV Ä‘Ã³ng vai ngÆ°á»i "Coaching" (Huáº¥n luyá»‡n viÃªn), dÃ¹ng cÃ¢u há»i gá»£i má»Ÿ Ä‘á»ƒ HS tá»± chá»‘t kiáº¿n thá»©c.
+3. CHIáº¾N LÆ¯á»¢C Dáº Y Há»ŒC: Ãp dá»¥ng triá»‡t Ä‘á»ƒ "Lá»›p há»c Ä‘áº£o ngÆ°á»£c" (Flipped Classroom) vÃ  "Dáº¡y há»c dá»± Ã¡n" (Project Based Learning). MÃ´ táº£ ká»¹ cÃ¡ch há»c sinh hoáº¡t Ä‘á»™ng nhÃ³m.
+4. TÃCH Há»¢P SÃ‚U: Lá»“ng ghÃ©p ká»¹ nÄƒng CÃ´ng dÃ¢n sá»‘ (Digital Citizenship) vÃ  Báº£o tá»“n vÄƒn hÃ³a/ThiÃªn nhiÃªn vÃ o tá»«ng hoáº¡t Ä‘á»™ng nhá».
+5. Sáº¢N PHáº¨M Cá»¤ THá»‚: MÃ´ táº£ chi tiáº¿t Rubric Ä‘Ã¡nh giÃ¡, Phiáº¿u há»c táº­p, vÃ  Sáº£n pháº©m dá»± kiáº¿n cá»§a há»c sinh á»Ÿ má»©c Ä‘á»™ cao nháº¥t.`);
   const [lessonTasks, setLessonTasks] = useState<LessonTask[]>([]);
 
   const [curriculumTasks, setCurriculumTasks] = useState<LessonTask[]>([]);
@@ -195,7 +195,7 @@ const TemplateEngine = () => {
 
   // Assessment state
   const [assessmentGrade, setAssessmentGrade] = useState("10");
-  const [assessmentTerm, setAssessmentTerm] = useState("Giữa kì 1");
+  const [assessmentTerm, setAssessmentTerm] = useState("Giá»¯a kÃ¬ 1");
   const [assessmentProductType, setAssessmentProductType] = useState("");
   const [assessmentTopic, setAssessmentTopic] = useState("");
   const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
@@ -335,15 +335,15 @@ const TemplateEngine = () => {
 
       activities.forEach((activity) => {
         const lowerActivity = activity.toLowerCase();
-        if (lowerActivity.includes("tìm hiểu") || lowerActivity.includes("giáo dục") || lowerActivity.includes("diễn đàn") || lowerActivity.includes("xác định")) {
-          shdcActivities.push(`• ${activity}`);
-        } else if (lowerActivity.includes("thực hiện") || lowerActivity.includes("thực hành") || lowerActivity.includes("thể hiện") || lowerActivity.includes("xây dựng") || lowerActivity.includes("lập")) {
-          hdgdActivities.push(`• ${activity}`);
-        } else if (lowerActivity.includes("rèn luyện") || lowerActivity.includes("điều chỉnh") || lowerActivity.includes("đánh giá") || lowerActivity.includes("chia sẻ")) {
-          shlActivities.push(`• ${activity}`);
+        if (lowerActivity.includes("tÃ¬m hiá»ƒu") || lowerActivity.includes("giÃ¡o dá»¥c") || lowerActivity.includes("diá»…n Ä‘Ã n") || lowerActivity.includes("xÃ¡c Ä‘á»‹nh")) {
+          shdcActivities.push(`â€¢ ${activity}`);
+        } else if (lowerActivity.includes("thá»±c hiá»‡n") || lowerActivity.includes("thá»±c hÃ nh") || lowerActivity.includes("thá»ƒ hiá»‡n") || lowerActivity.includes("xÃ¢y dá»±ng") || lowerActivity.includes("láº­p")) {
+          hdgdActivities.push(`â€¢ ${activity}`);
+        } else if (lowerActivity.includes("rÃ¨n luyá»‡n") || lowerActivity.includes("Ä‘iá»u chá»‰nh") || lowerActivity.includes("Ä‘Ã¡nh giÃ¡") || lowerActivity.includes("chia sáº»")) {
+          shlActivities.push(`â€¢ ${activity}`);
         } else {
           // Default: add to HDGD as most activities are educational
-          hdgdActivities.push(`• ${activity}`);
+          hdgdActivities.push(`â€¢ ${activity}`);
         }
       });
 
@@ -380,7 +380,7 @@ const TemplateEngine = () => {
     }
   }, [lessonGrade]);
 
-  // Sửa đổi logic để lấy task từ kntt-curriculum-database chi tiết
+  // Sá»­a Ä‘á»•i logic Ä‘á»ƒ láº¥y task tá»« kntt-curriculum-database chi tiáº¿t
   useEffect(() => {
     // Use selectedChuDe directly if available, or try based on month
     if (lessonGrade && (selectedChuDe || lessonAutoFilledTheme)) {
@@ -521,10 +521,10 @@ const TemplateEngine = () => {
         setAssessmentTemplate(templateData);
       }
 
-      setSuccess(`Đã tải mẫu "${file.name}" thành công!`);
+      setSuccess(`ÄÃ£ táº£i máº«u "${file.name}" thÃ nh cÃ´ng!`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError(`Lỗi tải mẫu: ${err.message}`);
+      setError(`Lá»—i táº£i máº«u: ${err.message}`);
       setTimeout(() => setError(null), 5000);
     }
   };
@@ -532,7 +532,7 @@ const TemplateEngine = () => {
   // Handle meeting generation
   const handleGenerateMeeting = async () => {
     if (!selectedMonth) {
-      setError("Vui lòng chọn tháng");
+      setError("Vui lÃ²ng chá»n thÃ¡ng");
       return;
     }
 
@@ -546,20 +546,20 @@ const TemplateEngine = () => {
 
     if (result.success && result.data) {
       setMeetingResult(result.data);
-      setSuccess("Đã tạo biên bản họp thành công!");
+      setSuccess("ÄÃ£ táº¡o biÃªn báº£n há»p thÃ nh cÃ´ng!");
 
       // Auto-save to history
       await saveProject({
         id: `meeting_${Date.now()}`,
         type: "meeting",
-        title: `Biên bản họp T${selectedMonth} - Lần ${selectedSession}`,
+        title: `BiÃªn báº£n há»p T${selectedMonth} - Láº§n ${selectedSession}`,
         data: result.data,
         month: selectedMonth
       });
       loadProjects();
       setTimeout(() => setSuccess(null), 3000);
     } else {
-      setError(result.error || "Lỗi khi tạo biên bản");
+      setError(result.error || "Lá»—i khi táº¡o biÃªn báº£n");
     }
   };
 
@@ -576,10 +576,10 @@ const TemplateEngine = () => {
       totalMinutes = Number.parseInt(periodsMatch[1]) * 45;
     }
 
-    // Optimized logic for HĐGD tasks distribution
+    // Optimized logic for HÄGD tasks distribution
     let availableTimeForTasks = totalMinutes;
     if (selectedChuDe) {
-      // Calculate time strictly for HĐGD
+      // Calculate time strictly for HÄGD
       const hdgdPeriods = selectedChuDe.hdgd || 0;
       if (hdgdPeriods > 0) {
         availableTimeForTasks = hdgdPeriods * 45;
@@ -604,7 +604,7 @@ const TemplateEngine = () => {
     allTasks.forEach((task) => {
       let allocatedTime = 0;
 
-      // Try to parse thoiLuongDeXuat if available (e.g., "15 phút", "10-15 phút")
+      // Try to parse thoiLuongDeXuat if available (e.g., "15 phÃºt", "10-15 phÃºt")
       if (task.thoiLuongDeXuat) {
         const timeMatch = task.thoiLuongDeXuat.match(/(\d+)/);
         if (timeMatch) {
@@ -622,11 +622,11 @@ const TemplateEngine = () => {
     });
 
     // 2. Adjust if time is tight
-    // Use the specific available time for tasks (HĐGD time) instead of total lesson time
+    // Use the specific available time for tasks (HÄGD time) instead of total lesson time
     let remainingTime = availableTimeForTasks - usedTime;
 
     // Only reserve buffer if we are working with raw total minutes (legacy mode),
-    // otherwise trust the PPCT HĐGD time is dedicated.
+    // otherwise trust the PPCT HÄGD time is dedicated.
     if (!selectedChuDe) {
       remainingTime -= 10; // Reserve 10 mins purely for buffer/setup if no PPCT structure
     }
@@ -675,13 +675,13 @@ const TemplateEngine = () => {
   // Handle lesson plan generation
   const handleGenerateLesson = async () => {
     if (!lessonGrade) {
-      setError("Vui lòng chọn khối lớp");
+      setError("Vui lÃ²ng chá»n khá»‘i lá»›p");
       return;
     }
 
     const effectiveTopic = lessonTopic || lessonAutoFilledTheme;
     if (!effectiveTopic) {
-      setError("Vui lòng chọn chủ đề");
+      setError("Vui lÃ²ng chá»n chá»§ Ä‘á»");
       return;
     }
 
@@ -705,7 +705,7 @@ const TemplateEngine = () => {
 
     if (result.success && result.data) {
       setLessonResult(result.data);
-      setSuccess("Đã tạo kế hoạch dạy học thành công!");
+      setSuccess("ÄÃ£ táº¡o káº¿ hoáº¡ch dáº¡y há»c thÃ nh cÃ´ng!");
 
       // Auto-save to history
       await saveProject({
@@ -719,7 +719,7 @@ const TemplateEngine = () => {
       loadProjects();
       setTimeout(() => setSuccess(null), 3000);
     } else {
-      setError(result.error || "Lỗi khi tạo nội dung");
+      setError(result.error || "Lá»—i khi táº¡o ná»™i dung");
     }
   };
 
@@ -753,7 +753,7 @@ const TemplateEngine = () => {
   // Handle event script generation
   const handleGenerateEvent = async () => {
     if (!selectedGradeEvent || !selectedEventMonth) {
-      setError("Vui lòng chọn khối và tháng");
+      setError("Vui lÃ²ng chá»n khá»‘i vÃ  thÃ¡ng");
       return;
     }
 
@@ -776,13 +776,13 @@ const TemplateEngine = () => {
 
     if (result.success && result.data) {
       setEventResult(result.data);
-      setSuccess("Đã tạo kịch bản sự kiện thành công!");
+      setSuccess("ÄÃ£ táº¡o ká»‹ch báº£n sá»± kiá»‡n thÃ nh cÃ´ng!");
 
       // Auto-save to history
       await saveProject({
         id: `event_${Date.now()}`,
         type: "event",
-        title: `Ngoại khóa: ${result.data.ten_chu_de}`,
+        title: `Ngoáº¡i khÃ³a: ${result.data.ten_chu_de}`,
         data: result.data,
         grade: selectedGradeEvent,
         month: selectedEventMonth
@@ -790,21 +790,21 @@ const TemplateEngine = () => {
       loadProjects();
       setTimeout(() => setSuccess(null), 3000);
     } else {
-      setError(result.error || "Lỗi khi tạo kịch bản");
+      setError(result.error || "Lá»—i khi táº¡o ká»‹ch báº£n");
     }
   };
 
   const handleGenerateAssessment = async () => {
     if (!assessmentGrade) {
-      setError("Vui lòng chọn khối");
+      setError("Vui lÃ²ng chá»n khá»‘i");
       return;
     }
     if (!assessmentProductType) {
-      setError("Vui lòng chọn loại sản phẩm");
+      setError("Vui lÃ²ng chá»n loáº¡i sáº£n pháº©m");
       return;
     }
     if (!assessmentTopic) {
-      setError("Vui lòng nhập chủ đề/nội dung");
+      setError("Vui lÃ²ng nháº­p chá»§ Ä‘á»/ná»™i dung");
       return;
     }
 
@@ -816,7 +816,7 @@ const TemplateEngine = () => {
 
     // We'll mimic the pattern:
     try {
-      setSuccess("Đang tạo kế hoạch kiểm tra...");
+      setSuccess("Äang táº¡o káº¿ hoáº¡ch kiá»ƒm tra...");
       const result = await generateAssessmentPlan(
         assessmentGrade,
         assessmentTerm,
@@ -826,20 +826,20 @@ const TemplateEngine = () => {
 
       if (result.success && result.data) {
         setAssessmentResult(result.data);
-        setSuccess("Đã tạo kế hoạch kiểm tra thành công!");
+        setSuccess("ÄÃ£ táº¡o káº¿ hoáº¡ch kiá»ƒm tra thÃ nh cÃ´ng!");
 
         // Auto-save
         await saveProject({
           id: `assessment_${Date.now()}`,
           type: "assessment",
-          title: `Kiểm tra ${assessmentTerm} - Khối ${assessmentGrade}`,
+          title: `Kiá»ƒm tra ${assessmentTerm} - Khá»‘i ${assessmentGrade}`,
           data: result.data,
           grade: assessmentGrade
         });
         loadProjects();
         setTimeout(() => setSuccess(null), 3000);
       } else {
-        setError(result.error || "Lỗi khi tạo kế hoạch");
+        setError(result.error || "Lá»—i khi táº¡o káº¿ hoáº¡ch");
       }
     } catch (e: any) {
       setError(e.message);
@@ -848,11 +848,11 @@ const TemplateEngine = () => {
 
   const handleGenerateNCBH = async () => {
     if (!ncbhGrade) {
-      setError("Vui lòng chọn khối lớp");
+      setError("Vui lÃ²ng chá»n khá»‘i lá»›p");
       return;
     }
     if (!ncbhTopic) {
-      setError("Vui lòng nhập tên bài học nghiên cứu");
+      setError("Vui lÃ²ng nháº­p tÃªn bÃ i há»c nghiÃªn cá»©u");
       return;
     }
 
@@ -865,13 +865,13 @@ const TemplateEngine = () => {
 
     if (result.success && result.data) {
       setNcbhResult(result.data);
-      setSuccess("Đã tạo hồ sơ & biên bản NCBH thành công!");
+      setSuccess("ÄÃ£ táº¡o há»“ sÆ¡ & biÃªn báº£n NCBH thÃ nh cÃ´ng!");
 
       // Auto-save to history
       await saveProject({
         id: `ncbh_${Date.now()}`,
         type: "ncbh",
-        title: `Nghiên cứu bài học: ${result.data.ten_bai}`,
+        title: `NghiÃªn cá»©u bÃ i há»c: ${result.data.ten_bai}`,
         data: result.data,
         grade: ncbhGrade,
         month: ncbhMonth
@@ -879,7 +879,7 @@ const TemplateEngine = () => {
       loadProjects();
       setTimeout(() => setSuccess(null), 3000);
     } else {
-      setError(result.error || "Lỗi khi tạo nội dung NCBH");
+      setError(result.error || "Lá»—i khi táº¡o ná»™i dung NCBH");
     }
   };
 
@@ -888,7 +888,7 @@ const TemplateEngine = () => {
     setError(null);
     try {
       if (!assessmentResult) {
-        setError("Chưa có nội dung. Vui lòng tạo trước.");
+        setError("ChÆ°a cÃ³ ná»™i dung. Vui lÃ²ng táº¡o trÆ°á»›c.");
         setIsExporting(false);
         return;
       }
@@ -906,11 +906,11 @@ const TemplateEngine = () => {
       );
 
       if (result) {
-        setSuccess("Đã tải xuống file Word!");
+        setSuccess("ÄÃ£ táº£i xuá»‘ng file Word!");
       }
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      setError("Lỗi xuất file: " + err.message);
+      setError("Lá»—i xuáº¥t file: " + err.message);
     } finally {
       setIsExporting(false);
     }
@@ -956,7 +956,7 @@ const TemplateEngine = () => {
       // Try to parse term from title if stored or just let user set it?
       // For now just load generic data
     }
-    setSuccess(`Đã tải dự án: ${project.title}`);
+    setSuccess(`ÄÃ£ táº£i dá»± Ã¡n: ${project.title}`);
     setTimeout(() => setSuccess(null), 3000);
   };
 
@@ -965,7 +965,7 @@ const TemplateEngine = () => {
     const day = now.getDate();
     const month = now.getMonth() + 1;
     const year = now.getFullYear();
-    return `ngày ${day} tháng ${month} năm ${year}`;
+    return `ngÃ y ${day} thÃ¡ng ${month} nÄƒm ${year}`;
   };
 
   const getChuDeListByKhoi = (khoi: string): PPCTChuDe[] => {
@@ -999,9 +999,9 @@ const TemplateEngine = () => {
     if (sessionTemplate) {
       return sessionTemplate.name;
     } else if (hasDefault) {
-      return "Sử dụng mẫu mặc định";
+      return "Sá»­ dá»¥ng máº«u máº·c Ä‘á»‹nh";
     } else {
-      return "Chưa có mẫu - Nội dung sẽ copy vào clipboard";
+      return "ChÆ°a cÃ³ máº«u - Ná»™i dung sáº½ copy vÃ o clipboard";
     }
   };
 
@@ -1010,9 +1010,9 @@ const TemplateEngine = () => {
     sessionTemplate: TemplateData | null,
     hasDefault: boolean
   ) => {
-    if (sessionTemplate) return "Đổi mẫu phiên";
-    if (hasDefault) return "Dùng mẫu khác";
-    return "Tải mẫu lên";
+    if (sessionTemplate) return "Äá»•i máº«u phiÃªn";
+    if (hasDefault) return "DÃ¹ng máº«u khÃ¡c";
+    return "Táº£i máº«u lÃªn";
   };
 
   // Handle export to Word
@@ -1028,7 +1028,7 @@ const TemplateEngine = () => {
 
       if (type === "meeting") {
         if (!meetingResult) {
-          setError("Chưa có nội dung biên bản. Vui lòng tạo nội dung trước.");
+          setError("ChÆ°a cÃ³ ná»™i dung biÃªn báº£n. Vui lÃ²ng táº¡o ná»™i dung trÆ°á»›c.");
           setIsExporting(false);
           return;
         }
@@ -1040,7 +1040,7 @@ const TemplateEngine = () => {
         result = { success: worked, method: "download" };
       } else if (type === "lesson") {
         if (!lessonResult) {
-          setError("Chưa có nội dung tích hợp. Vui lòng tạo nội dung trước.");
+          setError("ChÆ°a cÃ³ ná»™i dung tÃ­ch há»£p. Vui lÃ²ng táº¡o ná»™i dung trÆ°á»›c.");
           setIsExporting(false);
           return;
         }
@@ -1051,7 +1051,7 @@ const TemplateEngine = () => {
         result = { success: worked, method: "download" };
       } else if (type === "event") {
         if (!eventResult) {
-          setError("Chưa có kịch bản ngoại khóa. Vui lòng tạo nội dung trước.");
+          setError("ChÆ°a cÃ³ ká»‹ch báº£n ngoáº¡i khÃ³a. Vui lÃ²ng táº¡o ná»™i dung trÆ°á»›c.");
           setIsExporting(false);
           return;
         }
@@ -1065,7 +1065,7 @@ const TemplateEngine = () => {
         result = { success: worked, method: "download" };
       } else if (type === "ncbh") {
         if (!ncbhResult) {
-          setError("Chưa có nội dung NCBH. Vui lòng tạo nội dung trước.");
+          setError("ChÆ°a cÃ³ ná»™i dung NCBH. Vui lÃ²ng táº¡o ná»™i dung trÆ°á»›c.");
           setIsExporting(false);
           return;
         }
@@ -1079,7 +1079,7 @@ const TemplateEngine = () => {
         result = { success: worked, method: "download" };
       } else if (type === "assessment") {
         if (!assessmentResult) {
-          setError("Chưa có nội dung kế hoạch kiểm tra. Vui lòng tạo nội dung trước.");
+          setError("ChÆ°a cÃ³ ná»™i dung káº¿ hoáº¡ch kiá»ƒm tra. Vui lÃ²ng táº¡o ná»™i dung trÆ°á»›c.");
           setIsExporting(false);
           return;
         }
@@ -1094,16 +1094,16 @@ const TemplateEngine = () => {
       }
 
       if (result.method === "download") {
-        setSuccess("Xuất file Word thành công!");
+        setSuccess("Xuáº¥t file Word thÃ nh cÃ´ng!");
       } else {
         setSuccess(
-          "Đã copy nội dung vào Clipboard (do không tìm thấy mẫu Word)"
+          "ÄÃ£ copy ná»™i dung vÃ o Clipboard (do khÃ´ng tÃ¬m tháº¥y máº«u Word)"
         );
       }
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       console.error("Export error:", err);
-      setError(`Lỗi xuất file: ${err.message}`);
+      setError(`Lá»—i xuáº¥t file: ${err.message}`);
     } finally {
       setIsExporting(false);
     }
@@ -1113,10 +1113,10 @@ const TemplateEngine = () => {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setSuccess("Đã copy vào clipboard!");
+      setSuccess("ÄÃ£ copy vÃ o clipboard!");
       setTimeout(() => setSuccess(null), 2000);
     } catch {
-      setError("Không thể copy vào clipboard");
+      setError("KhÃ´ng thá»ƒ copy vÃ o clipboard");
     }
   };
 
@@ -1141,7 +1141,7 @@ const TemplateEngine = () => {
   const addLessonTask = () => {
     const newTask: LessonTask = {
       id: `user-${Date.now()}-${Math.random()}`,
-      name: `Nhiệm vụ ${lessonTasks.filter((t) => t.source === "user").length + 1
+      name: `Nhiá»‡m vá»¥ ${lessonTasks.filter((t) => t.source === "user").length + 1
         }`,
       content: "",
       source: "user", // Mark as user-added
@@ -1170,7 +1170,7 @@ const TemplateEngine = () => {
   const handleSavePPCT = async () => {
     if (lessonGrade && ppctData.length > 0) {
       await savePPCT(lessonGrade, ppctData);
-      setSuccess("Đã lưu PPCT thành công!");
+      setSuccess("ÄÃ£ lÆ°u PPCT thÃ nh cÃ´ng!");
       setTimeout(() => setSuccess(null), 3000);
     }
   };
@@ -1196,7 +1196,7 @@ const TemplateEngine = () => {
       setNewPPCTItem({ month: "", theme: "", periods: 2, activities: [] }); // Reset form
       setShowPPCTDialog(false); // Close dialog after adding
     } else {
-      setError("Vui lòng nhập đủ Tháng và Chủ đề");
+      setError("Vui lÃ²ng nháº­p Ä‘á»§ ThÃ¡ng vÃ  Chá»§ Ä‘á»");
     }
   };
 
@@ -1215,22 +1215,22 @@ const TemplateEngine = () => {
       const ppctGradeData = getPPCTTheoKhoi(gradeNum);
 
       if (!ppctGradeData) {
-        setError("Không tìm thấy dữ liệu PPCT cho khối đã chọn");
+        setError("KhÃ´ng tÃ¬m tháº¥y dá»¯ liá»‡u PPCT cho khá»‘i Ä‘Ã£ chá»n");
         return;
       }
 
       const header = [
-        "Tháng",
-        "Tên chủ đề",
-        "Số tiết",
-        "Danh sách Hoạt động",
-        "Nhiệm vụ 1",
-        "Nhiệm vụ 2",
-        "Nhiệm vụ 3",
-        "Nhiệm vụ 4",
-        "Nhiệm vụ 5",
-        "Nhiệm vụ 6",
-        "Ghi chú",
+        "ThÃ¡ng",
+        "TÃªn chá»§ Ä‘á»",
+        "Sá»‘ tiáº¿t",
+        "Danh sÃ¡ch Hoáº¡t Ä‘á»™ng",
+        "Nhiá»‡m vá»¥ 1",
+        "Nhiá»‡m vá»¥ 2",
+        "Nhiá»‡m vá»¥ 3",
+        "Nhiá»‡m vá»¥ 4",
+        "Nhiá»‡m vá»¥ 5",
+        "Nhiá»‡m vá»¥ 6",
+        "Ghi chÃº",
       ];
 
       const dataRows = ppctGradeData.chu_de.map((cd) => {
@@ -1273,8 +1273,8 @@ const TemplateEngine = () => {
       });
 
       const wsData = [
-        ["PHÂN PHỐI CHƯƠNG TRÌNH - HOẠT ĐỘNG TRẢI NGHIỆM, HƯỚNG NGHIỆP"],
-        [`KHỐI: ${gradeNum}`],
+        ["PHÃ‚N PHá»I CHÆ¯Æ NG TRÃŒNH - HOáº T Äá»˜NG TRáº¢I NGHIá»†M, HÆ¯á»šNG NGHIá»†P"],
+        [`KHá»I: ${gradeNum}`],
         [""],
         header,
         ...dataRows
@@ -1284,17 +1284,17 @@ const TemplateEngine = () => {
 
       // Set column widths
       ws["!cols"] = [
-        { wch: 10 }, // Tháng
-        { wch: 40 }, // Tên chủ đề
-        { wch: 10 }, // Số tiết
-        { wch: 60 }, // Hoạt động
+        { wch: 10 }, // ThÃ¡ng
+        { wch: 40 }, // TÃªn chá»§ Ä‘á»
+        { wch: 10 }, // Sá»‘ tiáº¿t
+        { wch: 60 }, // Hoáº¡t Ä‘á»™ng
         { wch: 30 }, // NV1
         { wch: 30 }, // NV2
         { wch: 30 }, // NV3
         { wch: 30 }, // NV4
         { wch: 30 }, // NV5
         { wch: 30 }, // NV6
-        { wch: 20 }, // Ghi chú
+        { wch: 20 }, // Ghi chÃº
       ];
 
       XLSX.utils.book_append_sheet(wb, ws, `PPCT_Khoi_${gradeNum}`);
@@ -1314,11 +1314,11 @@ const TemplateEngine = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      setSuccess("Đã tạo và tải file PPCT chi tiết thành công!");
+      setSuccess("ÄÃ£ táº¡o vÃ  táº£i file PPCT chi tiáº¿t thÃ nh cÃ´ng!");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Error creating PPCT template:", err);
-      setError("Lỗi tạo PPCT. Vui lòng thử lại.");
+      setError("Lá»—i táº¡o PPCT. Vui lÃ²ng thá»­ láº¡i.");
     }
   };
 
@@ -1343,7 +1343,7 @@ const TemplateEngine = () => {
         if (
           !cols[0] ||
           isNaN(Number(cols[0])) ||
-          cols[0].toLowerCase().includes("tháng")
+          cols[0].toLowerCase().includes("thÃ¡ng")
         )
           continue;
 
@@ -1359,7 +1359,7 @@ const TemplateEngine = () => {
         for (let i = 4; i <= 9; i++) {
           if (cols[i] && cols[i].trim()) {
             tasks.push({
-              name: `Nhiệm vụ ${i - 3}`,
+              name: `Nhiá»‡m vá»¥ ${i - 3}`,
               description: cols[i].trim(),
             });
           }
@@ -1382,14 +1382,14 @@ const TemplateEngine = () => {
     } else {
       // Original text parsing
       const monthPattern =
-        /(?:tháng\s*)?(\d{1,2})[\s:|\-–]+(.+?)(?:[\s\-–|]+(\d+)\s*tiết)?$/i;
+        /(?:thÃ¡ng\s*)?(\d{1,2})[\s:|\-â€“]+(.+?)(?:[\s\-â€“|]+(\d+)\s*tiáº¿t)?$/i;
 
       for (const line of lines) {
         const match = line.match(monthPattern);
         if (match) {
           const month = match[1];
-          const theme = match[2].replace(/[-–|]+\s*\d+\s*tiết.*/i, "").trim();
-          const periodsMatch = line.match(/(\d+)\s*tiết/i);
+          const theme = match[2].replace(/[-â€“|]+\s*\d+\s*tiáº¿t.*/i, "").trim();
+          const periodsMatch = line.match(/(\d+)\s*tiáº¿t/i);
           const periods = periodsMatch ? Number.parseInt(periodsMatch[1]) : 2;
 
           if (Number.parseInt(month) >= 1 && Number(month) <= 12 && theme) {
@@ -1438,7 +1438,7 @@ const TemplateEngine = () => {
         text = XLSX.utils.sheet_to_csv(sheet);
       } else {
         setError(
-          "Định dạng file không được hỗ trợ. Vui lòng dùng .txt, .csv, .docx, .xlsx"
+          "Äá»‹nh dáº¡ng file khÃ´ng Ä‘Æ°á»£c há»— trá»£. Vui lÃ²ng dÃ¹ng .txt, .csv, .docx, .xlsx"
         );
         return;
       }
@@ -1448,17 +1448,17 @@ const TemplateEngine = () => {
       if (parsedItems.length > 0) {
         setPpctData(parsedItems);
         setSuccess(
-          `Đã đọc ${parsedItems.length} mục PPCT từ file "${file.name}"`
+          `ÄÃ£ Ä‘á»c ${parsedItems.length} má»¥c PPCT tá»« file "${file.name}"`
         );
         setTimeout(() => setSuccess(null), 3000);
       } else {
         setError(
-          "Không tìm thấy dữ liệu PPCT hợp lệ. Vui lòng kiểm tra định dạng file."
+          "KhÃ´ng tÃ¬m tháº¥y dá»¯ liá»‡u PPCT há»£p lá»‡. Vui lÃ²ng kiá»ƒm tra Ä‘á»‹nh dáº¡ng file."
         );
       }
     } catch (err) {
       console.error("Error parsing PPCT file:", err);
-      setError("Lỗi đọc file PPCT. Vui lòng kiểm tra định dạng.");
+      setError("Lá»—i Ä‘á»c file PPCT. Vui lÃ²ng kiá»ƒm tra Ä‘á»‹nh dáº¡ng.");
     }
 
     // Reset input
@@ -1487,7 +1487,7 @@ const TemplateEngine = () => {
             <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-sm">
               <FileText className="w-4 h-4 text-white" />
             </div>
-            <h1 className="text-base font-semibold text-slate-700">Trợ lí cho Trần Thạch - THTP Bùi Thị Xuân - Mũi Né - Lâm Đồng</h1>
+            <h1 className="text-base font-semibold text-slate-700">Trá»£ lÃ­ cho Tráº§n Tháº¡ch - THTP BÃ¹i Thá»‹ XuÃ¢n - MÅ©i NÃ© - LÃ¢m Äá»“ng</h1>
           </div>
         </div>
       </header>
@@ -1498,8 +1498,8 @@ const TemplateEngine = () => {
           <div className="container mx-auto flex items-center gap-2 text-amber-800">
             <AlertCircle className="w-5 h-5" />
             <span className="text-sm">
-              Chưa cấu hình GEMINI_API_KEY. Vui lòng thêm vào{" "}
-              <strong>Vars</strong> trong sidebar để sử dụng AI.
+              ChÆ°a cáº¥u hÃ¬nh GEMINI_API_KEY. Vui lÃ²ng thÃªm vÃ o{" "}
+              <strong>Vars</strong> trong sidebar Ä‘á»ƒ sá»­ dá»¥ng AI.
             </span>
           </div>
         </div>
@@ -1533,7 +1533,7 @@ const TemplateEngine = () => {
                 className="gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <BookOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">Bài dạy</span>
+                <span className="hidden sm:inline">BÃ i dáº¡y</span>
                 <span className="sm:hidden">KHBD</span>
               </TabsTrigger>
               <TabsTrigger
@@ -1541,23 +1541,23 @@ const TemplateEngine = () => {
                 className="gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <Sparkles className="w-4 h-4" />
-                <span className="hidden sm:inline">Ngoại khóa</span>
-                <span className="sm:hidden">HĐNK</span>
+                <span className="hidden sm:inline">Ngoáº¡i khÃ³a</span>
+                <span className="sm:hidden">HÄNK</span>
               </TabsTrigger>
               <TabsTrigger
                 value="meeting"
                 className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">Biên bản</span>
-                <span className="sm:hidden">Họp</span>
+                <span className="hidden sm:inline">BiÃªn báº£n</span>
+                <span className="sm:hidden">Há»p</span>
               </TabsTrigger>
               <TabsTrigger
                 value="ncbh"
                 className="gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <Zap className="w-4 h-4" />
-                <span className="hidden sm:inline">NC Bài học</span>
+                <span className="hidden sm:inline">NC BÃ i há»c</span>
                 <span className="sm:hidden">NCBH</span>
               </TabsTrigger>
               <TabsTrigger
@@ -1565,15 +1565,15 @@ const TemplateEngine = () => {
                 className="gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <CheckCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">Đánh giá</span>
-                <span className="sm:hidden">ĐG</span>
+                <span className="hidden sm:inline">ÄÃ¡nh giÃ¡</span>
+                <span className="sm:hidden">ÄG</span>
               </TabsTrigger>
               <TabsTrigger
                 value="history"
                 className="gap-2 data-[state=active]:bg-slate-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <Archive className="w-4 h-4" />
-                <span className="hidden sm:inline">Lưu trữ</span>
+                <span className="hidden sm:inline">LÆ°u trá»¯</span>
                 <span className="sm:hidden">Kho</span>
               </TabsTrigger>
             </TabsList>
@@ -1585,7 +1585,7 @@ const TemplateEngine = () => {
               className="bg-white border-slate-200 shadow-sm text-slate-600 hover:text-blue-600 hover:border-blue-300 h-10 px-4 rounded-xl whitespace-nowrap"
             >
               <Settings className="w-4 h-4 mr-2" />
-              Cài đặt
+              CÃ i Ä‘áº·t
             </Button>
           </div>
 
@@ -1684,7 +1684,7 @@ const TemplateEngine = () => {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                   <Input
-                    placeholder="Tìm kiếm dự án (tên bài, tháng, loại)..."
+                    placeholder="TÃ¬m kiáº¿m dá»± Ã¡n (tÃªn bÃ i, thÃ¡ng, loáº¡i)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 h-11 bg-slate-50 border-slate-200 rounded-xl focus:ring-amber-500 focus:border-amber-500"
@@ -1718,7 +1718,7 @@ const TemplateEngine = () => {
                             className="text-slate-300 hover:text-red-500 h-8 w-8"
                             onClick={async (e) => {
                               e.stopPropagation();
-                              if (confirm('Bạn có chắc muốn xóa dự án này?')) {
+                              if (confirm('Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a dá»± Ã¡n nÃ y?')) {
                                 await deleteProject(project.id);
                                 loadProjects();
                               }
@@ -1734,17 +1734,17 @@ const TemplateEngine = () => {
 
                         <div className="flex flex-wrap gap-2 mb-4">
                           <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-slate-100 text-slate-500 rounded">
-                            {project.type === 'meeting' ? 'Họp Tổ' :
-                              project.type === 'lesson' ? 'Bài dạy' : 'Sự kiện'}
+                            {project.type === 'meeting' ? 'Há»p Tá»•' :
+                              project.type === 'lesson' ? 'BÃ i dáº¡y' : 'Sá»± kiá»‡n'}
                           </span>
                           {project.grade && (
                             <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-blue-100 text-blue-600 rounded">
-                              Lớp {project.grade}
+                              Lá»›p {project.grade}
                             </span>
                           )}
                           {project.month && (
                             <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-amber-100 text-amber-600 rounded">
-                              Tháng {project.month}
+                              ThÃ¡ng {project.month}
                             </span>
                           )}
                         </div>
@@ -1761,7 +1761,7 @@ const TemplateEngine = () => {
                             onClick={() => loadProjectToWorkbench(project)}
                           >
                             <ExternalLink className="w-3 h-3" />
-                            Mở lại
+                            Má»Ÿ láº¡i
                           </Button>
                         </div>
                       </div>
@@ -1773,8 +1773,8 @@ const TemplateEngine = () => {
                         <Archive className="w-8 h-8 text-slate-300" />
                       </div>
                       <div className="space-y-1">
-                        <p className="font-medium text-slate-500">Thư viện trống</p>
-                        <p className="text-sm text-slate-400">Các nội dung bạn tạo sẽ tự động được lưu tại đây.</p>
+                        <p className="font-medium text-slate-500">ThÆ° viá»‡n trá»‘ng</p>
+                        <p className="text-sm text-slate-400">CÃ¡c ná»™i dung báº¡n táº¡o sáº½ tá»± Ä‘á»™ng Ä‘Æ°á»£c lÆ°u táº¡i Ä‘Ã¢y.</p>
                       </div>
                     </div>
                   )}
@@ -1805,11 +1805,11 @@ const TemplateEngine = () => {
       < Dialog open={showPPCTDialog} onOpenChange={setShowPPCTDialog} >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Thêm Phân phốiChương trình</DialogTitle>
+            <DialogTitle>ThÃªm PhÃ¢n phá»‘iChÆ°Æ¡ng trÃ¬nh</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Tháng</Label>
+              <Label>ThÃ¡ng</Label>
               <Select
                 value={newPPCTItem.month}
                 onValueChange={(v) =>
@@ -1817,21 +1817,21 @@ const TemplateEngine = () => {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Chọn tháng" />
+                  <SelectValue placeholder="Chá»n thÃ¡ng" />
                 </SelectTrigger>
                 <SelectContent>
                   {["9", "10", "11", "12", "1", "2", "3", "4", "5"].map((m) => (
                     <SelectItem key={m} value={m}>
-                      Tháng {m}
+                      ThÃ¡ng {m}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Chủ đề / Nội dung</Label>
+              <Label>Chá»§ Ä‘á» / Ná»™i dung</Label>
               <Input
-                placeholder="VD: Thể hiện phẩm chất tốt đẹp của người học sinh"
+                placeholder="VD: Thá»ƒ hiá»‡n pháº©m cháº¥t tá»‘t Ä‘áº¹p cá»§a ngÆ°á»i há»c sinh"
                 value={newPPCTItem.theme}
                 onChange={(e) =>
                   setNewPPCTItem({ ...newPPCTItem, theme: e.target.value })
@@ -1839,7 +1839,7 @@ const TemplateEngine = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Số tiết</Label>
+              <Label>Sá»‘ tiáº¿t</Label>
               <Select
                 value={newPPCTItem.periods.toString()}
                 onValueChange={(v) =>
@@ -1855,16 +1855,16 @@ const TemplateEngine = () => {
                 <SelectContent>
                   {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
                     <SelectItem key={n} value={n.toString()}>
-                      {n} tiết
+                      {n} tiáº¿t
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Danh sách Hoạt động (mỗi dòng một hoạt động)</Label>
+              <Label>Danh sÃ¡ch Hoáº¡t Ä‘á»™ng (má»—i dÃ²ng má»™t hoáº¡t Ä‘á»™ng)</Label>
               <Textarea
-                placeholder="VD: Tìm hiểu nội quy trường lớp&#10;Tìm hiểu truyền thống nhà trường"
+                placeholder="VD: TÃ¬m hiá»ƒu ná»™i quy trÆ°á»ng lá»›p&#10;TÃ¬m hiá»ƒu truyá»n thá»‘ng nhÃ  trÆ°á»ng"
                 value={newPPCTItem.activities?.join("\n") || ""}
                 onChange={(e) =>
                   setNewPPCTItem({
@@ -1876,9 +1876,9 @@ const TemplateEngine = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>Ghi chú (tùy chọn)</Label>
+              <Label>Ghi chÃº (tÃ¹y chá»n)</Label>
               <Input
-                placeholder="VD: Kết hợp với chào mừng 20/11"
+                placeholder="VD: Káº¿t há»£p vá»›i chÃ o má»«ng 20/11"
                 value={newPPCTItem.notes || ""}
                 onChange={(e) =>
                   setNewPPCTItem({ ...newPPCTItem, notes: e.target.value })
@@ -1890,14 +1890,14 @@ const TemplateEngine = () => {
                 variant="outline"
                 onClick={() => setShowPPCTDialog(false)}
               >
-                Hủy
+                Há»§y
               </Button>
               <Button
                 onClick={() => {
                   handleAddPPCTItem();
                 }}
               >
-                Thêm
+                ThÃªm
               </Button>
             </div>
           </div>

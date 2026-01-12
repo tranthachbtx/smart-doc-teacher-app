@@ -59,28 +59,28 @@ export function NCBHTab({
             <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="ncbh-grade-select">Khối</Label>
+                        <Label htmlFor="ncbh-grade-select">Khá»‘i</Label>
                         <Select value={ncbhGrade} onValueChange={setNcbhGrade} name="ncbhGrade">
                             <SelectTrigger id="ncbh-grade-select">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="10">Khối 10</SelectItem>
-                                <SelectItem value="11">Khối 11</SelectItem>
-                                <SelectItem value="12">Khối 12</SelectItem>
+                                <SelectItem value="10">Khá»‘i 10</SelectItem>
+                                <SelectItem value="11">Khá»‘i 11</SelectItem>
+                                <SelectItem value="12">Khá»‘i 12</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
                     <div className="space-y-2">
-                        <Label htmlFor="ncbh-month-select">Chủ đề (Tháng)</Label>
+                        <Label htmlFor="ncbh-month-select">Chá»§ Ä‘á» (ThÃ¡ng)</Label>
                         <Select value={selectedMonth} onValueChange={setSelectedMonth} name="ncbhMonth">
                             <SelectTrigger id="ncbh-month-select">
-                                <SelectValue placeholder="Chọn chủ đề..." />
+                                <SelectValue placeholder="Chá»n chá»§ Ä‘á»..." />
                             </SelectTrigger>
                             <SelectContent>
                                 {ACADEMIC_MONTHS.map((m) => (
                                     <SelectItem key={m.value} value={m.value}>
-                                        {themes[m.value] || `Tháng ${m.value}`}
+                                        {themes[m.value] || `ThÃ¡ng ${m.value}`}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -89,17 +89,17 @@ export function NCBHTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="ncbh-topic-select">Tên bài học nghiên cứu</Label>
+                    <Label htmlFor="ncbh-topic-select">TÃªn bÃ i há»c nghiÃªn cá»©u</Label>
                     <Select
-                        value={filteredPpctItems.some(item => item.theme === ncbhTopic) ? ncbhTopic : (ncbhTopic ? "Tự nhập" : "")}
+                        value={filteredPpctItems.some(item => item.theme === ncbhTopic) ? ncbhTopic : (ncbhTopic ? "Tá»± nháº­p" : "")}
                         onValueChange={(v) => {
-                            if (v !== "Tự nhập") setNcbhTopic(v);
+                            if (v !== "Tá»± nháº­p") setNcbhTopic(v);
                             else if (ncbhTopic === "") setNcbhTopic("");
                         }}
                         name="ncbhTopic"
                     >
                         <SelectTrigger id="ncbh-topic-select">
-                            <SelectValue placeholder="Chọn bài dạy từ PPCT..." />
+                            <SelectValue placeholder="Chá»n bÃ i dáº¡y tá»« PPCT..." />
                         </SelectTrigger>
                         <SelectContent>
                             {filteredPpctItems.map((item, idx) => (
@@ -107,7 +107,7 @@ export function NCBHTab({
                                     {item.theme}
                                 </SelectItem>
                             ))}
-                            <SelectItem value="Tự nhập">--- Tự nhập tên bài ---</SelectItem>
+                            <SelectItem value="Tá»± nháº­p">--- Tá»± nháº­p tÃªn bÃ i ---</SelectItem>
                         </SelectContent>
                     </Select>
 
@@ -115,7 +115,7 @@ export function NCBHTab({
                         <Textarea
                             id="ncbh-topic-custom"
                             name="ncbhTopicCustom"
-                            placeholder="VD: Giao tiếp tự tin trong các mối quan hệ (Cánh Diều/Kết nối Tri thức)..."
+                            placeholder="VD: Giao tiáº¿p tá»± tin trong cÃ¡c má»‘i quan há»‡ (CÃ¡nh Diá»u/Káº¿t ná»‘i Tri thá»©c)..."
                             value={ncbhTopic}
                             onChange={(e) => setNcbhTopic(e.target.value)}
                             className="mt-2"
@@ -124,17 +124,17 @@ export function NCBHTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="ncbh-instructions">Ghi chú/Tình huống quan sát (nếu có)</Label>
+                    <Label htmlFor="ncbh-instructions">Ghi chÃº/TÃ¬nh huá»‘ng quan sÃ¡t (náº¿u cÃ³)</Label>
                     <Textarea
                         id="ncbh-instructions"
                         name="ncbhInstructions"
-                        placeholder="VD: Em Nam tổ 2 gục đầu khi thảo luận nhóm. Một số học sinh lúng túng khi xử lý tình huống sắm vai..."
+                        placeholder="VD: Em Nam tá»• 2 gá»¥c Ä‘áº§u khi tháº£o luáº­n nhÃ³m. Má»™t sá»‘ há»c sinh lÃºng tÃºng khi xá»­ lÃ½ tÃ¬nh huá»‘ng sáº¯m vai..."
                         value={ncbhCustomInstructions}
                         onChange={(e) => setNcbhCustomInstructions(e.target.value)}
                         rows={4}
                     />
                     <p className="text-xs text-muted-foreground">
-                        AI sẽ dựa trên các thông tin này để tạo biên bản thảo luận NCBH thực tế hơn.
+                        AI sáº½ dá»±a trÃªn cÃ¡c thÃ´ng tin nÃ y Ä‘á»ƒ táº¡o biÃªn báº£n tháº£o luáº­n NCBH thá»±c táº¿ hÆ¡n.
                     </p>
                 </div>
 
@@ -147,12 +147,12 @@ export function NCBHTab({
                     {isGenerating ? (
                         <>
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            Đang phân tích bài học...
+                            Äang phÃ¢n tÃ­ch bÃ i há»c...
                         </>
                     ) : (
                         <>
                             <Sparkles className="w-5 h-5" />
-                            Tạo Hồ sơ & Biên bản NCBH
+                            Táº¡o Há»“ sÆ¡ & BiÃªn báº£n NCBH
                         </>
                     )}
                 </Button>
@@ -161,7 +161,7 @@ export function NCBHTab({
                     <div className="space-y-6 mt-8 p-4 bg-slate-50 rounded-xl border border-slate-200">
                         <div className="flex items-center justify-between border-b pb-2">
                             <h3 className="font-bold text-lg text-slate-800 uppercase">
-                                Hồ sơ Nghiên cứu bài học
+                                Há»“ sÆ¡ NghiÃªn cá»©u bÃ i há»c
                             </h3>
                             <Button
                                 onClick={onExport}
@@ -170,7 +170,7 @@ export function NCBHTab({
                                 className="bg-green-600 hover:bg-green-700 text-white gap-2"
                             >
                                 <Download className="w-4 h-4" />
-                                Xuất Word
+                                Xuáº¥t Word
                             </Button>
                         </div>
 
@@ -179,20 +179,20 @@ export function NCBHTab({
                             <div className="space-y-3">
                                 <h4 className="font-bold text-slate-700 flex items-center gap-2">
                                     <div className="w-2 h-6 bg-red-500 rounded-full"></div>
-                                    GIAI ĐOẠN 1: THIẾT KẾ BÀI DẠY TẬP THỂ
+                                    GIAI ÄOáº N 1: THIáº¾T Káº¾ BÃ€I Dáº Y Táº¬P THá»‚
                                 </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label className="text-xs uppercase text-slate-500">Lý do chọn bài</Label>
+                                        <Label className="text-xs uppercase text-slate-500">LÃ½ do chá»n bÃ i</Label>
                                         <Textarea readOnly value={ncbhResult.ly_do_chon} className="bg-white text-sm" rows={4} />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="text-xs uppercase text-slate-500">Mục tiêu bài học</Label>
+                                        <Label className="text-xs uppercase text-slate-500">Má»¥c tiÃªu bÃ i há»c</Label>
                                         <Textarea readOnly value={ncbhResult.muc_tieu} className="bg-white text-sm" rows={4} />
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <Label className="text-xs uppercase text-slate-500">Chuỗi hoạt động thống nhất</Label>
+                                    <Label className="text-xs uppercase text-slate-500">Chuá»—i hoáº¡t Ä‘á»™ng thá»‘ng nháº¥t</Label>
                                     <Textarea readOnly value={ncbhResult.chuoi_hoat_dong} className="bg-white text-sm" rows={6} />
                                 </div>
                             </div>
@@ -201,23 +201,23 @@ export function NCBHTab({
                             <div className="space-y-3 pt-4 border-t border-slate-200">
                                 <h4 className="font-bold text-slate-700 flex items-center gap-2">
                                     <div className="w-2 h-6 bg-blue-500 rounded-full"></div>
-                                    GIAI ĐOẠN 2 & 3: BIÊN BẢN PHÂN TÍCH BÀI HỌC
+                                    GIAI ÄOáº N 2 & 3: BIÃŠN Báº¢N PHÃ‚N TÃCH BÃ€I Há»ŒC
                                 </h4>
                                 <div className="space-y-1">
-                                    <Label className="text-xs uppercase text-slate-500">Chia sẻ của giáo viên dạy</Label>
+                                    <Label className="text-xs uppercase text-slate-500">Chia sáº» cá»§a giÃ¡o viÃªn dáº¡y</Label>
                                     <Textarea readOnly value={ncbhResult.chia_se_nguoi_day} className="bg-white text-sm" rows={3} />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label className="text-xs uppercase text-slate-500">Minh chứng việc học (Người dự ghi nhận)</Label>
+                                    <Label className="text-xs uppercase text-slate-500">Minh chá»©ng viá»‡c há»c (NgÆ°á»i dá»± ghi nháº­n)</Label>
                                     <Textarea readOnly value={ncbhResult.nhan_xet_nguoi_du} className="bg-white text-sm" rows={4} />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label className="text-xs uppercase text-slate-500">Nguyên nhân & Giải pháp điều chỉnh</Label>
+                                        <Label className="text-xs uppercase text-slate-500">NguyÃªn nhÃ¢n & Giáº£i phÃ¡p Ä‘iá»u chá»‰nh</Label>
                                         <Textarea readOnly value={ncbhResult.nguyen_nhan_giai_phap} className="bg-white text-sm" rows={4} />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="text-xs uppercase text-slate-500">Bài học kinh nghiệm rút ra</Label>
+                                        <Label className="text-xs uppercase text-slate-500">BÃ i há»c kinh nghiá»‡m rÃºt ra</Label>
                                         <Textarea readOnly value={ncbhResult.bai_hoc_kinh_nghiem} className="bg-white text-sm" rows={4} />
                                     </div>
                                 </div>
@@ -232,7 +232,7 @@ export function NCBHTab({
                                 size="lg"
                             >
                                 {isExporting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
-                                Tải xuống Hồ sơ NCBH (.docx)
+                                Táº£i xuá»‘ng Há»“ sÆ¡ NCBH (.docx)
                             </Button>
                         </div>
                     </div>

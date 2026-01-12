@@ -16,21 +16,21 @@ export const SectionEditorGrid = memo(() => {
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <SectionEditorItem
-                        label="Mục tiêu Kiến thức"
+                        label="Má»¥c tiÃªu Kiáº¿n thá»©c"
                         value={lessonResult.muc_tieu_kien_thuc || ""}
                         onChange={(val) => updateField("muc_tieu_kien_thuc", val)}
                         bgClass="premium-neumo p-6"
                         field="muc_tieu_kien_thuc"
                     />
                     <SectionEditorItem
-                        label="Mục tiêu Năng lực"
+                        label="Má»¥c tiÃªu NÄƒng lá»±c"
                         value={lessonResult.muc_tieu_nang_luc || ""}
                         onChange={(val) => updateField("muc_tieu_nang_luc", val)}
                         bgClass="premium-neumo p-6"
                         field="muc_tieu_nang_luc"
                     />
                     <SectionEditorItem
-                        label="Mục tiêu Phẩm chất"
+                        label="Má»¥c tiÃªu Pháº©m cháº¥t"
                         value={lessonResult.muc_tieu_pham_chat || ""}
                         onChange={(val) => updateField("muc_tieu_pham_chat", val)}
                         bgClass="premium-neumo p-6"
@@ -40,14 +40,14 @@ export const SectionEditorGrid = memo(() => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <SectionEditorItem
-                        label="GV Chuẩn bị"
+                        label="GV Chuáº©n bá»‹"
                         value={lessonResult.gv_chuan_bi || ""}
                         onChange={(val) => updateField("gv_chuan_bi", val)}
                         bgClass="premium-glass soft-pastel-sky/10 p-6"
                         field="gv_chuan_bi"
                     />
                     <SectionEditorItem
-                        label="HS Chuẩn bị"
+                        label="HS Chuáº©n bá»‹"
                         value={lessonResult.hs_chuan_bi || ""}
                         onChange={(val) => updateField("hs_chuan_bi", val)}
                         bgClass="premium-glass soft-pastel-sky/10 p-6"
@@ -58,14 +58,14 @@ export const SectionEditorGrid = memo(() => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SectionEditorItem
-                    label="Sinh hoạt Dưới cờ"
+                    label="Sinh hoáº¡t DÆ°á»›i cá»"
                     value={lessonResult.shdc || ""}
                     onChange={(val) => updateField("shdc", val)}
                     bgClass="premium-neumo p-6"
                     field="shdc"
                 />
                 <SectionEditorItem
-                    label="Sinh hoạt Lớp"
+                    label="Sinh hoáº¡t Lá»›p"
                     value={lessonResult.shl || ""}
                     onChange={(val) => updateField("shl", val)}
                     bgClass="premium-neumo p-6"
@@ -78,33 +78,33 @@ export const SectionEditorGrid = memo(() => {
                     <div className="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white">
                         <Zap className="h-6 w-6" />
                     </div>
-                    Diễn trình Hoạt động Chi tiết
+                    Diá»…n trÃ¬nh Hoáº¡t Ä‘á»™ng Chi tiáº¿t
                 </h3>
 
                 <div className="space-y-12">
                     <SectionEditorItem
-                        label="1. Hoạt động Khởi động"
+                        label="1. Hoáº¡t Ä‘á»™ng Khá»Ÿi Ä‘á»™ng"
                         value={lessonResult.hoat_dong_khoi_dong || ""}
                         onChange={(val) => updateField("hoat_dong_khoi_dong", val)}
                         bgClass="premium-neumo p-8 border-l-8 border-l-indigo-500"
                         field="hoat_dong_khoi_dong"
                     />
                     <SectionEditorItem
-                        label="2. Hoạt động Khám phá"
+                        label="2. Hoáº¡t Ä‘á»™ng KhÃ¡m phÃ¡"
                         value={lessonResult.hoat_dong_kham_pha || ""}
                         onChange={(val) => updateField("hoat_dong_kham_pha", val)}
                         bgClass="premium-neumo p-8 border-l-8 border-l-emerald-500"
                         field="hoat_dong_kham_pha"
                     />
                     <SectionEditorItem
-                        label="3. Hoạt động Luyện tập"
+                        label="3. Hoáº¡t Ä‘á»™ng Luyá»‡n táº­p"
                         value={lessonResult.hoat_dong_luyen_tap || ""}
                         onChange={(val) => updateField("hoat_dong_luyen_tap", val)}
                         bgClass="premium-neumo p-8 border-l-8 border-l-amber-500"
                         field="hoat_dong_luyen_tap"
                     />
                     <SectionEditorItem
-                        label="4. Hoạt động Vận dụng"
+                        label="4. Hoáº¡t Ä‘á»™ng Váº­n dá»¥ng"
                         value={lessonResult.hoat_dong_van_dung || ""}
                         onChange={(val) => updateField("hoat_dong_van_dung", val)}
                         bgClass="premium-neumo p-8 border-l-8 border-l-rose-500"
@@ -115,24 +115,24 @@ export const SectionEditorGrid = memo(() => {
 
             {/* Footer Sections */}
             <div className="space-y-8 pt-8 border-t border-slate-200">
-                <h3 className="font-black text-2xl text-slate-800">Thông tin Bổ trợ (Phụ lục & Dặn dò)</h3>
+                <h3 className="font-black text-2xl text-slate-800">ThÃ´ng tin Bá»• trá»£ (Phá»¥ lá»¥c & Dáº·n dÃ²)</h3>
                 <div className="grid grid-cols-1 gap-6">
                     <SectionEditorItem
-                        label="Tích hợp Năng lực số"
+                        label="TÃ­ch há»£p NÄƒng lá»±c sá»‘"
                         value={lessonResult.tich_hop_nls || ""}
                         onChange={(val) => updateField("tich_hop_nls", val)}
                         bgClass="premium-glass soft-pastel-mint/10 p-6"
                         field="tich_hop_nls"
                     />
                     <SectionEditorItem
-                        label="Hồ sơ Dạy học (Phụ lục: Phiếu học tập, Rubric...)"
+                        label="Há»“ sÆ¡ Dáº¡y há»c (Phá»¥ lá»¥c: Phiáº¿u há»c táº­p, Rubric...)"
                         value={lessonResult.ho_so_day_hoc || lessonResult.materials || ""}
                         onChange={(val) => updateField("ho_so_day_hoc", val)}
                         bgClass="premium-neumo p-6"
                         field="ho_so_day_hoc"
                     />
                     <SectionEditorItem
-                        label="Hướng dẫn về nhà"
+                        label="HÆ°á»›ng dáº«n vá» nhÃ "
                         value={lessonResult.huong_dan_ve_nha || lessonResult.homework || ""}
                         onChange={(val) => updateField("huong_dan_ve_nha", val)}
                         bgClass="premium-neumo p-6"

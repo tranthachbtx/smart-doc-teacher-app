@@ -9,7 +9,7 @@ function injectTags(filePath, tagMap) {
     let xml = zip.file("word/document.xml").asText();
 
     // Word splits text into many <w:t> tags. 
-    // A simple replacement might fail if a word like "Tháng" is split.
+    // A simple replacement might fail if a word like "ThÃ¡ng" is split.
     // However, for newly created templates, they are often in single tags.
     // We will try a simple string replacement first.
 
@@ -28,54 +28,54 @@ function injectTags(filePath, tagMap) {
 
 // Mapping for Bien ban hop
 const meetingMap = {
-    "Tháng:": "Tháng: {{thang}}",
-    "Lần thứ:": "Lần thứ: {{lan_hop}}",
-    "Chủ trì:": "Chủ trì: {{chu_tri}}",
-    "Thư ký:": "Thư ký: {{thu_ky}}",
-    "Thành viên tham gia:": "Thành viên tham gia: {{thanh_vien}}",
-    "Sĩ số:": "Sĩ số: {{si_so}}",
-    "Vắng:": "Vắng: {{vang}}",
-    "Lý do:": "Lý do: {{ly_do}}",
-    "Nội dung chính:": "Nội dung chính: {{BR}}{{noi_dung_chinh}}",
-    "Ưu điểm:": "Ưu điểm: {{BR}}{{uu_diem}}",
-    "Hạn chế:": "Hạn chế: {{BR}}{{han_che}}",
-    "Ý kiến đóng góp:": "Ý kiến đóng góp: {{BR}}{{y_kien_dong_gop}}",
-    "Kế hoạch tháng tới:": "Kế hoạch tháng tới: {{BR}}{{ke_hoach_thang_toi}}",
-    "Kết luận:": "Kết luận: {{BR}}{{ket_luan_cuoc_hop}}"
+    "ThÃ¡ng:": "ThÃ¡ng: {{thang}}",
+    "Láº§n thá»©:": "Láº§n thá»©: {{lan_hop}}",
+    "Chá»§ trÃ¬:": "Chá»§ trÃ¬: {{chu_tri}}",
+    "ThÆ° kÃ½:": "ThÆ° kÃ½: {{thu_ky}}",
+    "ThÃ nh viÃªn tham gia:": "ThÃ nh viÃªn tham gia: {{thanh_vien}}",
+    "SÄ© sá»‘:": "SÄ© sá»‘: {{si_so}}",
+    "Váº¯ng:": "Váº¯ng: {{vang}}",
+    "LÃ½ do:": "LÃ½ do: {{ly_do}}",
+    "Ná»™i dung chÃ­nh:": "Ná»™i dung chÃ­nh: {{BR}}{{noi_dung_chinh}}",
+    "Æ¯u Ä‘iá»ƒm:": "Æ¯u Ä‘iá»ƒm: {{BR}}{{uu_diem}}",
+    "Háº¡n cháº¿:": "Háº¡n cháº¿: {{BR}}{{han_che}}",
+    "Ã kiáº¿n Ä‘Ã³ng gÃ³p:": "Ã kiáº¿n Ä‘Ã³ng gÃ³p: {{BR}}{{y_kien_dong_gop}}",
+    "Káº¿ hoáº¡ch thÃ¡ng tá»›i:": "Káº¿ hoáº¡ch thÃ¡ng tá»›i: {{BR}}{{ke_hoach_thang_toi}}",
+    "Káº¿t luáº­n:": "Káº¿t luáº­n: {{BR}}{{ket_luan_cuoc_hop}}"
 };
 
 // Mapping for KHBD
 const lessonMap = {
-    "Ngày soạn:": "Ngày soạn: {{ngay_soan}}",
-    "Chủ đề:": "Chủ đề {{chu_de}}: {{ten_chu_de}}",
-    "Tên bài:": "Tên bài: {{ten_bai}}",
-    "Khối lớp:": "Khối lớp: {{khoi}}",
-    "Số tiết:": "Số tiết: {{so_tiet}}",
-    "Mục tiêu kiến thức:": "Mục tiêu kiến thức: {{BR}}{{muc_tieu_kien_thuc}}",
-    "Mục tiêu năng lực:": "Mục tiêu năng lực: {{BR}}{{muc_tieu_nang_luc}}",
-    "Mục tiêu phẩm chất:": "Mục tiêu phẩm chất: {{BR}}{{muc_tieu_pham_chat}}",
-    "Thiết bị dạy học:": "Thiết bị dạy học: {{BR}}{{thiet_bi_day_hoc}}",
-    "Khởi động:": "Khởi động: {{BR}}{{hoat_dong_khoi_dong}}",
-    "Khám phá:": "Khám phá: {{BR}}{{hoat_dong_kham_pha}}",
-    "Luyện tập:": "Luyện tập: {{BR}}{{hoat_dong_luyen_tap}}",
-    "Vận dụng:": "Vận dụng: {{BR}}{{hoat_dong_van_dung}}",
-    "Tích hợp Năng lực số:": "Tích hợp Năng lực số: {{BR}}{{tich_hop_nls}}",
-    "Tích hợp Đạo đức:": "Tích hợp Đạo đức: {{BR}}{{tich_hop_dao_duc}}"
+    "NgÃ y soáº¡n:": "NgÃ y soáº¡n: {{ngay_soan}}",
+    "Chá»§ Ä‘á»:": "Chá»§ Ä‘á» {{chu_de}}: {{ten_chu_de}}",
+    "TÃªn bÃ i:": "TÃªn bÃ i: {{ten_bai}}",
+    "Khá»‘i lá»›p:": "Khá»‘i lá»›p: {{khoi}}",
+    "Sá»‘ tiáº¿t:": "Sá»‘ tiáº¿t: {{so_tiet}}",
+    "Má»¥c tiÃªu kiáº¿n thá»©c:": "Má»¥c tiÃªu kiáº¿n thá»©c: {{BR}}{{muc_tieu_kien_thuc}}",
+    "Má»¥c tiÃªu nÄƒng lá»±c:": "Má»¥c tiÃªu nÄƒng lá»±c: {{BR}}{{muc_tieu_nang_luc}}",
+    "Má»¥c tiÃªu pháº©m cháº¥t:": "Má»¥c tiÃªu pháº©m cháº¥t: {{BR}}{{muc_tieu_pham_chat}}",
+    "Thiáº¿t bá»‹ dáº¡y há»c:": "Thiáº¿t bá»‹ dáº¡y há»c: {{BR}}{{thiet_bi_day_hoc}}",
+    "Khá»Ÿi Ä‘á»™ng:": "Khá»Ÿi Ä‘á»™ng: {{BR}}{{hoat_dong_khoi_dong}}",
+    "KhÃ¡m phÃ¡:": "KhÃ¡m phÃ¡: {{BR}}{{hoat_dong_kham_pha}}",
+    "Luyá»‡n táº­p:": "Luyá»‡n táº­p: {{BR}}{{hoat_dong_luyen_tap}}",
+    "Váº­n dá»¥ng:": "Váº­n dá»¥ng: {{BR}}{{hoat_dong_van_dung}}",
+    "TÃ­ch há»£p NÄƒng lá»±c sá»‘:": "TÃ­ch há»£p NÄƒng lá»±c sá»‘: {{BR}}{{tich_hop_nls}}",
+    "TÃ­ch há»£p Äáº¡o Ä‘á»©c:": "TÃ­ch há»£p Äáº¡o Ä‘á»©c: {{BR}}{{tich_hop_dao_duc}}"
 };
 
 // Mapping for Event
 const eventMap = {
-    "Tên chủ đề:": "Tên chủ đề: {{ten_chu_de}}",
-    "Tháng:": "Tháng: {{thang}}",
-    "Khối:": "Khối: {{khoi}}",
-    "Mục đích, yêu cầu:": "Mục đích, yêu cầu: {{BR}}{{muc_dich_yeu_cau}}",
-    "Năng lực:": "Năng lực: {{BR}}{{nang_luc}}",
-    "Phẩm chất:": "Phẩm chất: {{BR}}{{pham_chat}}",
-    "Kịch bản chi tiết:": "Kịch bản chi tiết: {{BR}}{{kich_ban_chi_tiet}}",
-    "Dự toán kinh phí:": "Dự toán kinh phí: {{BR}}{{du_toan_kinh_phi}}",
-    "Checklist chuẩn bị:": "Checklist chuẩn bị: {{BR}}{{checklist_chuan_bi}}",
-    "Thông điệp kết thúc:": "Thông điệp kết thúc: {{BR}}{{thong_diep_ket_thuc}}",
-    "Đánh giá sau hoạt động:": "Đánh giá sau hoạt động: {{BR}}{{danh_gia_sau_hoat_dong}}"
+    "TÃªn chá»§ Ä‘á»:": "TÃªn chá»§ Ä‘á»: {{ten_chu_de}}",
+    "ThÃ¡ng:": "ThÃ¡ng: {{thang}}",
+    "Khá»‘i:": "Khá»‘i: {{khoi}}",
+    "Má»¥c Ä‘Ã­ch, yÃªu cáº§u:": "Má»¥c Ä‘Ã­ch, yÃªu cáº§u: {{BR}}{{muc_dich_yeu_cau}}",
+    "NÄƒng lá»±c:": "NÄƒng lá»±c: {{BR}}{{nang_luc}}",
+    "Pháº©m cháº¥t:": "Pháº©m cháº¥t: {{BR}}{{pham_chat}}",
+    "Ká»‹ch báº£n chi tiáº¿t:": "Ká»‹ch báº£n chi tiáº¿t: {{BR}}{{kich_ban_chi_tiet}}",
+    "Dá»± toÃ¡n kinh phÃ­:": "Dá»± toÃ¡n kinh phÃ­: {{BR}}{{du_toan_kinh_phi}}",
+    "Checklist chuáº©n bá»‹:": "Checklist chuáº©n bá»‹: {{BR}}{{checklist_chuan_bi}}",
+    "ThÃ´ng Ä‘iá»‡p káº¿t thÃºc:": "ThÃ´ng Ä‘iá»‡p káº¿t thÃºc: {{BR}}{{thong_diep_ket_thuc}}",
+    "ÄÃ¡nh giÃ¡ sau hoáº¡t Ä‘á»™ng:": "ÄÃ¡nh giÃ¡ sau hoáº¡t Ä‘á»™ng: {{BR}}{{danh_gia_sau_hoat_dong}}"
 };
 
 try {

@@ -17,14 +17,14 @@ async function testFlashModel() {
                 body: JSON.stringify({ contents: [{ parts: [{ text: "Hi" }] }] })
             });
             if (res.ok) {
-                console.log(`✅ Model ${model} is WORKING.`);
+                console.log(`âœ… Model ${model} is WORKING.`);
                 return;
             } else {
                 const data = await res.json();
-                console.log(`❌ Model ${model} FAILED: ${data.error?.message}`);
+                console.log(`âŒ Model ${model} FAILED: ${data.error?.message}`);
             }
         } catch (e) {
-            console.log(`❌ Model ${model} ERROR: ${e.message}`);
+            console.log(`âŒ Model ${model} ERROR: ${e.message}`);
         }
     }
 }

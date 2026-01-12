@@ -1,6 +1,6 @@
 /**
- * 🧪 50-PAGE WORD EXPORT TEST - Complete Implementation
- * Test thực tế export file Word với nội dung 50 trang KHBH
+ * ðŸ§ª 50-PAGE WORD EXPORT TEST - Complete Implementation
+ * Test thá»±c táº¿ export file Word vá»›i ná»™i dung 50 trang KHBH
  */
 
 // Import the 50-page KHBH data
@@ -8,26 +8,26 @@ const { generate50PageKHBH } = require('./khbh-50pages.js');
 
 // Simulate the actual export process
 async function export50PageWordFile() {
-    console.log("🚀 STARTING 50-PAGE WORD EXPORT TEST");
+    console.log("ðŸš€ STARTING 50-PAGE WORD EXPORT TEST");
     console.log("=".repeat(60));
     
     try {
         // Step 1: Generate the 50-page KHBH data
-        console.log("📝 Step 1: Generating 50-page KHBH data...");
+        console.log("ðŸ“ Step 1: Generating 50-page KHBH data...");
         const lessonData = generate50PageKHBH();
         
         // Step 2: Analyze content size and determine strategy
-        console.log("📊 Step 2: Analyzing content and determining strategy...");
+        console.log("ðŸ“Š Step 2: Analyzing content and determining strategy...");
         const contentSize = JSON.stringify(lessonData).length;
         const useWorker = contentSize > 50000;
         const strategy = useWorker ? "WORKER THREAD" : "MAIN THREAD";
         
-        console.log(`📏 Content Size: ${Math.round(contentSize / 1024)}KB`);
-        console.log(`🎯 Processing Strategy: ${strategy}`);
-        console.log(`📄 Estimated Pages: ~50`);
+        console.log(`ðŸ“ Content Size: ${Math.round(contentSize / 1024)}KB`);
+        console.log(`ðŸŽ¯ Processing Strategy: ${strategy}`);
+        console.log(`ðŸ“„ Estimated Pages: ~50`);
         
         // Step 3: Validate content
-        console.log("✅ Step 3: Validating content...");
+        console.log("âœ… Step 3: Validating content...");
         const validationResults = {
             hasTitle: !!lessonData.ten_bai && lessonData.ten_bai.length > 5,
             hasObjectives: !!lessonData.muc_tieu_kien_thuc && lessonData.muc_tieu_kien_thuc.length > 10,
@@ -37,9 +37,9 @@ async function export50PageWordFile() {
             hasHomework: !!lessonData.huong_dan_ve_nha
         };
         
-        console.log("🔍 Validation Results:");
+        console.log("ðŸ” Validation Results:");
         Object.entries(validationResults).forEach(([key, value]) => {
-            console.log(`   ${key}: ${value ? '✅ PASS' : '❌ FAIL'}`);
+            console.log(`   ${key}: ${value ? 'âœ… PASS' : 'âŒ FAIL'}`);
         });
         
         const allValid = Object.values(validationResults).every(v => v);
@@ -48,13 +48,13 @@ async function export50PageWordFile() {
         }
         
         // Step 4: Simulate export process with progress
-        console.log("🔄 Step 4: Starting export process...");
-        console.log("📊 Export Progress:");
+        console.log("ðŸ”„ Step 4: Starting export process...");
+        console.log("ðŸ“Š Export Progress:");
         
         const fileName = `KHBH_50Pages_Test_${Date.now()}.docx`;
-        console.log(`📄 File Name: ${fileName}`);
-        console.log(`📄 File Type: Microsoft Word (.docx)`);
-        console.log(`📄 MIME Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document`);
+        console.log(`ðŸ“„ File Name: ${fileName}`);
+        console.log(`ðŸ“„ File Type: Microsoft Word (.docx)`);
+        console.log(`ðŸ“„ MIME Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document`);
         
         // Simulate progress with realistic timing
         const progressSteps = [
@@ -72,17 +72,17 @@ async function export50PageWordFile() {
         
         for (const step of progressSteps) {
             await new Promise(resolve => setTimeout(resolve, 200)); // Simulate processing time
-            console.log(`📊 Progress: ${step.percent}% - ${step.message}`);
+            console.log(`ðŸ“Š Progress: ${step.percent}% - ${step.message}`);
         }
         
         // Step 5: Simulate document generation
-        console.log("📄 Step 5: Generating Word document...");
+        console.log("ðŸ“„ Step 5: Generating Word document...");
         
         // Simulate the document structure that would be created
         const documentStructure = {
             sections: [
                 {
-                    title: "KẾ HOẠCH BÀI DẠY (CHƯƠNG TRÌNH GDPT 2018)",
+                    title: "Káº¾ HOáº CH BÃ€I Dáº Y (CHÆ¯Æ NG TRÃŒNH GDPT 2018)",
                     level: "HEADING_1",
                     alignment: "CENTER",
                     properties: {
@@ -92,92 +92,92 @@ async function export50PageWordFile() {
                     }
                 },
                 {
-                    title: "I. TÊN BÀI HỌC/CHỦ ĐỀ",
+                    title: "I. TÃŠN BÃ€I Há»ŒC/CHá»¦ Äá»€",
                     level: "HEADING_2",
                     content: lessonData.ten_bai
                 },
                 {
-                    title: "II. MỤC TIÊU",
+                    title: "II. Má»¤C TIÃŠU",
                     level: "HEADING_2",
                     subsections: [
-                        { label: "1. Kiến thức:", content: lessonData.muc_tieu_kien_thuc },
-                        { label: "2. Năng lực:", content: lessonData.muc_tieu_nang_luc },
-                        { label: "3. Phẩm chất:", content: lessonData.muc_tieu_pham_chat },
-                        { label: "4. Tích hợp Năng lực số:", content: lessonData.tich_hop_nls },
-                        { label: "5. Tích hợp Đạo đức:", content: lessonData.tich_hop_dao_duc }
+                        { label: "1. Kiáº¿n thá»©c:", content: lessonData.muc_tieu_kien_thuc },
+                        { label: "2. NÄƒng lá»±c:", content: lessonData.muc_tieu_nang_luc },
+                        { label: "3. Pháº©m cháº¥t:", content: lessonData.muc_tieu_pham_chat },
+                        { label: "4. TÃ­ch há»£p NÄƒng lá»±c sá»‘:", content: lessonData.tich_hop_nls },
+                        { label: "5. TÃ­ch há»£p Äáº¡o Ä‘á»©c:", content: lessonData.tich_hop_dao_duc }
                     ]
                 },
                 {
-                    title: "III. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU",
+                    title: "III. THIáº¾T Bá»Š Dáº Y Há»ŒC VÃ€ Há»ŒC LIá»†U",
                     level: "HEADING_2",
                     subsections: [
-                        { label: "1. Đối với Giáo viên:", content: lessonData.gv_chuan_bi },
-                        { label: "2. Đối với Học sinh:", content: lessonData.hs_chuan_bi }
+                        { label: "1. Äá»‘i vá»›i GiÃ¡o viÃªn:", content: lessonData.gv_chuan_bi },
+                        { label: "2. Äá»‘i vá»›i Há»c sinh:", content: lessonData.hs_chuan_bi }
                     ]
                 },
                 {
-                    title: "IV. TIẾN TRÌNH DẠY HỌC",
+                    title: "IV. TIáº¾N TRÃŒNH Dáº Y Há»ŒC",
                     level: "HEADING_2",
                     activities: [
                         {
-                            title: "Hoạt động 1: Khởi động",
+                            title: "Hoáº¡t Ä‘á»™ng 1: Khá»Ÿi Ä‘á»™ng",
                             content: lessonData.hoat_dong_khoi_dong,
                             hasTwoColumns: false
                         },
                         {
-                            title: "Hoạt động 2: Khám phá",
+                            title: "Hoáº¡t Ä‘á»™ng 2: KhÃ¡m phÃ¡",
                             content: lessonData.hoat_dong_kham_pha,
                             hasTwoColumns: true
                         },
                         {
-                            title: "Hoạt động 3: Luyện tập",
+                            title: "Hoáº¡t Ä‘á»™ng 3: Luyá»‡n táº­p",
                             content: lessonData.hoat_dong_luyen_tap,
                             hasTwoColumns: true
                         },
                         {
-                            title: "Hoạt động 4: Vận dụng",
+                            title: "Hoáº¡t Ä‘á»™ng 4: Váº­n dá»¥ng",
                             content: lessonData.hoat_dong_van_dung,
                             hasTwoColumns: true
                         }
                     ]
                 },
                 {
-                    title: "V. HỒ SƠ DẠY HỌC (PHỤ LỤC)",
+                    title: "V. Há»’ SÆ  Dáº Y Há»ŒC (PHá»¤ Lá»¤C)",
                     level: "HEADING_2",
                     content: lessonData.ho_so_day_hoc
                 },
                 {
-                    title: "VI. HƯỚNG DẪN VỀ NHÀ",
+                    title: "VI. HÆ¯á»šNG DáºªN Vá»€ NHÃ€",
                     level: "HEADING_2",
                     content: lessonData.huong_dan_ve_nha
                 }
             ]
         };
         
-        console.log("📄 Document Structure Created:");
+        console.log("ðŸ“„ Document Structure Created:");
         console.log(`   - Total Sections: ${documentStructure.sections.length}`);
         console.log(`   - Main Sections: ${documentStructure.sections.filter(s => s.level === 'HEADING_2').length}`);
-        console.log(`   - Activities: ${documentStructure.sections.find(s => s.title.includes('TIẾN TRÌNH'))?.activities?.length || 0}`);
-        console.log(`   - 2-Column Activities: ${documentStructure.sections.find(s => s.title.includes('TIẾN TRÌNH'))?.activities?.filter(a => a.hasTwoColumns).length || 0}`);
+        console.log(`   - Activities: ${documentStructure.sections.find(s => s.title.includes('TIáº¾N TRÃŒNH'))?.activities?.length || 0}`);
+        console.log(`   - 2-Column Activities: ${documentStructure.sections.find(s => s.title.includes('TIáº¾N TRÃŒNH'))?.activities?.filter(a => a.hasTwoColumns).length || 0}`);
         
         // Step 6: Simulate file generation
-        console.log("📦 Step 6: Generating final file...");
+        console.log("ðŸ“¦ Step 6: Generating final file...");
         
         // Simulate Base64 encoding (what the docx library would do)
         const simulatedBase64 = Buffer.from('Simulated DOCX content for 50-page KHBH', 'utf8').toString('base64');
         const estimatedFileSize = Math.round(contentSize * 1.5); // DOCX is typically larger than JSON
         
-        console.log(`📊 File Generation Complete:`);
+        console.log(`ðŸ“Š File Generation Complete:`);
         console.log(`   - Base64 Length: ${simulatedBase64.length} characters`);
         console.log(`   - Estimated File Size: ${Math.round(estimatedFileSize / 1024)}KB`);
         console.log(`   - Processing Time: ~2 seconds`);
         console.log(`   - Memory Usage: ${Math.round(contentSize / 512)}KB`);
         
         // Step 7: Simulate download
-        console.log("⬇️ Step 7: Preparing for download...");
+        console.log("â¬‡ï¸ Step 7: Preparing for download...");
         
         // Simulate the fixed Base64 to Blob conversion
-        console.log("🔄 Converting Base64 to Blob (using fixed method)...");
+        console.log("ðŸ”„ Converting Base64 to Blob (using fixed method)...");
         
         const byteCharacters = atob(simulatedBase64);
         const byteArrays = [];
@@ -198,12 +198,12 @@ async function export50PageWordFile() {
             type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
         });
         
-        console.log("✅ Blob conversion successful!");
-        console.log(`📄 Final Blob Size: ${finalBlob.size} bytes`);
-        console.log(`📄 Final Blob Type: ${finalBlob.type}`);
+        console.log("âœ… Blob conversion successful!");
+        console.log(`ðŸ“„ Final Blob Size: ${finalBlob.size} bytes`);
+        console.log(`ðŸ“„ Final Blob Type: ${finalBlob.type}`);
         
         // Step 8: Final validation
-        console.log("🔍 Step 8: Final validation...");
+        console.log("ðŸ” Step 8: Final validation...");
         
         const finalValidation = {
             blobSize: finalBlob.size > 0,
@@ -213,15 +213,15 @@ async function export50PageWordFile() {
             hasValidStructure: documentStructure.sections.length >= 6
         };
         
-        console.log("🔍 Final Validation Results:");
+        console.log("ðŸ” Final Validation Results:");
         Object.entries(finalValidation).forEach(([key, value]) => {
-            console.log(`   ${key}: ${value ? '✅ PASS' : '❌ FAIL'}`);
+            console.log(`   ${key}: ${value ? 'âœ… PASS' : 'âŒ FAIL'}`);
         });
         
         const allFinalValid = Object.values(finalValidation).every(v => v);
         
         // Step 9: Results summary
-        console.log("🎊 Step 9: Results Summary");
+        console.log("ðŸŽŠ Step 9: Results Summary");
         console.log("=".repeat(60));
         
         const results = {
@@ -238,43 +238,43 @@ async function export50PageWordFile() {
             },
             documentStructure: {
                 totalSections: documentStructure.sections.length,
-                activities: documentStructure.sections.find(s => s.title.includes('TIẾN TRÌNH'))?.activities?.length || 0,
-                twoColumnActivities: documentStructure.sections.find(s => s.title.includes('TIẾN TRÌNH'))?.activities?.filter(a => a.hasTwoColumns).length || 0
+                activities: documentStructure.sections.find(s => s.title.includes('TIáº¾N TRÃŒNH'))?.activities?.length || 0,
+                twoColumnActivities: documentStructure.sections.find(s => s.title.includes('TIáº¾N TRÃŒNH'))?.activities?.filter(a => a.hasTwoColumns).length || 0
             },
             status: allValid && allFinalValid ? 'SUCCESS' : 'FAILED'
         };
         
-        console.log("📊 EXPORT RESULTS:");
-        console.log(`📄 File Name: ${results.fileName}`);
-        console.log(`📏 Content Size: ${results.contentSize}KB`);
-        console.log(`📄 File Size: ${results.estimatedFileSize}KB`);
-        console.log(`🎯 Strategy: ${results.strategy}`);
-        console.log(`⏱️ Processing Time: ${results.processingTime}`);
-        console.log(`🧠 Memory Usage: ${results.memoryUsage}KB`);
-        console.log(`✅ Content Validation: ${results.validation.content ? 'PASS' : 'FAIL'}`);
-        console.log(`✅ Final Validation: ${results.validation.final ? 'PASS' : 'FAIL'}`);
-        console.log(`✅ Overall Status: ${results.status}`);
-        console.log(`📊 Document Sections: ${results.documentStructure.totalSections}`);
-        console.log(`🎯 Activities: ${results.documentStructure.activities}`);
-        console.log(`📋 2-Column Activities: ${results.documentStructure.twoColumnActivities}`);
+        console.log("ðŸ“Š EXPORT RESULTS:");
+        console.log(`ðŸ“„ File Name: ${results.fileName}`);
+        console.log(`ðŸ“ Content Size: ${results.contentSize}KB`);
+        console.log(`ðŸ“„ File Size: ${results.estimatedFileSize}KB`);
+        console.log(`ðŸŽ¯ Strategy: ${results.strategy}`);
+        console.log(`â±ï¸ Processing Time: ${results.processingTime}`);
+        console.log(`ðŸ§  Memory Usage: ${results.memoryUsage}KB`);
+        console.log(`âœ… Content Validation: ${results.validation.content ? 'PASS' : 'FAIL'}`);
+        console.log(`âœ… Final Validation: ${results.validation.final ? 'PASS' : 'FAIL'}`);
+        console.log(`âœ… Overall Status: ${results.status}`);
+        console.log(`ðŸ“Š Document Sections: ${results.documentStructure.totalSections}`);
+        console.log(`ðŸŽ¯ Activities: ${results.documentStructure.activities}`);
+        console.log(`ðŸ“‹ 2-Column Activities: ${results.documentStructure.twoColumnActivities}`);
         
         if (results.status === 'SUCCESS') {
-            console.log("\n🎊 50-PAGE WORD EXPORT TEST SUCCESSFUL!");
-            console.log("✅ File Word 50 trang đã được tạo thành công!");
-            console.log("✅ Định dạng .docx chính xác");
-            console.log("✅ Nội dung đầy đủ theo chuẩn MOET 5512");
-            console.log("✅ Bảng 2 cột được xử lý đúng");
-            console.log("✅ Placeholder parsing hoạt động tốt");
-            console.log("✅ Hệ thống sẵn sàng cho production!");
+            console.log("\nðŸŽŠ 50-PAGE WORD EXPORT TEST SUCCESSFUL!");
+            console.log("âœ… File Word 50 trang Ä‘Ã£ Ä‘Æ°á»£c táº¡o thÃ nh cÃ´ng!");
+            console.log("âœ… Äá»‹nh dáº¡ng .docx chÃ­nh xÃ¡c");
+            console.log("âœ… Ná»™i dung Ä‘áº§y Ä‘á»§ theo chuáº©n MOET 5512");
+            console.log("âœ… Báº£ng 2 cá»™t Ä‘Æ°á»£c xá»­ lÃ½ Ä‘Ãºng");
+            console.log("âœ… Placeholder parsing hoáº¡t Ä‘á»™ng tá»‘t");
+            console.log("âœ… Há»‡ thá»‘ng sáºµn sÃ ng cho production!");
         } else {
-            console.log("\n❌ 50-PAGE WORD EXPORT TEST FAILED!");
-            console.log("❌ Cần kiểm tra lại các bước xử lý");
+            console.log("\nâŒ 50-PAGE WORD EXPORT TEST FAILED!");
+            console.log("âŒ Cáº§n kiá»ƒm tra láº¡i cÃ¡c bÆ°á»›c xá»­ lÃ½");
         }
         
         return results;
         
     } catch (error) {
-        console.error("❌ Export test failed:", error);
+        console.error("âŒ Export test failed:", error);
         return {
             status: 'FAILED',
             error: error.message
@@ -285,9 +285,9 @@ async function export50PageWordFile() {
 // Run the test
 if (typeof window !== 'undefined') {
     window.export50PageWordFile = export50PageWordFile;
-    console.log("🧪 50-Page Word Export Test loaded! Use export50PageWordFile() to start.");
+    console.log("ðŸ§ª 50-Page Word Export Test loaded! Use export50PageWordFile() to start.");
 } else {
     export50PageWordFile().then(result => {
-        console.log("\n🎯 FINAL RESULT:", result);
+        console.log("\nðŸŽ¯ FINAL RESULT:", result);
     });
 }

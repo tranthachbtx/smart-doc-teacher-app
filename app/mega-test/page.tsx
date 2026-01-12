@@ -7,20 +7,20 @@ import { DocumentExportSystem } from '@/lib/services/document-export-system';
 class MegaTestDataGenerator {
     static generateSmallContent() {
         return {
-            ten_bai: "Bài kiểm tra nhỏ",
-            muc_tieu_kien_thuc: "Kiến thức cơ bản",
-            muc_tieu_nang_luc: "Năng lực giải quyết vấn đề",
-            muc_tieu_pham_chat: "Phẩm chất trách nhiệm",
-            tich_hop_nls: "Tích hợp công nghệ",
-            tich_hop_dao_duc: "Giáo dục đạo đức",
-            gv_chuan_bi: "Giáo viên chuẩn bị",
-            hs_chuan_bi: "Học sinh chuẩn bị",
-            hoat_dong_khoi_dong: "Hoạt động khởi động đơn giản",
-            hoat_dong_kham_pha: "Hoạt động khám phá cơ bản",
-            hoat_dong_luyen_tap: "Hoạt động luyện tập",
-            hoat_dong_van_dung: "Hoạt động vận dụng",
-            ho_so_day_hoc: "Hồ sơ dạy học",
-            huong_dan_ve_nha: "Hướng dẫn về nhà"
+            ten_bai: "BÃ i kiá»ƒm tra nhá»",
+            muc_tieu_kien_thuc: "Kiáº¿n thá»©c cÆ¡ báº£n",
+            muc_tieu_nang_luc: "NÄƒng lá»±c giáº£i quyáº¿t váº¥n Ä‘á»",
+            muc_tieu_pham_chat: "Pháº©m cháº¥t trÃ¡ch nhiá»‡m",
+            tich_hop_nls: "TÃ­ch há»£p cÃ´ng nghá»‡",
+            tich_hop_dao_duc: "GiÃ¡o dá»¥c Ä‘áº¡o Ä‘á»©c",
+            gv_chuan_bi: "GiÃ¡o viÃªn chuáº©n bá»‹",
+            hs_chuan_bi: "Há»c sinh chuáº©n bá»‹",
+            hoat_dong_khoi_dong: "Hoáº¡t Ä‘á»™ng khá»Ÿi Ä‘á»™ng Ä‘Æ¡n giáº£n",
+            hoat_dong_kham_pha: "Hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡ cÆ¡ báº£n",
+            hoat_dong_luyen_tap: "Hoáº¡t Ä‘á»™ng luyá»‡n táº­p",
+            hoat_dong_van_dung: "Hoáº¡t Ä‘á»™ng váº­n dá»¥ng",
+            ho_so_day_hoc: "Há»“ sÆ¡ dáº¡y há»c",
+            huong_dan_ve_nha: "HÆ°á»›ng dáº«n vá» nhÃ "
         };
     }
 
@@ -29,16 +29,16 @@ class MegaTestDataGenerator {
 
         return {
             ...baseContent,
-            ten_bai: "Bài kiểm tra trung bình với nội dung chi tiết và phức tạp hơn",
-            muc_tieu_kien_thuc: "Kiến thức: " + "Nội dung kiến thức chi tiết ".repeat(20),
-            muc_tieu_nang_luc: "Năng lực: " + "Mô tả năng lực chi tiết ".repeat(15),
-            muc_tieu_pham_chat: "Phẩm chất: " + "Phát triển phẩm chất ".repeat(10),
-            hoat_dong_khoi_dong: "Hoạt động khởi động: " + "Chi tiết hoạt động ".repeat(30),
-            hoat_dong_kham_pha: "Hoạt động khám phá: " + "Nội dung chi tiết ".repeat(40),
-            hoat_dong_luyen_tap: "Hoạt động luyện tập: " + "Bài tập chi tiết ".repeat(35),
-            hoat_dong_van_dung: "Hoạt động vận dụng: " + "Vận dụng thực tế ".repeat(25),
-            ho_so_day_hoc: "Hồ sơ dạy học: " + "Tài liệu chi tiết ".repeat(50),
-            huong_dan_ve_nha: "Hướng dẫn về nhà: " + "Bài tập về nhà ".repeat(20)
+            ten_bai: "BÃ i kiá»ƒm tra trung bÃ¬nh vá»›i ná»™i dung chi tiáº¿t vÃ  phá»©c táº¡p hÆ¡n",
+            muc_tieu_kien_thuc: "Kiáº¿n thá»©c: " + "Ná»™i dung kiáº¿n thá»©c chi tiáº¿t ".repeat(20),
+            muc_tieu_nang_luc: "NÄƒng lá»±c: " + "MÃ´ táº£ nÄƒng lá»±c chi tiáº¿t ".repeat(15),
+            muc_tieu_pham_chat: "Pháº©m cháº¥t: " + "PhÃ¡t triá»ƒn pháº©m cháº¥t ".repeat(10),
+            hoat_dong_khoi_dong: "Hoáº¡t Ä‘á»™ng khá»Ÿi Ä‘á»™ng: " + "Chi tiáº¿t hoáº¡t Ä‘á»™ng ".repeat(30),
+            hoat_dong_kham_pha: "Hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡: " + "Ná»™i dung chi tiáº¿t ".repeat(40),
+            hoat_dong_luyen_tap: "Hoáº¡t Ä‘á»™ng luyá»‡n táº­p: " + "BÃ i táº­p chi tiáº¿t ".repeat(35),
+            hoat_dong_van_dung: "Hoáº¡t Ä‘á»™ng váº­n dá»¥ng: " + "Váº­n dá»¥ng thá»±c táº¿ ".repeat(25),
+            ho_so_day_hoc: "Há»“ sÆ¡ dáº¡y há»c: " + "TÃ i liá»‡u chi tiáº¿t ".repeat(50),
+            huong_dan_ve_nha: "HÆ°á»›ng dáº«n vá» nhÃ : " + "BÃ i táº­p vá» nhÃ  ".repeat(20)
         };
     }
 
@@ -47,16 +47,16 @@ class MegaTestDataGenerator {
 
         return {
             ...baseContent,
-            ten_bai: "BÀI KIỂM TRA LỚN - NỘI DUNG RẤT CHI TIẾT VÀ PHỨC TẠP",
-            muc_tieu_kien_thuc: "Kiến thức: " + "Nội dung kiến thức cực kỳ chi tiết ".repeat(100),
-            muc_tieu_nang_luc: "Năng lực: " + "Mô tả năng lực rất chi tiết ".repeat(80),
-            muc_tieu_pham_chat: "Phẩm chất: " + "Phát triển phẩm chất toàn diện ".repeat(60),
-            hoat_dong_khoi_dong: "Hoạt động khởi động: " + "Chi tiết hoạt động mở rộng ".repeat(150),
-            hoat_dong_kham_pha: "Hoạt động khám phá: " + "Nội dung khám phá sâu rộng ".repeat(200),
-            hoat_dong_luyen_tap: "Hoạt động luyện tập: " + "Bài tập luyện tập nâng cao ".repeat(180),
-            hoat_dong_van_dung: "Hoạt động vận dụng: " + "Vận dụng thực tế phức tạp ".repeat(120),
-            ho_so_day_hoc: "Hồ sơ dạy học: " + "Tài liệu dạy học đầy đủ ".repeat(300),
-            huong_dan_ve_nha: "Hướng dẫn về nhà: " + "Bài tập về nhà nâng cao ".repeat(100)
+            ten_bai: "BÃ€I KIá»‚M TRA Lá»šN - Ná»˜I DUNG Ráº¤T CHI TIáº¾T VÃ€ PHá»¨C Táº P",
+            muc_tieu_kien_thuc: "Kiáº¿n thá»©c: " + "Ná»™i dung kiáº¿n thá»©c cá»±c ká»³ chi tiáº¿t ".repeat(100),
+            muc_tieu_nang_luc: "NÄƒng lá»±c: " + "MÃ´ táº£ nÄƒng lá»±c ráº¥t chi tiáº¿t ".repeat(80),
+            muc_tieu_pham_chat: "Pháº©m cháº¥t: " + "PhÃ¡t triá»ƒn pháº©m cháº¥t toÃ n diá»‡n ".repeat(60),
+            hoat_dong_khoi_dong: "Hoáº¡t Ä‘á»™ng khá»Ÿi Ä‘á»™ng: " + "Chi tiáº¿t hoáº¡t Ä‘á»™ng má»Ÿ rá»™ng ".repeat(150),
+            hoat_dong_kham_pha: "Hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡: " + "Ná»™i dung khÃ¡m phÃ¡ sÃ¢u rá»™ng ".repeat(200),
+            hoat_dong_luyen_tap: "Hoáº¡t Ä‘á»™ng luyá»‡n táº­p: " + "BÃ i táº­p luyá»‡n táº­p nÃ¢ng cao ".repeat(180),
+            hoat_dong_van_dung: "Hoáº¡t Ä‘á»™ng váº­n dá»¥ng: " + "Váº­n dá»¥ng thá»±c táº¿ phá»©c táº¡p ".repeat(120),
+            ho_so_day_hoc: "Há»“ sÆ¡ dáº¡y há»c: " + "TÃ i liá»‡u dáº¡y há»c Ä‘áº§y Ä‘á»§ ".repeat(300),
+            huong_dan_ve_nha: "HÆ°á»›ng dáº«n vá» nhÃ : " + "BÃ i táº­p vá» nhÃ  nÃ¢ng cao ".repeat(100)
         };
     }
 
@@ -65,16 +65,16 @@ class MegaTestDataGenerator {
 
         return {
             ...baseContent,
-            ten_bai: "🚀 BÀI KIỂM TRA MEGA - STRESS TEST NỘI DUNG KHỦNG LỖ",
-            muc_tieu_kien_thuc: "Kiến thức: " + "Nội dung kiến thức siêu chi tiết ".repeat(500),
-            muc_tieu_nang_luc: "Năng lực: " + "Mô tả năng lực siêu chi tiết ".repeat(400),
-            muc_tieu_pham_chat: "Phẩm chất: " + "Phát triển phẩm chất siêu toàn diện ".repeat(300),
-            hoat_dong_khoi_dong: "Hoạt động khởi động: " + "Chi tiết hoạt động siêu mở rộng ".repeat(750),
-            hoat_dong_kham_pha: "Hoạt động khám phá: " + "Nội dung khám phá siêu sâu rộng ".repeat(1000),
-            hoat_dong_luyen_tap: "Hoạt động luyện tập: " + "Bài tập luyện tập siêu nâng cao ".repeat(900),
-            hoat_dong_van_dung: "Hoạt động vận dụng: " + "Vận dụng thực tế siêu phức tạp ".repeat(600),
-            ho_so_day_hoc: "Hồ sơ dạy học: " + "Tài liệu dạy học siêu đầy đủ ".repeat(1500),
-            huong_dan_ve_nha: "Hướng dẫn về nhà: " + "Bài tập về nhà siêu nâng cao ".repeat(500)
+            ten_bai: "ðŸš€ BÃ€I KIá»‚M TRA MEGA - STRESS TEST Ná»˜I DUNG KHá»¦NG Lá»–",
+            muc_tieu_kien_thuc: "Kiáº¿n thá»©c: " + "Ná»™i dung kiáº¿n thá»©c siÃªu chi tiáº¿t ".repeat(500),
+            muc_tieu_nang_luc: "NÄƒng lá»±c: " + "MÃ´ táº£ nÄƒng lá»±c siÃªu chi tiáº¿t ".repeat(400),
+            muc_tieu_pham_chat: "Pháº©m cháº¥t: " + "PhÃ¡t triá»ƒn pháº©m cháº¥t siÃªu toÃ n diá»‡n ".repeat(300),
+            hoat_dong_khoi_dong: "Hoáº¡t Ä‘á»™ng khá»Ÿi Ä‘á»™ng: " + "Chi tiáº¿t hoáº¡t Ä‘á»™ng siÃªu má»Ÿ rá»™ng ".repeat(750),
+            hoat_dong_kham_pha: "Hoáº¡t Ä‘á»™ng khÃ¡m phÃ¡: " + "Ná»™i dung khÃ¡m phÃ¡ siÃªu sÃ¢u rá»™ng ".repeat(1000),
+            hoat_dong_luyen_tap: "Hoáº¡t Ä‘á»™ng luyá»‡n táº­p: " + "BÃ i táº­p luyá»‡n táº­p siÃªu nÃ¢ng cao ".repeat(900),
+            hoat_dong_van_dung: "Hoáº¡t Ä‘á»™ng váº­n dá»¥ng: " + "Váº­n dá»¥ng thá»±c táº¿ siÃªu phá»©c táº¡p ".repeat(600),
+            ho_so_day_hoc: "Há»“ sÆ¡ dáº¡y há»c: " + "TÃ i liá»‡u dáº¡y há»c siÃªu Ä‘áº§y Ä‘á»§ ".repeat(1500),
+            huong_dan_ve_nha: "HÆ°á»›ng dáº«n vá» nhÃ : " + "BÃ i táº­p vá» nhÃ  siÃªu nÃ¢ng cao ".repeat(500)
         };
     }
 }
@@ -103,9 +103,9 @@ export default function MegaTestPage() {
             };
 
             setTestResults(prev => [...prev, resultObj]);
-            alert(`✅ Export thành công: ${testName}\nThời gian: ${duration}ms`);
+            alert(`âœ… Export thÃ nh cÃ´ng: ${testName}\nThá»i gian: ${duration}ms`);
         } catch (error) {
-            alert(`❌ Export thất bại: ${testName}\nError: ${error instanceof Error ? error.message : 'Unknown error'}`);
+            alert(`âŒ Export tháº¥t báº¡i: ${testName}\nError: ${error instanceof Error ? error.message : 'Unknown error'}`);
             setTestResults(prev => [...prev, { testName, status: 'failed', error: String(error) }]);
         }
 
@@ -135,7 +135,7 @@ export default function MegaTestPage() {
         <div className="min-h-screen bg-gray-50 p-8">
             <div className="max-w-6xl mx-auto">
                 <h1 className="text-4xl font-bold text-center mb-8 text-blue-600">
-                    🧪 MEGA STRESS TEST - SYSTEM V7 EXPORT
+                    ðŸ§ª MEGA STRESS TEST - SYSTEM V7 EXPORT
                 </h1>
 
                 <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
@@ -147,20 +147,20 @@ export default function MegaTestPage() {
                             disabled={isRunning}
                             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 font-bold"
                         >
-                            {isRunning ? '🔄 Testing...' : '🚀 Run Stress Test'}
+                            {isRunning ? 'ðŸ”„ Testing...' : 'ðŸš€ Run Stress Test'}
                         </button>
 
                         <button
                             onClick={() => setTestResults([])}
                             className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                         >
-                            🗑️ Clear Results
+                            ðŸ—‘ï¸ Clear Results
                         </button>
                     </div>
 
                     {currentTest && (
                         <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded mb-4 animate-pulse">
-                            🔄 {currentTest}
+                            ðŸ”„ {currentTest}
                         </div>
                     )}
                 </div>
@@ -177,13 +177,13 @@ export default function MegaTestPage() {
                                     }`}>
                                     <h3 className="font-semibold text-lg mb-2">
                                         {result.testName}
-                                        {result.success ? ' ✅' : ' ❌'}
+                                        {result.success ? ' âœ…' : ' âŒ'}
                                     </h3>
 
                                     <div className="grid grid-cols-2 gap-2 text-sm">
                                         <div><strong>Content Size:</strong> {result.contentSize}KB</div>
                                         <div><strong>Duration:</strong> {result.duration}ms</div>
-                                        <div><strong>Memory Check:</strong> Pass ✅</div>
+                                        <div><strong>Memory Check:</strong> Pass âœ…</div>
                                     </div>
                                 </div>
                             ))}

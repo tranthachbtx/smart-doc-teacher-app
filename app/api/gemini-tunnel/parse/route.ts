@@ -1,6 +1,6 @@
 /**
- * 🧠 AI Content Parser API
- * Phân tích nội dung từ Gemini Pro và điền vào các textbox tương ứng
+ * ðŸ§  AI Content Parser API
+ * PhÃ¢n tÃ­ch ná»™i dung tá»« Gemini Pro vÃ  Ä‘iá»n vÃ o cÃ¡c textbox tÆ°Æ¡ng á»©ng
  */
 
 import { NextRequest, NextResponse } from "next/server";
@@ -15,46 +15,46 @@ export async function POST(request: NextRequest) {
 
     if (!content) {
       return NextResponse.json(
-        { error: "Vui lòng cung cấp nội dung cần phân tích" },
+        { error: "Vui lÃ²ng cung cáº¥p ná»™i dung cáº§n phÃ¢n tÃ­ch" },
         { status: 400 }
       );
     }
 
-    // Prompt để phân tích nội dung Gemini Pro
-    const analysisPrompt = `Bạn là chuyên gia phân tích giáo án. Hãy phân tích nội dung sau và trích xuất các thông tin theo đúng cấu trúc.
+    // Prompt Ä‘á»ƒ phÃ¢n tÃ­ch ná»™i dung Gemini Pro
+    const analysisPrompt = `Báº¡n lÃ  chuyÃªn gia phÃ¢n tÃ­ch giÃ¡o Ã¡n. HÃ£y phÃ¢n tÃ­ch ná»™i dung sau vÃ  trÃ­ch xuáº¥t cÃ¡c thÃ´ng tin theo Ä‘Ãºng cáº¥u trÃºc.
 
-NỘI DUNG CẦN PHÂN TÍCH:
+Ná»˜I DUNG Cáº¦N PHÃ‚N TÃCH:
 ${content}
 
-YÊU CẦU: Trả về JSON với các trường sau:
+YÃŠU Cáº¦U: Tráº£ vá» JSON vá»›i cÃ¡c trÆ°á»ng sau:
 {
-  "title": "Tiêu đề bài học",
-  "grade": "Khối lớp",
-  "subject": "Môn học",
-  "duration": "Thời lượng",
-  "objectives": ["Mục tiêu 1", "Mục tiêu 2"],
-  "preparation": ["Chuẩn bị 1", "Chuẩn bị 2"],
+  "title": "TiÃªu Ä‘á» bÃ i há»c",
+  "grade": "Khá»‘i lá»›p",
+  "subject": "MÃ´n há»c",
+  "duration": "Thá»i lÆ°á»£ng",
+  "objectives": ["Má»¥c tiÃªu 1", "Má»¥c tiÃªu 2"],
+  "preparation": ["Chuáº©n bá»‹ 1", "Chuáº©n bá»‹ 2"],
   "activities": [
     {
-      "name": "Tên hoạt động 1",
-      "content": "Nội dung chi tiết hoạt động 1",
-      "duration": "Thời lượng"
+      "name": "TÃªn hoáº¡t Ä‘á»™ng 1",
+      "content": "Ná»™i dung chi tiáº¿t hoáº¡t Ä‘á»™ng 1",
+      "duration": "Thá»i lÆ°á»£ng"
     },
     {
-      "name": "Tên hoạt động 2", 
-      "content": "Nội dung chi tiết hoạt động 2",
-      "duration": "Thời lượng"
+      "name": "TÃªn hoáº¡t Ä‘á»™ng 2", 
+      "content": "Ná»™i dung chi tiáº¿t hoáº¡t Ä‘á»™ng 2",
+      "duration": "Thá»i lÆ°á»£ng"
     }
   ],
-  "assessment": ["Đánh giá 1", "Đánh giá 2"],
-  "homework": "Bài tập về nhà",
-  "notes": "Ghi chú thêm"
+  "assessment": ["ÄÃ¡nh giÃ¡ 1", "ÄÃ¡nh giÃ¡ 2"],
+  "homework": "BÃ i táº­p vá» nhÃ ",
+  "notes": "Ghi chÃº thÃªm"
 }
 
-Lưu ý:
-- Chỉ trả về JSON, không có text khác
-- Nếu không tìm thấy thông tin nào, để trống hoặc null
-- Phân tích chính xác và đầy đủ nhất có thể`;
+LÆ°u Ã½:
+- Chá»‰ tráº£ vá» JSON, khÃ´ng cÃ³ text khÃ¡c
+- Náº¿u khÃ´ng tÃ¬m tháº¥y thÃ´ng tin nÃ o, Ä‘á»ƒ trá»‘ng hoáº·c null
+- PhÃ¢n tÃ­ch chÃ­nh xÃ¡c vÃ  Ä‘áº§y Ä‘á»§ nháº¥t cÃ³ thá»ƒ`;
 
     const result = await generateAIContent(analysisPrompt);
 
@@ -63,24 +63,24 @@ Lưu ý:
 
     if (!result.success) {
       return NextResponse.json(
-        { error: result.error || "Lỗi khi phân tích nội dung" },
+        { error: result.error || "Lá»—i khi phÃ¢n tÃ­ch ná»™i dung" },
         { status: 500 }
       );
     }
 
-    // Parse JSON từ kết quả
+    // Parse JSON tá»« káº¿t quáº£
     let parsedData;
     try {
-      // Tìm JSON trong response
+      // TÃ¬m JSON trong response
       const jsonMatch = result.content?.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         parsedData = JSON.parse(jsonMatch[0]);
         console.log("AI Parser API - Parsed data keys:", Object.keys(parsedData || {}));
       } else {
-        // Fallback: Tự tạo parsedData từ text nếu không tìm thấy JSON
+        // Fallback: Tá»± táº¡o parsedData tá»« text náº¿u khÃ´ng tÃ¬m tháº¥y JSON
         console.log("AI Parser API - No JSON found, creating fallback structure");
         parsedData = {
-          title: "Nội dung từ Gemini Pro",
+          title: "Ná»™i dung tá»« Gemini Pro",
           objectives: [],
           preparation: [],
           activities: [],
@@ -91,9 +91,9 @@ Lưu ý:
       }
     } catch (parseError) {
       console.error("AI Parser API - Parse error:", parseError);
-      // Fallback khi parse lỗi
+      // Fallback khi parse lá»—i
       parsedData = {
-        title: "Nội dung từ Gemini Pro",
+        title: "Ná»™i dung tá»« Gemini Pro",
         objectives: [],
         preparation: [],
         activities: [],
@@ -106,13 +106,13 @@ Lưu ý:
     return NextResponse.json({
       success: true,
       data: parsedData,
-      message: "Phân tích nội dung thành công!"
+      message: "PhÃ¢n tÃ­ch ná»™i dung thÃ nh cÃ´ng!"
     });
 
   } catch (error) {
     console.error("Parse error:", error);
     return NextResponse.json(
-      { error: "Lỗi server khi phân tích nội dung" },
+      { error: "Lá»—i server khi phÃ¢n tÃ­ch ná»™i dung" },
       { status: 500 }
     );
   }

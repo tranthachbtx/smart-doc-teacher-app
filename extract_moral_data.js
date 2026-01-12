@@ -3,7 +3,7 @@ const mammoth = require("mammoth");
 const path = require("path");
 const fs = require("fs");
 
-const filePath = "d:\\smart-doc-teacher-app\\HUANLUYEN_AI\\Tích hợp Giáo dục Đạo đức vào Hoạt động Trải nghiệm ccd 456.docx";
+const filePath = "d:\\smart-doc-teacher-app\\HUANLUYEN_AI\\TÃ­ch há»£p GiÃ¡o dá»¥c Äáº¡o Ä‘á»©c vÃ o Hoáº¡t Ä‘á»™ng Tráº£i nghiá»‡m ccd 456.docx";
 const outputFile = "d:\\smart-doc-teacher-app\\moral_integration_raw.txt";
 
 async function extract() {

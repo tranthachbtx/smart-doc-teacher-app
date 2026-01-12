@@ -1,6 +1,6 @@
 /**
- * 🧠 AI Content Parser Hook
- * Hook để phân tích nội dung từ Gemini Pro
+ * ðŸ§  AI Content Parser Hook
+ * Hook Ä‘á»ƒ phÃ¢n tÃ­ch ná»™i dung tá»« Gemini Pro
  */
 
 import { useState } from "react";
@@ -50,7 +50,7 @@ export function useAIContentParser() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Lỗi khi phân tích nội dung");
+        throw new Error(data.error || "Lá»—i khi phÃ¢n tÃ­ch ná»™i dung");
       }
 
       const parseResult: ParseResult = {
@@ -63,7 +63,7 @@ export function useAIContentParser() {
       return parseResult;
 
     } catch (err: any) {
-      const errorMessage = err.message || "Đã xảy ra lỗi khi phân tích";
+      const errorMessage = err.message || "ÄÃ£ xáº£y ra lá»—i khi phÃ¢n tÃ­ch";
       setError(errorMessage);
       setResult({ success: false, error: errorMessage });
       return { success: false, error: errorMessage };

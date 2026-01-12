@@ -5,8 +5,8 @@ export type { SagaJob, SagaTask };
 
 /**
  * ANTIGRAVITY CLIENT-SIDE ORCHESTRATOR (v6.13 - Fortress Edition)
- * Chiến thuật: Zero-CORS Architecture. 
- * Mọi yêu cầu đều đi qua Internal Tunnel để đảm bảo tính ổn định và bảo mật Key.
+ * Chiáº¿n thuáº­t: Zero-CORS Architecture. 
+ * Má»i yÃªu cáº§u Ä‘á»u Ä‘i qua Internal Tunnel Ä‘á»ƒ Ä‘áº£m báº£o tÃ­nh á»•n Ä‘á»‹nh vÃ  báº£o máº­t Key.
  */
 
 const DB_NAME = 'AntigravitySagaDB';
@@ -141,19 +141,19 @@ export class ClientSagaOrchestrator {
     private async architectPhase() {
         await this.update({ status: 'architecting' });
         const file = (this.job as any).lessonFile;
-        let summary = "Không có tài liệu tham khảo.";
+        let summary = "KhÃ´ng cÃ³ tÃ i liá»‡u tham kháº£o.";
 
         if (file) {
             try {
                 console.log("[Saga] Phase 0: Analyzing & Compressing PDF Knowledge...");
-                const analysisPrompt = `VAI TRÒ: Chuyên gia Phân tích Sư phạm (Pedagogical Analyst). 
-NHIỆM VỤ: Nghiên cứu kỹ tệp này và trích xuất dữ liệu thô để chuẩn bị cho quá trình "PHẪU THUẬT & TÁI CẤU TRÚC" sang chuẩn 5512:
-1. DANH SÁCH HOẠT ĐỘNG: Liệt kê tất cả các hoạt động dạy học đang có (tên, mục tiêu sơ khai, cách làm).
-2. NỘI DUNG CỐT LÕI: Các đơn vị kiến thức, thông điệp chính mà giáo án cũ muốn truyền tải.
-3. KỊCH BẢN GỐC: Trích xuất các câu hỏi, ví dụ, hoặc tình huống hay mà giáo viên đã soạn (cần giữ lại).
-4. ĐIỂM YẾU: Chỉ ra những chỗ thiếu hụt (thường là NLS, Đạo đức, hoặc các bước 5512 chưa rõ ràng).
+                const analysisPrompt = `VAI TRÃ’: ChuyÃªn gia PhÃ¢n tÃ­ch SÆ° pháº¡m (Pedagogical Analyst). 
+NHIá»†M Vá»¤: NghiÃªn cá»©u ká»¹ tá»‡p nÃ y vÃ  trÃ­ch xuáº¥t dá»¯ liá»‡u thÃ´ Ä‘á»ƒ chuáº©n bá»‹ cho quÃ¡ trÃ¬nh "PHáºªU THUáº¬T & TÃI Cáº¤U TRÃšC" sang chuáº©n 5512:
+1. DANH SÃCH HOáº T Äá»˜NG: Liá»‡t kÃª táº¥t cáº£ cÃ¡c hoáº¡t Ä‘á»™ng dáº¡y há»c Ä‘ang cÃ³ (tÃªn, má»¥c tiÃªu sÆ¡ khai, cÃ¡ch lÃ m).
+2. Ná»˜I DUNG Cá»T LÃ•I: CÃ¡c Ä‘Æ¡n vá»‹ kiáº¿n thá»©c, thÃ´ng Ä‘iá»‡p chÃ­nh mÃ  giÃ¡o Ã¡n cÅ© muá»‘n truyá»n táº£i.
+3. Ká»ŠCH Báº¢N Gá»C: TrÃ­ch xuáº¥t cÃ¡c cÃ¢u há»i, vÃ­ dá»¥, hoáº·c tÃ¬nh huá»‘ng hay mÃ  giÃ¡o viÃªn Ä‘Ã£ soáº¡n (cáº§n giá»¯ láº¡i).
+4. ÄIá»‚M Yáº¾U: Chá»‰ ra nhá»¯ng chá»— thiáº¿u há»¥t (thÆ°á»ng lÃ  NLS, Äáº¡o Ä‘á»©c, hoáº·c cÃ¡c bÆ°á»›c 5512 chÆ°a rÃµ rÃ ng).
 
-Kết quả trả về phải cực kỳ chi tiết để làm "nguyên liệu" cho các bước sinh nội dung tiếp theo.`;
+Káº¿t quáº£ tráº£ vá» pháº£i cá»±c ká»³ chi tiáº¿t Ä‘á»ƒ lÃ m "nguyÃªn liá»‡u" cho cÃ¡c bÆ°á»›c sinh ná»™i dung tiáº¿p theo.`;
 
                 summary = await callAIProxy(analysisPrompt, "gemini-2.0-flash", file);
                 console.log("[Saga] Context Extraction Complete. Summary length:", summary.length);
@@ -163,19 +163,19 @@ Kết quả trả về phải cực kỳ chi tiết để làm "nguyên liệu" 
         }
 
         const tasks: SagaTask[] = [
-            { id: 'blueprint', title: '0. Phân tích bối cảnh', status: 'completed', output: summary, gist: 'Đã nén PDF thành công', retryCount: 0 },
-            { id: 'muc_tieu_kien_thuc', title: '1. Mục tiêu (CV 5512)', status: 'pending', retryCount: 0 },
-            { id: 'hoat_dong_khoi_dong', title: '2. Hoạt động Khởi động', status: 'pending', retryCount: 0 },
-            { id: 'shdc', title: '3. Sinh hoạt dưới cờ', status: 'pending', retryCount: 0 },
-            { id: 'shl', title: '4. Sinh hoạt lớp', status: 'pending', retryCount: 0 },
-            { id: 'hoat_dong_kham_pha_1', title: '5.1 Khám phá 1', status: 'pending', retryCount: 0 },
-            { id: 'hoat_dong_kham_pha_2', title: '5.2 Khám phá 2', status: 'pending', retryCount: 0 },
-            { id: 'hoat_dong_kham_pha_3', title: '5.3 Tích hợp thực tiễn', status: 'pending', retryCount: 0 },
-            { id: 'hoat_dong_luyen_tap_1', title: '6.1 Luyện tập cơ bản', status: 'pending', retryCount: 0 },
-            { id: 'hoat_dong_luyen_tap_2', title: '6.2 Vận dụng sáng tạo', status: 'pending', retryCount: 0 },
-            { id: 'hoat_dong_van_dung', title: '7. Dự án thực tế', status: 'pending', retryCount: 0 },
-            { id: 'ho_so_day_hoc', title: '8. Phụ lục & Rubric', status: 'pending', retryCount: 0 },
-            { id: 'huong_dan_ve_nha', title: '9. Hướng dẫn về nhà', status: 'pending', retryCount: 0 },
+            { id: 'blueprint', title: '0. PhÃ¢n tÃ­ch bá»‘i cáº£nh', status: 'completed', output: summary, gist: 'ÄÃ£ nÃ©n PDF thÃ nh cÃ´ng', retryCount: 0 },
+            { id: 'muc_tieu_kien_thuc', title: '1. Má»¥c tiÃªu (CV 5512)', status: 'pending', retryCount: 0 },
+            { id: 'hoat_dong_khoi_dong', title: '2. Hoáº¡t Ä‘á»™ng Khá»Ÿi Ä‘á»™ng', status: 'pending', retryCount: 0 },
+            { id: 'shdc', title: '3. Sinh hoáº¡t dÆ°á»›i cá»', status: 'pending', retryCount: 0 },
+            { id: 'shl', title: '4. Sinh hoáº¡t lá»›p', status: 'pending', retryCount: 0 },
+            { id: 'hoat_dong_kham_pha_1', title: '5.1 KhÃ¡m phÃ¡ 1', status: 'pending', retryCount: 0 },
+            { id: 'hoat_dong_kham_pha_2', title: '5.2 KhÃ¡m phÃ¡ 2', status: 'pending', retryCount: 0 },
+            { id: 'hoat_dong_kham_pha_3', title: '5.3 TÃ­ch há»£p thá»±c tiá»…n', status: 'pending', retryCount: 0 },
+            { id: 'hoat_dong_luyen_tap_1', title: '6.1 Luyá»‡n táº­p cÆ¡ báº£n', status: 'pending', retryCount: 0 },
+            { id: 'hoat_dong_luyen_tap_2', title: '6.2 Váº­n dá»¥ng sÃ¡ng táº¡o', status: 'pending', retryCount: 0 },
+            { id: 'hoat_dong_van_dung', title: '7. Dá»± Ã¡n thá»±c táº¿', status: 'pending', retryCount: 0 },
+            { id: 'ho_so_day_hoc', title: '8. Phá»¥ lá»¥c & Rubric', status: 'pending', retryCount: 0 },
+            { id: 'huong_dan_ve_nha', title: '9. HÆ°á»›ng dáº«n vá» nhÃ ', status: 'pending', retryCount: 0 },
         ];
 
         await this.update({
@@ -211,8 +211,8 @@ Kết quả trả về phải cực kỳ chi tiết để làm "nguyên liệu" 
             nextTasks[idx] = { ...t, status: 'processing', retryCount: t.retryCount + 1 };
             await this.update({ tasks: nextTasks });
 
-            const summary = this.job.lessonFileSummary || "Không có tài liệu tham khảo.";
-            const expertGuidance = this.job.expertGuidance ? `\nCHỈ THỊ TỪ CHUYÊN GIA (GEMINI PRO - ƯU TIÊN TỐI THƯỢNG):\n${this.job.expertGuidance}\n` : "";
+            const summary = this.job.lessonFileSummary || "KhÃ´ng cÃ³ tÃ i liá»‡u tham kháº£o.";
+            const expertGuidance = this.job.expertGuidance ? `\nCHá»ˆ THá»Š Tá»ª CHUYÃŠN GIA (GEMINI PRO - Æ¯U TIÃŠN Tá»I THÆ¯á»¢NG):\n${this.job.expertGuidance}\n` : "";
             const completedGists = this.job.tasks.filter(x => x.status === 'completed').map(x => `[${x.title}]: ${x.gist}`).join("\n");
 
             const isUpgrade = !!this.job.lessonFileSummary;
@@ -220,50 +220,50 @@ Kết quả trả về phải cực kỳ chi tiết để làm "nguyên liệu" 
 ${SYSTEM_ROLE}
 ${expertGuidance}
 
-CHỦ ĐỀ: ${this.job.topic} (Khối ${this.job.grade})
-${isUpgrade ? `BỐI CẢNH GIÁO ÁN CŨ (PHẪU THUẬT TỪ ĐÂY): ${summary}` : `BỐI CẢNH SGK: ${summary}`}
-CÁC PHẦN ĐÃ HOÀN THÀNH: ${completedGists}
+CHá»¦ Äá»€: ${this.job.topic} (Khá»‘i ${this.job.grade})
+${isUpgrade ? `Bá»I Cáº¢NH GIÃO ÃN CÅ¨ (PHáºªU THUáº¬T Tá»ª ÄÃ‚Y): ${summary}` : `Bá»I Cáº¢NH SGK: ${summary}`}
+CÃC PHáº¦N ÄÃƒ HOÃ€N THÃ€NH: ${completedGists}
 
-NHIỆM VỤ: Hãy soạn thảo CHI TIẾT VÀ ĐÀO SÂU mục "${t.title}" (CV 5512).
+NHIá»†M Vá»¤: HÃ£y soáº¡n tháº£o CHI TIáº¾T VÃ€ ÄÃ€O SÃ‚U má»¥c "${t.title}" (CV 5512).
 
             ${isUpgrade ?
-                    `YÊU CẦU NÂNG CẤP:
-1. TRÍCH XUẤT: Lấy toàn bộ ý tưởng hay từ giáo án cũ ở phần "${t.title}".
-2. CẤU TRÚC LẠI: Ép nội dung đó vào bảng 2 cột [COT_1] và [COT_2].
-3. NÂNG TẦM: Chèn hoạt động Năng lực số (dùng công cụ số) và Đạo đức (phản biện giá trị) vào kịch bản. Theo sát CHỈ THỊ TỪ CHUYÊN GIA nếu có ở trên.` :
-                    `YÊU CẦU SÁNG TẠO: Tự biên soạn kịch bản mới 100% cực kỳ chi tiết.`}
+                    `YÃŠU Cáº¦U NÃ‚NG Cáº¤P:
+1. TRÃCH XUáº¤T: Láº¥y toÃ n bá»™ Ã½ tÆ°á»Ÿng hay tá»« giÃ¡o Ã¡n cÅ© á»Ÿ pháº§n "${t.title}".
+2. Cáº¤U TRÃšC Láº I: Ã‰p ná»™i dung Ä‘Ã³ vÃ o báº£ng 2 cá»™t [COT_1] vÃ  [COT_2].
+3. NÃ‚NG Táº¦M: ChÃ¨n hoáº¡t Ä‘á»™ng NÄƒng lá»±c sá»‘ (dÃ¹ng cÃ´ng cá»¥ sá»‘) vÃ  Äáº¡o Ä‘á»©c (pháº£n biá»‡n giÃ¡ trá»‹) vÃ o ká»‹ch báº£n. Theo sÃ¡t CHá»ˆ THá»Š Tá»ª CHUYÃŠN GIA náº¿u cÃ³ á»Ÿ trÃªn.` :
+                    `YÃŠU Cáº¦U SÃNG Táº O: Tá»± biÃªn soáº¡n ká»‹ch báº£n má»›i 100% cá»±c ká»³ chi tiáº¿t.`}
 
             ${t.id === 'shdc' ?
-                    `ĐẶC BIỆT CHO SINH HOẠT DƯỚI CỜ:
-- Đây là hoạt động tập thể toàn trường.
-- Kịch bản phải có: Nghi lễ chào cờ, Tuyên bố lý do, Phần văn nghệ/Sân khấu hóa, Phần trò chơi tập thể, Tổng kết thi đua.` : ''}
+                    `Äáº¶C BIá»†T CHO SINH HOáº T DÆ¯á»šI Cá»œ:
+- ÄÃ¢y lÃ  hoáº¡t Ä‘á»™ng táº­p thá»ƒ toÃ n trÆ°á»ng.
+- Ká»‹ch báº£n pháº£i cÃ³: Nghi lá»… chÃ o cá», TuyÃªn bá»‘ lÃ½ do, Pháº§n vÄƒn nghá»‡/SÃ¢n kháº¥u hÃ³a, Pháº§n trÃ² chÆ¡i táº­p thá»ƒ, Tá»•ng káº¿t thi Ä‘ua.` : ''}
 
             ${t.id === 'shl' ?
-                    `ĐẶC BIỆT CHO SINH HOẠT LỚP:
-- Đây là hoạt động trong lớp học (15 phút đầu giờ).
-- Kịch bản phải có: Ổn định tổ chức, Sinh hoạt theo chủ đề, Công tác học tập, Kế hoạch tuần tới.
-- Nội dung ngắn gọn, tập trung vào nề nếp và học tập.` : ''}
+                    `Äáº¶C BIá»†T CHO SINH HOáº T Lá»šP:
+- ÄÃ¢y lÃ  hoáº¡t Ä‘á»™ng trong lá»›p há»c (15 phÃºt Ä‘áº§u giá»).
+- Ká»‹ch báº£n pháº£i cÃ³: á»”n Ä‘á»‹nh tá»• chá»©c, Sinh hoáº¡t theo chá»§ Ä‘á», CÃ´ng tÃ¡c há»c táº­p, Káº¿ hoáº¡ch tuáº§n tá»›i.
+- Ná»™i dung ngáº¯n gá»n, táº­p trung vÃ o ná» náº¿p vÃ  há»c táº­p.` : ''}
 
             ${t.id === 'ho_so_day_hoc' ?
-                    `ĐẶC BIỆT CHO HỒ SƠ DẠY HỌC:
-- Hãy liệt kê chi tiết: 
-1. Phiếu học tập (ít nhất 2 phiếu với câu hỏi cụ thể)
-2. Bảng Rubric đánh giá (Tiêu chí - Mức độ)
-3. Link tham khảo tài liệu số.` : ''}
+                    `Äáº¶C BIá»†T CHO Há»’ SÆ  Dáº Y Há»ŒC:
+- HÃ£y liá»‡t kÃª chi tiáº¿t: 
+1. Phiáº¿u há»c táº­p (Ã­t nháº¥t 2 phiáº¿u vá»›i cÃ¢u há»i cá»¥ thá»ƒ)
+2. Báº£ng Rubric Ä‘Ã¡nh giÃ¡ (TiÃªu chÃ­ - Má»©c Ä‘á»™)
+3. Link tham kháº£o tÃ i liá»‡u sá»‘.` : ''}
 
             ${t.id === 'huong_dan_ve_nha' ?
-                    `ĐẶC BIỆT CHO HƯỚNG DẪN VỀ NHÀ:
-- Tổng kết ngắn gọn nội dung bài học.
-- Giao nhiệm vụ cụ thể: Bài tập SGK, Dự án nhỏ, hoặc Tìm kiếm thông tin cho bài sau.
-- Gợi ý tài liệu tham khảo số (Video, Website).` : ''}
+                    `Äáº¶C BIá»†T CHO HÆ¯á»šNG DáºªN Vá»€ NHÃ€:
+- Tá»•ng káº¿t ngáº¯n gá»n ná»™i dung bÃ i há»c.
+- Giao nhiá»‡m vá»¥ cá»¥ thá»ƒ: BÃ i táº­p SGK, Dá»± Ã¡n nhá», hoáº·c TÃ¬m kiáº¿m thÃ´ng tin cho bÃ i sau.
+- Gá»£i Ã½ tÃ i liá»‡u tham kháº£o sá»‘ (Video, Website).` : ''}
 
-ĐỘ DÀI: ~1500 từ cho riêng phần này. 
-ĐỊNH DẠNG: Sử dụng [COT_1]...[/COT_1] và [COT_2]...[/COT_2] nếu là hoạt động dạy học.
+Äá»˜ DÃ€I: ~1500 tá»« cho riÃªng pháº§n nÃ y. 
+Äá»ŠNH Dáº NG: Sá»­ dá»¥ng [COT_1]...[/COT_1] vÃ  [COT_2]...[/COT_2] náº¿u lÃ  hoáº¡t Ä‘á»™ng dáº¡y há»c.
 
-DẤU HIỆU KẾT THÚC: STUDENT_GIST: <tóm tắt ngắn gọn 1 câu>`;
+Dáº¤U HIá»†U Káº¾T THÃšC: STUDENT_GIST: <tÃ³m táº¯t ngáº¯n gá»n 1 cÃ¢u>`;
 
             const output = await callAIProxy(prompt, "gemini-2.0-flash");
-            const gist = (output.match(/STUDENT_GIST:\s*([\s\S]*)$/i)?.[1] || "Đã hoàn thành " + t.title).trim();
+            const gist = (output.match(/STUDENT_GIST:\s*([\s\S]*)$/i)?.[1] || "ÄÃ£ hoÃ n thÃ nh " + t.title).trim();
 
             const doneTasks = [...this.job.tasks];
             doneTasks[idx] = {

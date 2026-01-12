@@ -15,7 +15,7 @@ export interface ProcessedContent {
 
 export class SmartContentDeduplicator {
     private static instance: SmartContentDeduplicator;
-    private similarityThreshold = 0.88; // Tăng độ khắt khe vì dùng Semantic
+    private similarityThreshold = 0.88; // TÄƒng Ä‘á»™ kháº¯t khe vÃ¬ dÃ¹ng Semantic
     private embeddingService = EmbeddingService.getInstance();
     private embeddingCache = new Map<string, number[]>();
 

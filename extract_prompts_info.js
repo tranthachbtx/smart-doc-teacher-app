@@ -5,9 +5,9 @@ const fs = require("fs");
 
 const dir = "d:\\smart-doc-teacher-app\\HUANLUYEN_AI";
 const files = [
-    "Xây dựng Prompt Hoạt động Trải nghiệm.docx",
-    "Báo cáo Dữ liệu & Prompt Engineering_ HĐTN Hướng n....docx",
-    "Xây dựng kế hoạch dạy học HĐTN, HN.docx"
+    "XÃ¢y dá»±ng Prompt Hoáº¡t Ä‘á»™ng Tráº£i nghiá»‡m.docx",
+    "BÃ¡o cÃ¡o Dá»¯ liá»‡u & Prompt Engineering_ HÄTN HÆ°á»›ng n....docx",
+    "XÃ¢y dá»±ng káº¿ hoáº¡ch dáº¡y há»c HÄTN, HN.docx"
 ];
 
 const outputFile = "d:\\smart-doc-teacher-app\\extracted_prompts_content.txt";

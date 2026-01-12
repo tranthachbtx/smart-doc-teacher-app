@@ -35,7 +35,7 @@ export default function ApiTestPage() {
         setError(null);
         try {
             const response = await fetch('/api/test-api-keys');
-            if (!response.ok) throw new Error("Không thể kết nối với API Test.");
+            if (!response.ok) throw new Error("KhÃ´ng thá»ƒ káº¿t ná»‘i vá»›i API Test.");
             const data = await response.json();
             setResults(data);
         } catch (err: any) {
@@ -50,8 +50,8 @@ export default function ApiTestPage() {
     }, []);
 
     const StatusBadge = ({ ok, status }: { ok: boolean, status?: any }) => {
-        if (ok) return <Badge className="bg-emerald-500 hover:bg-emerald-600 border-none px-3 py-1 gap-1"><CheckCircle2 className="w-3 h-3" /> HOẠT ĐỘNG</Badge>;
-        return <Badge variant="destructive" className="px-3 py-1 gap-1"><XCircle className="w-3 h-3" /> LỖI ({status})</Badge>;
+        if (ok) return <Badge className="bg-emerald-500 hover:bg-emerald-600 border-none px-3 py-1 gap-1"><CheckCircle2 className="w-3 h-3" /> HOáº T Äá»˜NG</Badge>;
+        return <Badge variant="destructive" className="px-3 py-1 gap-1"><XCircle className="w-3 h-3" /> Lá»–I ({status})</Badge>;
     };
 
     return (
@@ -65,13 +65,13 @@ export default function ApiTestPage() {
                             onClick={() => window.close()}
                             className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors text-sm font-bold mb-4"
                         >
-                            <ArrowLeft className="w-4 h-4" /> QUAY LẠI TRẠM ĐIỀU KHIỂN
+                            <ArrowLeft className="w-4 h-4" /> QUAY Láº I TRáº M ÄIá»€U KHIá»‚N
                         </button>
                         <h1 className="text-4xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                             <ShieldCheck className="w-10 h-10 text-indigo-600" />
-                            HỆ THỐNG KIỂM ĐỊNH API KEY <span className="text-indigo-600">v36.0</span>
+                            Há»† THá»NG KIá»‚M Äá»ŠNH API KEY <span className="text-indigo-600">v36.0</span>
                         </h1>
-                        <p className="text-slate-500 font-medium">Báo cáo trạng thái sức khỏe của các bộ não AI trong hệ thống Smart-Doc.</p>
+                        <p className="text-slate-500 font-medium">BÃ¡o cÃ¡o tráº¡ng thÃ¡i sá»©c khá»e cá»§a cÃ¡c bá»™ nÃ£o AI trong há»‡ thá»‘ng Smart-Doc.</p>
                     </div>
 
                     <Button
@@ -80,7 +80,7 @@ export default function ApiTestPage() {
                         className="bg-indigo-600 hover:bg-indigo-700 h-14 px-8 rounded-2xl shadow-xl shadow-indigo-100 transition-all gap-2 group"
                     >
                         {loading ? <RefreshCcw className="w-5 h-5 animate-spin" /> : <RefreshCcw className="w-5 h-5 group-active:rotate-180 transition-transform duration-500" />}
-                        TÁI KIỂM TRA HỆ THỐNG
+                        TÃI KIá»‚M TRA Há»† THá»NG
                     </Button>
                 </div>
 
@@ -88,7 +88,7 @@ export default function ApiTestPage() {
                     <div className="p-6 bg-rose-50 border-2 border-rose-100 rounded-[2rem] flex items-start gap-4 animate-in fade-in slide-in-from-top-4">
                         <AlertTriangle className="w-6 h-6 text-rose-500 mt-1" />
                         <div>
-                            <h3 className="font-bold text-rose-900 leading-none mb-2 text-lg">Lỗi Kết Nối Nghiêm Trọng</h3>
+                            <h3 className="font-bold text-rose-900 leading-none mb-2 text-lg">Lá»—i Káº¿t Ná»‘i NghiÃªm Trá»ng</h3>
                             <p className="text-rose-700">{error}</p>
                         </div>
                     </div>
@@ -107,7 +107,7 @@ export default function ApiTestPage() {
                                         </div>
                                         <div>
                                             <CardTitle className="text-2xl font-black uppercase tracking-tight">Gemini Strategy Pool</CardTitle>
-                                            <CardDescription className="text-slate-400 font-bold">Hệ thống xoay vòng Key thông minh của Google</CardDescription>
+                                            <CardDescription className="text-slate-400 font-bold">Há»‡ thá»‘ng xoay vÃ²ng Key thÃ´ng minh cá»§a Google</CardDescription>
                                         </div>
                                     </div>
                                     <Badge className="bg-indigo-400/20 text-indigo-300 border-indigo-400/30 px-4 py-1">PRIMARY</Badge>
@@ -128,11 +128,11 @@ export default function ApiTestPage() {
                                             </div>
                                             <div className="space-y-3">
                                                 <div className="flex justify-between items-center text-sm">
-                                                    <span className="text-slate-500 font-bold">Mẫu máy chủ:</span>
+                                                    <span className="text-slate-500 font-bold">Máº«u mÃ¡y chá»§:</span>
                                                     <span className="text-slate-900 font-black font-mono">{item.model}</span>
                                                 </div>
                                                 <div className="flex justify-between items-center text-sm">
-                                                    <span className="text-slate-500 font-bold">Tiền tố Key:</span>
+                                                    <span className="text-slate-500 font-bold">Tiá»n tá»‘ Key:</span>
                                                     <span className="bg-white px-2 py-0.5 rounded border text-xs font-mono text-slate-600">{item.keyPrefix}</span>
                                                 </div>
                                                 {item.error && (
@@ -162,7 +162,7 @@ export default function ApiTestPage() {
                                     {(results.proxy) ? (
                                         <div className={`p-5 rounded-3xl border-2 ${results.proxy.ok ? 'bg-blue-50/50 border-blue-100' : 'bg-rose-50 border-rose-100'}`}>
                                             <div className="flex justify-between items-center mb-4">
-                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Trạng thái</span>
+                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Tráº¡ng thÃ¡i</span>
                                                 <StatusBadge ok={results.proxy.ok} status={results.proxy.status} />
                                             </div>
                                             <p className="text-[10px] text-slate-400 font-mono mb-2 truncate">URL: {results.proxy.url}</p>
@@ -170,7 +170,7 @@ export default function ApiTestPage() {
                                         </div>
                                     ) : (
                                         <div className="text-center py-6 border-2 border-dashed border-slate-100 rounded-3xl">
-                                            <Badge variant="outline" className="text-slate-300">CHƯA CẤU HÌNH</Badge>
+                                            <Badge variant="outline" className="text-slate-300">CHÆ¯A Cáº¤U HÃŒNH</Badge>
                                         </div>
                                     )}
                                 </CardContent>
@@ -217,8 +217,8 @@ export default function ApiTestPage() {
                         <div className="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mb-6">
                             <Activity className="w-10 h-10 text-indigo-600 animate-spin" />
                         </div>
-                        <h2 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tighter">Đang quét toàn bộ hệ thống...</h2>
-                        <p className="text-slate-400 font-medium">Tiến trình này mất khoảng 5-10 giây để xác thực tất cả nhà cung cấp AI.</p>
+                        <h2 className="text-2xl font-black text-slate-800 mb-2 uppercase tracking-tighter">Äang quÃ©t toÃ n bá»™ há»‡ thá»‘ng...</h2>
+                        <p className="text-slate-400 font-medium">Tiáº¿n trÃ¬nh nÃ y máº¥t khoáº£ng 5-10 giÃ¢y Ä‘á»ƒ xÃ¡c thá»±c táº¥t cáº£ nhÃ  cung cáº¥p AI.</p>
                     </div>
                 )}
 

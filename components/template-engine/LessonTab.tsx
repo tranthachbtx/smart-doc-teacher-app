@@ -36,13 +36,13 @@ export const LessonTab = React.memo((props: Partial<LessonEngineProps>) => {
         <div className="flex flex-col gap-8 pb-32 max-w-[1400px] mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                {/* Left Column: Configuration (Bước 1) */}
+                {/* Left Column: Configuration (BÆ°á»›c 1) */}
                 <div className="lg:col-span-4 space-y-8 order-1 lg:order-1">
                     <ConfigPanel />
                     {/* Add any other config widgets here if needed */}
                 </div>
 
-                {/* Right Column: Manual Workflow (Quy trình Copy-Paste) */}
+                {/* Right Column: Manual Workflow (Quy trÃ¬nh Copy-Paste) */}
                 <div className="lg:col-span-8 space-y-8 order-2 lg:order-2">
                     {/* Notifications */}
                     {success && (

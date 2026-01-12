@@ -1,6 +1,6 @@
 /**
- * 🎯 SIMPLE LESSON PROCESSOR API - BACK TO BASICS ARCHITECTURE 17.0
- * API endpoint đơn giản cho việc xử lý giáo án
+ * ðŸŽ¯ SIMPLE LESSON PROCESSOR API - BACK TO BASICS ARCHITECTURE 17.0
+ * API endpoint Ä‘Æ¡n giáº£n cho viá»‡c xá»­ lÃ½ giÃ¡o Ã¡n
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     
     if (!file) {
       return NextResponse.json(
-        { success: false, error: 'Vui lòng chọn file PDF hoặc DOCX' },
+        { success: false, error: 'Vui lÃ²ng chá»n file PDF hoáº·c DOCX' },
         { status: 400 }
       );
     }
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const maxSize = 50 * 1024 * 1024; // 50MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { success: false, error: 'File quá lớn. Vui lòng chọn file nhỏ hơn 50MB' },
+        { success: false, error: 'File quÃ¡ lá»›n. Vui lÃ²ng chá»n file nhá» hÆ¡n 50MB' },
         { status: 400 }
       );
     }
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: 'Chỉ hỗ trợ file PDF và DOCX' },
+        { success: false, error: 'Chá»‰ há»— trá»£ file PDF vÃ  DOCX' },
         { status: 400 }
       );
     }
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('[SIMPLE-API] PDF extraction failed:', error);
       return NextResponse.json(
-        { success: false, error: 'Không thể trích xuất nội dung từ file. Vui lòng kiểm tra lại file.' },
+        { success: false, error: 'KhÃ´ng thá»ƒ trÃ­ch xuáº¥t ná»™i dung tá»« file. Vui lÃ²ng kiá»ƒm tra láº¡i file.' },
         { status: 400 }
       );
     }
@@ -65,31 +65,31 @@ export async function POST(request: NextRequest) {
     let aiResponse: string;
     try {
       const prompt = `
-BẠN LÀ CHUYÊN GIA BIÊN SOẠN GIÁO ÁN THEO THÔNG TƯ 5512 CỦA BỘ GIÁO DỤC VÀ ĐÀO TẠO VIỆT NAM.
+Báº N LÃ€ CHUYÃŠN GIA BIÃŠN SOáº N GIÃO ÃN THEO THÃ”NG TÆ¯ 5512 Cá»¦A Bá»˜ GIÃO Dá»¤C VÃ€ ÄÃ€O Táº O VIá»†T NAM.
 
-NỘI DUNG TÀI LIỆU GỐC:
+Ná»˜I DUNG TÃ€I LIá»†U Gá»C:
 ${pdfContent}
 
-YÊU CẦU:
-1. Phân tích nội dung tài liệu gốc
-2. Tạo giáo án hoàn chỉnh theo chuẩn Thông tư 5512
-3. Bao gồm đầy đủ các phần: Mục tiêu, Hoạt động dạy học, Kiểm tra đánh giá
-4. Nội dung chi tiết, rõ ràng, phù hợp với thực tiễn
-5. Trả về định dạng JSON với cấu trúc sau:
+YÃŠU Cáº¦U:
+1. PhÃ¢n tÃ­ch ná»™i dung tÃ i liá»‡u gá»‘c
+2. Táº¡o giÃ¡o Ã¡n hoÃ n chá»‰nh theo chuáº©n ThÃ´ng tÆ° 5512
+3. Bao gá»“m Ä‘áº§y Ä‘á»§ cÃ¡c pháº§n: Má»¥c tiÃªu, Hoáº¡t Ä‘á»™ng dáº¡y há»c, Kiá»ƒm tra Ä‘Ã¡nh giÃ¡
+4. Ná»™i dung chi tiáº¿t, rÃµ rÃ ng, phÃ¹ há»£p vá»›i thá»±c tiá»…n
+5. Tráº£ vá» Ä‘á»‹nh dáº¡ng JSON vá»›i cáº¥u trÃºc sau:
 
 {
-  "title": "Tiêu đề giáo án",
-  "grade": "Lớp học",
-  "objectives": ["Mục tiêu 1", "Mục tiêu 2", "Mục tiêu 3"],
-  "activities": ["Hoạt động 1", "Hoạt động 2", "Hoạt động 3"],
-  "assessment": ["Kiểm tra 1", "Kiểm tra 2"]
+  "title": "TiÃªu Ä‘á» giÃ¡o Ã¡n",
+  "grade": "Lá»›p há»c",
+  "objectives": ["Má»¥c tiÃªu 1", "Má»¥c tiÃªu 2", "Má»¥c tiÃªu 3"],
+  "activities": ["Hoáº¡t Ä‘á»™ng 1", "Hoáº¡t Ä‘á»™ng 2", "Hoáº¡t Ä‘á»™ng 3"],
+  "assessment": ["Kiá»ƒm tra 1", "Kiá»ƒm tra 2"]
 }
 
-LƯU Ý:
-- Trả về JSON hợp lệ, không có markdown
-- Mục tiêu phải rõ ràng, đo lường được
-- Hoạt động phải cụ thể, có tính thực tiễn
-- Kiểm tra đánh giá phù hợp với mục tiêu
+LÆ¯U Ã:
+- Tráº£ vá» JSON há»£p lá»‡, khÃ´ng cÃ³ markdown
+- Má»¥c tiÃªu pháº£i rÃµ rÃ ng, Ä‘o lÆ°á»ng Ä‘Æ°á»£c
+- Hoáº¡t Ä‘á»™ng pháº£i cá»¥ thá»ƒ, cÃ³ tÃ­nh thá»±c tiá»…n
+- Kiá»ƒm tra Ä‘Ã¡nh giÃ¡ phÃ¹ há»£p vá»›i má»¥c tiÃªu
       `;
       
       aiResponse = await callAIWithRetry(prompt, 3);
@@ -97,7 +97,7 @@ LƯU Ý:
     } catch (error) {
       console.error('[SIMPLE-API] AI call failed:', error);
       return NextResponse.json(
-        { success: false, error: 'Không thể kết nối đến AI. Vui lòng thử lại sau.' },
+        { success: false, error: 'KhÃ´ng thá»ƒ káº¿t ná»‘i Ä‘áº¿n AI. Vui lÃ²ng thá»­ láº¡i sau.' },
         { status: 500 }
       );
     }
@@ -110,7 +110,7 @@ LƯU Ý:
     } catch (error) {
       console.error('[SIMPLE-API] JSON parsing failed:', error);
       return NextResponse.json(
-        { success: false, error: 'Không thể xử lý phản hồi từ AI. Vui lòng thử lại.' },
+        { success: false, error: 'KhÃ´ng thá»ƒ xá»­ lÃ½ pháº£n há»“i tá»« AI. Vui lÃ²ng thá»­ láº¡i.' },
         { status: 500 }
       );
     }
@@ -123,7 +123,7 @@ LƯU Ý:
     } catch (error) {
       console.error('[SIMPLE-API] Word export failed:', error);
       return NextResponse.json(
-        { success: false, error: 'Không thể tạo file Word. Vui lòng thử lại.' },
+        { success: false, error: 'KhÃ´ng thá»ƒ táº¡o file Word. Vui lÃ²ng thá»­ láº¡i.' },
         { status: 500 }
       );
     }
@@ -155,7 +155,7 @@ LƯU Ý:
   } catch (error) {
     console.error('[SIMPLE-API] Unexpected error:', error);
     return NextResponse.json(
-      { success: false, error: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.' },
+      { success: false, error: 'ÄÃ£ xáº£y ra lá»—i khÃ´ng mong muá»‘n. Vui lÃ²ng thá»­ láº¡i.' },
       { status: 500 }
     );
   }

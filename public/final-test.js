@@ -1,47 +1,47 @@
 /**
- * 🧪 FINAL INTEGRATION TEST - Complete System Test
+ * ðŸ§ª FINAL INTEGRATION TEST - Complete System Test
  */
 
 // Test the complete export pipeline
 async function runFinalIntegrationTest() {
-    console.log("🧪 FINAL INTEGRATION TEST - COMPLETE SYSTEM");
+    console.log("ðŸ§ª FINAL INTEGRATION TEST - COMPLETE SYSTEM");
     console.log("=".repeat(60));
     
     // Test data with realistic lesson plan content
     const lessonData = {
-        ten_bai: "BÀI KIỂM TRA HỆ THỐNG EXPORT WORD - TÍCH HỢP TOÀN DIỆN",
-        muc_tieu_kien_thuc: "Kiến thức: Hiểu và vận hành được hệ thống export file Word từ trình duyệt web. Nắm vững các kỹ thuật xử lý dữ liệu nhị phân, chuyển đổi định dạng Base64, và quản lý bộ nhớ. Phân tích được các vấn đề về hiệu suất và tối ưu hóa cho nội dung lớn. Áp dụng được các phương pháp xử lý bất đồng bộ và worker thread để tránh block UI.",
-        muc_tieu_nang_luc: "Năng lực: - Kỹ năng phân tích và giải quyết vấn đề phức tạp\n- Năng lực thiết kế và triển khai hệ thống export\n- Kỹ năng tối ưu hiệu suất và quản lý tài nguyên\n- Năng lực kiểm thử và đánh giá hệ thống toàn diện\n- Kỹ năng làm việc với các API trình duyệt hiện đại",
-        muc_tieu_pham_chat: "Phẩm chất: - Tỉ mỉ và cẩn thận trong xử lý dữ liệu\n- Trách nhiệm với chất lượng sản phẩm cuối cùng\n- Kiên trì và không bỏ cuộc khi gặp lỗi khó\n- Hợp tác hiệu quả trong môi trường làm việc nhóm\n- Luôn cầu tiến và tìm kiếm giải pháp tốt hơn",
-        tich_hop_nls: "Tích hợp Năng lực số: Sử dụng thành công các công cụ công nghệ số để tạo ra tài liệu Word chất lượng cao, áp dụng các kỹ năng số trong việc xử lý và chia sẻ thông tin qua định dạng văn bản chuyên nghiệp, và sử dụng các phương pháp tối ưu hóa hiệu suất trong môi trường số.",
-        tich_hop_dao_duc: "Tích hợp Đạo đức: Rèn luyện tính trung thực và minh bạch trong việc báo cáo kết quả kiểm thử, tinh thần trách nhiệm cao với chất lượng sản phẩm phục vụ giáo viên và học sinh, ý thức cải tiến liên tục để nâng cao chất lượng hệ thống, và tôn trọng知识产权 trong việc sử dụng các thư viện mã nguồn.",
-        gv_chuan_bi: "Giáo viên chuẩn bị: Máy tính cấu hình cao với RAM tối thiểu 8GB, trình duyệt Chrome/Firefox phiên bản mới nhất, phần mềm Microsoft Word 2016 trở lên để kiểm tra file, công cụ debug Developer Tools, và tài liệu kỹ thuật chi tiết về hệ thống.",
-        hs_chuan_bi: "Học sinh chuẩn bị: Kiến thức vững chắc về JavaScript và TypeScript, hiểu biết sâu về các API trình duyệt (Blob, ArrayBuffer, Worker), có kinh nghiệm làm việc với các thư viện xử lý file, và sẵn sàng đối mặt với các thách thức kỹ thuật phức tạp.",
-        hoat_dong_khoi_dong: "a) Khởi động: Giới thiệu bài kiểm tra tích hợp hệ thống export Word - một bài kiểm tra toàn diện để xác nhận hệ thống hoạt động chính xác trong mọi điều kiện. Tạo không khí hào hứng với các câu hỏi về kinh nghiệm xử lý file của học sinh và các vấn đề đã gặp phải.\n\nb) Kiểm tra kiến thức: Đặt câu hỏi nâng cao về kiến trúc hệ thống export, các kỹ thuật xử lý dữ liệu, phương pháp tối ưu hóa bộ nhớ, và cách xử lý các lỗi thường gặp trong môi trường trình duyệt.\n\nc) Phân tích case study: Cùng học sinh phân tích các case study thực tế về các hệ thống export file gặp lỗi và cách khắc phục, bao gồm các vấn đề về memory leak, UI freeze, và file corruption.\n\nd) Thực hành demo: Thực hiện demo trực tiếp hệ thống export với các nội dung test khác nhau để học sinh quan sát và phân tích.",
-        hoat_dong_kham_pha: "a) Giới thiệu kịch bản test: Trình bày chi tiết kịch bản test tích hợp với 4 cấp độ: Small (1KB), Medium (5KB), Large (34KB), và Mega (196KB) để kiểm tra khả năng xử lý của hệ thống trong mọi tình huống.\n\nb) Chạy test tự động: Thực hiện chạy bộ test tự động với các nội dung được tạo sẵn, quan sát các chỉ số hiệu suất: thời gian xử lý, bộ nhớ sử dụng, chiến lược xử lý (main thread vs worker), và chất lượng file đầu ra.\n\nc) Phân tích kết quả chi tiết: Cùng học sinh phân tích sâu các kết quả thu được, so sánh hiệu suất giữa các test case, xác định các điểm mạnh và điểm yếu của hệ thống, và đưa ra các đề xuất cải tiến cụ thể.\n\nd) Kiểm tra file thực tế: Mở các file Word được export ra để kiểm tra định dạng, nội dung, cấu trúc, và chất lượng tổng thể, đảm bảo file tuân thủ chuẩn MOET 5512.",
-        hoat_dong_luyen_tap: "a) Test với nội dung tùy chỉnh: Học sinh tự tạo nội dung test riêng với các đặc tính khác nhau (nhiều định dạng, bảng biểu, danh sách phức tạp) để kiểm tra khả năng xử lý của hệ thống.\n\nb) Test stress test: Sử dụng nội dung cực lớn để kiểm tra giới hạn của hệ thống, quan sát cách hệ thống xử lý khi bộ nhớ gần đầy và khi có nhiều yêu cầu đồng thời.\n\nc) Test error handling: Tạo ra các tình huống lỗi có chủ đích để kiểm tra khả năng xử lý lỗi và recovery của hệ thống, đảm bảo hệ thống không crash khi gặp lỗi.\n\nd) Test cross-browser: Kiểm tra hệ thống trên các trình duyệt khác nhau (Chrome, Firefox, Edge) để đảm bảo tính tương thích cao.",
-        hoat_dong_van_dung: "a) Dự án thực tế: Học sinh thực hiện một dự án nhỏ sử dụng hệ thống export để tạo tài liệu giảng dạy thực tế cho môn học của mình, áp dụng các tính năng nâng cao của hệ thống.\n\nb) Đánh giá chất lượng: Mở và đánh giá chi tiết các file Word được export, kiểm tra tính chính xác của nội dung, chất lượng định dạng, và tuân thủ các chuẩn giáo dục.\n\nc) Báo cáo kỹ thuật: Lập báo cáo kỹ thuật chi tiết về quá trình sử dụng hệ thống, các vấn đề gặp phải (nếu có), cách khắc phục, và các đề xuất cải tiến.\n\nd) Chia sẻ và phản hồi: Tổ chức buổi chia sẻ kinh nghiệm sử dụng hệ thống, các bài học đúc kết, và các đề xuất để cải thiện hệ thống trong tương lai.",
-        ho_so_day_hoc: "Hồ sơ dạy học: \n- Kịch bản test tích hợp chi tiết\n- Bộ test tự động với 4 cấp độ\n- Kết quả test chi tiết và phân tích\n- File Word mẫu đã được export thành công\n- Báo cáo đánh giá chất lượng hệ thống\n- Đề xuất cải tiến và tối ưu hóa\n- Tài liệu hướng dẫn sử dụng hệ thống\n- Case study về các vấn đề đã giải quyết",
-        huong_dan_ve_nha: "Hướng dẫn về nhà:\n1. Tự tạo 3 test case với nội dung thực tế từ các môn học khác nhau\n2. Thực hiện export file Word và đánh giá chất lượng đầu ra\n3. Ghi nhận và phân tích các chỉ số hiệu suất (thời gian, bộ nhớ)\n4. Chuẩn bị báo cáo cá nhân chi tiết về trải nghiệm sử dụng hệ thống\n5. Đề xuất ít nhất 3 cải tiến cho hệ thống export\n6. Nghiên cứu thêm về các công nghệ xử lý file khác (PDF, Excel)"
+        ten_bai: "BÃ€I KIá»‚M TRA Há»† THá»NG EXPORT WORD - TÃCH Há»¢P TOÃ€N DIá»†N",
+        muc_tieu_kien_thuc: "Kiáº¿n thá»©c: Hiá»ƒu vÃ  váº­n hÃ nh Ä‘Æ°á»£c há»‡ thá»‘ng export file Word tá»« trÃ¬nh duyá»‡t web. Náº¯m vá»¯ng cÃ¡c ká»¹ thuáº­t xá»­ lÃ½ dá»¯ liá»‡u nhá»‹ phÃ¢n, chuyá»ƒn Ä‘á»•i Ä‘á»‹nh dáº¡ng Base64, vÃ  quáº£n lÃ½ bá»™ nhá»›. PhÃ¢n tÃ­ch Ä‘Æ°á»£c cÃ¡c váº¥n Ä‘á» vá» hiá»‡u suáº¥t vÃ  tá»‘i Æ°u hÃ³a cho ná»™i dung lá»›n. Ãp dá»¥ng Ä‘Æ°á»£c cÃ¡c phÆ°Æ¡ng phÃ¡p xá»­ lÃ½ báº¥t Ä‘á»“ng bá»™ vÃ  worker thread Ä‘á»ƒ trÃ¡nh block UI.",
+        muc_tieu_nang_luc: "NÄƒng lá»±c: - Ká»¹ nÄƒng phÃ¢n tÃ­ch vÃ  giáº£i quyáº¿t váº¥n Ä‘á» phá»©c táº¡p\n- NÄƒng lá»±c thiáº¿t káº¿ vÃ  triá»ƒn khai há»‡ thá»‘ng export\n- Ká»¹ nÄƒng tá»‘i Æ°u hiá»‡u suáº¥t vÃ  quáº£n lÃ½ tÃ i nguyÃªn\n- NÄƒng lá»±c kiá»ƒm thá»­ vÃ  Ä‘Ã¡nh giÃ¡ há»‡ thá»‘ng toÃ n diá»‡n\n- Ká»¹ nÄƒng lÃ m viá»‡c vá»›i cÃ¡c API trÃ¬nh duyá»‡t hiá»‡n Ä‘áº¡i",
+        muc_tieu_pham_chat: "Pháº©m cháº¥t: - Tá»‰ má»‰ vÃ  cáº©n tháº­n trong xá»­ lÃ½ dá»¯ liá»‡u\n- TrÃ¡ch nhiá»‡m vá»›i cháº¥t lÆ°á»£ng sáº£n pháº©m cuá»‘i cÃ¹ng\n- KiÃªn trÃ¬ vÃ  khÃ´ng bá» cuá»™c khi gáº·p lá»—i khÃ³\n- Há»£p tÃ¡c hiá»‡u quáº£ trong mÃ´i trÆ°á»ng lÃ m viá»‡c nhÃ³m\n- LuÃ´n cáº§u tiáº¿n vÃ  tÃ¬m kiáº¿m giáº£i phÃ¡p tá»‘t hÆ¡n",
+        tich_hop_nls: "TÃ­ch há»£p NÄƒng lá»±c sá»‘: Sá»­ dá»¥ng thÃ nh cÃ´ng cÃ¡c cÃ´ng cá»¥ cÃ´ng nghá»‡ sá»‘ Ä‘á»ƒ táº¡o ra tÃ i liá»‡u Word cháº¥t lÆ°á»£ng cao, Ã¡p dá»¥ng cÃ¡c ká»¹ nÄƒng sá»‘ trong viá»‡c xá»­ lÃ½ vÃ  chia sáº» thÃ´ng tin qua Ä‘á»‹nh dáº¡ng vÄƒn báº£n chuyÃªn nghiá»‡p, vÃ  sá»­ dá»¥ng cÃ¡c phÆ°Æ¡ng phÃ¡p tá»‘i Æ°u hÃ³a hiá»‡u suáº¥t trong mÃ´i trÆ°á»ng sá»‘.",
+        tich_hop_dao_duc: "TÃ­ch há»£p Äáº¡o Ä‘á»©c: RÃ¨n luyá»‡n tÃ­nh trung thá»±c vÃ  minh báº¡ch trong viá»‡c bÃ¡o cÃ¡o káº¿t quáº£ kiá»ƒm thá»­, tinh tháº§n trÃ¡ch nhiá»‡m cao vá»›i cháº¥t lÆ°á»£ng sáº£n pháº©m phá»¥c vá»¥ giÃ¡o viÃªn vÃ  há»c sinh, Ã½ thá»©c cáº£i tiáº¿n liÃªn tá»¥c Ä‘á»ƒ nÃ¢ng cao cháº¥t lÆ°á»£ng há»‡ thá»‘ng, vÃ  tÃ´n trá»ngçŸ¥è¯†äº§æƒ trong viá»‡c sá»­ dá»¥ng cÃ¡c thÆ° viá»‡n mÃ£ nguá»“n.",
+        gv_chuan_bi: "GiÃ¡o viÃªn chuáº©n bá»‹: MÃ¡y tÃ­nh cáº¥u hÃ¬nh cao vá»›i RAM tá»‘i thiá»ƒu 8GB, trÃ¬nh duyá»‡t Chrome/Firefox phiÃªn báº£n má»›i nháº¥t, pháº§n má»m Microsoft Word 2016 trá»Ÿ lÃªn Ä‘á»ƒ kiá»ƒm tra file, cÃ´ng cá»¥ debug Developer Tools, vÃ  tÃ i liá»‡u ká»¹ thuáº­t chi tiáº¿t vá» há»‡ thá»‘ng.",
+        hs_chuan_bi: "Há»c sinh chuáº©n bá»‹: Kiáº¿n thá»©c vá»¯ng cháº¯c vá» JavaScript vÃ  TypeScript, hiá»ƒu biáº¿t sÃ¢u vá» cÃ¡c API trÃ¬nh duyá»‡t (Blob, ArrayBuffer, Worker), cÃ³ kinh nghiá»‡m lÃ m viá»‡c vá»›i cÃ¡c thÆ° viá»‡n xá»­ lÃ½ file, vÃ  sáºµn sÃ ng Ä‘á»‘i máº·t vá»›i cÃ¡c thÃ¡ch thá»©c ká»¹ thuáº­t phá»©c táº¡p.",
+        hoat_dong_khoi_dong: "a) Khá»Ÿi Ä‘á»™ng: Giá»›i thiá»‡u bÃ i kiá»ƒm tra tÃ­ch há»£p há»‡ thá»‘ng export Word - má»™t bÃ i kiá»ƒm tra toÃ n diá»‡n Ä‘á»ƒ xÃ¡c nháº­n há»‡ thá»‘ng hoáº¡t Ä‘á»™ng chÃ­nh xÃ¡c trong má»i Ä‘iá»u kiá»‡n. Táº¡o khÃ´ng khÃ­ hÃ o há»©ng vá»›i cÃ¡c cÃ¢u há»i vá» kinh nghiá»‡m xá»­ lÃ½ file cá»§a há»c sinh vÃ  cÃ¡c váº¥n Ä‘á» Ä‘Ã£ gáº·p pháº£i.\n\nb) Kiá»ƒm tra kiáº¿n thá»©c: Äáº·t cÃ¢u há»i nÃ¢ng cao vá» kiáº¿n trÃºc há»‡ thá»‘ng export, cÃ¡c ká»¹ thuáº­t xá»­ lÃ½ dá»¯ liá»‡u, phÆ°Æ¡ng phÃ¡p tá»‘i Æ°u hÃ³a bá»™ nhá»›, vÃ  cÃ¡ch xá»­ lÃ½ cÃ¡c lá»—i thÆ°á»ng gáº·p trong mÃ´i trÆ°á»ng trÃ¬nh duyá»‡t.\n\nc) PhÃ¢n tÃ­ch case study: CÃ¹ng há»c sinh phÃ¢n tÃ­ch cÃ¡c case study thá»±c táº¿ vá» cÃ¡c há»‡ thá»‘ng export file gáº·p lá»—i vÃ  cÃ¡ch kháº¯c phá»¥c, bao gá»“m cÃ¡c váº¥n Ä‘á» vá» memory leak, UI freeze, vÃ  file corruption.\n\nd) Thá»±c hÃ nh demo: Thá»±c hiá»‡n demo trá»±c tiáº¿p há»‡ thá»‘ng export vá»›i cÃ¡c ná»™i dung test khÃ¡c nhau Ä‘á»ƒ há»c sinh quan sÃ¡t vÃ  phÃ¢n tÃ­ch.",
+        hoat_dong_kham_pha: "a) Giá»›i thiá»‡u ká»‹ch báº£n test: TrÃ¬nh bÃ y chi tiáº¿t ká»‹ch báº£n test tÃ­ch há»£p vá»›i 4 cáº¥p Ä‘á»™: Small (1KB), Medium (5KB), Large (34KB), vÃ  Mega (196KB) Ä‘á»ƒ kiá»ƒm tra kháº£ nÄƒng xá»­ lÃ½ cá»§a há»‡ thá»‘ng trong má»i tÃ¬nh huá»‘ng.\n\nb) Cháº¡y test tá»± Ä‘á»™ng: Thá»±c hiá»‡n cháº¡y bá»™ test tá»± Ä‘á»™ng vá»›i cÃ¡c ná»™i dung Ä‘Æ°á»£c táº¡o sáºµn, quan sÃ¡t cÃ¡c chá»‰ sá»‘ hiá»‡u suáº¥t: thá»i gian xá»­ lÃ½, bá»™ nhá»› sá»­ dá»¥ng, chiáº¿n lÆ°á»£c xá»­ lÃ½ (main thread vs worker), vÃ  cháº¥t lÆ°á»£ng file Ä‘áº§u ra.\n\nc) PhÃ¢n tÃ­ch káº¿t quáº£ chi tiáº¿t: CÃ¹ng há»c sinh phÃ¢n tÃ­ch sÃ¢u cÃ¡c káº¿t quáº£ thu Ä‘Æ°á»£c, so sÃ¡nh hiá»‡u suáº¥t giá»¯a cÃ¡c test case, xÃ¡c Ä‘á»‹nh cÃ¡c Ä‘iá»ƒm máº¡nh vÃ  Ä‘iá»ƒm yáº¿u cá»§a há»‡ thá»‘ng, vÃ  Ä‘Æ°a ra cÃ¡c Ä‘á» xuáº¥t cáº£i tiáº¿n cá»¥ thá»ƒ.\n\nd) Kiá»ƒm tra file thá»±c táº¿: Má»Ÿ cÃ¡c file Word Ä‘Æ°á»£c export ra Ä‘á»ƒ kiá»ƒm tra Ä‘á»‹nh dáº¡ng, ná»™i dung, cáº¥u trÃºc, vÃ  cháº¥t lÆ°á»£ng tá»•ng thá»ƒ, Ä‘áº£m báº£o file tuÃ¢n thá»§ chuáº©n MOET 5512.",
+        hoat_dong_luyen_tap: "a) Test vá»›i ná»™i dung tÃ¹y chá»‰nh: Há»c sinh tá»± táº¡o ná»™i dung test riÃªng vá»›i cÃ¡c Ä‘áº·c tÃ­nh khÃ¡c nhau (nhiá»u Ä‘á»‹nh dáº¡ng, báº£ng biá»ƒu, danh sÃ¡ch phá»©c táº¡p) Ä‘á»ƒ kiá»ƒm tra kháº£ nÄƒng xá»­ lÃ½ cá»§a há»‡ thá»‘ng.\n\nb) Test stress test: Sá»­ dá»¥ng ná»™i dung cá»±c lá»›n Ä‘á»ƒ kiá»ƒm tra giá»›i háº¡n cá»§a há»‡ thá»‘ng, quan sÃ¡t cÃ¡ch há»‡ thá»‘ng xá»­ lÃ½ khi bá»™ nhá»› gáº§n Ä‘áº§y vÃ  khi cÃ³ nhiá»u yÃªu cáº§u Ä‘á»“ng thá»i.\n\nc) Test error handling: Táº¡o ra cÃ¡c tÃ¬nh huá»‘ng lá»—i cÃ³ chá»§ Ä‘Ã­ch Ä‘á»ƒ kiá»ƒm tra kháº£ nÄƒng xá»­ lÃ½ lá»—i vÃ  recovery cá»§a há»‡ thá»‘ng, Ä‘áº£m báº£o há»‡ thá»‘ng khÃ´ng crash khi gáº·p lá»—i.\n\nd) Test cross-browser: Kiá»ƒm tra há»‡ thá»‘ng trÃªn cÃ¡c trÃ¬nh duyá»‡t khÃ¡c nhau (Chrome, Firefox, Edge) Ä‘á»ƒ Ä‘áº£m báº£o tÃ­nh tÆ°Æ¡ng thÃ­ch cao.",
+        hoat_dong_van_dung: "a) Dá»± Ã¡n thá»±c táº¿: Há»c sinh thá»±c hiá»‡n má»™t dá»± Ã¡n nhá» sá»­ dá»¥ng há»‡ thá»‘ng export Ä‘á»ƒ táº¡o tÃ i liá»‡u giáº£ng dáº¡y thá»±c táº¿ cho mÃ´n há»c cá»§a mÃ¬nh, Ã¡p dá»¥ng cÃ¡c tÃ­nh nÄƒng nÃ¢ng cao cá»§a há»‡ thá»‘ng.\n\nb) ÄÃ¡nh giÃ¡ cháº¥t lÆ°á»£ng: Má»Ÿ vÃ  Ä‘Ã¡nh giÃ¡ chi tiáº¿t cÃ¡c file Word Ä‘Æ°á»£c export, kiá»ƒm tra tÃ­nh chÃ­nh xÃ¡c cá»§a ná»™i dung, cháº¥t lÆ°á»£ng Ä‘á»‹nh dáº¡ng, vÃ  tuÃ¢n thá»§ cÃ¡c chuáº©n giÃ¡o dá»¥c.\n\nc) BÃ¡o cÃ¡o ká»¹ thuáº­t: Láº­p bÃ¡o cÃ¡o ká»¹ thuáº­t chi tiáº¿t vá» quÃ¡ trÃ¬nh sá»­ dá»¥ng há»‡ thá»‘ng, cÃ¡c váº¥n Ä‘á» gáº·p pháº£i (náº¿u cÃ³), cÃ¡ch kháº¯c phá»¥c, vÃ  cÃ¡c Ä‘á» xuáº¥t cáº£i tiáº¿n.\n\nd) Chia sáº» vÃ  pháº£n há»“i: Tá»• chá»©c buá»•i chia sáº» kinh nghiá»‡m sá»­ dá»¥ng há»‡ thá»‘ng, cÃ¡c bÃ i há»c Ä‘Ãºc káº¿t, vÃ  cÃ¡c Ä‘á» xuáº¥t Ä‘á»ƒ cáº£i thiá»‡n há»‡ thá»‘ng trong tÆ°Æ¡ng lai.",
+        ho_so_day_hoc: "Há»“ sÆ¡ dáº¡y há»c: \n- Ká»‹ch báº£n test tÃ­ch há»£p chi tiáº¿t\n- Bá»™ test tá»± Ä‘á»™ng vá»›i 4 cáº¥p Ä‘á»™\n- Káº¿t quáº£ test chi tiáº¿t vÃ  phÃ¢n tÃ­ch\n- File Word máº«u Ä‘Ã£ Ä‘Æ°á»£c export thÃ nh cÃ´ng\n- BÃ¡o cÃ¡o Ä‘Ã¡nh giÃ¡ cháº¥t lÆ°á»£ng há»‡ thá»‘ng\n- Äá» xuáº¥t cáº£i tiáº¿n vÃ  tá»‘i Æ°u hÃ³a\n- TÃ i liá»‡u hÆ°á»›ng dáº«n sá»­ dá»¥ng há»‡ thá»‘ng\n- Case study vá» cÃ¡c váº¥n Ä‘á» Ä‘Ã£ giáº£i quyáº¿t",
+        huong_dan_ve_nha: "HÆ°á»›ng dáº«n vá» nhÃ :\n1. Tá»± táº¡o 3 test case vá»›i ná»™i dung thá»±c táº¿ tá»« cÃ¡c mÃ´n há»c khÃ¡c nhau\n2. Thá»±c hiá»‡n export file Word vÃ  Ä‘Ã¡nh giÃ¡ cháº¥t lÆ°á»£ng Ä‘áº§u ra\n3. Ghi nháº­n vÃ  phÃ¢n tÃ­ch cÃ¡c chá»‰ sá»‘ hiá»‡u suáº¥t (thá»i gian, bá»™ nhá»›)\n4. Chuáº©n bá»‹ bÃ¡o cÃ¡o cÃ¡ nhÃ¢n chi tiáº¿t vá» tráº£i nghiá»‡m sá»­ dá»¥ng há»‡ thá»‘ng\n5. Äá» xuáº¥t Ã­t nháº¥t 3 cáº£i tiáº¿n cho há»‡ thá»‘ng export\n6. NghiÃªn cá»©u thÃªm vá» cÃ¡c cÃ´ng nghá»‡ xá»­ lÃ½ file khÃ¡c (PDF, Excel)"
     };
     
     try {
-        console.log("📊 SYSTEM ANALYSIS:");
+        console.log("ðŸ“Š SYSTEM ANALYSIS:");
         console.log("-".repeat(30));
         
         // Content analysis
         const contentSize = JSON.stringify(lessonData).length;
-        console.log(`📏 Content Size: ${Math.round(contentSize / 1024)}KB`);
+        console.log(`ðŸ“ Content Size: ${Math.round(contentSize / 1024)}KB`);
         
         // Strategy determination
         const useWorker = contentSize > 50000;
         const strategy = useWorker ? "worker" : "main-thread";
-        console.log(`🎯 Processing Strategy: ${strategy}`);
+        console.log(`ðŸŽ¯ Processing Strategy: ${strategy}`);
         
         // System capabilities
-        console.log(`🔧 Worker Support: ${typeof Worker !== 'undefined' ? '✅ Available' : '❌ Not Available'}`);
-        console.log(`🧠 Memory API: ${typeof performance !== 'undefined' && performance.memory ? '✅ Available' : '❌ Not Available'}`);
-        console.log(`📱 File API: ${typeof Blob !== 'undefined' && typeof FileReader !== 'undefined' ? '✅ Available' : '❌ Not Available'}`);
+        console.log(`ðŸ”§ Worker Support: ${typeof Worker !== 'undefined' ? 'âœ… Available' : 'âŒ Not Available'}`);
+        console.log(`ðŸ§  Memory API: ${typeof performance !== 'undefined' && performance.memory ? 'âœ… Available' : 'âŒ Not Available'}`);
+        console.log(`ðŸ“± File API: ${typeof Blob !== 'undefined' && typeof FileReader !== 'undefined' ? 'âœ… Available' : 'âŒ Not Available'}`);
         
         // Memory analysis
         const memoryInfo = typeof performance !== 'undefined' ? performance.memory : null;
@@ -49,19 +49,19 @@ async function runFinalIntegrationTest() {
             const usedMB = Math.round(memoryInfo.usedJSHeapSize / 1024 / 1024);
             const limitMB = Math.round(memoryInfo.jsHeapSizeLimit / 1024 / 1024);
             const usagePercent = Math.round((usedMB / limitMB) * 100);
-            console.log(`🧠 Memory Usage: ${usedMB}MB / ${limitMB}MB (${usagePercent}%)`);
+            console.log(`ðŸ§  Memory Usage: ${usedMB}MB / ${limitMB}MB (${usagePercent}%)`);
             
             if (usagePercent > 80) {
-                console.log("⚠️ WARNING: High memory usage detected!");
+                console.log("âš ï¸ WARNING: High memory usage detected!");
             } else if (usagePercent > 60) {
-                console.log("⚠️ CAUTION: Moderate memory usage");
+                console.log("âš ï¸ CAUTION: Moderate memory usage");
             } else {
-                console.log("✅ Memory usage is optimal");
+                console.log("âœ… Memory usage is optimal");
             }
         }
         
         // Content validation
-        console.log("\n📋 CONTENT VALIDATION:");
+        console.log("\nðŸ“‹ CONTENT VALIDATION:");
         console.log("-".repeat(30));
         
         const validationResults = {
@@ -72,28 +72,28 @@ async function runFinalIntegrationTest() {
             hasHomework: !!lessonData.huong_dan_ve_nha
         };
         
-        console.log(`✅ Title Validation: ${validationResults.hasTitle ? 'PASS' : 'FAIL'}`);
-        console.log(`✅ Objectives Validation: ${validationResults.hasObjectives ? 'PASS' : 'FAIL'}`);
-        console.log(`✅ Activities Validation: ${validationResults.hasActivities ? 'PASS' : 'FAIL'}`);
-        console.log(`✅ Attachments Validation: ${validationResults.hasAttachments ? 'PASS' : 'FAIL'}`);
-        console.log(`✅ Homework Validation: ${validationResults.hasHomework ? 'PASS' : 'FAIL'}`);
+        console.log(`âœ… Title Validation: ${validationResults.hasTitle ? 'PASS' : 'FAIL'}`);
+        console.log(`âœ… Objectives Validation: ${validationResults.hasObjectives ? 'PASS' : 'FAIL'}`);
+        console.log(`âœ… Activities Validation: ${validationResults.hasActivities ? 'PASS' : 'FAIL'}`);
+        console.log(`âœ… Attachments Validation: ${validationResults.hasAttachments ? 'PASS' : 'FAIL'}`);
+        console.log(`âœ… Homework Validation: ${validationResults.hasHomework ? 'PASS' : 'FAIL'}`);
         
         const allValid = Object.values(validationResults).every(v => v);
-        console.log(`🎯 Overall Validation: ${allValid ? '✅ PASS' : '❌ FAIL'}`);
+        console.log(`ðŸŽ¯ Overall Validation: ${allValid ? 'âœ… PASS' : 'âŒ FAIL'}`);
         
         // Performance simulation
-        console.log("\n⚡ PERFORMANCE SIMULATION:");
+        console.log("\nâš¡ PERFORMANCE SIMULATION:");
         console.log("-".repeat(30));
         
         const processingTime = Math.max(100, contentSize / 1000);
         const estimatedMemory = Math.round(contentSize / 50); // KB
         
-        console.log(`⏱️ Estimated Processing Time: ${Math.round(processingTime)}ms`);
-        console.log(`🧠 Estimated Memory Usage: ${Math.round(estimatedMemory / 1024)}MB`);
-        console.log(`📄 Estimated File Size: ${Math.round(contentSize / 2)}KB`);
+        console.log(`â±ï¸ Estimated Processing Time: ${Math.round(processingTime)}ms`);
+        console.log(`ðŸ§  Estimated Memory Usage: ${Math.round(estimatedMemory / 1024)}MB`);
+        console.log(`ðŸ“„ Estimated File Size: ${Math.round(contentSize / 2)}KB`);
         
         // Risk assessment
-        console.log("\n🎯 RISK ASSESSMENT:");
+        console.log("\nðŸŽ¯ RISK ASSESSMENT:");
         console.log("-".repeat(30));
         
         let riskLevel = 'low';
@@ -115,30 +115,30 @@ async function runFinalIntegrationTest() {
             }
         }
         
-        console.log(`🚨 Risk Level: ${riskLevel.toUpperCase()}`);
-        console.log(`📝 Risk Message: ${riskMessage}`);
+        console.log(`ðŸš¨ Risk Level: ${riskLevel.toUpperCase()}`);
+        console.log(`ðŸ“ Risk Message: ${riskMessage}`);
         
         // Export simulation
-        console.log("\n🔄 EXPORT SIMULATION:");
+        console.log("\nðŸ”„ EXPORT SIMULATION:");
         console.log("-".repeat(30));
         
         const fileName = `Integration_Test_${strategy}_${Date.now()}.docx`;
-        console.log(`📄 File Name: ${fileName}`);
-        console.log(`📄 File Type: Microsoft Word (.docx)`);
-        console.log(`📄 MIME Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document`);
+        console.log(`ðŸ“„ File Name: ${fileName}`);
+        console.log(`ðŸ“„ File Type: Microsoft Word (.docx)`);
+        console.log(`ðŸ“„ MIME Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document`);
         
         // Simulate progress
-        console.log(`📊 Export Progress:`);
+        console.log(`ðŸ“Š Export Progress:`);
         for (let i = 0; i <= 100; i += 10) {
             await new Promise(resolve => setTimeout(resolve, 50));
-            process.stdout.write(`\r📊 Progress: ${i}%`);
+            process.stdout.write(`\rðŸ“Š Progress: ${i}%`);
         }
         console.log(); // New line
         
-        console.log("✅ Export simulation completed successfully!");
+        console.log("âœ… Export simulation completed successfully!");
         
         // Final results
-        console.log("\n🎊 FINAL INTEGRATION TEST RESULTS:");
+        console.log("\nðŸŽŠ FINAL INTEGRATION TEST RESULTS:");
         console.log("=".repeat(60));
         
         const results = {
@@ -152,31 +152,31 @@ async function runFinalIntegrationTest() {
             status: 'SUCCESS'
         };
         
-        console.log(`📏 Content Size: ${results.contentSize}KB`);
-        console.log(`🎯 Processing Strategy: ${results.strategy}`);
-        console.log(`✅ Content Validation: ${results.validation ? 'PASS' : 'FAIL'}`);
-        console.log(`⏱️ Processing Time: ${results.processingTime}ms`);
-        console.log(`🧠 Memory Usage: ${results.memoryUsage}MB`);
-        console.log(`🚨 Risk Level: ${results.riskLevel}`);
-        console.log(`📄 Output File: ${results.fileName}`);
-        console.log(`🎊 Overall Status: ${results.status}`);
+        console.log(`ðŸ“ Content Size: ${results.contentSize}KB`);
+        console.log(`ðŸŽ¯ Processing Strategy: ${results.strategy}`);
+        console.log(`âœ… Content Validation: ${results.validation ? 'PASS' : 'FAIL'}`);
+        console.log(`â±ï¸ Processing Time: ${results.processingTime}ms`);
+        console.log(`ðŸ§  Memory Usage: ${results.memoryUsage}MB`);
+        console.log(`ðŸš¨ Risk Level: ${results.riskLevel}`);
+        console.log(`ðŸ“„ Output File: ${results.fileName}`);
+        console.log(`ðŸŽŠ Overall Status: ${results.status}`);
         
-        console.log("\n🎯 SYSTEM READINESS ASSESSMENT:");
+        console.log("\nðŸŽ¯ SYSTEM READINESS ASSESSMENT:");
         if (allValid && riskLevel !== 'high') {
-            console.log("🎊 SYSTEM IS READY FOR PRODUCTION!");
-            console.log("✅ All validations passed");
-            console.log("✅ Risk level is acceptable");
-            console.log("✅ Performance is optimal");
+            console.log("ðŸŽŠ SYSTEM IS READY FOR PRODUCTION!");
+            console.log("âœ… All validations passed");
+            console.log("âœ… Risk level is acceptable");
+            console.log("âœ… Performance is optimal");
         } else {
-            console.log("⚠️ SYSTEM NEEDS ATTENTION:");
-            if (!allValid) console.log("❌ Content validation failed");
-            if (riskLevel === 'high') console.log("❌ High risk level detected");
+            console.log("âš ï¸ SYSTEM NEEDS ATTENTION:");
+            if (!allValid) console.log("âŒ Content validation failed");
+            if (riskLevel === 'high') console.log("âŒ High risk level detected");
         }
         
         return results;
         
     } catch (error) {
-        console.error("❌ Integration test failed:", error);
+        console.error("âŒ Integration test failed:", error);
         return {
             status: 'FAILED',
             error: error instanceof Error ? error.message : 'Unknown error'
@@ -187,12 +187,12 @@ async function runFinalIntegrationTest() {
 // Export for browser use
 if (typeof window !== 'undefined') {
     window.runFinalIntegrationTest = runFinalIntegrationTest;
-    console.log("🧪 Final Integration Test loaded! Use runFinalIntegrationTest() to start testing.");
+    console.log("ðŸ§ª Final Integration Test loaded! Use runFinalIntegrationTest() to start testing.");
 }
 
 // Run automatically if in Node.js
 if (typeof window === 'undefined') {
     runFinalIntegrationTest().then(result => {
-        console.log("\n🎯 FINAL RESULT:", result);
+        console.log("\nðŸŽ¯ FINAL RESULT:", result);
     });
 }

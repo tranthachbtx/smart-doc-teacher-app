@@ -1,6 +1,6 @@
 /**
- * Script tạo Template Word KHBD với định dạng Bảng 2 Cột chuẩn (đã fix placeholder)
- * Chạy: node scripts/create-template.js
+ * Script táº¡o Template Word KHBD vá»›i Ä‘á»‹nh dáº¡ng Báº£ng 2 Cá»™t chuáº©n (Ä‘Ã£ fix placeholder)
+ * Cháº¡y: node scripts/create-template.js
  */
 
 const { Document, Packer, Paragraph, Table, TableRow, TableCell, TextRun, WidthType, AlignmentType, BorderStyle, TableLayoutType } = require("docx");
@@ -56,14 +56,14 @@ function createActivityTable(activityName, cot1Var, cot2Var) {
                         width: { size: 40, type: WidthType.PERCENTAGE },
                         shading: { fill: "F8F9FA" },
                         children: [
-                            new Paragraph({ children: [createText("THÔNG TIN HOẠT ĐỘNG", { bold: true, size: FONT_SIZE_HEADER })] }),
+                            new Paragraph({ children: [createText("THÃ”NG TIN HOáº T Äá»˜NG", { bold: true, size: FONT_SIZE_HEADER })] }),
                         ],
                     }),
                     new TableCell({
                         width: { size: 60, type: WidthType.PERCENTAGE },
                         shading: { fill: "F8F9FA" },
                         children: [
-                            new Paragraph({ children: [createText("TỔ CHỨC THỰC HIỆN", { bold: true, size: FONT_SIZE_HEADER })] }),
+                            new Paragraph({ children: [createText("Tá»” CHá»¨C THá»°C HIá»†N", { bold: true, size: FONT_SIZE_HEADER })] }),
                         ],
                     }),
                 ],
@@ -102,13 +102,13 @@ async function createTemplate() {
                     // TOP Header
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
-                        children: [createText("TRƯỜNG THPT {{ten_truong}}", { bold: true })]
+                        children: [createText("TRÆ¯á»œNG THPT {{ten_truong}}", { bold: true })]
                     }),
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
-                        children: [createText("TỔ: {{to_chuyen_mon}}", { bold: true })]
+                        children: [createText("Tá»”: {{to_chuyen_mon}}", { bold: true })]
                     }),
-                    new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("─────────────────")] }),
+                    new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€")] }),
 
                     new Paragraph({ spacing: { before: 400 } }),
 
@@ -116,87 +116,87 @@ async function createTemplate() {
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
                         spacing: { after: 200 },
-                        children: [createText("KẾ HOẠCH BÀI DẠY", { bold: true, size: 36 })],
+                        children: [createText("Káº¾ HOáº CH BÃ€I Dáº Y", { bold: true, size: 36 })],
                     }),
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
                         spacing: { after: 400 },
-                        children: [createText("Chủ đề {{chu_de}}: {{ten_chu_de}}", { bold: true, size: 28 })],
+                        children: [createText("Chá»§ Ä‘á» {{chu_de}}: {{ten_chu_de}}", { bold: true, size: 28 })],
                     }),
 
                     // General Info
-                    new Paragraph({ children: [createText("Giáo viên: ", { bold: true }), createText("{{ten_giao_vien}}")] }),
-                    new Paragraph({ children: [createText("Môn học: ", { bold: true }), createText("HĐTN, HN; Lớp: {{lop}}")] }),
-                    new Paragraph({ children: [createText("Thời lượng: ", { bold: true }), createText("{{so_tiet}} tiết")] }),
-                    new Paragraph({ spacing: { after: 200 }, children: [createText("Ngày soạn: ", { bold: true }), createText("{{ngay_soan}}")] }),
+                    new Paragraph({ children: [createText("GiÃ¡o viÃªn: ", { bold: true }), createText("{{ten_giao_vien}}")] }),
+                    new Paragraph({ children: [createText("MÃ´n há»c: ", { bold: true }), createText("HÄTN, HN; Lá»›p: {{lop}}")] }),
+                    new Paragraph({ children: [createText("Thá»i lÆ°á»£ng: ", { bold: true }), createText("{{so_tiet}} tiáº¿t")] }),
+                    new Paragraph({ spacing: { after: 200 }, children: [createText("NgÃ y soáº¡n: ", { bold: true }), createText("{{ngay_soan}}")] }),
 
-                    // I. MỤC TIÊU
-                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("I. MỤC TIÊU", { bold: true, size: 28 })] }),
+                    // I. Má»¤C TIÃŠU
+                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("I. Má»¤C TIÃŠU", { bold: true, size: 28 })] }),
 
-                    new Paragraph({ children: [createText("1. Yêu cầu cần đạt:", { bold: true })] }),
+                    new Paragraph({ children: [createText("1. YÃªu cáº§u cáº§n Ä‘áº¡t:", { bold: true })] }),
                     new Paragraph({ children: [createText("{{muc_tieu_kien_thuc}}")] }),
 
-                    new Paragraph({ children: [createText("2. Năng lực:", { bold: true })], spacing: { before: 100 } }),
+                    new Paragraph({ children: [createText("2. NÄƒng lá»±c:", { bold: true })], spacing: { before: 100 } }),
                     new Paragraph({ children: [createText("{{muc_tieu_nang_luc}}")] }),
 
-                    new Paragraph({ children: [createText("3. Phẩm chất:", { bold: true })], spacing: { before: 100 } }),
+                    new Paragraph({ children: [createText("3. Pháº©m cháº¥t:", { bold: true })], spacing: { before: 100 } }),
                     new Paragraph({ children: [createText("{{muc_tieu_pham_chat}}")] }),
 
-                    // II. THIẾT BỊ
-                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("II. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU", { bold: true, size: 28 })] }),
+                    // II. THIáº¾T Bá»Š
+                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("II. THIáº¾T Bá»Š Dáº Y Há»ŒC VÃ€ Há»ŒC LIá»†U", { bold: true, size: 28 })] }),
 
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
                         rows: [
                             new TableRow({
                                 children: [
-                                    new TableCell({ children: [new Paragraph({ children: [createText("ĐỐI TƯỢNG", { bold: true })] })], shading: { fill: "FFF3E0" } }),
-                                    new TableCell({ children: [new Paragraph({ children: [createText("CHUẨN BỊ", { bold: true })] })], shading: { fill: "FFF3E0" } }),
+                                    new TableCell({ children: [new Paragraph({ children: [createText("Äá»I TÆ¯á»¢NG", { bold: true })] })], shading: { fill: "FFF3E0" } }),
+                                    new TableCell({ children: [new Paragraph({ children: [createText("CHUáº¨N Bá»Š", { bold: true })] })], shading: { fill: "FFF3E0" } }),
                                 ]
                             }),
                             new TableRow({
                                 children: [
-                                    new TableCell({ children: [new Paragraph({ text: "Giáo viên" })] }),
+                                    new TableCell({ children: [new Paragraph({ text: "GiÃ¡o viÃªn" })] }),
                                     new TableCell({ children: [new Paragraph({ text: "{{gv_chuan_bi}}" })] }),
                                 ]
                             }),
                             new TableRow({
                                 children: [
-                                    new TableCell({ children: [new Paragraph({ text: "Học sinh" })] }),
+                                    new TableCell({ children: [new Paragraph({ text: "Há»c sinh" })] }),
                                     new TableCell({ children: [new Paragraph({ text: "{{hs_chuan_bi}}" })] }),
                                 ]
                             }),
                         ]
                     }),
 
-                    // III. TIẾN TRÌNH
-                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("III. TIẾN TRÌNH DẠY HỌC", { bold: true, size: 28 })] }),
+                    // III. TIáº¾N TRÃŒNH
+                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("III. TIáº¾N TRÃŒNH Dáº Y Há»ŒC", { bold: true, size: 28 })] }),
 
-                    new Paragraph({ spacing: { before: 120, after: 80 }, children: [createText("A. SINH HOẠT DƯỚI CỜ (SHDC)", { bold: true })] }),
+                    new Paragraph({ spacing: { before: 120, after: 80 }, children: [createText("A. SINH HOáº T DÆ¯á»šI Cá»œ (SHDC)", { bold: true })] }),
                     new Paragraph({ children: [createText("{{shdc}}")] }),
 
-                    new Paragraph({ spacing: { before: 120, after: 80 }, children: [createText("B. HOẠT ĐỘNG GIÁO DỤC THEO CHỦ ĐỀ (HĐGD)", { bold: true })] }),
+                    new Paragraph({ spacing: { before: 120, after: 80 }, children: [createText("B. HOáº T Äá»˜NG GIÃO Dá»¤C THEO CHá»¦ Äá»€ (HÄGD)", { bold: true })] }),
 
-                    createActivityTable("HOẠT ĐỘNG 1: KHỞI ĐỘNG", "hoat_dong_khoi_dong_cot_1", "hoat_dong_khoi_dong_cot_2"),
+                    createActivityTable("HOáº T Äá»˜NG 1: KHá»žI Äá»˜NG", "hoat_dong_khoi_dong_cot_1", "hoat_dong_khoi_dong_cot_2"),
                     new Paragraph({ text: "" }),
 
-                    createActivityTable("HOẠT ĐỘNG 2: KHÁM PHÁ", "hoat_dong_kham_pha_cot_1", "hoat_dong_kham_pha_cot_2"),
+                    createActivityTable("HOáº T Äá»˜NG 2: KHÃM PHÃ", "hoat_dong_kham_pha_cot_1", "hoat_dong_kham_pha_cot_2"),
                     new Paragraph({ text: "" }),
 
-                    createActivityTable("HOẠT ĐỘNG 3: LUYỆN TẬP", "hoat_dong_luyen_tap_cot_1", "hoat_dong_luyen_tap_cot_2"),
+                    createActivityTable("HOáº T Äá»˜NG 3: LUYá»†N Táº¬P", "hoat_dong_luyen_tap_cot_1", "hoat_dong_luyen_tap_cot_2"),
                     new Paragraph({ text: "" }),
 
-                    createActivityTable("HOẠT ĐỘNG 4: VẬN DỤNG", "hoat_dong_van_dung_cot_1", "hoat_dong_van_dung_cot_2"),
+                    createActivityTable("HOáº T Äá»˜NG 4: Váº¬N Dá»¤NG", "hoat_dong_van_dung_cot_1", "hoat_dong_van_dung_cot_2"),
                     new Paragraph({ text: "" }),
 
-                    new Paragraph({ spacing: { before: 120, after: 80 }, children: [createText("C. SINH HOẠT LỚP (SHL)", { bold: true })] }),
+                    new Paragraph({ spacing: { before: 120, after: 80 }, children: [createText("C. SINH HOáº T Lá»šP (SHL)", { bold: true })] }),
                     new Paragraph({ children: [createText("{{shl}}")] }),
 
                     // IV & V
-                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("IV. HỒ SƠ DẠY HỌC", { bold: true, size: 28 })] }),
+                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("IV. Há»’ SÆ  Dáº Y Há»ŒC", { bold: true, size: 28 })] }),
                     new Paragraph({ children: [createText("{{ho_so_day_hoc}}")] }),
 
-                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("V. HƯỚNG DẪN VỀ NHÀ", { bold: true, size: 28 })] }),
+                    new Paragraph({ spacing: { before: 200, after: 120 }, children: [createText("V. HÆ¯á»šNG DáºªN Vá»€ NHÃ€", { bold: true, size: 28 })] }),
                     new Paragraph({ children: [createText("{{huong_dan_ve_nha}}")] }),
 
                     new Paragraph({ spacing: { before: 400 } }),
@@ -218,15 +218,15 @@ async function createTemplate() {
                                     new TableCell({
                                         width: { size: 50, type: WidthType.PERCENTAGE },
                                         children: [
-                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("TỔ TRƯỞNG CHUYÊN MÔN", { bold: true })] }),
-                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("(Ký và ghi rõ họ tên)", { italics: true })] }),
+                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("Tá»” TRÆ¯á»žNG CHUYÃŠN MÃ”N", { bold: true })] }),
+                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("(KÃ½ vÃ  ghi rÃµ há» tÃªn)", { italics: true })] }),
                                         ],
                                     }),
                                     new TableCell({
                                         width: { size: 50, type: WidthType.PERCENTAGE },
                                         children: [
-                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("NGƯỜI SOẠN", { bold: true })] }),
-                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("(Ký và ghi rõ họ tên)", { italics: true })] }),
+                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("NGÆ¯á»œI SOáº N", { bold: true })] }),
+                                            new Paragraph({ alignment: AlignmentType.CENTER, children: [createText("(KÃ½ vÃ  ghi rÃµ há» tÃªn)", { italics: true })] }),
                                         ],
                                     }),
                                 ],
@@ -242,7 +242,7 @@ async function createTemplate() {
     const outputPath = path.join(__dirname, "..", "public", "templates", "KHBD_Template_2Cot.docx");
 
     fs.writeFileSync(outputPath, buffer);
-    console.log("✅ New Template with 2-column activites created: " + outputPath);
+    console.log("âœ… New Template with 2-column activites created: " + outputPath);
 }
 
 createTemplate().catch(console.error);

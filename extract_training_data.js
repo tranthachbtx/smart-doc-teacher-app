@@ -13,7 +13,7 @@ async function extract() {
         try {
             const result = await mammoth.extractRawText({ path: fullPath });
             console.log(`--- FILE: ${file} ---`);
-            // Look for specific sections like "Chủ đề", "Mục tiêu", "Tổ chức thực hiện"
+            // Look for specific sections like "Chá»§ Ä‘á»", "Má»¥c tiÃªu", "Tá»• chá»©c thá»±c hiá»‡n"
             const content = result.value;
             console.log(content.substring(0, 5000));
             console.log(`\n--- END FILE ---\n`);

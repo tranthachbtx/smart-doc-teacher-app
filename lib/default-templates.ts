@@ -30,14 +30,14 @@ export async function loadDefaultTemplate(
   // Check cache first
   if (templateCache[type]) {
     const templateNames = {
-      meeting: "Biên bản họp",
-      event: "Kế hoạch ngoại khóa",
-      lesson: "Kế hoạch Bài dạy (2 Cột)",
-      ncbh: "Nghiên cứu bài học",
-      assessment: "Kế hoạch Kiểm tra Đánh giá"
+      meeting: "BiÃªn báº£n há»p",
+      event: "Káº¿ hoáº¡ch ngoáº¡i khÃ³a",
+      lesson: "Káº¿ hoáº¡ch BÃ i dáº¡y (2 Cá»™t)",
+      ncbh: "NghiÃªn cá»©u bÃ i há»c",
+      assessment: "Káº¿ hoáº¡ch Kiá»ƒm tra ÄÃ¡nh giÃ¡"
     };
     return {
-      name: `Mẫu mặc định - ${templateNames[type]}.docx`,
+      name: `Máº«u máº·c Ä‘á»‹nh - ${templateNames[type]}.docx`,
       data: templateCache[type]!,
     }
   }
@@ -55,15 +55,15 @@ export async function loadDefaultTemplate(
     templateCache[type] = arrayBuffer
 
     const templateNames = {
-      meeting: "Biên bản họp",
-      event: "Kế hoạch ngoại khóa",
-      lesson: "Kế hoạch Bài dạy (2 Cột)",
-      ncbh: "Nghiên cứu bài học",
-      assessment: "Kế hoạch Kiểm tra Đánh giá"
+      meeting: "BiÃªn báº£n há»p",
+      event: "Káº¿ hoáº¡ch ngoáº¡i khÃ³a",
+      lesson: "Káº¿ hoáº¡ch BÃ i dáº¡y (2 Cá»™t)",
+      ncbh: "NghiÃªn cá»©u bÃ i há»c",
+      assessment: "Káº¿ hoáº¡ch Kiá»ƒm tra ÄÃ¡nh giÃ¡"
     };
 
     return {
-      name: `Mẫu mặc định - ${templateNames[type]}.docx`,
+      name: `Máº«u máº·c Ä‘á»‹nh - ${templateNames[type]}.docx`,
       data: arrayBuffer,
     }
   } catch (error) {

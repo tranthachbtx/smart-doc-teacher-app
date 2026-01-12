@@ -1,6 +1,6 @@
 /**
- * 🛡️ HARDENED JSON PARSER v2.0
- * Chuyên dụng để parse JSON từ AI response một cách ổn định
+ * ðŸ›¡ï¸ HARDENED JSON PARSER v2.0
+ * ChuyÃªn dá»¥ng Ä‘á»ƒ parse JSON tá»« AI response má»™t cÃ¡ch á»•n Ä‘á»‹nh
  */
 
 export interface ParseOptions {
@@ -17,7 +17,7 @@ export class AIResponseParser {
   };
 
   /**
-   * Parse JSON từ AI response với nhiều chiến lược
+   * Parse JSON tá»« AI response vá»›i nhiá»u chiáº¿n lÆ°á»£c
    */
   static parse(text: string, options: ParseOptions = {}): any {
     const opts = { ...this.DEFAULT_OPTIONS, ...options };

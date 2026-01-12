@@ -20,4 +20,4 @@ function readDocx(filePath) {
     }
 }
 
-readDocx("D:/smart-doc-teacher-app/CĐ7_Xu hướng phát triển nghề nghiệp và TTLĐ.docx");
+readDocx("D:/smart-doc-teacher-app/CÄ7_Xu hÆ°á»›ng phÃ¡t triá»ƒn nghá» nghiá»‡p vÃ  TTLÄ.docx");

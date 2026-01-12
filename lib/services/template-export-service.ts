@@ -31,7 +31,7 @@ const clean = (val: any): string => {
 };
 
 /**
- * 🛡️ SURGICAL TAG REPAIR ENGINE
+ * ðŸ›¡ï¸ SURGICAL TAG REPAIR ENGINE
  * Penetrates XML nodes to repair fragmented docxtemplater tags
  */
 const repairTags = (zip: PizZip) => {
@@ -54,7 +54,7 @@ const repairTags = (zip: PizZip) => {
             });
 
             if (repaired !== content) {
-                console.log(`[AUDIT] ✅ Repaired fragmentation in: ${path}`);
+                console.log(`[AUDIT] âœ… Repaired fragmentation in: ${path}`);
                 zip.file(path, repaired);
             }
         }
@@ -65,7 +65,7 @@ export const TemplateExportService = {
     async exportLessonToTemplate(lesson: LessonResult, templatePath: string = "/templates/KHBD_Template_2Cot.docx") {
         let zip: any = null;
         try {
-            console.log("[v34.22] 🚀 Starting Super-Surgical Export (Lesson)...");
+            console.log("[v34.22] ðŸš€ Starting Super-Surgical Export (Lesson)...");
             const response = await fetch(templatePath);
             if (!response.ok) throw new Error(`Template not found at ${templatePath}`);
             const buffer = await response.arrayBuffer();
@@ -253,7 +253,7 @@ export const TemplateExportService = {
     },
 
     handleError(error: any, zip: any) {
-        console.error("⛔ [DEEP AUDIT] CRITICAL EXPORT FAILURE:", error);
+        console.error("â›” [DEEP AUDIT] CRITICAL EXPORT FAILURE:", error);
         if (error.properties && error.properties.errors && zip) {
             const xmlContent = zip.file("word/document.xml")?.asText() || "";
             const tableData = error.properties.errors.map((e: any) => {

@@ -140,7 +140,7 @@ export const useAppStore = create<AppState>()(
                 grade: "10",
                 chuDeSo: "1",
                 theme: "",
-                duration: "2 tiết",
+                duration: "2 tiáº¿t",
                 month: "9",
                 tasks: [],
                 file: null,
@@ -181,8 +181,8 @@ export const useAppStore = create<AppState>()(
             // Initial Assessment State
             assessment: {
                 grade: "10",
-                term: "Học kỳ 1",
-                productType: "Bài kiểm tra viết",
+                term: "Há»c ká»³ 1",
+                productType: "BÃ i kiá»ƒm tra viáº¿t",
                 topic: "",
                 template: null,
                 result: null,

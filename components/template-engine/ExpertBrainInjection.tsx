@@ -44,7 +44,7 @@ export function ExpertBrainInjection({
                     </div>
                     <div>
                         <Label className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-widest leading-none">AI Result Injection</Label>
-                        <h4 className="font-bold text-slate-800 text-sm mt-1">Dán kết quả Gemini</h4>
+                        <h4 className="font-bold text-slate-800 text-sm mt-1">DÃ¡n káº¿t quáº£ Gemini</h4>
                     </div>
                 </div>
                 {hasStructuredContent && (
@@ -57,13 +57,13 @@ export function ExpertBrainInjection({
             <div className="space-y-4">
                 <div className="p-4 bg-white/60 rounded-2xl border border-amber-100/50 backdrop-blur-sm space-y-3">
                     <p className="text-[11px] text-slate-600 leading-relaxed italic">
-                        "Sau khi Gemini trả về kết quả JSON, hãy sao chép toàn bộ và dán vào ô dưới đây. Hệ thống sẽ tự động phân tích và điền vào các mục bài dạy."
+                        "Sau khi Gemini tráº£ vá» káº¿t quáº£ JSON, hÃ£y sao chÃ©p toÃ n bá»™ vÃ  dÃ¡n vÃ o Ã´ dÆ°á»›i Ä‘Ã¢y. Há»‡ thá»‘ng sáº½ tá»± Ä‘á»™ng phÃ¢n tÃ­ch vÃ  Ä‘iá»n vÃ o cÃ¡c má»¥c bÃ i dáº¡y."
                     </p>
                 </div>
 
                 <div className="relative group">
                     <Textarea
-                        placeholder='Dán kết quả JSON vào đây... (Ví dụ: { "title": "...", "activities": [...] })'
+                        placeholder='DÃ¡n káº¿t quáº£ JSON vÃ o Ä‘Ã¢y... (VÃ­ dá»¥: { "title": "...", "activities": [...] })'
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
                         className="min-h-[160px] premium-neumo-inset border-none px-5 py-4 text-xs leading-relaxed focus:ring-2 focus:ring-amber-200/50 transition-all bg-white/40 font-mono"
@@ -82,7 +82,7 @@ export function ExpertBrainInjection({
                         className="w-full h-14 rounded-2xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-700 hover:to-rose-800 text-white font-black shadow-xl shadow-rose-200 gap-3 group overflow-hidden relative"
                     >
                         <Zap className={`h-5 w-5 ${isProcessing ? 'animate-bounce' : 'group-hover:scale-125 transition-transform'}`} />
-                        <span>{isProcessing ? "ĐANG PHẪU THUẬT..." : "PHẪU THUẬT & TRỘN NỘI DUNG"}</span>
+                        <span>{isProcessing ? "ÄANG PHáºªU THUáº¬T..." : "PHáºªU THUáº¬T & TRá»˜N Ná»˜I DUNG"}</span>
                         <ArrowRight className="h-4 w-4 ml-auto opacity-50 group-hover:translate-x-1 transition-transform" />
 
                         {isProcessing && (
