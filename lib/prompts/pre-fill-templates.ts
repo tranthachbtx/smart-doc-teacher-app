@@ -1,100 +1,100 @@
 /**
- * ðŸ“ Gá»¢I Ã PRE-FILL CHO GEMINI PRO
- * Giáº£m Ã¡p lá»±c AI báº±ng cÃ¡ch cung cáº¥p ná»™i dung máº«u
+ * 📝 GỢI Ý PRE-FILL CHO GEMINI PRO
+ * Giảm áp lực AI bằng cách cung cấp nội dung mẫu
  */
 
 export const PRE_FILL_TEMPLATES = {
   shdc: {
-    title: "Gá»£i Ã½ ná»™i dung sinh hoáº¡t dÆ°á»›i cá»",
-    content: `Dá»±a trÃªn chá»§ Ä‘á» [CHá»¦ Äá»€ BÃ€I Há»ŒC], hÃ£y xÃ¢y dá»±ng ká»‹ch báº£n sinh hoáº¡t dÆ°á»›i cá» vá»›i cÃ¡c pháº§n:
-1. Nghi lá»… chÃ o cá» (5 phÃºt)
-2. Ná»™i dung chÃ­nh (15 phÃºt) - [gá»£i Ã½ hoáº¡t Ä‘á»™ng]
-3. Tá»•ng káº¿t vÃ  hÆ°á»›ng dáº«n (5 phÃºt)
+    title: "Gợi ý nội dung sinh hoạt dưới cờ",
+    content: `Dựa trên chủ đề [CHỦ ĐỀ BÀI HỌC], hãy xây dựng kịch bản sinh hoạt dưới cờ với các phần:
+1. Nghi lễ chào cờ (5 phút)
+2. Nội dung chính (15 phút) - [gợi ý hoạt động]
+3. Tổng kết và hướng dẫn (5 phút)
 
-YÃªu cáº§u:
-- Thá»i lÆ°á»£ng: 25 phÃºt
-- Sá»‘ lÆ°á»£ng: ToÃ n trÆ°á»ng
-- TÃ­nh giÃ¡o dá»¥c: [gá»£i Ã½ giÃ¡ trá»‹ giÃ¡o dá»¥c]
-- SÃ¡ng táº¡o: [gá»£i Ã½ hoáº¡t Ä‘á»™ng sÃ¡ng táº¡o]`
+Yêu cầu:
+- Thời lượng: 25 phút
+- Số lượng: Toàn trường
+- Tính giáo dục: [gợi ý giá trị giáo dục]
+- Sáng tạo: [gợi ý hoạt động sáng tạo]`
   },
   
   shl: {
-    title: "Gá»£i Ã½ ná»™i dung sinh hoáº¡t lá»›p",
-    content: `Dá»±a trÃªn chá»§ Ä‘á» [CHá»¦ Äá»€ BÃ€I Há»ŒC], xÃ¢y dá»±ng sinh hoáº¡t lá»›p 15 phÃºt:
-1. á»”n Ä‘á»‹nh tá»• chá»©c (3 phÃºt)
-2. Sinh hoáº¡t theo chá»§ Ä‘á» (7 phÃºt) - [gá»£i Ã½ hoáº¡t Ä‘á»™ng]
-3. CÃ´ng tÃ¡c há»c táº­p (3 phÃºt)
-4. Káº¿ hoáº¡ch tuáº§n tá»›i (2 phÃºt)
+    title: "Gợi ý nội dung sinh hoạt lớp",
+    content: `Dựa trên chủ đề [CHỦ ĐỀ BÀI HỌC], xây dựng sinh hoạt lớp 15 phút:
+1. Ổn định tổ chức (3 phút)
+2. Sinh hoạt theo chủ đề (7 phút) - [gợi ý hoạt động]
+3. Công tác học tập (3 phút)
+4. Kế hoạch tuần tới (2 phút)
 
-YÃªu cáº§u:
-- Táº­p trung vÃ o ná» náº¿p vÃ  há»c táº­p
-- Gáº¯n vá»›i ná»™i dung bÃ i há»c
-- CÃ³ hoáº¡t Ä‘á»™ng tÆ°Æ¡ng tÃ¡c`
+Yêu cầu:
+- Tập trung vào nề nếp và học tập
+- Gắn với nội dung bài học
+- Có hoạt động tương tác`
   },
   
   ho_so_day_hoc: {
-    title: "Gá»£i Ã½ há»“ sÆ¡ dáº¡y há»c",
-    content: `XÃ¢y dá»±ng há»“ sÆ¡ dáº¡y há»c cho bÃ i [TÃŠN BÃ€I] vá»›i:
-1. Phiáº¿u há»c táº­p sá»‘ 1 - KhÃ¡m phÃ¡ (15 phÃºt)
-   - [gá»£i Ã½ 3 cÃ¢u há»i]
-2. Phiáº¿u há»c táº­p sá»‘ 2 - Luyá»‡n táº­p (20 phÃºt)
-   - [gá»£i Ã½ 2 bÃ i táº­p]
-3. Báº£ng Rubric Ä‘Ã¡nh giÃ¡
-   - [gá»£i Ã½ tiÃªu chÃ­]
-4. TÃ i liá»‡u tham kháº£o sá»‘
+    title: "Gợi ý hồ sơ dạy học",
+    content: `Xây dựng hồ sơ dạy học cho bài [TÊN BÀI] với:
+1. Phiếu học tập số 1 - Khám phá (15 phút)
+   - [gợi ý 3 câu hỏi]
+2. Phiếu học tập số 2 - Luyện tập (20 phút)
+   - [gợi ý 2 bài tập]
+3. Bảng Rubric đánh giá
+   - [gợi ý tiêu chí]
+4. Tài liệu tham khảo số
 
-YÃªu cáº§u:
+Yêu cầu:
 - CV 5512 compliant
-- CÃ³ Ä‘Ã¡nh giÃ¡ nÄƒng lá»±c sá»‘
-- CÃ³ Ä‘áº¡o Ä‘á»©c giÃ¡o dá»¥c`
+- Có đánh giá năng lực số
+- Có đạo đức giáo dục`
   },
   
   hoat_dong_van_dung: {
-    title: "Gá»£i Ã½ hoáº¡t Ä‘á»™ng váº­n dá»¥ng",
-    content: `Thiáº¿t káº¿ hoáº¡t Ä‘á»™ng váº­n dá»¥ng cho bÃ i [TÃŠN BÃ€I]:
-1. Dá»± Ã¡n thá»±c táº¿: [gá»£i Ã½ tÃªn dá»± Ã¡n]
-2. PhÃ¢n nhÃ³m vÃ  vai trÃ²
-3. Quy trÃ¬nh thá»±c hiá»‡n
-4. Sáº£n pháº©m cuá»‘i cÃ¹ng
-5. TiÃªu chÃ­ Ä‘Ã¡nh giÃ¡
+    title: "Gợi ý hoạt động vận dụng",
+    content: `Thiết kế hoạt động vận dụng cho bài [TÊN BÀI]:
+1. Dự án thực tế: [gợi ý tên dự án]
+2. Phân nhóm và vai trò
+3. Quy trình thực hiện
+4. Sản phẩm cuối cùng
+5. Tiêu chí đánh giá
 
-YÃªu cáº§u:
-- Ãp dá»¥ng kiáº¿n thá»©c thá»±c táº¿
-- PhÃ¡t triá»ƒn ká»¹ nÄƒng má»m
-- CÃ³ sáº£n pháº©m cá»¥ thá»ƒ`
+Yêu cầu:
+- Áp dụng kiến thức thực tế
+- Phát triển kỹ năng mềm
+- Có sản phẩm cụ thể`
   },
   
   global: {
-    title: "Gá»£i Ã½ Global AI Directives",
-    content: `YÃªu cáº§u AI táº¡o giÃ¡o Ã¡n theo chuáº©n CV 5512 vá»›i cÃ¡c má»¥c sau:
+    title: "Gợi ý Global AI Directives",
+    content: `Yêu cầu AI tạo giáo án theo chuẩn CV 5512 với các mục sau:
 
-1. Má»¤C TIÃŠU
-   - Kiáº¿n thá»©c: [chá»§ Ä‘á» bÃ i há»c]
-   - NÄƒng lá»±c: tÆ° duy pháº£n biá»‡n, há»£p tÃ¡c, giao tiáº¿p
-   - Pháº©m cháº¥t: trÃ¡ch nhiá»‡m, lÃ²ng yÃªu nÆ°á»›c
+1. MỤC TIÊU
+   - Kiến thức: [chủ đề bài học]
+   - Năng lực: tư duy phản biện, hợp tác, giao tiếp
+   - Phẩm chất: trách nhiệm, lòng yêu nước
 
-2. CHUáº¨N Bá»Š
-   - GV: slide, video, phiáº¿u há»c táº­p
-   - HS: tÃ i liá»‡u, thiáº¿t bá»‹ há»c táº­p
+2. CHUẨN BỊ
+   - GV: slide, video, phiếu học tập
+   - HS: tài liệu, thiết bị học tập
 
-3. TIáº¾N TRÃŒNH Dáº Y Há»ŒC
-   - Khá»Ÿi Ä‘á»™ng: tÃ¬nh huá»‘ng, váº¥n Ä‘á»
-   - KhÃ¡m phÃ¡: tháº£o luáº­n nhÃ³m, thá»±c hÃ nh
-   - Luyá»‡n táº­p: bÃ i táº­p tÄƒng dáº§n
-   - Váº­n dá»¥ng: dá»± Ã¡n thá»±c táº¿
+3. TIẾN TRÌNH DẠY HỌC
+   - Khởi động: tình huống, vấn đề
+   - Khám phá: thảo luận nhóm, thực hành
+   - Luyện tập: bài tập tăng dần
+   - Vận dụng: dự án thực tế
 
-4. TÃCH Há»¢P
-   - NÄƒng lá»±c sá»‘: sá»­ dá»¥ng cÃ´ng cá»¥
-   - GiÃ¡o dá»¥c Ä‘áº¡o Ä‘á»©c: giÃ¡ trá»‹ sá»‘ng
+4. TÍCH HỢP
+   - Năng lực số: sử dụng công cụ
+   - Giáo dục đạo đức: giá trị sống
 
-5. Há»’ SÆ 
-   - Phiáº¿u há»c táº­p
-   - Rubric Ä‘Ã¡nh giÃ¡
+5. HỒ SƠ
+   - Phiếu học tập
+   - Rubric đánh giá
 
-YÃªu cáº§u cháº¥t lÆ°á»£ng:
-- Äá»™ dÃ i: tá»‘i thiá»ƒu 12 trang A4
-- Chi tiáº¿t: ká»‹ch báº£n GV, cÃ¢u há»i gá»£i má»Ÿ
-- Thá»±c táº¿: tÃ¬nh huá»‘ng dáº¡y há»c`
+Yêu cầu chất lượng:
+- Độ dài: tối thiểu 12 trang A4
+- Chi tiết: kịch bản GV, câu hỏi gợi mở
+- Thực tế: tình huống dạy học`
   }
 };
 

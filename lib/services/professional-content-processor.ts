@@ -1,6 +1,6 @@
 /**
- * ðŸŽ¯ PROFESSIONAL CONTENT PROCESSOR - ARCHITECTURE 19.0
- * Há»‡ thá»‘ng tinh lá»c vÃ  phÃ¢n tÃ­ch ná»™i dung chuyÃªn nghiá»‡p
+ * 🎯 PROFESSIONAL CONTENT PROCESSOR - ARCHITECTURE 19.0
+ * Hệ thống tinh lọc và phân tích nội dung chuyên nghiệp
  */
 
 import { SmartPromptData } from "./smart-prompt-service";
@@ -43,64 +43,64 @@ export interface ActivityContent {
 }
 
 export const ASSET_PATTERNS = [
-  /(?:Phiáº¿u há»c táº­p|PHT|Giáº¥y A4|Tranh áº£nh|Video|Clip|Phim|PowerPoint|PPT|SÆ¡ Ä‘á»“ duy|Mindmap|Báº£n Ä‘á»“|MÃ´ hÃ¬nh)/gi
+  /(?:Phiếu học tập|PHT|Giấy A4|Tranh ảnh|Video|Clip|Phim|PowerPoint|PPT|Sơ đồ duy|Mindmap|Bản đồ|Mô hình)/gi
 ];
 
 export const LEGACY_PATTERNS = [
-  { pattern: /Cá»§ng cá»‘|Dáº·n dÃ²|Kiá»ƒm tra bÃ i cÅ©|Nháº­n xÃ©t|ÄÃ¡nh giÃ¡ tiáº¿t há»c/i, note: "Dá»¯ liá»‡u káº¿t thÃºc bÃ i há»c truyá»n thá»‘ng cáº§n chuyá»ƒn hÃ³a sang Luyá»‡n táº­p/Váº­n dá»¥ng." },
-  { pattern: /Kiá»ƒm tra miá»‡ng|Khá»Ÿi Ä‘á»™ng tiáº¿t há»c/i, note: "Dá»¯ liá»‡u kiá»ƒm tra Ä‘áº§u giá» cáº§n chuyá»ƒn hÃ³a sang hoáº¡t Ä‘á»™ng Khá»Ÿi Ä‘á»™ng/Má»Ÿ Ä‘áº§u." }
+  { pattern: /Củng cố|Dặn dò|Kiểm tra bài cũ|Nhận xét|Đánh giá tiết học/i, note: "Dữ liệu kết thúc bài học truyền thống cần chuyển hóa sang Luyện tập/Vận dụng." },
+  { pattern: /Kiểm tra miệng|Khởi động tiết học/i, note: "Dữ liệu kiểm tra đầu giờ cần chuyển hóa sang hoạt động Khởi động/Mở đầu." }
 ];
 
 export const ACTIVITY_PATTERNS = {
   khoi_dong: [
-    /hoáº¡t Ä‘á»™ng 1/i, /khá»Ÿi Ä‘á»™ng/i, /má»Ÿ Ä‘áº§u/i, /giá»›i thiá»‡u/i, /Ä‘áº·t váº¥n Ä‘á»/i,
-    /trÃ² chÆ¡i/i, /váº¥n Ä‘á»/i, /khÆ¡i gá»£i/i, /warm[-]?up/i, /ice[-]?breaker/i,
-    /A\. HOáº T Äá»˜NG/i, /PHáº¦N Má»ž Äáº¦U/i
+    /hoạt động 1/i, /khởi động/i, /mở đầu/i, /giới thiệu/i, /đặt vấn đề/i,
+    /trò chơi/i, /vấn đề/i, /khơi gợi/i, /warm[-]?up/i, /ice[-]?breaker/i,
+    /A\. HOẠT ĐỘNG/i, /PHẦN MỞ ĐẦU/i
   ],
   kham_pha: [
-    /hoáº¡t Ä‘á»™ng 2/i, /khÃ¡m phÃ¡/i, /hÃ¬nh thÃ nh/i, /kiáº¿n thá»©c má»›i/i, /xÃ¢y dá»±ng/i,
-    /thuyáº¿t trÃ¬nh/i, /tháº£o luáº­n/i, /phÃ¢n tÃ­ch/i, /nghiÃªn cá»©u/i, /tÃ¬m hiá»ƒu/i,
-    /B\. HOáº T Äá»˜NG/i, /HÃŒNH THÃ€NH/i, /KIáº¾N THá»¨C/i
+    /hoạt động 2/i, /khám phá/i, /hình thành/i, /kiến thức mới/i, /xây dựng/i,
+    /thuyết trình/i, /thảo luận/i, /phân tích/i, /nghiên cứu/i, /tìm hiểu/i,
+    /B\. HOẠT ĐỘNG/i, /HÌNH THÀNH/i, /KIẾN THỨC/i
   ],
   luyen_tap: [
-    /hoáº¡t Ä‘á»™ng 3/i, /luyá»‡n táº­p/i, /thá»±c hÃ nh/i, /bÃ i táº­p/i, /cá»§ng cá»‘/i,
-    /lÃ m bÃ i/i, /tráº¯c nghiá»‡m/i, /rÃ¨n luyá»‡n/i,
-    /C\. HOáº T Äá»˜NG/i, /BÃ€I Táº¬P/i
+    /hoạt động 3/i, /luyện tập/i, /thực hành/i, /bài tập/i, /củng cố/i,
+    /làm bài/i, /trắc nghiệm/i, /rèn luyện/i,
+    /C\. HOẠT ĐỘNG/i, /BÀI TẬP/i
   ],
   van_dung: [
-    /hoáº¡t Ä‘á»™ng 4/i, /váº­n dá»¥ng/i, /má»Ÿ rá»™ng/i, /sÃ¡ng táº¡o/i, /dá»± Ã¡n/i,
-    /thá»±c táº¿/i, /liÃªn há»‡/i, /giáº£i quyáº¿t/i, /á»©ng dá»¥ng/i,
-    /D\. HOáº T Äá»˜NG/i, /Tá»” CHá»¨C THá»°C HIá»†N/i
+    /hoạt động 4/i, /vận dụng/i, /mở rộng/i, /sáng tạo/i, /dự án/i,
+    /thực tế/i, /liên hệ/i, /giải quyết/i, /ứng dụng/i,
+    /D\. HOẠT ĐỘNG/i, /TỔ CHỨC THỰC HIỆN/i
   ]
 };
 
 export const SECTION_PATTERNS = {
   mucTieu: [
-    /Má»¤C TIÃŠU/i, /KIáº¾N THá»¨C/i, /NÄ‚NG Lá»°C/i, /PHáº¨M CHáº¤T/i,
-    /YÃŠU Cáº¦U Cáº¦N Äáº T/i, /SAU BÃ€I Há»ŒC/i, /^a\.\s*Má»¥c tiÃªu/i
+    /MỤC TIÊU/i, /KIẾN THỨC/i, /NĂNG LỰC/i, /PHẨM CHẤT/i,
+    /YÊU CẦU CẦN ĐẠT/i, /SAU BÀI HỌC/i, /^a\.\s*Mục tiêu/i
   ],
   thietBi: [
-    /THIáº¾T Bá»Š/i, /CHUáº¨N Bá»Š/i, /Há»ŒC LIá»†U/i, /Äá»I Vá»šI/i,
-    /GV|GIÃO VIÃŠN/i, /HS|Há»ŒC SINH/i
+    /THIẾT BỊ/i, /CHUẨN BỊ/i, /HỌC LIỆU/i, /ĐỐI VỚI/i,
+    /GV|GIÁO VIÊN/i, /HS|HỌC SINH/i
   ],
   hoatDong: [
-    /HOáº T Äá»˜NG/i, /Gá»¢I Ã/i, /Ná»˜I DUNG/i, /Tá»” CHá»¨C/i,
-    /THá»°C HIá»†N/i, /THá»°C HÃ€NH/i, /^d\.\s*Tá»• chá»©c/i, /^b\.\s*Ná»™i dung/i, /^c\.\s*Sáº£n pháº©m/i
+    /HOẠT ĐỘNG/i, /GỢI Ý/i, /NỘI DUNG/i, /TỔ CHỨC/i,
+    /THỰC HIỆN/i, /THỰC HÀNH/i, /^d\.\s*Tổ chức/i, /^b\.\s*Nội dung/i, /^c\.\s*Sản phẩm/i
   ],
   kiemThuc: [
-    /KIáº¾N THá»¨C/i, /Ná»˜I DUNG/i, /CHá»¦ Äá»€/i, /BÃ€I Há»ŒC/i, /TRá»ŒNG TÃ‚M/i
+    /KIẾN THỨC/i, /NỘI DUNG/i, /CHỦ ĐỀ/i, /BÀI HỌC/i, /TRỌNG TÂM/i
   ],
   baiTap: [
-    /BÃ€I Táº¬P/i, /THá»°C HÃ€NH/i, /LUYá»†N Táº¬P/i, /Cá»¦NG Cá»/i
+    /BÀI TẬP/i, /THỰC HÀNH/i, /LUYỆN TẬP/i, /CỦNG CỐ/i
   ],
   duAn: [
-    /Dá»° ÃN/i, /Váº¬N Dá»¤NG/i, /THá»°C TIá»„N/i, /LIÃŠN Há»†/i
+    /DỰ ÁN/i, /VẬN DỤNG/i, /THỰC TIỄN/i, /LIÊN HỆ/i
   ]
 };
 
 export class ProfessionalContentProcessor {
   /**
-   * TrÃ­ch xuáº¥t vÃ  phÃ¢n loáº¡i ná»™i dung theo hoáº¡t Ä‘á»™ng
+   * Trích xuất và phân loại nội dung theo hoạt động
    */
   static extractActivityContent(rawContent: string): ActivityContent {
     const lines = rawContent.split('\n');
@@ -124,7 +124,7 @@ export class ProfessionalContentProcessor {
     // PHASE 0: Pre-scan for common Grade/Topic headers to extract universal objectives
     const universalObjectives: string[] = [];
     for (const line of lines.slice(0, 50)) {
-      if (line.includes('KIáº¾N THá»¨C') || line.includes('YÃŠU Cáº¦U Cáº¦N Äáº T')) {
+      if (line.includes('KIẾN THỨC') || line.includes('YÊU CẦU CẦN ĐẠT')) {
         universalObjectives.push(line);
       }
     }
@@ -155,36 +155,36 @@ export class ProfessionalContentProcessor {
 
       LEGACY_PATTERNS.forEach(lp => {
         if (lp.pattern.test(trimmedLine)) {
-          const note = `[LÆ°u Ã½ SÆ° pháº¡m]: DÃ²ng "${trimmedLine}" thuá»™c nhÃ³m: ${lp.note}`;
+          const note = `[Lưu ý Sư phạm]: Dòng "${trimmedLine}" thuộc nhóm: ${lp.note}`;
           if (!content.legacyMappingNotes.includes(note)) content.legacyMappingNotes.push(note);
         }
       });
 
-      // --- DETECTION: HÄTN Phase ---
-      if (/(Sinh hoáº¡t dÆ°á»›i cá»|SHDC|DÆ°á»›i cá»)/i.test(trimmedLine) && trimmedLine.length < 80) {
+      // --- DETECTION: HĐTN Phase ---
+      if (/(Sinh hoạt dưới cờ|SHDC|Dưới cờ)/i.test(trimmedLine) && trimmedLine.length < 80) {
         currentActivity = 'shdc';
         currentSection = 'general';
         continue;
       }
-      if (/(Sinh hoáº¡t lá»›p|SHL|Sinh lá»›p)/i.test(trimmedLine) && trimmedLine.length < 80) {
+      if (/(Sinh hoạt lớp|SHL|Sinh lớp)/i.test(trimmedLine) && trimmedLine.length < 80) {
         currentActivity = 'shl';
         currentSection = 'general';
         continue;
       }
 
       // Check for phase transitions
-      if (/^[A-D]\.\s*HOáº T Äá»˜NG/i.test(trimmedLine) || /THÃ€NH KIáº¾N THá»¨C/i.test(trimmedLine) || /LUYá»†N Táº¬P/i.test(trimmedLine) || /Váº¬N Dá»¤NG/i.test(trimmedLine)) {
-        if (/A\.|Má»ž Äáº¦U/i.test(trimmedLine)) currentActivity = 'khoi_dong';
-        else if (/B\.|THÃ€NH KIáº¾N THá»¨C/i.test(trimmedLine)) currentActivity = 'kham_pha';
-        else if (/C\.|LUYá»†N Táº¬P|BÃ€I Táº¬P/i.test(trimmedLine)) currentActivity = 'luyen_tap';
-        else if (/D\.|Váº¬N Dá»¤NG/i.test(trimmedLine)) currentActivity = 'van_dung';
+      if (/^[A-D]\.\s*HOẠT ĐỘNG/i.test(trimmedLine) || /THÀNH KIẾN THỨC/i.test(trimmedLine) || /LUYỆN TẬP/i.test(trimmedLine) || /VẬN DỤNG/i.test(trimmedLine)) {
+        if (/A\.|MỞ ĐẦU/i.test(trimmedLine)) currentActivity = 'khoi_dong';
+        else if (/B\.|THÀNH KIẾN THỨC/i.test(trimmedLine)) currentActivity = 'kham_pha';
+        else if (/C\.|LUYỆN TẬP|BÀI TẬP/i.test(trimmedLine)) currentActivity = 'luyen_tap';
+        else if (/D\.|VẬN DỤNG/i.test(trimmedLine)) currentActivity = 'van_dung';
         currentSection = '';
         continue;
       }
 
       // Check for strong activity headers
       for (const [activity, patterns] of Object.entries(ACTIVITY_PATTERNS)) {
-        const isNumberedActivity = /^(Hoáº¡t Ä‘á»™ng|HÄ)\s*\d+[:.]/i.test(trimmedLine) || /^\d+\.\s*[A-Z]/.test(trimmedLine);
+        const isNumberedActivity = /^(Hoạt động|HĐ)\s*\d+[:.]/i.test(trimmedLine) || /^\d+\.\s*[A-Z]/.test(trimmedLine);
         if (isNumberedActivity && patterns.slice(1, 4).some(p => p.test(trimmedLine))) {
           currentActivity = activity;
           currentSection = '';
@@ -233,7 +233,7 @@ export class ProfessionalContentProcessor {
   }
 
   /**
-   * Tá»‘i Æ°u ná»™i dung cho tá»«ng hoáº¡t Ä‘á»™ng
+   * Tối ưu nội dung cho từng hoạt động
    */
   static optimizeForActivity(activity: string, content: ActivityContent): string {
     const optimized: string[] = [];
@@ -258,40 +258,40 @@ export class ProfessionalContentProcessor {
 
     switch (activity) {
       case 'khoi_dong':
-        addSection('## Má»¤C TIÃŠU', content.khoi_dong.mucTieu);
-        addSection('\n## Ná»˜I DUNG Gá»¢I Ã', content.khoi_dong.hoatDong);
-        addSection('\n## THIáº¾T Bá»Š', content.khoi_dong.thietBi);
+        addSection('## MỤC TIÊU', content.khoi_dong.mucTieu);
+        addSection('\n## NỘI DUNG GỢI Ý', content.khoi_dong.hoatDong);
+        addSection('\n## THIẾT BỊ', content.khoi_dong.thietBi);
         break;
       case 'kham_pha':
-        addSection('## Má»¤C TIÃŠU', content.kham_pha.mucTieu);
-        addSection('\n## KIáº¾N THá»¨C Cá»T LÃ•I', content.kham_pha.kiemThuc);
-        addSection('\n## Ná»˜I DUNG Gá»¢I Ã', content.kham_pha.hoatDong);
-        addSection('\n## THIáº¾T Bá»Š', content.kham_pha.thietBi);
+        addSection('## MỤC TIÊU', content.kham_pha.mucTieu);
+        addSection('\n## KIẾN THỨC CỐT LÕI', content.kham_pha.kiemThuc);
+        addSection('\n## NỘI DUNG GỢI Ý', content.kham_pha.hoatDong);
+        addSection('\n## THIẾT BỊ', content.kham_pha.thietBi);
         break;
       case 'luyen_tap':
-        addSection('## Má»¤C TIÃŠU', content.luyen_tap.mucTieu);
-        addSection('\n## BÃ€I Táº¬P', content.luyen_tap.baiTap);
-        addSection('\n## Ná»˜I DUNG Gá»¢I Ã', content.luyen_tap.hoatDong);
+        addSection('## MỤC TIÊU', content.luyen_tap.mucTieu);
+        addSection('\n## BÀI TẬP', content.luyen_tap.baiTap);
+        addSection('\n## NỘI DUNG GỢI Ý', content.luyen_tap.hoatDong);
         break;
       case 'van_dung':
-        addSection('## Má»¤C TIÃŠU', content.van_dung.mucTieu);
-        addSection('\n## Dá»° ÃN', content.van_dung.duAn);
-        addSection('\n## Ná»˜I DUNG Gá»¢I Ã', content.van_dung.hoatDong);
+        addSection('## MỤC TIÊU', content.van_dung.mucTieu);
+        addSection('\n## DỰ ÁN', content.van_dung.duAn);
+        addSection('\n## NỘI DUNG GỢI Ý', content.van_dung.hoatDong);
         break;
       case 'setup':
-        addSection('Má»¤C TIÃŠU: ', universalObjectives);
+        addSection('MỤC TIÊU: ', universalObjectives);
         if (content.learningAssets.length > 0) {
-          optimized.push(`- Há»c liá»‡u: ${content.learningAssets.join(', ')}`);
+          optimized.push(`- Học liệu: ${content.learningAssets.join(', ')}`);
         }
         break;
       case 'appendix':
-        addSection('TIÃŠU CHÃ ÄÃNH GIÃ: ', content.semanticTags.assessment);
+        addSection('TIÊU CHÍ ĐÁNH GIÁ: ', content.semanticTags.assessment);
         break;
     }
 
     if (content.learningAssets.length > 0 || content.legacyMappingNotes.length > 0) {
       if (content.learningAssets.length > 0) {
-        optimized.push(`- Há»c liá»‡u Ä‘Æ°á»£c nháº­n diá»‡n: ${content.learningAssets.join(', ')}`);
+        optimized.push(`- Học liệu được nhận diện: ${content.learningAssets.join(', ')}`);
       }
       if (content.legacyMappingNotes.length > 0) {
         optimized.push(...content.legacyMappingNotes.map(n => `- ${n}`));
@@ -308,17 +308,17 @@ export class ProfessionalContentProcessor {
       .map(line => cleaner.clean(line))
       .filter(line => line.length > 5)
       .filter(line => !line.match(/^Page\s+\d+/i))
-      .map(line => line.replace(/^\s*[-*â€¢|]\s*/, ''))
+      .map(line => line.replace(/^\s*[-*•|]\s*/, ''))
       .slice(0, Math.max(maxPoints, 15))
-      .map(line => `â€¢ ${line}`);
+      .map(line => `• ${line}`);
   }
 
   private static categorizeSemanticLine(line: string): 'instruction' | 'task' | 'knowledge' | 'assessment' | 'product' | 'unknown' {
-    if (/(yÃªu cáº§u|hÆ°á»›ng dáº«n|giÃºp|há»— trá»£|Ä‘iá»u phá»‘i|tá»• chá»©c|má»i|quan sÃ¡t|lÆ°u Ã½|giáº£i thÃ­ch|minh há»a|Ä‘á»©ng táº¡i|quan sÃ¡t)/i.test(line)) return 'instruction';
-    if (/(thá»±c hiá»‡n|lÃ m|viáº¿t|váº½|trÃ¬nh bÃ y|bÃ¡o cÃ¡o|tháº£o luáº­n|tráº£ lá»i|hoÃ n thÃ nh|suy nghÄ©|liÃªn tÆ°á»Ÿng|quan sÃ¡t - suy ngáº«m|Ä‘áº·t cÃ¢u há»i)/i.test(line)) return 'task';
-    if (/(khÃ¡i niá»‡m|Ä‘á»‹nh nghÄ©a|quy táº¯c|nguyÃªn táº¯c|kiáº¿n thá»©c|ná»™i dung chÃ­nh|chá»‘t|káº¿t luáº­n|táº§m quan trá»ng|Ã½ nghÄ©a)/i.test(line)) return 'knowledge';
-    if (/(sáº£n pháº©m|káº¿t quáº£|báº£n váº½|bÃ i viáº¿t|video|bÃ i bÃ¡o cÃ¡o|phiáº¿u bÃ i táº­p|pht|poster|sÆ¡ Ä‘á»“)/i.test(line)) return 'product';
-    if (/(Ä‘Ã¡nh giÃ¡|nháº­n xÃ©t|tiÃªu chÃ­|rubric|thang Ä‘o|khen ngá»£i|gÃ³p Ã½|pháº£n há»“i)/i.test(line)) return 'assessment';
+    if (/(yêu cầu|hướng dẫn|giúp|hỗ trợ|điều phối|tổ chức|mời|quan sát|lưu ý|giải thích|minh họa|đứng tại|quan sát)/i.test(line)) return 'instruction';
+    if (/(thực hiện|làm|viết|vẽ|trình bày|báo cáo|thảo luận|trả lời|hoàn thành|suy nghĩ|liên tưởng|quan sát - suy ngẫm|đặt câu hỏi)/i.test(line)) return 'task';
+    if (/(khái niệm|định nghĩa|quy tắc|nguyên tắc|kiến thức|nội dung chính|chốt|kết luận|tầm quan trọng|ý nghĩa)/i.test(line)) return 'knowledge';
+    if (/(sản phẩm|kết quả|bản vẽ|bài viết|video|bài báo cáo|phiếu bài tập|pht|poster|sơ đồ)/i.test(line)) return 'product';
+    if (/(đánh giá|nhận xét|tiêu chí|rubric|thang đo|khen ngợi|góp ý|phản hồi)/i.test(line)) return 'assessment';
     return 'unknown';
   }
 
@@ -338,104 +338,104 @@ export class ProfessionalContentProcessor {
     let pedagogicalInsight = "";
     if (currentPlan) {
       const fusion = await orchestrator.fuseSuggestions(currentPlan, optimizedContent);
-      pedagogicalInsight = `\n## ðŸ’¡ PEDAGOGICAL REASONING (v7.0):\n${fusion.reasoning}\n- Confidence: ${(fusion.confidence * 100).toFixed(1)}%\n- Fidelity: ${(fusion.metadata.pedagogicalFidelity * 100).toFixed(1)}%`;
+      pedagogicalInsight = `\n## 💡 PEDAGOGICAL REASONING (v7.0):\n${fusion.reasoning}\n- Confidence: ${(fusion.confidence * 100).toFixed(1)}%\n- Fidelity: ${(fusion.metadata.pedagogicalFidelity * 100).toFixed(1)}%`;
     }
 
     const activityTitle = this.getActivityTitle(activity).toUpperCase();
-    const basePrompt = `Báº¡n lÃ  SIÃŠU TRÃ TUá»† SÆ¯ PHáº M & KIáº¾N TRÃšC SÆ¯ GIÃO Dá»¤C CAO Cáº¤P. 
-Nhiá»‡m vá»¥: Thiáº¿t káº¿ ${activityTitle} theo triáº¿t lÃ½ "GIÃO ÃN LÃ€ LA BÃ€N" (Compass-Style Lesson Plan) chuáº©n CÃ´ng vÄƒn 5512.
+    const basePrompt = `Bạn là SIÊU TRÍ TUỆ SƯ PHẠM & KIẾN TRÚC SƯ GIÁO DỤC CAO CẤP. 
+Nhiệm vụ: Thiết kế ${activityTitle} theo triết lý "GIÁO ÁN LÀ LA BÀN" (Compass-Style Lesson Plan) chuẩn Công văn 5512.
 
-## ðŸ® TRIáº¾T LÃ THIáº¾T Káº¾ (COMPASS PHILOSOPHY):
-- **KhÃ´ng ká»‹ch báº£n hÃ³a**: TrÃ¡nh sa Ä‘Ã  vÃ o lá»i thoáº¡i "GV nÃ³i - HS thÆ°a" vá»¥n váº·t.
-- **Táº­p trung Ä‘á»‹nh hÆ°á»›ng**: Diá»…n giáº£i chi tiáº¿t cÃ¡c "NÃºt tháº¯t sÆ° pháº¡m", chiáº¿n lÆ°á»£c tá»• chá»©c, cÃ¡ch thá»©c xá»­ lÃ½ tÃ¬nh huá»‘ng vÃ  máº¡ch kiáº¿n thá»©c chuyÃªn sÃ¢u.
-- **Äá»™ dÃ y tri thá»©c**: Äá»ƒ giÃ¡o Ã¡n Ä‘áº¡t 30-50 trang, báº¡n PHáº¢I Ä‘Ã o sÃ¢u vÃ o ná»™i dung chuyÃªn mÃ´n, cÃ¡c bÆ°á»›c hÆ°á»›ng dáº«n tÆ° duy vÃ  há»‡ thá»‘ng cÃ¢u há»i gá»£i má»Ÿ mang tÃ­nh chiáº¿n lÆ°á»£c.
+## 🏮 TRIẾT LÝ THIẾT KẾ (COMPASS PHILOSOPHY):
+- **Không kịch bản hóa**: Tránh sa đà vào lời thoại "GV nói - HS thưa" vụn vặt.
+- **Tập trung định hướng**: Diễn giải chi tiết các "Nút thắt sư phạm", chiến lược tổ chức, cách thức xử lý tình huống và mạch kiến thức chuyên sâu.
+- **Độ dày tri thức**: Để giáo án đạt 30-50 trang, bạn PHẢI đào sâu vào nội dung chuyên môn, các bước hướng dẫn tư duy và hệ thống câu hỏi gợi mở mang tính chiến lược.
 
-## ðŸŽ¯ Dá»® LIá»†U ÄÃƒ Tá»I Æ¯U Tá»ª Há»† THá»NG:
+## 🎯 DỮ LIỆU ĐÃ TỐI ƯU TỪ HỆ THỐNG:
 ${optimizedContent}
 
-${semanticContext ? `## ðŸ§  SEMANTIC PEDAGOGICAL MAP (CHIáº¾N LÆ¯á»¢C):
-- **Chá»‰ dáº«n sÆ° pháº¡m**: ${semanticContext.instructions?.slice(0, 5).join('; ') || 'Tá»± Ä‘á» xuáº¥t'}
-- **Nhiá»‡m vá»¥ há»c sinh**: ${semanticContext.tasks?.slice(0, 5).join('; ') || 'Tá»± Ä‘á» xuáº¥t'}
-- **Trá»ng tÃ¢m kiáº¿n thá»©c**: ${semanticContext.knowledge?.slice(0, 5).join('; ') || 'BÃ¡m sÃ¡t PDF'}
-- **Sáº£n pháº©m há»c táº­p**: ${semanticContext.products?.slice(0, 5).join('; ') || 'Dá»±a vÃ o hoáº¡t Ä‘á»™ng'}
-- **TiÃªu chÃ­ Ä‘Ã¡nh giÃ¡**: ${semanticContext.assessment?.slice(0, 5).join('; ') || 'BÃ¡m sÃ¡t yÃªu cáº§u cáº§n Ä‘áº¡t'}
+${semanticContext ? `## 🧠 SEMANTIC PEDAGOGICAL MAP (CHIẾN LƯỢC):
+- **Chỉ dẫn sư phạm**: ${semanticContext.instructions?.slice(0, 5).join('; ') || 'Tự đề xuất'}
+- **Nhiệm vụ học sinh**: ${semanticContext.tasks?.slice(0, 5).join('; ') || 'Tự đề xuất'}
+- **Trọng tâm kiến thức**: ${semanticContext.knowledge?.slice(0, 5).join('; ') || 'Bám sát PDF'}
+- **Sản phẩm học tập**: ${semanticContext.products?.slice(0, 5).join('; ') || 'Dựa vào hoạt động'}
+- **Tiêu chí đánh giá**: ${semanticContext.assessment?.slice(0, 5).join('; ') || 'Bám sát yêu cầu cần đạt'}
 ` : ''}
 
-## ðŸ“Š PHÃ‚N TÃCH PEDAGOGICAL (RELEVANCE):
+## 📊 PHÂN TÍCH PEDAGOGICAL (RELEVANCE):
 ${relevance.reasoning}
 
-## ðŸ’¡ Há»† THá»NG TRÃ THá»¨C (DATABASE CHIáº¾N LÆ¯á»¢C - THAM KHáº¢O):
+## 💡 HỆ THỐNG TRÍ THỨC (DATABASE CHIẾN LƯỢC - THAM KHẢO):
 ${this.getSmartDataAdvice(activity, smartData)}
 ${pedagogicalInsight}
 
-## ðŸŽ® YÃŠU Cáº¦U NÃ‚NG CAO (CRITICAL DIRECTIVES):
-1. **TRUNG THá»°C Vá»šI Dá»® LIá»†U PDF**: ÄÃ¢y lÃ  yÃªu cáº§u tiÃªn quyáº¿t. Sá»­ dá»¥ng 100% ngá»¯ liá»‡u tá»« PDF (má»¥c ðŸŽ¯) lÃ m xÆ°Æ¡ng sá»‘ng. 
-2. **NHáº¬N DIá»†N LAYOUT**: Náº¿u dá»¯ liá»‡u PDF cÃ³ kÃ½ tá»± '|', hÃ£y hiá»ƒu Ä‘Ã³ lÃ  phÃ¢n tÃ¡ch giá»¯a cá»™t GV vÃ  HS. HÃ£y tÃ¡i cáº¥u trÃºc chÃºng thÃ nh cÃ¡c bÆ°á»›c hÃ nh Ä‘á»™ng logic.
-3. **Má»ž Rá»˜NG DIá»„N GIáº¢I (RICH NARRATIVE)**: Äá»ƒ Ä‘áº¡t má»¥c tiÃªu 30-50 trang, báº¡n PHáº¢I diá»…n giáº£i má»—i bÆ°á»›c cá»±c ká»³ chi tiáº¿t. Äá»«ng chá»‰ viáº¿t "GV giao bÃ i", hÃ£y viáº¿t: "GV dáº«n dáº¯t báº±ng má»™t cÃ¢u chuyá»‡n... sau Ä‘Ã³ sá»­ dá»¥ng ká»¹ thuáº­t Ä‘áº·t cÃ¢u há»i Socratic Ä‘á»ƒ khÆ¡i gá»£i... quan sÃ¡t vÃ  ghi chÃº cÃ¡c pháº£n á»©ng cá»§a HS táº¡i cÃ¡c vá»‹ trÃ­...".
-4. **Sá»° KHÃC BIá»†T GIá»®A PDF VÃ€ DATABASE**: Æ¯u tiÃªn 100% ná»™i dung chá»§ Ä‘á» tá»« PDF. DATABASE chá»‰ dÃ¹ng Ä‘á»ƒ nÃ¢ng cáº¥p phÆ°Æ¡ng phÃ¡p tá»• chá»©c (vÃ­ dá»¥: dÃ¹ng Ká»¹ thuáº­t Máº£nh ghÃ©p, KhÄƒn tráº£i bÃ n).
-5. **Ká»¹ thuáº­t sÆ° pháº¡m La bÃ n**: Sá»­ dá»¥ng cÃ¡c phÆ°Æ¡ng phÃ¡p: ${activity === 'khoi_dong' ? 'Gamification/KÃ­ch hoáº¡t tÆ° duy' : activity === 'kham_pha' ? 'Ná»™i soi kiáº¿n thá»©c/Tháº£o luáº­n Ä‘a chiá»u' : 'á»¨ng dá»¥ng thá»±c tiá»…n/Tá»‘i Æ°u hÃ³a nÄƒng lá»±c'}.
-6. **Máº¡ch logic 5512**: Diá»…n giáº£i cá»±c ká»³ chi tiáº¿t 4 bÆ°á»›c (Chuyá»ƒn giao, Thá»±c hiá»‡n, BÃ¡o cÃ¡o, Káº¿t luáº­n).
-7. **Káº¾T LUáº¬N "CHáº M TÃ‚M Há»’N"**: Pháº§n Káº¿t luáº­n khÃ´ng Ä‘Æ°á»£c sÆ¡ sÃ i. HÃ£y viáº¿t má»™t thÃ´ng Ä‘iá»‡p truyá»n cáº£m há»©ng máº¡nh máº½, káº¿t ná»‘i bÃ i há»c vá»›i giÃ¡ trá»‹ nhÃ¢n vÄƒn vÃ  cam káº¿t hÃ nh Ä‘á»™ng thá»±c táº¿.
-8. **SOURCE ATTRIBUTION (QUAN TRá»ŒNG - CHá»NG áº¢O GIÃC)**:
-   - TRONG Má»–I BÆ¯á»šC HÃ€NH Äá»˜NG (teacher_action & student_action):
-   - HÃ£y Ä‘Ã¡nh dáº¥u **[PDF]** á»Ÿ Ä‘áº§u cÃ¢u/Ä‘oáº¡n náº¿u ná»™i dung Ä‘Ã³ Ä‘Æ°á»£c káº¿ thá»«a trá»±c tiáº¿p hoáº·c pháº«u thuáº­t tá»« giÃ¡o Ã¡n cÅ©.
-   - HÃ£y Ä‘Ã¡nh dáº¥u **[AI-SUGGESTION]** náº¿u ná»™i dung Ä‘Ã³ hoÃ n toÃ n lÃ  do AI Ä‘á» xuáº¥t thÃªm Ä‘á»ƒ nÃ¢ng cáº¥p 5512.
-   - Äiá»u nÃ y giÃºp giÃ¡o viÃªn biáº¿t chÃ­nh xÃ¡c Ä‘Ã¢u lÃ  "cháº¥t xÃ¡m" cá»§a há» vÃ  Ä‘Ã¢u lÃ  sá»± há»— trá»£ cá»§a AI.
+## 🎮 YÊU CẦU NÂNG CAO (CRITICAL DIRECTIVES):
+1. **TRUNG THỰC VỚI DỮ LIỆU PDF**: Đây là yêu cầu tiên quyết. Sử dụng 100% ngữ liệu từ PDF (mục 🎯) làm xương sống. 
+2. **NHẬN DIỆN LAYOUT**: Nếu dữ liệu PDF có ký tự '|', hãy hiểu đó là phân tách giữa cột GV và HS. Hãy tái cấu trúc chúng thành các bước hành động logic.
+3. **MỞ RỘNG DIỄN GIẢI (RICH NARRATIVE)**: Để đạt mục tiêu 30-50 trang, bạn PHẢI diễn giải mỗi bước cực kỳ chi tiết. Đừng chỉ viết "GV giao bài", hãy viết: "GV dẫn dắt bằng một câu chuyện... sau đó sử dụng kỹ thuật đặt câu hỏi Socratic để khơi gợi... quan sát và ghi chú các phản ứng của HS tại các vị trí...".
+4. **SỰ KHÁC BIỆT GIỮA PDF VÀ DATABASE**: Ưu tiên 100% nội dung chủ đề từ PDF. DATABASE chỉ dùng để nâng cấp phương pháp tổ chức (ví dụ: dùng Kỹ thuật Mảnh ghép, Khăn trải bàn).
+5. **Kỹ thuật sư phạm La bàn**: Sử dụng các phương pháp: ${activity === 'khoi_dong' ? 'Gamification/Kích hoạt tư duy' : activity === 'kham_pha' ? 'Nội soi kiến thức/Thảo luận đa chiều' : 'Ứng dụng thực tiễn/Tối ưu hóa năng lực'}.
+6. **Mạch logic 5512**: Diễn giải cực kỳ chi tiết 4 bước (Chuyển giao, Thực hiện, Báo cáo, Kết luận).
+7. **KẾT LUẬN "CHẠM TÂM HỒN"**: Phần Kết luận không được sơ sài. Hãy viết một thông điệp truyền cảm hứng mạnh mẽ, kết nối bài học với giá trị nhân văn và cam kết hành động thực tế.
+8. **SOURCE ATTRIBUTION (QUAN TRỌNG - CHỐNG ẢO GIÁC)**:
+   - TRONG MỖI BƯỚC HÀNH ĐỘNG (teacher_action & student_action):
+   - Hãy đánh dấu **[PDF]** ở đầu câu/đoạn nếu nội dung đó được kế thừa trực tiếp hoặc phẫu thuật từ giáo án cũ.
+   - Hãy đánh dấu **[AI-SUGGESTION]** nếu nội dung đó hoàn toàn là do AI đề xuất thêm để nâng cấp 5512.
+   - Điều này giúp giáo viên biết chính xác đâu là "chất xám" của họ và đâu là sự hỗ trợ của AI.
 
-## ðŸ“‹ Äá»ŠNH Dáº NG Äáº¦U RA (JSON):
-Tráº£ vá» duy nháº¥t JSON:
+## 📋 ĐỊNH DẠNG ĐẦU RA (JSON):
+Trả về duy nhất JSON:
 {
-  "module_title": "${this.getActivityTitle(activity)} - [TÃªn hoáº¡t Ä‘á»™ng sÃ¡ng táº¡o]",
+  "module_title": "${this.getActivityTitle(activity)} - [Tên hoạt động sáng tạo]",
   "duration": "${this.getActivityDuration(activity)}",
-  "summary_for_next_step": "TÃ³m táº¯t chiáº¿n lÆ°á»£c (5-6 cÃ¢u) vá» máº¡ch logic cá»§a hoáº¡t Ä‘á»™ng nÃ y.",
+  "summary_for_next_step": "Tóm tắt chiến lược (5-6 câu) về mạch logic của hoạt động này.",
   "steps": [
     {
       "step_type": "transfer" | "perform" | "report" | "conclude", 
-      "teacher_action": "Ná»™i dung cá»™t GV (Markdown). Viáº¿t chi tiáº¿t cÃ¡c chiáº¿n lÆ°á»£c tá»• chá»©c vÃ  chá»‰ dáº«n sÆ° pháº¡m chuyÃªn sÃ¢u.",
-      "student_action": "Ná»™i dung cá»™t HS. MÃ´ táº£ ká»¹ cÃ¡c sáº£n pháº©m, cÃ¡ch thá»©c tÆ° duy vÃ  káº¿t quáº£ Ä‘áº§u ra cá»§a há»c sinh."
+      "teacher_action": "Nội dung cột GV (Markdown). Viết chi tiết các chiến lược tổ chức và chỉ dẫn sư phạm chuyên sâu.",
+      "student_action": "Nội dung cột HS. Mô tả kỹ các sản phẩm, cách thức tư duy và kết quả đầu ra của học sinh."
     }
   ]
 }
 
-âš ï¸ LÆ¯U Ã: Tuyá»‡t Ä‘á»‘i khÃ´ng viáº¿t lá»i thoáº¡i sÃ¡o rá»—ng. HÃ£y viáº¿t nhá»¯ng hÆ°á»›ng dáº«n sÆ° pháº¡m "Ä‘áº¯t giÃ¡" vÃ  giÃ u hÃ m lÆ°á»£ng tri thá»©c. 
-Náº¿u Ä‘Ã¢y lÃ  module 'setup', 'shdc', 'shl', hoáº·c 'appendix', hÃ£y tráº£ vá» cáº¥u trÃºc JSON tÆ°Æ¡ng tá»± nhÆ°ng Ä‘iá»u chá»‰nh 'steps' cho phÃ¹ há»£p hoáº·c tráº£ vá» ná»™i dung chuyÃªn sÃ¢u trong cÃ¡c trÆ°á»ng tÆ°Æ¡ng á»©ng cá»§a LessonResult.`;
+⚠️ LƯU Ý: Tuyệt đối không viết lời thoại sáo rỗng. Hãy viết những hướng dẫn sư phạm "đắt giá" và giàu hàm lượng tri thức. 
+Nếu đây là module 'setup', 'shdc', 'shl', hoặc 'appendix', hãy trả về cấu trúc JSON tương tự nhưng điều chỉnh 'steps' cho phù hợp hoặc trả về nội dung chuyên sâu trong các trường tương ứng của LessonResult.`;
 
     return basePrompt;
   }
 
   private static getActivityTitle(activity: string): string {
     const titles: Record<string, string> = {
-      khoi_dong: 'HOáº T Äá»˜NG 1: KHá»žI Äá»˜NG',
-      kham_pha: 'HOáº T Äá»˜NG 2: KHÃM PHÃ',
-      luyen_tap: 'HOáº T Äá»˜NG 3: LUYá»†N Táº¬P',
-      van_dung: 'HOáº T Äá»˜NG 4: Váº¬N Dá»¤NG',
-      setup: 'THIáº¾T Láº¬P Má»¤C TIÃŠU & THIáº¾T Bá»Š',
-      shdc: 'SINH HOáº T DÆ¯á»šI Cá»œ',
-      shl: 'SINH HOáº T Lá»šP',
-      appendix: 'PHá»¤ Lá»¤C & HÆ¯á»šNG DáºªN Vá»€ NHÃ€'
+      khoi_dong: 'HOẠT ĐỘNG 1: KHỞI ĐỘNG',
+      kham_pha: 'HOẠT ĐỘNG 2: KHÁM PHÁ',
+      luyen_tap: 'HOẠT ĐỘNG 3: LUYỆN TẬP',
+      van_dung: 'HOẠT ĐỘNG 4: VẬN DỤNG',
+      setup: 'THIẾT LẬP MỤC TIÊU & THIẾT BỊ',
+      shdc: 'SINH HOẠT DƯỚI CỜ',
+      shl: 'SINH HOẠT LỚP',
+      appendix: 'PHỤ LỤC & HƯỚNG DẪN VỀ NHÀ'
     };
     return titles[activity] || activity;
   }
 
   private static getActivityDuration(activity: string): string {
     const durations: Record<string, string> = {
-      khoi_dong: '5-10 phÃºt (KÃ­ch hoáº¡t)',
-      kham_pha: '20-25 phÃºt (ÄÃ o sÃ¢u)',
-      luyen_tap: '15-20 phÃºt (RÃ¨n luyá»‡n)',
-      van_dung: 'TÃ¹y chá»‰nh (Má»Ÿ rá»™ng thá»±c táº¿)',
-      shdc: '15-20 phÃºt',
-      shl: '20-25 phÃºt'
+      khoi_dong: '5-10 phút (Kích hoạt)',
+      kham_pha: '20-25 phút (Đào sâu)',
+      luyen_tap: '15-20 phút (Rèn luyện)',
+      van_dung: 'Tùy chỉnh (Mở rộng thực tế)',
+      shdc: '15-20 phút',
+      shl: '20-25 phút'
     };
-    return durations[activity] || '15 phÃºt';
+    return durations[activity] || '15 phút';
   }
 
   private static getSmartDataAdvice(activity: string, smartData?: SmartPromptData): string {
-    if (!smartData) return 'KhÃ´ng cÃ³ dá»¯ liá»‡u chuyÃªn mÃ´n.';
+    if (!smartData) return 'Không có dữ liệu chuyên môn.';
     const advice: Record<string, string> = {
-      khoi_dong: `- **TÃ¢m lÃ½ lá»©a tuá»•i**: ${smartData.studentCharacteristics}\n- **Nghiá»‡m vá»¥ cá»‘t lÃµi**: ${smartData.coreMissions.khoiDong}`,
-      kham_pha: `- **Nhiá»‡m vá»¥ TRá»ŒNG TÃ‚M (SGK)**: ${smartData.coreMissions.khamPha}\n- **CÃ´ng cá»¥ sá»‘ (NLS)**: ${smartData.digitalCompetency}`,
-      luyen_tap: `- **Má»¥c tiÃªu cáº§n Ä‘áº¡t**: ${smartData.objectives}\n- **Nhiá»‡m vá»¥ rÃ¨n luyá»‡n**: ${smartData.coreMissions.luyenTap}`,
-      van_dung: `- **LÆ°u Ã½ thá»±c tiá»…n**: ${smartData.pedagogicalNotes}\n- **Nhiá»‡m vá»¥ thá»±c táº¿**: ${smartData.coreMissions.vanDung}`
+      khoi_dong: `- **Tâm lý lứa tuổi**: ${smartData.studentCharacteristics}\n- **Nghiệm vụ cốt lõi**: ${smartData.coreMissions.khoiDong}`,
+      kham_pha: `- **Nhiệm vụ TRỌNG TÂM (SGK)**: ${smartData.coreMissions.khamPha}\n- **Công cụ số (NLS)**: ${smartData.digitalCompetency}`,
+      luyen_tap: `- **Mục tiêu cần đạt**: ${smartData.objectives}\n- **Nhiệm vụ rèn luyện**: ${smartData.coreMissions.luyenTap}`,
+      van_dung: `- **Lưu ý thực tiễn**: ${smartData.pedagogicalNotes}\n- **Nhiệm vụ thực tế**: ${smartData.coreMissions.vanDung}`
     };
     return advice[activity] || '';
   }

@@ -86,8 +86,8 @@ const renderFormattedText = (text: string) => {
         }
 
         // Explicit new line detection for list items or steps
-        // Detects: -, +, *, â€¢, â—, \d., or specific keywords like "BÆ°á»›c"
-        const listMatch = trimmedLine.match(/^([-*â€¢+â—]|\d+\.|BÆ°á»›c\s+\d+:?)\s+(.*)/);
+        // Detects: -, +, *, •, ●, \d., or specific keywords like "Bước"
+        const listMatch = trimmedLine.match(/^([-*•+●]|\d+\.|Bước\s+\d+:?)\s+(.*)/);
 
         if (listMatch) {
             // It's a list item or distinct step -> New Paragraph with formatting
@@ -127,7 +127,7 @@ const parseTwoColumnContent = (content: string) => {
 
     const results: { gv: string; hs: string }[] = [];
 
-    // 1. Try JSON Parsing (DÃ nh cho dá»¯ liá»‡u dÃ¡n trá»±c tiáº¿p tá»« AI JSON)
+    // 1. Try JSON Parsing (Dành cho dữ liệu dán trực tiếp từ AI JSON)
     try {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
@@ -135,8 +135,8 @@ const parseTwoColumnContent = (content: string) => {
             if (json.steps && Array.isArray(json.steps)) {
                 json.steps.forEach((s: any) => {
                     results.push({
-                        gv: s.teacher_action || s.instruction || "GV tá»• chá»©c.",
-                        hs: s.student_action || s.product || "HS thá»±c hiá»‡n."
+                        gv: s.teacher_action || s.instruction || "GV tổ chức.",
+                        hs: s.student_action || s.product || "HS thực hiện."
                     });
                 });
                 if (results.length > 0) return results;
@@ -145,7 +145,7 @@ const parseTwoColumnContent = (content: string) => {
     } catch (e) { /* Fallback */ }
 
     // 2. Multi-Segment Marker Recon (Root Cause Fix)
-    // QuÃ©t toÃ n bá»™ cÃ¡c cáº·p {{cot_1}} ... {{cot_2}}
+    // Quét toàn bộ các cặp {{cot_1}} ... {{cot_2}}
     const markerRegex = /\{\{cot_1\}\}([\s\S]*?)\{\{cot_2\}\}([\s\S]*?)(?=\{\{cot_1\}\}|$)/gi;
     let match;
     while ((match = markerRegex.exec(content)) !== null) {
@@ -155,7 +155,7 @@ const parseTwoColumnContent = (content: string) => {
         });
     }
 
-    // Fallback: Náº¿u khÃ´ng cÃ³ marker, tráº£ vá» 1 hÃ ng Ä‘Æ¡n
+    // Fallback: Nếu không có marker, trả về 1 hàng đơn
     if (results.length === 0) {
         results.push({ gv: content, hs: "..." });
     }
@@ -170,12 +170,12 @@ const createTwoColumnTable = (segments: { gv: string; hs: string }[]) => {
             cantSplit: true,
             children: [
                 new d.TableCell({
-                    children: [new d.Paragraph({ alignment: d.AlignmentType.CENTER, children: [new d.TextRun({ text: "Hoáº¡t Ä‘á»™ng cá»§a GiÃ¡o viÃªn", bold: true, size: 22 })] })],
+                    children: [new d.Paragraph({ alignment: d.AlignmentType.CENTER, children: [new d.TextRun({ text: "Hoạt động của Giáo viên", bold: true, size: 22 })] })],
                     shading: { fill: "F1F5F9" },
                     width: { size: 50, type: d.WidthType.PERCENTAGE },
                 }),
                 new d.TableCell({
-                    children: [new d.Paragraph({ alignment: d.AlignmentType.CENTER, children: [new d.TextRun({ text: "Hoáº¡t Ä‘á»™ng cá»§a Há»c sinh", bold: true, size: 22 })] })],
+                    children: [new d.Paragraph({ alignment: d.AlignmentType.CENTER, children: [new d.TextRun({ text: "Hoạt động của Học sinh", bold: true, size: 22 })] })],
                     shading: { fill: "F1F5F9" },
                     width: { size: 50, type: d.WidthType.PERCENTAGE },
                 }),
@@ -208,12 +208,12 @@ const createTwoColumnActivity = (title: string, fullContent: string | undefined)
         })
     ];
 
-    // Náº¿u content cÃ³ chá»©a marker {{cot_1}}, xá»­ lÃ½ theo báº£ng Ä‘a hÃ ng
+    // Nếu content có chứa marker {{cot_1}}, xử lý theo bảng đa hàng
     if (fullContent.includes('{{cot_1}}')) {
         const segments = parseTwoColumnContent(fullContent);
         results.push(createTwoColumnTable(segments));
     } else {
-        // Xá»­ lÃ½ split theo cÃ¡c bÆ°á»›c a), b), c) náº¿u khÃ´ng cÃ³ marker
+        // Xử lý split theo các bước a), b), c) nếu không có marker
         const steps = fullContent.split(/(?:\r?\n|^)(?=[a-d]\))/i);
         steps.forEach(step => {
             const trimmedStep = step.trim();
@@ -241,7 +241,7 @@ self.onmessage = async (event: any) => {
                 heading: d.HeadingLevel.HEADING_1,
                 children: [
                     new d.TextRun({
-                        text: "Káº¾ HOáº CH BÃ€I Dáº Y (CHÆ¯Æ NG TRÃŒNH GDPT 2018)",
+                        text: "KẾ HOẠCH BÀI DẠY (CHƯƠNG TRÌNH GDPT 2018)",
                         bold: true,
                         size: 32,
                         color: "2E59A7"
@@ -250,21 +250,21 @@ self.onmessage = async (event: any) => {
             }),
             new d.Paragraph({ text: "", spacing: { after: 200 } }),
 
-            createSectionTitle("I. TÃŠN BÃ€I Há»ŒC/CHá»¦ Äá»€"),
+            createSectionTitle("I. TÊN BÀI HỌC/CHỦ ĐỀ"),
             createField("", data.title || "..."),
 
-            createSectionTitle("II. Má»¤C TIÃŠU"),
-            createField("1. Kiáº¿n thá»©c:", data.objectives.knowledge),
-            createField("2. NÄƒng lá»±c:", data.objectives.skills),
-            createField("3. Pháº©m cháº¥t:", data.objectives.attitudes),
-            createField("4. TÃ­ch há»£p NÄƒng lá»±c sá»‘ (TT 02/2025):", data.objectives.digital_competency),
-            createField("5. TÃ­ch há»£p Äáº¡o Ä‘á»©c/GiÃ¡ trá»‹:", data.objectives.ethics),
+            createSectionTitle("II. MỤC TIÊU"),
+            createField("1. Kiến thức:", data.objectives.knowledge),
+            createField("2. Năng lực:", data.objectives.skills),
+            createField("3. Phẩm chất:", data.objectives.attitudes),
+            createField("4. Tích hợp Năng lực số (TT 02/2025):", data.objectives.digital_competency),
+            createField("5. Tích hợp Đạo đức/Giá trị:", data.objectives.ethics),
 
-            createSectionTitle("III. THIáº¾T Bá»Š Dáº Y Há»ŒC VÃ€ Há»ŒC LIá»†U"),
-            createField("1. Äá»‘i vá»›i GiÃ¡o viÃªn:", data.equipment.teacher),
-            createField("2. Äá»‘i vá»›i Há»c sinh:", data.equipment.student),
+            createSectionTitle("III. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU"),
+            createField("1. Đối với Giáo viên:", data.equipment.teacher),
+            createField("2. Đối với Học sinh:", data.equipment.student),
 
-            createSectionTitle("IV. TIáº¾N TRÃŒNH Dáº Y Há»ŒC")
+            createSectionTitle("IV. TIẾN TRÌNH DẠY HỌC")
         ];
 
         self.postMessage({ type: 'progress', percent: 30 });
@@ -277,9 +277,9 @@ self.onmessage = async (event: any) => {
         }
 
         children.push(
-            createSectionTitle("V. Há»’ SÆ  Dáº Y Há»ŒC (PHá»¤ Lá»¤C)"),
+            createSectionTitle("V. HỒ SƠ DẠY HỌC (PHỤ LỤC)"),
             ...renderFormattedText(data.attachments || "..."),
-            createSectionTitle("VI. HÆ¯á»šNG DáºªN Vá»€ NHÃ€"),
+            createSectionTitle("VI. HƯỚNG DẪN VỀ NHÀ"),
             ...renderFormattedText(data.homework || "...")
         );
 
@@ -289,7 +289,7 @@ self.onmessage = async (event: any) => {
             sections: [{ children }],
         });
 
-        // âœ… ENHANCED: Try both Base64 and Blob for maximum compatibility
+        // ✅ ENHANCED: Try both Base64 and Blob for maximum compatibility
         let base64: string | undefined;
         let blob: Blob | undefined;
 

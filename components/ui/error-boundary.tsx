@@ -39,9 +39,9 @@ export class ErrorBoundary extends Component<Props, State> {
                     <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mb-6">
                         <AlertCircle className="h-8 w-8 text-red-600" />
                     </div>
-                    <h2 className="text-xl font-black text-slate-800 mb-2">ÄÃ£ xáº£y ra lá»—i há»‡ thá»‘ng</h2>
+                    <h2 className="text-xl font-black text-slate-800 mb-2">Đã xảy ra lỗi hệ thống</h2>
                     <p className="text-slate-500 text-sm text-center max-w-md mb-8 leading-relaxed">
-                        Ráº¥t tiáº¿c, Ä‘Ã£ cÃ³ má»™t lá»—i khÃ´ng mong Ä‘á»£i xáº£y ra. Äá»«ng lo láº¯ng, dá»¯ liá»‡u cá»§a báº¡n trong Store Ä‘Ã£ Ä‘Æ°á»£c báº£o vá»‡.
+                        Rất tiếc, đã có một lỗi không mong đợi xảy ra. Đừng lo lắng, dữ liệu của bạn trong Store đã được bảo vệ.
                     </p>
                     <div className="bg-white/50 p-4 rounded-xl border border-red-50 text-[10px] font-mono text-red-500 mb-8 max-w-full overflow-auto">
                         {this.state.error?.message}
@@ -51,7 +51,7 @@ export class ErrorBoundary extends Component<Props, State> {
                         className="rounded-2xl bg-slate-900 text-white font-bold px-8"
                     >
                         <RotateCcw className="mr-2 h-4 w-4" />
-                        Táº¢I Láº I TRANG
+                        TẢI LẠI TRANG
                     </Button>
                 </div>
             );

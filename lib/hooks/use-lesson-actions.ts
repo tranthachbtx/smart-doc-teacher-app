@@ -7,19 +7,19 @@ export const useLessonActions = () => {
     const { lesson } = store;
 
     /**
-     * Táº O GIÃO ÃN NHANH (Báº¢N NHÃP)
-     * ÄÃ£ Ä‘Æ¡n giáº£n hÃ³a tá»‘i Ä‘a, chá»‰ gá»i AI 1 láº§n Ä‘á»ƒ láº¥y khung.
+     * TẠO GIÁO ÁN NHANH (BẢN NHÁP)
+     * Đã đơn giản hóa tối đa, chỉ gọi AI 1 lần để lấy khung.
      */
     const handleGenerateFullPlan = useCallback(async () => {
         if (!lesson.theme) {
-            store.setError("Vui lÃ²ng chá»n hoáº·c nháº­p chá»§ Ä‘á» bÃ i há»c");
+            store.setError("Vui lòng chọn hoặc nhập chủ đề bài học");
             return;
         }
 
-        console.log("[useLessonActions] ðŸš€ Äang táº¡o khung giÃ¡o Ã¡n (Simple Mode)");
+        console.log("[useLessonActions] 🚀 Đang tạo khung giáo án (Simple Mode)");
 
         store.setLoading('isGenerating', true);
-        store.setSuccess("ðŸš€ Äang káº¿t ná»‘i AI (3-Layer Relay)...");
+        store.setSuccess("🚀 Đang kết nối AI (3-Layer Relay)...");
 
         try {
             const { generateLesson } = await import('../actions/gemini');
@@ -47,9 +47,9 @@ export const useLessonActions = () => {
 
             if (result.success && result.data) {
                 store.setLessonResult(result.data);
-                store.setSuccess("âœ… ÄÃ£ táº¡o xong khung giÃ¡o Ã¡n!");
+                store.setSuccess("✅ Đã tạo xong khung giáo án!");
             } else {
-                store.setError(result.error || "CÃ³ lá»—i xáº£y ra khi gá»i AI.");
+                store.setError(result.error || "Có lỗi xảy ra khi gọi AI.");
             }
         } catch (error: any) {
             store.setError(error.message);
@@ -59,21 +59,21 @@ export const useLessonActions = () => {
     }, [lesson.theme, lesson.grade, lesson.duration, lesson.month, lesson.file, store]);
 
     /**
-     * KIá»‚M Äá»ŠNH GIÃO ÃN
+     * KIỂM ĐỊNH GIÁO ÁN
      */
     const handleAudit = useCallback(async () => {
         if (!lesson.result) return;
         store.setLoading('isAuditing', true);
-        store.setSuccess("ðŸ” Äang thá»±c hiá»‡n kiá»ƒm Ä‘á»‹nh chuyÃªn sÃ¢u...");
+        store.setSuccess("🔍 Đang thực hiện kiểm định chuyên sâu...");
         try {
             const { performAdvancedAudit } = await import('../actions/advanced-audit');
             const result = await performAdvancedAudit(lesson.result);
             if (result.success && result.report) {
                 store.updateLessonField('auditResult', result.report.professionalReasoning);
                 store.updateLessonField('auditScore', result.report.overallScore);
-                store.setSuccess(`âœ… Kiá»ƒm Ä‘á»‹nh hoÃ n táº¥t! Äiá»ƒm: ${result.report.overallScore}/100`);
+                store.setSuccess(`✅ Kiểm định hoàn tất! Điểm: ${result.report.overallScore}/100`);
             } else {
-                store.setError(result.error || "Kiá»ƒm Ä‘á»‹nh khÃ´ng thÃ nh cÃ´ng");
+                store.setError(result.error || "Kiểm định không thành công");
             }
         } catch (error: any) {
             store.setError(error.message);
@@ -83,14 +83,14 @@ export const useLessonActions = () => {
     }, [lesson.result, store]);
 
     /**
-     * XUáº¤T FILE WORD 5512
+     * XUẤT FILE WORD 5512
      */
     /**
-     * XUáº¤T FILE WORD THEO TEMPLATE 2 Cá»˜T
+     * XUẤT FILE WORD THEO TEMPLATE 2 CỘT
      */
     const handleExportDocx = useCallback(async () => {
         if (!lesson.result) {
-            store.setError("KhÃ´ng cÃ³ dá»¯ liá»‡u giÃ¡o Ã¡n Ä‘á»ƒ xuáº¥t");
+            store.setError("Không có dữ liệu giáo án để xuất");
             return;
         }
 
@@ -106,10 +106,10 @@ export const useLessonActions = () => {
                 theme: lesson.theme || ""
             };
             await TemplateExportService.exportLessonToTemplate(exportData);
-            store.setSuccess(`ðŸ’¾ ÄÃ£ táº£i xuá»‘ng giÃ¡o Ã¡n (Máº«u 2 Cá»™t)!`);
+            store.setSuccess(`💾 Đã tải xuống giáo án (Mẫu 2 Cột)!`);
         } catch (error: any) {
             console.error("Template Export Error:", error);
-            store.setError(error.message || "Lá»—i xuáº¥t file Template");
+            store.setError(error.message || "Lỗi xuất file Template");
         } finally {
             store.setLoading('isExporting', false);
             store.setExportProgress(0);
@@ -118,10 +118,10 @@ export const useLessonActions = () => {
     }, [lesson.result, lesson.theme, store]);
 
     /**
-     * Táº O Ná»˜I DUNG CHUYÃŠN SÃ‚U (STUB)
+     * TẠO NỘI DUNG CHUYÊN SÂU (STUB)
      */
     const handleGenerateDeepContent = useCallback(async () => {
-        store.setError("TÃ­nh nÄƒng nÃ y Ä‘Ã£ Ä‘Æ°á»£c chuyá»ƒn sang Manual Processing Hub Ä‘á»ƒ tá»‘i Æ°u cháº¥t lÆ°á»£ng.");
+        store.setError("Tính năng này đã được chuyển sang Manual Processing Hub để tối ưu chất lượng.");
     }, [store]);
 
     return {

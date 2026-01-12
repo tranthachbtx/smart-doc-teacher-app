@@ -84,31 +84,31 @@ export const ManualWorkflowService = {
   async generatePillar1Prompt(context: PromptContext): Promise<string> {
     this.validateContext(context, 'pillar_1');
     const { smartData, auditAnalysis } = context;
-    const totalPeriods = smartData.duration || context.duration || "03 tiết";
+    // Ensure "so_tiet" is available if not in context.duration
+    const totalPeriods = context.duration || smartData.duration || "3 tiết";
 
     return `
-# VAI TRÒ: Kiến trúc sư trưởng Chương trình Giáo dục (Liberal Arts & Digital Transformation - v39.2).
-
+# VAI TRÒ: Kiến trúc sư trưởng Chương trình Giáo dục (Liberal Arts - v39.2).
 # NHIỆM VỤ: Thiết lập "KHUNG XƯƠNG SỐNG" cho toàn bộ chủ đề (${context.topic}) trong ${totalPeriods}.
 
 # DỮ LIỆU ĐẦU VÀO:
-1. **Thông tin bài dạy:** Khối ${context.grade}, Chủ đề: ${context.topic}.
+1. **Thông tin:** Khối ${context.grade}, Chủ đề: ${context.topic}.
 2. **Database chuẩn MOET:** """${JSON.stringify({
       objectives: smartData.objectives,
       characteristics: smartData.studentCharacteristics,
       shdc_shl: smartData.shdc_shl_suggestions,
       notes: smartData.pedagogicalNotes
     })}"""
-3. **Audit:** """${auditAnalysis ? JSON.stringify(auditAnalysis) : "None"}"""
+3. **Audit (Phê bình):** """${auditAnalysis ? JSON.stringify(auditAnalysis) : "None"}"""
 
 # YÊU CẦU CHIẾN LƯỢC:
-1. **Mục tiêu SMART:** Viết lại mục tiêu theo tư duy Khai phóng cho TOÀN BỘ CHỦ ĐỀ.
+1. **Mục tiêu SMART:** Viết lại mục tiêu theo tư duy Khai phóng, gắn với hành vi cụ thể.
 2. **Thiết bị:** Padlet, Canva, Mentimeter, Google Forms.
 3. **Script MC:** Viết chi tiết lời dẫn và phân công nhiệm vụ.
 
 # YÊU CẦU OUTPUT JSON:
 {
-  "ten_truong": "Trường THPT [Name]",
+  "ten_truong": "Trường THPT [Tên trường]",
   "to_chuyen_mon": "[Tổ chuyên môn]",
   "ten_giao_vien": "[Giáo viên]",
   "ten_bai": "${context.topic}",
@@ -118,8 +118,8 @@ export const ManualWorkflowService = {
   "muc_tieu_pham_chat": "...",
   "gv_chuan_bi": "...",
   "hs_chuan_bi": "...",
-  "shdc": "MC Script...",
-  "shl": "Class meeting script..."
+  "shdc": "**KỊCH BẢN MC CHI TIẾT:**\\n...",
+  "shl": "**KỊCH BẢN SINH HOẠT LỚP:**\\n..."
 }
 
 QUAN TRỌNG: Chỉ trả về JSON.
@@ -133,13 +133,13 @@ QUAN TRỌNG: Chỉ trả về JSON.
     return `
 # VAI TRÒ: Kiến trúc sư Sư phạm (Constructivism - v39.2).
 
-# 🎯 CHẾ ĐỘ PHÂN ĐOẠN (SEGMENTATION MODE):
+# 🎯 CHẾ ĐỘ PHÂN ĐOẠN:
 Đây là GIAI ĐOẠN 1 của chủ đề ${context.topic}.
-- **PHẠM VI:** ${phaseContext?.range || "Tiết 1-2"}.
-- **TRỌNG TÂM:** Khởi động & Khám phá.
+- **PHẠM VI:** ${phaseContext?.range || "Tiết 1 - 2"}.
+- **TRỌNG TÂM:** Khởi động & Khám phá kiến thức mới.
 
-# DỮ LIỆU:
-1. **Mục tiêu Trụ cột 1:** """${JSON.stringify({
+# DỮ LIỆU ĐẦU VÀO:
+1. **Mục tiêu bài học (Đã chốt):** """${JSON.stringify({
       kien_thuc: context.optimizedFileSummary?.muc_tieu_kien_thuc,
       nang_luc: context.optimizedFileSummary?.muc_tieu_nang_luc,
       pham_chat: context.optimizedFileSummary?.muc_tieu_pham_chat
@@ -149,10 +149,11 @@ QUAN TRỌNG: Chỉ trả về JSON.
       kham_pha: smartData.coreMissions.khamPha
     })}"""
 
-# YÊU CẦU:
-1. **Gamification:** Trò chơi khởi động.
-2. **Station Rotation:** 4 trạm học tập.
-3. **Script:** Lời thoại GV và câu trả lời dự kiến của HS.
+# YÊU CẦU "MAX CONTENT":
+1. **Gamification (Khởi động):** Thiết kế trò chơi có luật chơi, cách tính điểm, phần thưởng. Viết lời dẫn dắt (Script) của GV.
+2. **Station Rotation (Khám phá):** Thiết kế 4 Trạm học tập.
+   - **Quan trọng:** Mô tả chi tiết tài liệu/phiếu thông tin tại từng trạm (AI tự biên soạn nội dung chuyên môn nếu thiếu).
+3. **Script:** Viết lời thoại GV và 3 phương án trả lời của HS (Đúng/Sáng tạo/Sai lệch).
 
 # YÊU CẦU OUTPUT JSON:
 {
@@ -172,14 +173,14 @@ QUAN TRỌNG: Chỉ trả về JSON.
     const isLuyenTap = phaseContext?.id === 'phase_2' || phaseContext?.name?.includes("Luyện tập");
 
     return `
-# VAI TRÒ: Chuyên gia Đánh giá (v39.2).
+# VAI TRÒ: Chuyên gia Đánh giá & Thực chiến (v39.2).
 
 # 🎯 CHẾ ĐỘ PHÂN ĐOẠN:
-- **PHẠM VI:** ${phaseContext?.range || "Tiết cuối"}.
-- **TRỌNG TÂM:** ${isLuyenTap ? "Luyện tập" : "Vận dụng"}.
+- **PHẠM VI:** ${phaseContext?.range || "Tiết 3"}.
+- **TRỌNG TÂM:** Luyện tập & Vận dụng.
 
-# DỮ LIỆU:
-1. **Mục tiêu:** """${JSON.stringify({
+# DỮ LIỆU ĐẦU VÀO:
+1. **Mục tiêu bài học:** """${JSON.stringify({
       kien_thuc: context.optimizedFileSummary?.muc_tieu_kien_thuc,
       nang_luc: context.optimizedFileSummary?.muc_tieu_nang_luc,
       pham_chat: context.optimizedFileSummary?.muc_tieu_pham_chat
@@ -189,17 +190,20 @@ QUAN TRỌNG: Chỉ trả về JSON.
       van_dung: smartData.coreMissions.vanDung
     })}"""
 
-# YÊU CẦU:
-1. **Case Study:** Tình huống giả định 300 chữ.
-2. **PBL:** Dự án thực tế.
-3. **Rubric:** Đánh giá 4 mức độ.
+# YÊU CẦU NÂNG CẤP (QUAN TRỌNG):
+1. **Luyện tập (Fail-Safe):**
+   - Kiểm tra dữ liệu Database phần Luyện tập.
+   - **Nếu có dữ liệu:** Hãy phát triển nó thành kịch bản chi tiết.
+   - **Nếu dữ liệu TRỐNG hoặc sơ sài:** Bạn BẮT BUỘC phải sáng tạo một **Tình huống giả định (Case Study)** dài 300 chữ liên quan đến chủ đề để HS đóng vai xử lý.
+2. **Vận dụng (PBL):** Thiết kế Phiếu giao Dự án thực tế (Project-based) với timeline cụ thể.
+3. **Đánh giá:** Tạo Rubric 4 mức độ và nội dung các Phiếu học tập/Phiếu giao việc.
 
 # YÊU CẦU OUTPUT JSON:
 {
-  "luyen_tap": { "cot_gv": "...", "cot_hs": "..." },
-  "van_dung": { "cot_gv": "...", "cot_hs": "..." },
-  "phieu_hoc_tap": "...",
-  "rubric_danh_gia": "...",
+  "luyen_tap": { "cot_gv": "**CASE STUDY / TÌNH HUỐNG (300 chữ):**\\n...", "cot_hs": "..." },
+  "van_dung": { "cot_gv": "**DỰ ÁN STEM/XÃ HỘI:**\\n...", "cot_hs": "..." },
+  "phieu_hoc_tap": "**NỘI DUNG PHIẾU HỌC TẬP:**\\n...",
+  "rubric_danh_gia": "**RUBRIC ĐÁNH GIÁ (Thang điểm 10):**\\n...",
   "huong_dan_ve_nha": "..."
 }
 

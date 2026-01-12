@@ -1,6 +1,6 @@
 /**
- * ðŸŽ¯ SIMPLE JSON PARSER - BACK TO BASICS ARCHITECTURE 17.0
- * Parse JSON response tá»« AI má»™t cÃ¡ch Ä‘Æ¡n giáº£n vÃ  robust
+ * 🎯 SIMPLE JSON PARSER - BACK TO BASICS ARCHITECTURE 17.0
+ * Parse JSON response từ AI một cách đơn giản và robust
  */
 
 export interface LessonPlanData {
@@ -52,17 +52,17 @@ function extractJSONFromText(text: string): string | null {
 
 function validateAndNormalize(data: any): LessonPlanData {
   return {
-    title: data.title || data.tieuDe || 'GiÃ¡o Ã¡n',
-    grade: data.grade || data.lop || 'KhÃ´ng xÃ¡c Ä‘á»‹nh',
+    title: data.title || data.tieuDe || 'Giáo án',
+    grade: data.grade || data.lop || 'Không xác định',
     objectives: Array.isArray(data.objectives) ? data.objectives : 
                Array.isArray(data.mucTieu) ? data.mucTieu : 
-               [data.objectives || data.mucTieu || 'Má»¥c tiÃªu há»c táº­p'].filter(Boolean),
+               [data.objectives || data.mucTieu || 'Mục tiêu học tập'].filter(Boolean),
     activities: Array.isArray(data.activities) ? data.activities :
                 Array.isArray(data.hoatDong) ? data.hoatDong :
-                [data.activities || data.hoatDong || 'Hoáº¡t Ä‘á»™ng há»c táº­p'].filter(Boolean),
+                [data.activities || data.hoatDong || 'Hoạt động học tập'].filter(Boolean),
     assessment: Array.isArray(data.assessment) ? data.assessment :
                 Array.isArray(data.danhGia) ? data.danhGia :
-                [data.assessment || data.danhGia || 'Kiá»ƒm tra Ä‘Ã¡nh giÃ¡'].filter(Boolean),
+                [data.assessment || data.danhGia || 'Kiểm tra đánh giá'].filter(Boolean),
     content: data.content || data.noiDung || ''
   };
 }
@@ -71,12 +71,12 @@ function createStructuredResponse(text: string): LessonPlanData {
   // Simple text parsing to extract structured information
   const lines = text.split('\n').filter(line => line.trim());
   
-  const title = extractField(lines, ['tiÃªu Ä‘á»', 'tÃªn bÃ i há»c', 'chá»§ Ä‘á»']) || 'GiÃ¡o Ã¡n';
-  const grade = extractField(lines, ['lá»›p', 'khá»‘i']) || 'KhÃ´ng xÃ¡c Ä‘á»‹nh';
+  const title = extractField(lines, ['tiêu đề', 'tên bài học', 'chủ đề']) || 'Giáo án';
+  const grade = extractField(lines, ['lớp', 'khối']) || 'Không xác định';
   
-  const objectives = extractList(lines, ['má»¥c tiÃªu', 'má»¥c tiÃªu há»c táº­p']) || ['Má»¥c tiÃªu há»c táº­p'];
-  const activities = extractList(lines, ['hoáº¡t Ä‘á»™ng', 'hoáº¡t Ä‘á»™ng dáº¡y há»c']) || ['Hoáº¡t Ä‘á»™ng há»c táº­p'];
-  const assessment = extractList(lines, ['Ä‘Ã¡nh giÃ¡', 'kiá»ƒm tra']) || ['Kiá»ƒm tra Ä‘Ã¡nh giÃ¡'];
+  const objectives = extractList(lines, ['mục tiêu', 'mục tiêu học tập']) || ['Mục tiêu học tập'];
+  const activities = extractList(lines, ['hoạt động', 'hoạt động dạy học']) || ['Hoạt động học tập'];
+  const assessment = extractList(lines, ['đánh giá', 'kiểm tra']) || ['Kiểm tra đánh giá'];
   
   return {
     title,
@@ -122,12 +122,12 @@ function extractList(lines: string[], keywords: string[]): string[] | null {
     // If we're in a section, collect list items
     if (foundSection) {
       // Check for list markers (-, *, 1., 2., etc.)
-      const listItem = line.match(/^[\s]*[-*â€¢]\s*(.+)$|^\d+\.\s*(.+)$/);
+      const listItem = line.match(/^[\s]*[-*•]\s*(.+)$|^\d+\.\s*(.+)$/);
       if (listItem) {
         items.push(listItem[1].trim());
       }
       // Stop collecting if we hit another section
-      else if (line.includes(':') && !line.match(/^[\s]*[-*â€¢]/)) {
+      else if (line.includes(':') && !line.match(/^[\s]*[-*•]/)) {
         break;
       }
     }

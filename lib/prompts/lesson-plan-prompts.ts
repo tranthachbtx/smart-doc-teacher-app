@@ -1,173 +1,173 @@
 /**
  * ============================================================
- * LESSON PLAN PROMPTS - Káº¾ HOáº CH BÃ€I Dáº Y HÄTN
+ * LESSON PLAN PROMPTS - KẾ HOẠCH BÀI DẠY HĐTN
  * ============================================================
  *
- * File nÃ y chá»©a toÃ n bá»™ prompt huáº¥n luyá»‡n Gemini AI
- * Ä‘á»ƒ thiáº¿t káº¿ Káº¿ hoáº¡ch bÃ i dáº¡y mÃ´n Hoáº¡t Ä‘á»™ng tráº£i nghiá»‡m, HÆ°á»›ng nghiá»‡p
- * theo bá»™ sÃ¡ch "Káº¿t ná»‘i Tri thá»©c vá»›i Cuá»™c sá»‘ng"
+ * File này chứa toàn bộ prompt huấn luyện Gemini AI
+ * để thiết kế Kế hoạch bài dạy môn Hoạt động trải nghiệm, Hướng nghiệp
+ * theo bộ sách "Kết nối Tri thức với Cuộc sống"
  *
- * HÆ¯á»šNG DáºªN CHá»ˆNH Sá»¬A:
- * 1. CÆ  Sá»ž Dá»® LIá»†U CHÆ¯Æ NG TRÃŒNH (CURRICULUM_DATABASE):
- *    - Chá»‰nh sá»­a ná»™i dung chá»§ Ä‘á» theo SGK
- *    - Cáº­p nháº­t yÃªu cáº§u cáº§n Ä‘áº¡t cho tá»«ng khá»‘i lá»›p
+ * HƯỚNG DẪN CHỈNH SỬA:
+ * 1. CƠ SỞ DỮ LIỆU CHƯƠNG TRÌNH (CURRICULUM_DATABASE):
+ *    - Chỉnh sửa nội dung chủ đề theo SGK
+ *    - Cập nhật yêu cầu cần đạt cho từng khối lớp
  *
- * 2. QUY Táº®C PHÃ‚N TÃCH NGá»® Cáº¢NH (CONTEXT_PARSING_RULES):
- *    - Thay Ä‘á»•i má»©c Ä‘á»™ Bloom's taxonomy theo khá»‘i
- *    - Cáº­p nháº­t Ä‘áº·c Ä‘iá»ƒm tÃ¢m lÃ½ há»c sinh
+ * 2. QUY TẮC PHÂN TÍCH NGỮ CẢNH (CONTEXT_PARSING_RULES):
+ *    - Thay đổi mức độ Bloom's taxonomy theo khối
+ *    - Cập nhật đặc điểm tâm lý học sinh
  *
- * 3. Cáº¤U TRÃšC GIÃO ÃN (LESSON_STRUCTURE):
- *    - TuÃ¢n thá»§ CÃ´ng vÄƒn 5512/BGDÄT-GDTrH
- *    - CÃ³ thá»ƒ thÃªm/bá»›t cÃ¡c pháº§n theo yÃªu cáº§u BGH
+ * 3. CẤU TRÚC GIÁO ÁN (LESSON_STRUCTURE):
+ *    - Tuân thủ Công văn 5512/BGDĐT-GDTrH
+ *    - Có thể thêm/bớt các phần theo yêu cầu BGH
  *
  * ============================================================
  */
 
 // ============================================================
-// PHáº¦N 1: CÆ  Sá»ž LÃ LUáº¬N VÃ€ TRIáº¾T LÃ SÆ¯ PHáº M
+// PHẦN 1: CƠ SỞ LÝ LUẬN VÀ TRIẾT LÝ SƯ PHẠM
 // ============================================================
 
 export const PEDAGOGICAL_FOUNDATION = `
-TRIáº¾T LÃ "Káº¾T Ná»I TRI THá»¨C":
+TRIẾT LÝ "KẾT NỐI TRI THỨC":
 
-Bá»™ sÃ¡ch "Káº¿t ná»‘i tri thá»©c vá»›i cuá»™c sá»‘ng" Ä‘Æ°á»£c xÃ¢y dá»±ng dá»±a trÃªn quan Ä‘iá»ƒm:
-- ÄÆ°a bÃ i há»c vÃ o thá»±c tiá»…n cuá»™c sá»‘ng
-- ÄÆ°a cuá»™c sá»‘ng vÃ o bÃ i há»c
-- Há»c sinh lÃ  TRUNG TÃ‚M cá»§a sá»± tráº£i nghiá»‡m, chiÃªm nghiá»‡m vÃ  Ä‘Ãºc káº¿t
+Bộ sách "Kết nối tri thức với cuộc sống" được xây dựng dựa trên quan điểm:
+- Đưa bài học vào thực tiễn cuộc sống
+- Đưa cuộc sống vào bài học
+- Học sinh là TRUNG TÂM của sự trải nghiệm, chiêm nghiệm và đúc kết
 
-MÃ” HÃŒNH XOáº®N á»C (SPIRAL CURRICULUM):
-CÃ¡c chá»§ Ä‘á» cá»‘t lÃµi "Báº£n thÃ¢n", "Gia Ä‘Ã¬nh", "Cá»™ng Ä‘á»“ng", "MÃ´i trÆ°á»ng" vÃ  "Nghá» nghiá»‡p" 
-Ä‘Æ°á»£c láº·p láº¡i á»Ÿ cáº£ ba khá»‘i lá»›p nhÆ°ng vá»›i Má»¨C Äá»˜ YÃŠU Cáº¦U TÄ‚NG TIáº¾N vá» chiá»u sÃ¢u vÃ  Ä‘á»™ phá»©c táº¡p.
+MÔ HÌNH XOẮN ỐC (SPIRAL CURRICULUM):
+Các chủ đề cốt lõi "Bản thân", "Gia đình", "Cộng đồng", "Môi trường" và "Nghề nghiệp" 
+được lặp lại ở cả ba khối lớp nhưng với MỨC ĐỘ YÊU CẦU TĂNG TIẾN về chiều sâu và độ phức tạp.
 
-PHÃ‚N TÃCH Dá»ŒC THEO KHá»I Lá»šP (Bloom's Taxonomy):
+PHÂN TÍCH DỌC THEO KHỐI LỚP (Bloom's Taxonomy):
 
-Khá»‘i 10 - Má»¨C "TÃŒM HIá»‚U" (Nháº­n biáº¿t, Hiá»ƒu):
-- Trá»ng tÃ¢m: ThÃ­ch á»©ng vÃ  nháº­n diá»‡n
-- Há»c sinh vá»«a bÆ°á»›c vÃ o mÃ´i trÆ°á»ng THPT, cáº§n Ä‘á»‹nh vá»‹ báº£n thÃ¢n
-- LÃ m quen vá»›i cÃ¡c khÃ¡i niá»‡m nghá» nghiá»‡p cÆ¡ báº£n
-- Tá»« khÃ³a hoáº¡t Ä‘á»™ng: TÃ¬m hiá»ƒu, Nháº­n biáº¿t, KhÃ¡m phÃ¡, MÃ´ táº£
+Khối 10 - MỨC "TÌM HIỂU" (Nhận biết, Hiểu):
+- Trọng tâm: Thích ứng và nhận diện
+- Học sinh vừa bước vào môi trường THPT, cần định vị bản thân
+- Làm quen với các khái niệm nghề nghiệp cơ bản
+- Từ khóa hoạt động: Tìm hiểu, Nhận biết, Khám phá, Mô tả
 
-Khá»‘i 11 - Má»¨C "PHÃ‚N TÃCH/ÄÃNH GIÃ" (PhÃ¢n tÃ­ch, ÄÃ¡nh giÃ¡):
-- Trá»ng tÃ¢m: PhÃ¡t triá»ƒn vÃ  káº¿t ná»‘i
-- Há»c sinh má»Ÿ rá»™ng ra cá»™ng Ä‘á»“ng, xÃ£ há»™i
-- PhÃ¡t triá»ƒn ká»¹ nÄƒng má»m phá»©c táº¡p
-- Tá»« khÃ³a hoáº¡t Ä‘á»™ng: PhÃ¢n tÃ­ch, So sÃ¡nh, ÄÃ¡nh giÃ¡, Pháº£n biá»‡n
+Khối 11 - MỨC "PHÂN TÍCH/ĐÁNH GIÁ" (Phân tích, Đánh giá):
+- Trọng tâm: Phát triển và kết nối
+- Học sinh mở rộng ra cộng đồng, xã hội
+- Phát triển kỹ năng mềm phức tạp
+- Từ khóa hoạt động: Phân tích, So sánh, Đánh giá, Phản biện
 
-Khá»‘i 12 - Má»¨C "QUYáº¾T Äá»ŠNH/GIáº¢I QUYáº¾T" (Tá»•ng há»£p, SÃ¡ng táº¡o):
-- Trá»ng tÃ¢m: TrÆ°á»Ÿng thÃ nh vÃ  quyáº¿t Ä‘á»‹nh
-- Há»c sinh Ä‘á»‘i máº·t vá»›i cÃ¡c quyáº¿t Ä‘á»‹nh nghá» nghiá»‡p thá»±c sá»±
-- Chuáº©n bá»‹ cho cuá»™c sá»‘ng cÃ´ng dÃ¢n
-- Tá»« khÃ³a hoáº¡t Ä‘á»™ng: Quyáº¿t Ä‘á»‹nh, Giáº£i quyáº¿t, XÃ¢y dá»±ng, Thiáº¿t káº¿
+Khối 12 - MỨC "QUYẾT ĐỊNH/GIẢI QUYẾT" (Tổng hợp, Sáng tạo):
+- Trọng tâm: Trưởng thành và quyết định
+- Học sinh đối mặt với các quyết định nghề nghiệp thực sự
+- Chuẩn bị cho cuộc sống công dân
+- Từ khóa hoạt động: Quyết định, Giải quyết, Xây dựng, Thiết kế
 `
 
 // ============================================================
-// PHáº¦N 2: CÆ  Sá»ž Dá»® LIá»†U CHÆ¯Æ NG TRÃŒNH (Káº¾T Ná»I TRI THá»¨C)
+// PHẦN 2: CƠ SỞ DỮ LIỆU CHƯƠNG TRÌNH (KẾT NỐI TRI THỨC)
 // ============================================================
 
 export const CURRICULUM_DATABASE = {
   "10": {
-    title: "Lá»›p 10: ThÃ­ch á»©ng vÃ  KhÃ¡m phÃ¡ Báº£n thÃ¢n",
-    description: "GiÃºp há»c sinh chuyá»ƒn giao tá»« THCS sang THPT, Ä‘á»‹nh hÃ¬nh nhÃ¢n cÃ¡ch vÃ  lÃ m quen mÃ´i trÆ°á»ng má»›i",
-    bloomLevel: "Nháº­n biáº¿t, Hiá»ƒu (TÃ¬m hiá»ƒu)",
+    title: "Lớp 10: Thích ứng và Khám phá Bản thân",
+    description: "Giúp học sinh chuyển giao từ THCS sang THPT, định hình nhân cách và làm quen môi trường mới",
+    bloomLevel: "Nhận biết, Hiểu (Tìm hiểu)",
     themes: {
-      // Máº CH 1: HOáº T Äá»˜NG HÆ¯á»šNG VÃ€O Báº¢N THÃ‚N
+      // MẠCH 1: HOẠT ĐỘNG HƯỚNG VÀO BẢN THÂN
       ban_than: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng vÃ o báº£n thÃ¢n",
+        name: "Hoạt động hướng vào bản thân",
         topics: [
           {
             id: "10.1",
-            name: "Thá»ƒ hiá»‡n pháº©m cháº¥t tá»‘t Ä‘áº¹p cá»§a ngÆ°á»i há»c sinh",
-            coreActivity: "Nháº­n diá»‡n cÃ¡c pháº©m cháº¥t tá»‘t Ä‘áº¹p cáº§n cÃ³ cá»§a há»c sinh THPT",
-            outcomes: ["Liá»‡t kÃª Ä‘Æ°á»£c cÃ¡c pháº©m cháº¥t tá»‘t Ä‘áº¹p", "Tá»± Ä‘Ã¡nh giÃ¡ báº£n thÃ¢n", "Láº­p káº¿ hoáº¡ch rÃ¨n luyá»‡n"],
-            methods: ["Tháº£o luáº­n nhÃ³m", "TrÃ² chÆ¡i khÃ¡m phÃ¡ báº£n thÃ¢n", "Viáº¿t nháº­t kÃ½"],
+            name: "Thể hiện phẩm chất tốt đẹp của người học sinh",
+            coreActivity: "Nhận diện các phẩm chất tốt đẹp cần có của học sinh THPT",
+            outcomes: ["Liệt kê được các phẩm chất tốt đẹp", "Tự đánh giá bản thân", "Lập kế hoạch rèn luyện"],
+            methods: ["Thảo luận nhóm", "Trò chơi khám phá bản thân", "Viết nhật ký"],
           },
           {
             id: "10.2",
-            name: "XÃ¢y dá»±ng quan Ä‘iá»ƒm sá»‘ng",
-            coreActivity: "TÃ¬m hiá»ƒu vÃ  xÃ¢y dá»±ng quan Ä‘iá»ƒm sá»‘ng tÃ­ch cá»±c",
-            outcomes: ["Hiá»ƒu tháº¿ nÃ o lÃ  quan Ä‘iá»ƒm sá»‘ng", "XÃ¡c Ä‘á»‹nh quan Ä‘iá»ƒm sá»‘ng cÃ¡ nhÃ¢n", "Chia sáº» vá»›i báº¡n bÃ¨"],
-            methods: ["CÃ¢u chuyá»‡n truyá»n cáº£m há»©ng", "Tháº£o luáº­n nhÃ³m", "BÃ i táº­p tá»± váº¥n"],
+            name: "Xây dựng quan điểm sống",
+            coreActivity: "Tìm hiểu và xây dựng quan điểm sống tích cực",
+            outcomes: ["Hiểu thế nào là quan điểm sống", "Xác định quan điểm sống cá nhân", "Chia sẻ với bạn bè"],
+            methods: ["Câu chuyện truyền cảm hứng", "Thảo luận nhóm", "Bài tập tự vấn"],
           },
           {
             id: "10.3",
-            name: "RÃ¨n luyá»‡n báº£n thÃ¢n",
-            coreActivity: "XÃ¢y dá»±ng thÃ³i quen há»c táº­p vÃ  sinh hoáº¡t tÃ­ch cá»±c",
-            outcomes: ["Láº­p káº¿ hoáº¡ch rÃ¨n luyá»‡n", "Thá»±c hiá»‡n vÃ  theo dÃµi tiáº¿n Ä‘á»™", "Äiá»u chá»‰nh phÃ¹ há»£p"],
-            methods: ["Láº­p káº¿ hoáº¡ch SMART", "Nháº­t kÃ½ theo dÃµi", "Chia sáº» kinh nghiá»‡m"],
+            name: "Rèn luyện bản thân",
+            coreActivity: "Xây dựng thói quen học tập và sinh hoạt tích cực",
+            outcomes: ["Lập kế hoạch rèn luyện", "Thực hiện và theo dõi tiến độ", "Điều chỉnh phù hợp"],
+            methods: ["Lập kế hoạch SMART", "Nhật ký theo dõi", "Chia sẻ kinh nghiệm"],
           },
           {
             id: "10.4",
-            name: "Tá»± tin giao tiáº¿p",
-            coreActivity: "RÃ¨n luyá»‡n ká»¹ nÄƒng giao tiáº¿p tá»± tin",
-            outcomes: ["Nháº­n biáº¿t rÃ o cáº£n giao tiáº¿p", "Thá»±c hÃ nh giao tiáº¿p", "Tá»± tin trÃ¬nh bÃ y"],
-            methods: ["ÄÃ³ng vai", "Thuyáº¿t trÃ¬nh ngáº¯n", "Pháº£n há»“i tÃ­ch cá»±c"],
+            name: "Tự tin giao tiếp",
+            coreActivity: "Rèn luyện kỹ năng giao tiếp tự tin",
+            outcomes: ["Nhận biết rào cản giao tiếp", "Thực hành giao tiếp", "Tự tin trình bày"],
+            methods: ["Đóng vai", "Thuyết trình ngắn", "Phản hồi tích cực"],
           },
         ],
       },
-      // Máº CH 2: HOáº T Äá»˜NG HÆ¯á»šNG Äáº¾N XÃƒ Há»˜I
+      // MẠCH 2: HOẠT ĐỘNG HƯỚNG ĐẾN XÃ HỘI
       xa_hoi: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng Ä‘áº¿n xÃ£ há»™i",
+        name: "Hoạt động hướng đến xã hội",
         topics: [
           {
             id: "10.5",
-            name: "Thá»±c hiá»‡n trÃ¡ch nhiá»‡m vá»›i gia Ä‘Ã¬nh",
-            coreActivity: "Nháº­n thá»©c vÃ  thá»±c hiá»‡n trÃ¡ch nhiá»‡m cá»§a con cÃ¡i trong gia Ä‘Ã¬nh",
-            outcomes: ["Liá»‡t kÃª trÃ¡ch nhiá»‡m", "Láº­p káº¿ hoáº¡ch thá»±c hiá»‡n", "ÄÃ¡nh giÃ¡ káº¿t quáº£"],
-            methods: ["Tháº£o luáº­n tÃ¬nh huá»‘ng", "Dá»± Ã¡n gia Ä‘Ã¬nh", "Chia sáº» cÃ¢u chuyá»‡n"],
+            name: "Thực hiện trách nhiệm với gia đình",
+            coreActivity: "Nhận thức và thực hiện trách nhiệm của con cái trong gia đình",
+            outcomes: ["Liệt kê trách nhiệm", "Lập kế hoạch thực hiện", "Đánh giá kết quả"],
+            methods: ["Thảo luận tình huống", "Dự án gia đình", "Chia sẻ câu chuyện"],
           },
           {
             id: "10.6",
-            name: "XÃ¢y dá»±ng cá»™ng Ä‘á»“ng",
-            coreActivity: "Tham gia cÃ¡c hoáº¡t Ä‘á»™ng xÃ¢y dá»±ng cá»™ng Ä‘á»“ng",
-            outcomes: ["Nháº­n biáº¿t váº¥n Ä‘á» cá»™ng Ä‘á»“ng", "Äá» xuáº¥t giáº£i phÃ¡p", "Tham gia hoáº¡t Ä‘á»™ng"],
-            methods: ["Kháº£o sÃ¡t cá»™ng Ä‘á»“ng", "Dá»± Ã¡n tÃ¬nh nguyá»‡n", "BÃ¡o cÃ¡o káº¿t quáº£"],
+            name: "Xây dựng cộng đồng",
+            coreActivity: "Tham gia các hoạt động xây dựng cộng đồng",
+            outcomes: ["Nhận biết vấn đề cộng đồng", "Đề xuất giải pháp", "Tham gia hoạt động"],
+            methods: ["Khảo sát cộng đồng", "Dự án tình nguyện", "Báo cáo kết quả"],
           },
         ],
       },
-      // Máº CH 3: HOáº T Äá»˜NG HÆ¯á»šNG Äáº¾N Tá»° NHIÃŠN
+      // MẠCH 3: HOẠT ĐỘNG HƯỚNG ĐẾN TỰ NHIÊN
       tu_nhien: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng Ä‘áº¿n tá»± nhiÃªn",
+        name: "Hoạt động hướng đến tự nhiên",
         topics: [
           {
             id: "10.7",
-            name: "Báº£o tá»“n cáº£nh quan thiÃªn nhiÃªn",
-            coreActivity: "TÃ¬m hiá»ƒu vÃ  báº£o vá»‡ cáº£nh quan thiÃªn nhiÃªn Ä‘á»‹a phÆ°Æ¡ng",
-            outcomes: ["Nháº­n biáº¿t cáº£nh quan", "Äá» xuáº¥t báº£o vá»‡", "Thá»±c hiá»‡n hÃ nh Ä‘á»™ng"],
-            methods: ["Tham quan thá»±c Ä‘á»‹a", "Dá»± Ã¡n báº£o vá»‡", "Truyá»n thÃ´ng"],
+            name: "Bảo tồn cảnh quan thiên nhiên",
+            coreActivity: "Tìm hiểu và bảo vệ cảnh quan thiên nhiên địa phương",
+            outcomes: ["Nhận biết cảnh quan", "Đề xuất bảo vệ", "Thực hiện hành động"],
+            methods: ["Tham quan thực địa", "Dự án bảo vệ", "Truyền thông"],
           },
           {
             id: "10.8",
-            name: "Báº£o vá»‡ mÃ´i trÆ°á»ng",
-            coreActivity: "Thá»±c hiá»‡n cÃ¡c hoáº¡t Ä‘á»™ng báº£o vá»‡ mÃ´i trÆ°á»ng",
-            outcomes: ["Nháº­n thá»©c váº¥n Ä‘á»", "Thay Ä‘á»•i hÃ nh vi", "Váº­n Ä‘á»™ng ngÆ°á»i khÃ¡c"],
-            methods: ["Chiáº¿n dá»‹ch mÃ´i trÆ°á»ng", "3R thá»±c hÃ nh", "Truyá»n thÃ´ng sá»‘"],
+            name: "Bảo vệ môi trường",
+            coreActivity: "Thực hiện các hoạt động bảo vệ môi trường",
+            outcomes: ["Nhận thức vấn đề", "Thay đổi hành vi", "Vận động người khác"],
+            methods: ["Chiến dịch môi trường", "3R thực hành", "Truyền thông số"],
           },
         ],
       },
-      // Máº CH 4: HOáº T Äá»˜NG HÆ¯á»šNG NGHIá»†P
+      // MẠCH 4: HOẠT ĐỘNG HƯỚNG NGHIỆP
       huong_nghiep: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng nghiá»‡p",
+        name: "Hoạt động hướng nghiệp",
         topics: [
           {
             id: "10.9",
-            name: "TÃ¬m hiá»ƒu hoáº¡t Ä‘á»™ng sáº£n xuáº¥t, kinh doanh, dá»‹ch vá»¥ cá»§a Ä‘á»‹a phÆ°Æ¡ng",
-            coreActivity: "Kháº£o sÃ¡t vÃ  tÃ¬m hiá»ƒu cÃ¡c ngÃ nh nghá» táº¡i Ä‘á»‹a phÆ°Æ¡ng",
-            outcomes: ["Liá»‡t kÃª ngÃ nh nghá»", "MÃ´ táº£ Ä‘áº·c Ä‘iá»ƒm", "ÄÃ¡nh giÃ¡ tiá»m nÄƒng"],
-            methods: ["Tham quan cÆ¡ sá»Ÿ", "Phá»ng váº¥n ngÆ°á»i lao Ä‘á»™ng", "BÃ¡o cÃ¡o nhÃ³m"],
+            name: "Tìm hiểu hoạt động sản xuất, kinh doanh, dịch vụ của địa phương",
+            coreActivity: "Khảo sát và tìm hiểu các ngành nghề tại địa phương",
+            outcomes: ["Liệt kê ngành nghề", "Mô tả đặc điểm", "Đánh giá tiềm năng"],
+            methods: ["Tham quan cơ sở", "Phỏng vấn người lao động", "Báo cáo nhóm"],
           },
           {
             id: "10.10",
-            name: "Hiá»ƒu báº£n thÃ¢n Ä‘á»ƒ chá»n nghá»",
-            coreActivity: "ÄÃ¡nh giÃ¡ nÄƒng lá»±c, sá»Ÿ thÃ­ch Ä‘á»ƒ Ä‘á»‹nh hÆ°á»›ng nghá» nghiá»‡p",
-            outcomes: ["Tá»± Ä‘Ã¡nh giÃ¡ nÄƒng lá»±c", "XÃ¡c Ä‘á»‹nh sá»Ÿ thÃ­ch nghá»", "LiÃªn há»‡ vá»›i nghá» nghiá»‡p"],
-            methods: ["Tráº¯c nghiá»‡m Holland", "Tháº£o luáº­n nhÃ³m", "TÆ° váº¥n cÃ¡ nhÃ¢n"],
+            name: "Hiểu bản thân để chọn nghề",
+            coreActivity: "Đánh giá năng lực, sở thích để định hướng nghề nghiệp",
+            outcomes: ["Tự đánh giá năng lực", "Xác định sở thích nghề", "Liên hệ với nghề nghiệp"],
+            methods: ["Trắc nghiệm Holland", "Thảo luận nhóm", "Tư vấn cá nhân"],
           },
           {
             id: "10.11",
-            name: "Äá»‹nh hÆ°á»›ng há»c táº­p vÃ  rÃ¨n luyá»‡n theo nhÃ³m nghá» lá»±a chá»n",
-            coreActivity: "XÃ¢y dá»±ng káº¿ hoáº¡ch há»c táº­p phÃ¹ há»£p vá»›i Ä‘á»‹nh hÆ°á»›ng nghá»",
-            outcomes: ["Chá»n nhÃ³m nghá» quan tÃ¢m", "Láº­p káº¿ hoáº¡ch há»c táº­p", "Thá»±c hiá»‡n vÃ  Ä‘iá»u chá»‰nh"],
-            methods: ["Láº­p káº¿ hoáº¡ch", "Mentor nghá» nghiá»‡p", "Theo dÃµi tiáº¿n Ä‘á»™"],
+            name: "Định hướng học tập và rèn luyện theo nhóm nghề lựa chọn",
+            coreActivity: "Xây dựng kế hoạch học tập phù hợp với định hướng nghề",
+            outcomes: ["Chọn nhóm nghề quan tâm", "Lập kế hoạch học tập", "Thực hiện và điều chỉnh"],
+            methods: ["Lập kế hoạch", "Mentor nghề nghiệp", "Theo dõi tiến độ"],
           },
         ],
       },
@@ -175,97 +175,97 @@ export const CURRICULUM_DATABASE = {
   },
 
   "11": {
-    title: "Lá»›p 11: Ká»¹ nÄƒng XÃ£ há»™i vÃ  NhÃ³m nghá» ChuyÃªn sÃ¢u",
-    description: "PhÃ¡t triá»ƒn ká»¹ nÄƒng má»m phá»©c táº¡p vÃ  tÃ¬m hiá»ƒu chuyÃªn sÃ¢u vá» thá»‹ trÆ°á»ng lao Ä‘á»™ng",
-    bloomLevel: "PhÃ¢n tÃ­ch, ÄÃ¡nh giÃ¡",
+    title: "Lớp 11: Kỹ năng Xã hội và Nhóm nghề Chuyên sâu",
+    description: "Phát triển kỹ năng mềm phức tạp và tìm hiểu chuyên sâu về thị trường lao động",
+    bloomLevel: "Phân tích, Đánh giá",
     themes: {
       ban_than: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng vÃ o báº£n thÃ¢n",
+        name: "Hoạt động hướng vào bản thân",
         topics: [
           {
             id: "11.1",
-            name: "XÃ¢y dá»±ng quan há»‡ vá»›i tháº§y cÃ´, báº¡n bÃ¨",
-            coreActivity: "PhÃ¢n tÃ­ch vÃ  phÃ¡t triá»ƒn má»‘i quan há»‡ tÃ­ch cá»±c",
-            outcomes: ["ÄÃ¡nh giÃ¡ má»‘i quan há»‡ hiá»‡n táº¡i", "XÃ¢y dá»±ng chiáº¿n lÆ°á»£c cáº£i thiá»‡n", "Thá»±c hÃ nh ká»¹ nÄƒng"],
-            methods: ["PhÃ¢n tÃ­ch tÃ¬nh huá»‘ng", "ÄÃ³ng vai", "Pháº£n há»“i 360 Ä‘á»™"],
+            name: "Xây dựng quan hệ với thầy cô, bạn bè",
+            coreActivity: "Phân tích và phát triển mối quan hệ tích cực",
+            outcomes: ["Đánh giá mối quan hệ hiện tại", "Xây dựng chiến lược cải thiện", "Thực hành kỹ năng"],
+            methods: ["Phân tích tình huống", "Đóng vai", "Phản hồi 360 độ"],
           },
           {
             id: "11.2",
-            name: "Quáº£n lÃ½ cáº£m xÃºc báº£n thÃ¢n",
-            coreActivity: "Nháº­n diá»‡n vÃ  quáº£n lÃ½ cáº£m xÃºc hiá»‡u quáº£",
-            outcomes: ["Nháº­n biáº¿t cáº£m xÃºc", "Ãp dá»¥ng ká»¹ thuáº­t quáº£n lÃ½", "ÄÃ¡nh giÃ¡ hiá»‡u quáº£"],
-            methods: ["Nháº­t kÃ½ cáº£m xÃºc", "Ká»¹ thuáº­t thÆ° giÃ£n", "Chia sáº» nhÃ³m"],
+            name: "Quản lý cảm xúc bản thân",
+            coreActivity: "Nhận diện và quản lý cảm xúc hiệu quả",
+            outcomes: ["Nhận biết cảm xúc", "Áp dụng kỹ thuật quản lý", "Đánh giá hiệu quả"],
+            methods: ["Nhật ký cảm xúc", "Kỹ thuật thư giãn", "Chia sẻ nhóm"],
           },
           {
             id: "11.3",
-            name: "TÆ° duy Ä‘á»™c láº­p vÃ  pháº£n biá»‡n",
-            coreActivity: "RÃ¨n luyá»‡n tÆ° duy pháº£n biá»‡n trong há»c táº­p vÃ  cuá»™c sá»‘ng",
-            outcomes: ["PhÃ¢n tÃ­ch váº¥n Ä‘á» Ä‘a chiá»u", "ÄÃ¡nh giÃ¡ thÃ´ng tin", "ÄÆ°a ra quan Ä‘iá»ƒm cÃ³ cÄƒn cá»©"],
-            methods: ["Tranh biá»‡n", "PhÃ¢n tÃ­ch case study", "Viáº¿t bÃ i luáº­n"],
+            name: "Tư duy độc lập và phản biện",
+            coreActivity: "Rèn luyện tư duy phản biện trong học tập và cuộc sống",
+            outcomes: ["Phân tích vấn đề đa chiều", "Đánh giá thông tin", "Đưa ra quan điểm có căn cứ"],
+            methods: ["Tranh biện", "Phân tích case study", "Viết bài luận"],
           },
           {
             id: "11.4",
-            name: "Giáº£i quyáº¿t mÃ¢u thuáº«n trong gia Ä‘Ã¬nh",
-            coreActivity: "PhÃ¢n tÃ­ch nguyÃªn nhÃ¢n vÃ  tÃ¬m giáº£i phÃ¡p cho mÃ¢u thuáº«n gia Ä‘Ã¬nh",
-            outcomes: ["Nháº­n diá»‡n nguyÃªn nhÃ¢n", "Äá» xuáº¥t giáº£i phÃ¡p", "Thá»±c hÃ nh giao tiáº¿p"],
-            methods: ["PhÃ¢n tÃ­ch tÃ¬nh huá»‘ng", "ÄÃ³ng vai", "Ká»¹ nÄƒng láº¯ng nghe"],
+            name: "Giải quyết mâu thuẫn trong gia đình",
+            coreActivity: "Phân tích nguyên nhân và tìm giải pháp cho mâu thuẫn gia đình",
+            outcomes: ["Nhận diện nguyên nhân", "Đề xuất giải pháp", "Thực hành giao tiếp"],
+            methods: ["Phân tích tình huống", "Đóng vai", "Kỹ năng lắng nghe"],
           },
         ],
       },
       xa_hoi: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng Ä‘áº¿n xÃ£ há»™i",
+        name: "Hoạt động hướng đến xã hội",
         topics: [
           {
             id: "11.5",
-            name: "PhÃ¡t triá»ƒn cá»™ng Ä‘á»“ng bá»n vá»¯ng",
-            coreActivity: "ÄÃ¡nh giÃ¡ vÃ  Ä‘á» xuáº¥t giáº£i phÃ¡p phÃ¡t triá»ƒn cá»™ng Ä‘á»“ng",
-            outcomes: ["PhÃ¢n tÃ­ch hiá»‡n tráº¡ng", "Äá» xuáº¥t dá»± Ã¡n", "Thá»±c hiá»‡n vÃ  Ä‘Ã¡nh giÃ¡"],
-            methods: ["SWOT analysis", "Dá»± Ã¡n cá»™ng Ä‘á»“ng", "Huy Ä‘á»™ng nguá»“n lá»±c"],
+            name: "Phát triển cộng đồng bền vững",
+            coreActivity: "Đánh giá và đề xuất giải pháp phát triển cộng đồng",
+            outcomes: ["Phân tích hiện trạng", "Đề xuất dự án", "Thực hiện và đánh giá"],
+            methods: ["SWOT analysis", "Dự án cộng đồng", "Huy động nguồn lực"],
           },
         ],
       },
       tu_nhien: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng Ä‘áº¿n tá»± nhiÃªn",
+        name: "Hoạt động hướng đến tự nhiên",
         topics: [
           {
             id: "11.6",
-            name: "Báº£o tá»“n Ä‘a dáº¡ng sinh há»c",
-            coreActivity: "ÄÃ¡nh giÃ¡ táº§m quan trá»ng vÃ  Ä‘á» xuáº¥t báº£o tá»“n Ä‘a dáº¡ng sinh há»c",
-            outcomes: ["PhÃ¢n tÃ­ch giÃ¡ trá»‹", "ÄÃ¡nh giÃ¡ nguy cÆ¡", "Äá» xuáº¥t báº£o tá»“n"],
-            methods: ["NghiÃªn cá»©u thá»±c Ä‘á»‹a", "Dá»± Ã¡n báº£o tá»“n", "Truyá»n thÃ´ng"],
+            name: "Bảo tồn đa dạng sinh học",
+            coreActivity: "Đánh giá tầm quan trọng và đề xuất bảo tồn đa dạng sinh học",
+            outcomes: ["Phân tích giá trị", "Đánh giá nguy cơ", "Đề xuất bảo tồn"],
+            methods: ["Nghiên cứu thực địa", "Dự án bảo tồn", "Truyền thông"],
           },
           {
             id: "11.7",
-            name: "á»¨ng phÃ³ biáº¿n Ä‘á»•i khÃ­ háº­u",
-            coreActivity: "PhÃ¢n tÃ­ch tÃ¡c Ä‘á»™ng vÃ  Ä‘á» xuáº¥t giáº£i phÃ¡p á»©ng phÃ³",
-            outcomes: ["Hiá»ƒu nguyÃªn nhÃ¢n", "ÄÃ¡nh giÃ¡ tÃ¡c Ä‘á»™ng", "Äá» xuáº¥t hÃ nh Ä‘á»™ng"],
-            methods: ["NghiÃªn cá»©u sá»‘ liá»‡u", "Dá»± Ã¡n xanh", "Váº­n Ä‘á»™ng chÃ­nh sÃ¡ch"],
+            name: "Ứng phó biến đổi khí hậu",
+            coreActivity: "Phân tích tác động và đề xuất giải pháp ứng phó",
+            outcomes: ["Hiểu nguyên nhân", "Đánh giá tác động", "Đề xuất hành động"],
+            methods: ["Nghiên cứu số liệu", "Dự án xanh", "Vận động chính sách"],
           },
         ],
       },
       huong_nghiep: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng nghiá»‡p",
+        name: "Hoạt động hướng nghiệp",
         topics: [
           {
             id: "11.8",
-            name: "TÃ¬m hiá»ƒu nhÃ³m nghá» cÆ¡ báº£n",
-            coreActivity: "PhÃ¢n tÃ­ch chuyÃªn sÃ¢u cÃ¡c nhÃ³m nghá» phá»• biáº¿n",
-            outcomes: ["So sÃ¡nh nhÃ³m nghá»", "ÄÃ¡nh giÃ¡ phÃ¹ há»£p", "Äá»‹nh hÆ°á»›ng cá»¥ thá»ƒ"],
-            methods: ["NghiÃªn cá»©u thá»‹ trÆ°á»ng", "Phá»ng váº¥n chuyÃªn gia", "Job shadowing"],
+            name: "Tìm hiểu nhóm nghề cơ bản",
+            coreActivity: "Phân tích chuyên sâu các nhóm nghề phổ biến",
+            outcomes: ["So sánh nhóm nghề", "Đánh giá phù hợp", "Định hướng cụ thể"],
+            methods: ["Nghiên cứu thị trường", "Phỏng vấn chuyên gia", "Job shadowing"],
           },
           {
             id: "11.9",
-            name: "RÃ¨n luyá»‡n pháº©m cháº¥t ngÆ°á»i lao Ä‘á»™ng",
-            coreActivity: "ÄÃ¡nh giÃ¡ vÃ  rÃ¨n luyá»‡n pháº©m cháº¥t nghá» nghiá»‡p",
-            outcomes: ["XÃ¡c Ä‘á»‹nh pháº©m cháº¥t cáº§n thiáº¿t", "Láº­p káº¿ hoáº¡ch rÃ¨n luyá»‡n", "Tá»± Ä‘Ã¡nh giÃ¡ tiáº¿n bá»™"],
-            methods: ["MÃ´ hÃ¬nh nÄƒng lá»±c", "Thá»±c táº­p ngáº¯n háº¡n", "Portfolio"],
+            name: "Rèn luyện phẩm chất người lao động",
+            coreActivity: "Đánh giá và rèn luyện phẩm chất nghề nghiệp",
+            outcomes: ["Xác định phẩm chất cần thiết", "Lập kế hoạch rèn luyện", "Tự đánh giá tiến bộ"],
+            methods: ["Mô hình năng lực", "Thực tập ngắn hạn", "Portfolio"],
           },
           {
             id: "11.10",
-            name: "XÃ¢y dá»±ng káº¿ hoáº¡ch há»c táº­p theo Ä‘á»‹nh hÆ°á»›ng nghá»",
-            coreActivity: "Thiáº¿t káº¿ káº¿ hoáº¡ch há»c táº­p chi tiáº¿t theo nghá» chá»n",
-            outcomes: ["PhÃ¢n tÃ­ch yÃªu cáº§u nghá»", "Láº­p lá»™ trÃ¬nh há»c táº­p", "Thá»±c hiá»‡n vÃ  Ä‘iá»u chá»‰nh"],
-            methods: ["Lá»™ trÃ¬nh há»c táº­p", "Mentoring", "Review Ä‘á»‹nh ká»³"],
+            name: "Xây dựng kế hoạch học tập theo định hướng nghề",
+            coreActivity: "Thiết kế kế hoạch học tập chi tiết theo nghề chọn",
+            outcomes: ["Phân tích yêu cầu nghề", "Lập lộ trình học tập", "Thực hiện và điều chỉnh"],
+            methods: ["Lộ trình học tập", "Mentoring", "Review định kỳ"],
           },
         ],
       },
@@ -273,97 +273,97 @@ export const CURRICULUM_DATABASE = {
   },
 
   "12": {
-    title: "Lá»›p 12: TrÆ°á»Ÿng thÃ nh vÃ  Quyáº¿t Ä‘á»‹nh Nghá» nghiá»‡p",
-    description: "Sá»± trÆ°á»Ÿng thÃ nh toÃ n diá»‡n, trÃ¡ch nhiá»‡m cÃ´ng dÃ¢n vÃ  quyáº¿t Ä‘á»‹nh chá»n trÆ°á»ng, chá»n nghá»",
-    bloomLevel: "Tá»•ng há»£p, SÃ¡ng táº¡o (Quyáº¿t Ä‘á»‹nh, Giáº£i quyáº¿t)",
+    title: "Lớp 12: Trưởng thành và Quyết định Nghề nghiệp",
+    description: "Sự trưởng thành toàn diện, trách nhiệm công dân và quyết định chọn trường, chọn nghề",
+    bloomLevel: "Tổng hợp, Sáng tạo (Quyết định, Giải quyết)",
     themes: {
       ban_than: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng vÃ o báº£n thÃ¢n",
+        name: "Hoạt động hướng vào bản thân",
         topics: [
           {
             id: "12.1",
-            name: "Thá»ƒ hiá»‡n sá»± trÆ°á»Ÿng thÃ nh cá»§a báº£n thÃ¢n",
-            coreActivity: "Tá»•ng káº¿t vÃ  thá»ƒ hiá»‡n sá»± trÆ°á»Ÿng thÃ nh qua 3 nÄƒm THPT",
-            outcomes: ["NhÃ¬n nháº­n sá»± thay Ä‘á»•i", "Chia sáº» bÃ i há»c", "Äá»‹nh hÆ°á»›ng tÆ°Æ¡ng lai"],
-            methods: ["Portfolio cÃ¡ nhÃ¢n", "ThÆ° gá»­i báº£n thÃ¢n", "Buá»•i chia sáº»"],
+            name: "Thể hiện sự trưởng thành của bản thân",
+            coreActivity: "Tổng kết và thể hiện sự trưởng thành qua 3 năm THPT",
+            outcomes: ["Nhìn nhận sự thay đổi", "Chia sẻ bài học", "Định hướng tương lai"],
+            methods: ["Portfolio cá nhân", "Thư gửi bản thân", "Buổi chia sẻ"],
           },
           {
             id: "12.2",
-            name: "Theo Ä‘uá»•i Ä‘am mÃª",
-            coreActivity: "XÃ¡c Ä‘á»‹nh vÃ  láº­p káº¿ hoáº¡ch theo Ä‘uá»•i Ä‘am mÃª",
-            outcomes: ["XÃ¡c Ä‘á»‹nh Ä‘am mÃª", "CÃ¢n báº±ng Ä‘am mÃª vÃ  thá»±c táº¿", "Láº­p káº¿ hoáº¡ch hÃ nh Ä‘á»™ng"],
-            methods: ["Ikigai workshop", "Mentor chia sáº»", "Dá»± Ã¡n cÃ¡ nhÃ¢n"],
+            name: "Theo đuổi đam mê",
+            coreActivity: "Xác định và lập kế hoạch theo đuổi đam mê",
+            outcomes: ["Xác định đam mê", "Cân bằng đam mê và thực tế", "Lập kế hoạch hành động"],
+            methods: ["Ikigai workshop", "Mentor chia sẻ", "Dự án cá nhân"],
           },
           {
             id: "12.3",
-            name: "HoÃ n thiá»‡n báº£n thÃ¢n",
-            coreActivity: "ÄÃ¡nh giÃ¡ toÃ n diá»‡n vÃ  láº­p káº¿ hoáº¡ch hoÃ n thiá»‡n báº£n thÃ¢n",
-            outcomes: ["Tá»± Ä‘Ã¡nh giÃ¡ 360", "XÃ¡c Ä‘á»‹nh Ä‘iá»ƒm cáº§n cáº£i thiá»‡n", "Cam káº¿t hÃ nh Ä‘á»™ng"],
-            methods: ["SWOT cÃ¡ nhÃ¢n", "Feedback tá»« ngÆ°á»i khÃ¡c", "Káº¿ hoáº¡ch phÃ¡t triá»ƒn"],
+            name: "Hoàn thiện bản thân",
+            coreActivity: "Đánh giá toàn diện và lập kế hoạch hoàn thiện bản thân",
+            outcomes: ["Tự đánh giá 360", "Xác định điểm cần cải thiện", "Cam kết hành động"],
+            methods: ["SWOT cá nhân", "Feedback từ người khác", "Kế hoạch phát triển"],
           },
           {
             id: "12.4",
-            name: "Tá»• chá»©c cuá»™c sá»‘ng gia Ä‘Ã¬nh",
-            coreActivity: "Chuáº©n bá»‹ ká»¹ nÄƒng tá»• chá»©c cuá»™c sá»‘ng Ä‘á»™c láº­p",
-            outcomes: ["Ká»¹ nÄƒng quáº£n lÃ½ tÃ i chÃ­nh", "Ká»¹ nÄƒng sinh hoáº¡t", "Ká»¹ nÄƒng giao tiáº¿p gia Ä‘Ã¬nh"],
-            methods: ["Thá»±c hÃ nh quáº£n lÃ½ ngÃ¢n sÃ¡ch", "Dá»± Ã¡n sá»‘ng Ä‘á»™c láº­p", "TÆ° váº¥n gia Ä‘Ã¬nh"],
+            name: "Tổ chức cuộc sống gia đình",
+            coreActivity: "Chuẩn bị kỹ năng tổ chức cuộc sống độc lập",
+            outcomes: ["Kỹ năng quản lý tài chính", "Kỹ năng sinh hoạt", "Kỹ năng giao tiếp gia đình"],
+            methods: ["Thực hành quản lý ngân sách", "Dự án sống độc lập", "Tư vấn gia đình"],
           },
         ],
       },
       xa_hoi: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng Ä‘áº¿n xÃ£ há»™i",
+        name: "Hoạt động hướng đến xã hội",
         topics: [
           {
             id: "12.5",
-            name: "ÄoÃ n káº¿t cÃ¡c dÃ¢n tá»™c Viá»‡t Nam",
-            coreActivity: "TÃ¬m hiá»ƒu vÃ  thá»ƒ hiá»‡n tinh tháº§n Ä‘oÃ n káº¿t dÃ¢n tá»™c",
-            outcomes: ["Hiá»ƒu giÃ¡ trá»‹ Ä‘oÃ n káº¿t", "TÃ´n trá»ng Ä‘a dáº¡ng vÄƒn hÃ³a", "Thá»±c hiá»‡n hÃ nh Ä‘á»™ng"],
-            methods: ["TÃ¬m hiá»ƒu vÄƒn hÃ³a", "Giao lÆ°u", "Dá»± Ã¡n vÄƒn hÃ³a"],
+            name: "Đoàn kết các dân tộc Việt Nam",
+            coreActivity: "Tìm hiểu và thể hiện tinh thần đoàn kết dân tộc",
+            outcomes: ["Hiểu giá trị đoàn kết", "Tôn trọng đa dạng văn hóa", "Thực hiện hành động"],
+            methods: ["Tìm hiểu văn hóa", "Giao lưu", "Dự án văn hóa"],
           },
         ],
       },
       tu_nhien: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng Ä‘áº¿n tá»± nhiÃªn",
+        name: "Hoạt động hướng đến tự nhiên",
         topics: [
           {
             id: "12.6",
-            name: "GÃ¬n giá»¯ váº» Ä‘áº¹p thiÃªn nhiÃªn",
-            coreActivity: "SÃ¡ng táº¡o giáº£i phÃ¡p báº£o vá»‡ váº» Ä‘áº¹p thiÃªn nhiÃªn",
-            outcomes: ["ÄÃ¡nh giÃ¡ hiá»‡n tráº¡ng", "Thiáº¿t káº¿ giáº£i phÃ¡p", "Triá»ƒn khai dá»± Ã¡n"],
-            methods: ["Dá»± Ã¡n sÃ¡ng táº¡o", "Chiáº¿n dá»‹ch truyá»n thÃ´ng", "Huy Ä‘á»™ng cá»™ng Ä‘á»“ng"],
+            name: "Gìn giữ vẻ đẹp thiên nhiên",
+            coreActivity: "Sáng tạo giải pháp bảo vệ vẻ đẹp thiên nhiên",
+            outcomes: ["Đánh giá hiện trạng", "Thiết kế giải pháp", "Triển khai dự án"],
+            methods: ["Dự án sáng tạo", "Chiến dịch truyền thông", "Huy động cộng đồng"],
           },
           {
             id: "12.7",
-            name: "Báº£o vá»‡ Ä‘á»™ng váº­t hoang dÃ£",
-            coreActivity: "Tham gia báº£o vá»‡ Ä‘á»™ng váº­t hoang dÃ£",
-            outcomes: ["Hiá»ƒu luáº­t phÃ¡p", "Tham gia báº£o vá»‡", "Truyá»n thÃ´ng váº­n Ä‘á»™ng"],
-            methods: ["NghiÃªn cá»©u phÃ¡p luáº­t", "TÃ¬nh nguyá»‡n", "Chiáº¿n dá»‹ch sá»‘"],
+            name: "Bảo vệ động vật hoang dã",
+            coreActivity: "Tham gia bảo vệ động vật hoang dã",
+            outcomes: ["Hiểu luật pháp", "Tham gia bảo vệ", "Truyền thông vận động"],
+            methods: ["Nghiên cứu pháp luật", "Tình nguyện", "Chiến dịch số"],
           },
         ],
       },
       huong_nghiep: {
-        name: "Hoáº¡t Ä‘á»™ng hÆ°á»›ng nghiá»‡p",
+        name: "Hoạt động hướng nghiệp",
         topics: [
           {
             id: "12.8",
-            name: "YÃªu cáº§u cá»§a ngÆ°á»i lao Ä‘á»™ng trong xÃ£ há»™i hiá»‡n Ä‘áº¡i",
-            coreActivity: "PhÃ¢n tÃ­ch yÃªu cáº§u vÃ  chuáº©n bá»‹ nÄƒng lá»±c ngÆ°á»i lao Ä‘á»™ng hiá»‡n Ä‘áº¡i",
-            outcomes: ["Hiá»ƒu xu hÆ°á»›ng lao Ä‘á»™ng", "ÄÃ¡nh giÃ¡ báº£n thÃ¢n", "Láº­p káº¿ hoáº¡ch phÃ¡t triá»ƒn"],
-            methods: ["NghiÃªn cá»©u thá»‹ trÆ°á»ng", "Phá»ng váº¥n HR", "Káº¿ hoáº¡ch phÃ¡t triá»ƒn nÄƒng lá»±c"],
+            name: "Yêu cầu của người lao động trong xã hội hiện đại",
+            coreActivity: "Phân tích yêu cầu và chuẩn bị năng lực người lao động hiện đại",
+            outcomes: ["Hiểu xu hướng lao động", "Đánh giá bản thân", "Lập kế hoạch phát triển"],
+            methods: ["Nghiên cứu thị trường", "Phỏng vấn HR", "Kế hoạch phát triển năng lực"],
           },
           {
             id: "12.9",
-            name: "Sáºµn sÃ ng cho viá»‡c chuyá»ƒn Ä‘á»•i nghá» nghiá»‡p",
-            coreActivity: "Chuáº©n bá»‹ tÃ¢m tháº¿ vÃ  ká»¹ nÄƒng chuyá»ƒn Ä‘á»•i nghá»",
-            outcomes: ["Hiá»ƒu thá»±c táº¿ chuyá»ƒn Ä‘á»•i nghá»", "PhÃ¡t triá»ƒn ká»¹ nÄƒng chuyá»ƒn Ä‘á»•i", "XÃ¢y dá»±ng mindset linh hoáº¡t"],
-            methods: ["Case study chuyá»ƒn Ä‘á»•i nghá»", "Ká»¹ nÄƒng há»c táº­p suá»‘t Ä‘á»i", "Networking"],
+            name: "Sẵn sàng cho việc chuyển đổi nghề nghiệp",
+            coreActivity: "Chuẩn bị tâm thế và kỹ năng chuyển đổi nghề",
+            outcomes: ["Hiểu thực tế chuyển đổi nghề", "Phát triển kỹ năng chuyển đổi", "Xây dựng mindset linh hoạt"],
+            methods: ["Case study chuyển đổi nghề", "Kỹ năng học tập suốt đời", "Networking"],
           },
           {
             id: "12.10",
-            name: "Quyáº¿t Ä‘á»‹nh lá»±a chá»n nghá» nghiá»‡p tÆ°Æ¡ng lai",
-            coreActivity: "Ra quyáº¿t Ä‘á»‹nh chá»n nghá» vÃ  láº­p káº¿ hoáº¡ch thá»±c hiá»‡n",
-            outcomes: ["Tá»•ng há»£p thÃ´ng tin", "Ra quyáº¿t Ä‘á»‹nh", "Láº­p káº¿ hoáº¡ch hÃ nh Ä‘á»™ng"],
-            methods: ["Ma tráº­n quyáº¿t Ä‘á»‹nh", "TÆ° váº¥n chuyÃªn gia", "Káº¿ hoáº¡ch hÃ nh Ä‘á»™ng chi tiáº¿t"],
+            name: "Quyết định lựa chọn nghề nghiệp tương lai",
+            coreActivity: "Ra quyết định chọn nghề và lập kế hoạch thực hiện",
+            outcomes: ["Tổng hợp thông tin", "Ra quyết định", "Lập kế hoạch hành động"],
+            methods: ["Ma trận quyết định", "Tư vấn chuyên gia", "Kế hoạch hành động chi tiết"],
           },
         ],
       },
@@ -372,287 +372,287 @@ export const CURRICULUM_DATABASE = {
 }
 
 // ============================================================
-// PHáº¦N 3: QUY Táº®C PHÃ‚N TÃCH NGá»® Cáº¢NH
+// PHẦN 3: QUY TẮC PHÂN TÍCH NGỮ CẢNH
 // ============================================================
 
 export const CONTEXT_PARSING_RULES = `
-QUY Táº®C PHÃ‚N TÃCH NGá»® Cáº¢NH (Context Parsing):
+QUY TẮC PHÂN TÍCH NGỮ CẢNH (Context Parsing):
 
-1. KHI NHáº¬N YÃŠU Cáº¦U "Soáº¡n giÃ¡o Ã¡n Chá»§ Ä‘á» X lá»›p Y":
-   - BÆ°á»›c 1: XÃ¡c Ä‘á»‹nh khá»‘i lá»›p (10, 11, 12)
-   - BÆ°á»›c 2: Tra cá»©u CURRICULUM_DATABASE Ä‘á»ƒ láº¥y thÃ´ng tin chá»§ Ä‘á»
-   - BÆ°á»›c 3: Ãp dá»¥ng Bloom's Taxonomy Level phÃ¹ há»£p:
-     + Lá»›p 10: Hoáº¡t Ä‘á»™ng "TÃ¬m hiá»ƒu, Nháº­n biáº¿t, KhÃ¡m phÃ¡"
-     + Lá»›p 11: Hoáº¡t Ä‘á»™ng "PhÃ¢n tÃ­ch, ÄÃ¡nh giÃ¡, So sÃ¡nh"
-     + Lá»›p 12: Hoáº¡t Ä‘á»™ng "Quyáº¿t Ä‘á»‹nh, Giáº£i quyáº¿t, Thiáº¿t káº¿"
+1. KHI NHẬN YÊU CẦU "Soạn giáo án Chủ đề X lớp Y":
+   - Bước 1: Xác định khối lớp (10, 11, 12)
+   - Bước 2: Tra cứu CURRICULUM_DATABASE để lấy thông tin chủ đề
+   - Bước 3: Áp dụng Bloom's Taxonomy Level phù hợp:
+     + Lớp 10: Hoạt động "Tìm hiểu, Nhận biết, Khám phá"
+     + Lớp 11: Hoạt động "Phân tích, Đánh giá, So sánh"
+     + Lớp 12: Hoạt động "Quyết định, Giải quyết, Thiết kế"
 
-2. Xá»¬ LÃ Ná»˜I DUNG Äá»ŠA PHÆ¯Æ NG:
-   - Äá»‘i vá»›i chá»§ Ä‘á» "MÃ´i trÆ°á»ng" vÃ  "Nghá» nghiá»‡p":
-   - Sá»­ dá»¥ng biáº¿n {Dia_Phuong} Ä‘á»ƒ Ä‘iá»n thÃ´ng tin cá»¥ thá»ƒ
-   - Náº¿u khÃ´ng cÃ³ thÃ´ng tin Ä‘á»‹a phÆ°Æ¡ng: sá»­ dá»¥ng ná»™i dung chung
+2. XỬ LÝ NỘI DUNG ĐỊA PHƯƠNG:
+   - Đối với chủ đề "Môi trường" và "Nghề nghiệp":
+   - Sử dụng biến {Dia_Phuong} để điền thông tin cụ thể
+   - Nếu không có thông tin địa phương: sử dụng nội dung chung
 
-3. Xá»¬ LÃ TIáº¾T SINH HOáº T DÆ¯á»šI Cá»œ:
-   - Thiáº¿t káº¿ ká»‹ch báº£n MC chi tiáº¿t
-   - CÃ¢u há»i tÆ°Æ¡ng tÃ¡c cho toÃ n trÆ°á»ng
-   - Tiáº¿t má»¥c vÄƒn nghá»‡ minh há»a chá»§ Ä‘á» (náº¿u phÃ¹ há»£p)
+3. XỬ LÝ TIẾT SINH HOẠT DƯỚI CỜ:
+   - Thiết kế kịch bản MC chi tiết
+   - Câu hỏi tương tác cho toàn trường
+   - Tiết mục văn nghệ minh họa chủ đề (nếu phù hợp)
 
-4. Xá»¬ LÃ TIáº¾T SINH HOáº T Lá»šP:
-   - Máº«u "Phiáº¿u sÆ¡ káº¿t tuáº§n"
-   - CÃ¢u há»i tháº£o luáº­n nhÃ³m nhá»
-   - Ná»™i dung sinh hoáº¡t chuyÃªn Ä‘á» ngáº¯n gá»n
+4. XỬ LÝ TIẾT SINH HOẠT LỚP:
+   - Mẫu "Phiếu sơ kết tuần"
+   - Câu hỏi thảo luận nhóm nhỏ
+   - Nội dung sinh hoạt chuyên đề ngắn gọn
 `
 
 // ============================================================
-// PHáº¦N 4: Cáº¤U TRÃšC GIÃO ÃN CHUáº¨N (CÃ”NG VÄ‚N 5512)
+// PHẦN 4: CẤU TRÚC GIÁO ÁN CHUẨN (CÔNG VĂN 5512)
 // ============================================================
 
 export const LESSON_STRUCTURE_CV5512 = `
-Cáº¤U TRÃšC Káº¾ HOáº CH BÃ€I Dáº Y (Theo CÃ´ng vÄƒn 5512/BGDÄT-GDTrH):
+CẤU TRÚC KẾ HOẠCH BÀI DẠY (Theo Công văn 5512/BGDĐT-GDTrH):
 
-I. TÃŠN BÃ€I Há»ŒC: [Theo SGK Káº¿t ná»‘i tri thá»©c]
+I. TÊN BÀI HỌC: [Theo SGK Kết nối tri thức]
 
-II. Má»¤C TIÃŠU:
-   1. Kiáº¿n thá»©c: [TrÃ­ch xuáº¥t tá»« "Hoáº¡t Ä‘á»™ng cá»‘t lÃµi" trong CURRICULUM_DATABASE]
-   2. NÄƒng lá»±c:
-      a) NÄƒng lá»±c chung:
-         - Tá»± chá»§ vÃ  tá»± há»c
-         - Giao tiáº¿p vÃ  há»£p tÃ¡c
-         - Giáº£i quyáº¿t váº¥n Ä‘á» vÃ  sÃ¡ng táº¡o
-      b) NÄƒng lá»±c Ä‘áº·c thÃ¹ HÄTN:
-         - ThÃ­ch á»©ng vá»›i cuá»™c sá»‘ng
-         - Thiáº¿t káº¿ vÃ  tá»• chá»©c hoáº¡t Ä‘á»™ng
-         - Äá»‹nh hÆ°á»›ng nghá» nghiá»‡p
-   3. Pháº©m cháº¥t:
-      - YÃªu nÆ°á»›c, NhÃ¢n Ã¡i, ChÄƒm chá»‰, Trung thá»±c, TrÃ¡ch nhiá»‡m
+II. MỤC TIÊU:
+   1. Kiến thức: [Trích xuất từ "Hoạt động cốt lõi" trong CURRICULUM_DATABASE]
+   2. Năng lực:
+      a) Năng lực chung:
+         - Tự chủ và tự học
+         - Giao tiếp và hợp tác
+         - Giải quyết vấn đề và sáng tạo
+      b) Năng lực đặc thù HĐTN:
+         - Thích ứng với cuộc sống
+         - Thiết kế và tổ chức hoạt động
+         - Định hướng nghề nghiệp
+   3. Phẩm chất:
+      - Yêu nước, Nhân ái, Chăm chỉ, Trung thực, Trách nhiệm
 
-III. THIáº¾T Bá»Š Dáº Y Há»ŒC VÃ€ Há»ŒC LIá»†U:
-   1. GiÃ¡o viÃªn: [MÃ¡y chiáº¿u, tranh áº£nh, video, phiáº¿u há»c táº­p...]
-   2. Há»c sinh: [Vá»Ÿ ghi, bÃºt mÃ u, Ä‘iá»‡n thoáº¡i náº¿u cáº§n...]
+III. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU:
+   1. Giáo viên: [Máy chiếu, tranh ảnh, video, phiếu học tập...]
+   2. Học sinh: [Vở ghi, bút màu, điện thoại nếu cần...]
 
-IV. TIáº¾N TRÃŒNH Dáº Y Há»ŒC (4 BÆ¯á»šC Báº®T BUá»˜C):
+IV. TIẾN TRÌNH DẠY HỌC (4 BƯỚC BẮT BUỘC):
 
-HOáº T Äá»˜NG 1: KHá»žI Äá»˜NG (5-7 phÃºt)
-   a) Má»¥c tiÃªu: Táº¡o há»©ng thÃº, kÃ­ch thÃ­ch tÃ² mÃ², dáº«n dáº¯t vÃ o bÃ i
-   b) Ná»™i dung: [TrÃ² chÆ¡i, video, cÃ¢u há»i gá»£i má»Ÿ]
-   c) Sáº£n pháº©m: [CÃ¢u tráº£ lá»i cá»§a HS, khÃ´ng khÃ­ hÃ o há»©ng]
-   d) Tá»• chá»©c thá»±c hiá»‡n:
-      - BÆ°á»›c 1: Chuyá»ƒn giao nhiá»‡m vá»¥ - GV giao nhiá»‡m vá»¥ cá»¥ thá»ƒ
-      - BÆ°á»›c 2: Thá»±c hiá»‡n nhiá»‡m vá»¥ - HS thá»±c hiá»‡n cÃ¡ nhÃ¢n/nhÃ³m
-      - BÆ°á»›c 3: BÃ¡o cÃ¡o, tháº£o luáº­n - HS trÃ¬nh bÃ y, GV vÃ  lá»›p pháº£n há»“i
-      - BÆ°á»›c 4: Káº¿t luáº­n, nháº­n Ä‘á»‹nh - GV chá»‘t kiáº¿n thá»©c, dáº«n vÃ o bÃ i
+HOẠT ĐỘNG 1: KHỞI ĐỘNG (5-7 phút)
+   a) Mục tiêu: Tạo hứng thú, kích thích tò mò, dẫn dắt vào bài
+   b) Nội dung: [Trò chơi, video, câu hỏi gợi mở]
+   c) Sản phẩm: [Câu trả lời của HS, không khí hào hứng]
+   d) Tổ chức thực hiện:
+      - Bước 1: Chuyển giao nhiệm vụ - GV giao nhiệm vụ cụ thể
+      - Bước 2: Thực hiện nhiệm vụ - HS thực hiện cá nhân/nhóm
+      - Bước 3: Báo cáo, thảo luận - HS trình bày, GV và lớp phản hồi
+      - Bước 4: Kết luận, nhận định - GV chốt kiến thức, dẫn vào bài
 
-HOáº T Äá»˜NG 2: KHÃM PHÃ - HÃŒNH THÃ€NH KIáº¾N THá»¨C (15-20 phÃºt)
-   [Cáº¥u trÃºc a, b, c, d tÆ°Æ¡ng tá»±]
-   - ÄÃ¢y lÃ  TRá»ŒNG TÃ‚M cá»§a bÃ i há»c
-   - PhÆ°Æ¡ng phÃ¡p: Tháº£o luáº­n nhÃ³m, NghiÃªn cá»©u tÃ¬nh huá»‘ng, Thuyáº¿t trÃ¬nh
+HOẠT ĐỘNG 2: KHÁM PHÁ - HÌNH THÀNH KIẾN THỨC (15-20 phút)
+   [Cấu trúc a, b, c, d tương tự]
+   - Đây là TRỌNG TÂM của bài học
+   - Phương pháp: Thảo luận nhóm, Nghiên cứu tình huống, Thuyết trình
 
-HOáº T Äá»˜NG 3: LUYá»†N Táº¬P (10-15 phÃºt)
-   [Cáº¥u trÃºc a, b, c, d tÆ°Æ¡ng tá»±]
-   - PhÆ°Æ¡ng phÃ¡p: ÄÃ³ng vai, Xá»­ lÃ½ tÃ¬nh huá»‘ng giáº£ Ä‘á»‹nh, BÃ i táº­p thá»±c hÃ nh
+HOẠT ĐỘNG 3: LUYỆN TẬP (10-15 phút)
+   [Cấu trúc a, b, c, d tương tự]
+   - Phương pháp: Đóng vai, Xử lý tình huống giả định, Bài tập thực hành
 
-HOáº T Äá»˜NG 4: Váº¬N Dá»¤NG (5-10 phÃºt)
-   [Cáº¥u trÃºc a, b, c, d tÆ°Æ¡ng tá»±]
-   - Nhiá»‡m vá»¥ vá» nhÃ , Dá»± Ã¡n thá»±c táº¿, Cam káº¿t hÃ nh Ä‘á»™ng
+HOẠT ĐỘNG 4: VẬN DỤNG (5-10 phút)
+   [Cấu trúc a, b, c, d tương tự]
+   - Nhiệm vụ về nhà, Dự án thực tế, Cam kết hành động
 
-V. Há»’ SÆ  Dáº Y Há»ŒC (PHá»¤ Lá»¤C):
-   - Phiáº¿u há»c táº­p (máº«u cá»¥ thá»ƒ)
-   - Báº£ng kiá»ƒm/Rubric Ä‘Ã¡nh giÃ¡
-   - TÃ i liá»‡u tham kháº£o
+V. HỒ SƠ DẠY HỌC (PHỤ LỤC):
+   - Phiếu học tập (mẫu cụ thể)
+   - Bảng kiểm/Rubric đánh giá
+   - Tài liệu tham khảo
 `
 
 // ============================================================
-// PHáº¦N 5: NÄ‚NG Lá»°C Sá» (NLS) VÃ€ GIÃO Dá»¤C Äáº O Äá»¨C
+// PHẦN 5: NĂNG LỰC SỐ (NLS) VÀ GIÁO DỤC ĐẠO ĐỨC
 // ============================================================
 
 export const DIGITAL_LITERACY_FRAMEWORK = {
   "D1": {
-    name: "Khai thÃ¡c dá»¯ liá»‡u vÃ  thÃ´ng tin",
+    name: "Khai thác dữ liệu và thông tin",
     competencies: [
-      "D1.1: TÃ¬m kiáº¿m vÃ  lá»c dá»¯ liá»‡u, thÃ´ng tin vÃ  ná»™i dung sá»‘",
-      "D1.2: ÄÃ¡nh giÃ¡ dá»¯ liá»‡u, thÃ´ng tin vÃ  ná»™i dung sá»‘",
-      "D1.3: Quáº£n lÃ½ dá»¯ liá»‡u, thÃ´ng tin vÃ  ná»™i dung sá»‘"
+      "D1.1: Tìm kiếm và lọc dữ liệu, thông tin và nội dung số",
+      "D1.2: Đánh giá dữ liệu, thông tin và nội dung số",
+      "D1.3: Quản lý dữ liệu, thông tin và nội dung số"
     ]
   },
   "D2": {
-    name: "Giao tiáº¿p vÃ  há»£p tÃ¡c trong mÃ´i trÆ°á»ng sá»‘",
+    name: "Giao tiếp và hợp tác trong môi trường số",
     competencies: [
-      "D2.1: TÆ°Æ¡ng tÃ¡c qua cÃ´ng nghá»‡ sá»‘",
-      "D2.2: Chia sáº» thÃ´ng tin vÃ  ná»™i dung sá»‘",
-      "D2.4: Há»£p tÃ¡c qua cÃ´ng nghá»‡ sá»‘",
-      "D2.5: Quy táº¯c á»©ng xá»­ trÃªn mÃ´i trÆ°á»ng sá»‘"
+      "D2.1: Tương tác qua công nghệ số",
+      "D2.2: Chia sẻ thông tin và nội dung số",
+      "D2.4: Hợp tác qua công nghệ số",
+      "D2.5: Quy tắc ứng xử trên môi trường số"
     ]
   },
   "D3": {
-    name: "SÃ¡ng táº¡o ná»™i dung sá»‘",
+    name: "Sáng tạo nội dung số",
     competencies: [
-      "D3.1: PhÃ¡t triá»ƒn ná»™i dung sá»‘ (Canva, Video...)",
-      "D3.2: Chá»‰nh sá»­a, tÃ­ch há»£p ná»™i dung sá»‘"
+      "D3.1: Phát triển nội dung số (Canva, Video...)",
+      "D3.2: Chỉnh sửa, tích hợp nội dung số"
     ]
   },
   "D4": {
-    name: "An toÃ n",
+    name: "An toàn",
     competencies: [
-      "D4.1: Báº£o vá»‡ thiáº¿t bá»‹",
-      "D4.2: Báº£o vá»‡ dá»¯ liá»‡u cÃ¡ nhÃ¢n",
-      "D4.3: Báº£o vá»‡ sá»©c khá»e"
+      "D4.1: Bảo vệ thiết bị",
+      "D4.2: Bảo vệ dữ liệu cá nhân",
+      "D4.3: Bảo vệ sức khỏe"
     ]
   },
   "D5": {
-    name: "Giáº£i quyáº¿t váº¥n Ä‘á»",
+    name: "Giải quyết vấn đề",
     competencies: [
-      "D5.2: XÃ¡c Ä‘á»‹nh nhu cáº§u vÃ  giáº£i phÃ¡p cÃ´ng nghá»‡",
-      "D5.3: SÃ¡ng táº¡o sá»­ dá»¥ng cÃ´ng nghá»‡ sá»‘"
+      "D5.2: Xác định nhu cầu và giải pháp công nghệ",
+      "D5.3: Sáng tạo sử dụng công nghệ số"
     ]
   },
   "D6": {
-    name: "á»¨ng dá»¥ng trÃ­ tuá»‡ nhÃ¢n táº¡o (AI)",
+    name: "Ứng dụng trí tuệ nhân tạo (AI)",
     competencies: [
-      "D6.2: Sá»­ dá»¥ng cÃ´ng cá»¥ trÃ­ tuá»‡ nhÃ¢n táº¡o (Gemini, ChatGPT...)",
-      "D6.3: ÄÃ¡nh giÃ¡ vÃ  Ä‘áº¡o Ä‘á»©c trong sá»­ dá»¥ng AI"
+      "D6.2: Sử dụng công cụ trí tuệ nhân tạo (Gemini, ChatGPT...)",
+      "D6.3: Đánh giá và đạo đức trong sử dụng AI"
     ]
   }
 }
 
 export const MORAL_EDUCATION_THEMES = {
-  trach_nhiem: { name: "TrÃ¡ch nhiá»‡m", description: "Ã thá»©c vá»›i báº£n thÃ¢n, gia Ä‘Ã¬nh, cá»™ng Ä‘á»“ng, mÃ´i trÆ°á»ng" },
-  trung_thuc: { name: "Trung thá»±c", description: "Tháº­t thÃ  trong há»c táº­p, cÃ´ng viá»‡c, giao tiáº¿p" },
-  nhan_ai: { name: "NhÃ¢n Ã¡i", description: "YÃªu thÆ°Æ¡ng, tÃ´n trá»ng, giÃºp Ä‘á»¡ ngÆ°á»i khÃ¡c" },
-  cham_chi: { name: "ChÄƒm chá»‰", description: "Chá»‹u khÃ³, ham há»c, ná»— lá»±c vÆ°á»£t khÃ³" },
-  yeu_nuoc: { name: "YÃªu nÆ°á»›c", description: "Tá»± hÃ o truyá»n thá»‘ng, xÃ¢y dá»±ng quÃª hÆ°Æ¡ng" },
+  trach_nhiem: { name: "Trách nhiệm", description: "Ý thức với bản thân, gia đình, cộng đồng, môi trường" },
+  trung_thuc: { name: "Trung thực", description: "Thật thà trong học tập, công việc, giao tiếp" },
+  nhan_ai: { name: "Nhân ái", description: "Yêu thương, tôn trọng, giúp đỡ người khác" },
+  cham_chi: { name: "Chăm chỉ", description: "Chịu khó, ham học, nỗ lực vượt khó" },
+  yeu_nuoc: { name: "Yêu nước", description: "Tự hào truyền thống, xây dựng quê hương" },
 }
 
 // ============================================================
-// PHáº¦N 6: HÆ¯á»šNG DáºªN Vá»Š TRÃ TÃCH Há»¢P NLS VÃ€ Äáº O Äá»¨C
+// PHẦN 6: HƯỚNG DẪN VỊ TRÍ TÍCH HỢP NLS VÀ ĐẠO ĐỨC
 // ============================================================
 
 export const INTEGRATION_PLACEMENT_GUIDE = `
-HÆ¯á»šNG DáºªN Vá»Š TRÃ TÃCH Há»¢P NLS VÃ€ Äáº O Äá»¨C TRONG Káº¾ HOáº CH BÃ€I Dáº Y:
+HƯỚNG DẪN VỊ TRÍ TÍCH HỢP NLS VÀ ĐẠO ĐỨC TRONG KẾ HOẠCH BÀI DẠY:
 
-1. NÄ‚NG Lá»°C Sá» (NLS) - TÃ­ch há»£p vÃ o CÃC HOáº T Äá»˜NG Cá»¤ THá»‚:
+1. NĂNG LỰC SỐ (NLS) - Tích hợp vào CÁC HOẠT ĐỘNG CỤ THỂ:
 
-   a) HOáº T Äá»˜NG KHá»žI Äá»˜NG (5-7 phÃºt):
-      - NLS 2.4 (Há»£p tÃ¡c sá»‘): Sá»­ dá»¥ng Mentimeter/Kahoot Ä‘á»ƒ thu tháº­p Ã½ kiáº¿n nhanh
-      - VÃ­ dá»¥: "GV chiáº¿u mÃ£ QR, HS truy cáº­p Mentimeter Ä‘á»ƒ tráº£ lá»i cÃ¢u há»i khá»Ÿi Ä‘á»™ng"
+   a) HOẠT ĐỘNG KHỞI ĐỘNG (5-7 phút):
+      - NLS 2.4 (Hợp tác số): Sử dụng Mentimeter/Kahoot để thu thập ý kiến nhanh
+      - Ví dụ: "GV chiếu mã QR, HS truy cập Mentimeter để trả lời câu hỏi khởi động"
 
-   b) HOáº T Äá»˜NG KHÃM PHÃ (15-20 phÃºt):
-      - NLS 1.1 (TÃ¬m kiáº¿m thÃ´ng tin): HS tra cá»©u thÃ´ng tin trÃªn máº¡ng
-      - NLS 1.2 (ÄÃ¡nh giÃ¡ thÃ´ng tin): HS phÃ¢n biá»‡t nguá»“n tin Ä‘Ã¡ng tin cáº­y
-      - VÃ­ dá»¥: "NhÃ³m 1-2 tÃ¬m hiá»ƒu thÃ´ng tin tá»« website chÃ­nh thá»‘ng, nhÃ³m 3-4 Ä‘Ã¡nh giÃ¡ Ä‘á»™ tin cáº­y cá»§a cÃ¡c nguá»“n"
+   b) HOẠT ĐỘNG KHÁM PHÁ (15-20 phút):
+      - NLS 1.1 (Tìm kiếm thông tin): HS tra cứu thông tin trên mạng
+      - NLS 1.2 (Đánh giá thông tin): HS phân biệt nguồn tin đáng tin cậy
+      - Ví dụ: "Nhóm 1-2 tìm hiểu thông tin từ website chính thống, nhóm 3-4 đánh giá độ tin cậy của các nguồn"
 
-   c) HOáº T Äá»˜NG LUYá»†N Táº¬P (10-15 phÃºt):
-      - NLS 3.1 (Táº¡o ná»™i dung sá»‘): Thiáº¿t káº¿ sáº£n pháº©m báº±ng Canva
-      - NLS 2.1 (TÆ°Æ¡ng tÃ¡c sá»‘): LÃ m viá»‡c nhÃ³m qua Google Drive/Zalo
-      - VÃ­ dá»¥: "CÃ¡c nhÃ³m thiáº¿t káº¿ poster/infographic báº±ng Canva, chia sáº» qua Google Drive"
+   c) HOẠT ĐỘNG LUYỆN TẬP (10-15 phút):
+      - NLS 3.1 (Tạo nội dung số): Thiết kế sản phẩm bằng Canva
+      - NLS 2.1 (Tương tác số): Làm việc nhóm qua Google Drive/Zalo
+      - Ví dụ: "Các nhóm thiết kế poster/infographic bằng Canva, chia sẻ qua Google Drive"
 
-   d) HOáº T Äá»˜NG Váº¬N Dá»¤NG (5-10 phÃºt):
-      - NLS 2.2 (Chia sáº» ná»™i dung): Chia sáº» bÃ i há»c trÃªn máº¡ng xÃ£ há»™i
-      - NLS 4.1 (An toÃ n thÃ´ng tin): Nháº¯c nhá»Ÿ báº£o vá»‡ thÃ´ng tin cÃ¡ nhÃ¢n
-      - VÃ­ dá»¥: "Vá» nhÃ , HS chia sáº» bÃ i há»c vá»›i gia Ä‘Ã¬nh qua Zalo, chÃº Ã½ khÃ´ng Ä‘Äƒng thÃ´ng tin cÃ¡ nhÃ¢n"
+   d) HOẠT ĐỘNG VẬN DỤNG (5-10 phút):
+      - NLS 2.2 (Chia sẻ nội dung): Chia sẻ bài học trên mạng xã hội
+      - NLS 4.1 (An toàn thông tin): Nhắc nhở bảo vệ thông tin cá nhân
+      - Ví dụ: "Về nhà, HS chia sẻ bài học với gia đình qua Zalo, chú ý không đăng thông tin cá nhân"
 
-2. GIÃO Dá»¤C Äáº O Äá»¨C - TÃ­ch há»£p XUYÃŠN SUá»T vÃ  cá»¥ thá»ƒ:
+2. GIÁO DỤC ĐẠO ĐỨC - Tích hợp XUYÊN SUỐT và cụ thể:
 
-   a) TÃCH Há»¢P QUA Má»¤C TIÃŠU:
-      - Ghi rÃµ trong pháº§n "Má»¥c tiÃªu pháº©m cháº¥t" vá»›i mÃ´ táº£ hÃ nh vi cá»¥ thá»ƒ
-      - VÃ­ dá»¥: "TrÃ¡ch nhiá»‡m: HS Ã½ thá»©c Ä‘Æ°á»£c trÃ¡ch nhiá»‡m cá»§a báº£n thÃ¢n trong viá»‡c báº£o vá»‡ mÃ´i trÆ°á»ng thÃ´ng qua cÃ¡c hoáº¡t Ä‘á»™ng phÃ¢n loáº¡i rÃ¡c"
+   a) TÍCH HỢP QUA MỤC TIÊU:
+      - Ghi rõ trong phần "Mục tiêu phẩm chất" với mô tả hành vi cụ thể
+      - Ví dụ: "Trách nhiệm: HS ý thức được trách nhiệm của bản thân trong việc bảo vệ môi trường thông qua các hoạt động phân loại rác"
 
-   b) TÃCH Há»¢P QUA HOáº T Äá»˜NG KHÃM PHÃ:
-      - Lá»“ng ghÃ©p tÃ¬nh huá»‘ng Ä‘áº¡o Ä‘á»©c vÃ o ná»™i dung bÃ i há»c
-      - VÃ­ dá»¥: "GV Ä‘Æ°a ra tÃ¬nh huá»‘ng: Báº¡n A nhÃ¬n tháº¥y báº¡n B vá»©t rÃ¡c khÃ´ng Ä‘Ãºng nÆ¡i quy Ä‘á»‹nh. Em sáº½ lÃ m gÃ¬?"
+   b) TÍCH HỢP QUA HOẠT ĐỘNG KHÁM PHÁ:
+      - Lồng ghép tình huống đạo đức vào nội dung bài học
+      - Ví dụ: "GV đưa ra tình huống: Bạn A nhìn thấy bạn B vứt rác không đúng nơi quy định. Em sẽ làm gì?"
 
-   c) TÃCH Há»¢P QUA HOáº T Äá»˜NG LUYá»†N Táº¬P:
-      - BÃ i táº­p thá»±c hÃ nh cÃ³ yáº¿u tá»‘ Ä‘áº¡o Ä‘á»©c
-      - VÃ­ dá»¥: "ÄÃ³ng vai xá»­ lÃ½ tÃ¬nh huá»‘ng liÃªn quan Ä‘áº¿n trung thá»±c trong há»c táº­p"
+   c) TÍCH HỢP QUA HOẠT ĐỘNG LUYỆN TẬP:
+      - Bài tập thực hành có yếu tố đạo đức
+      - Ví dụ: "Đóng vai xử lý tình huống liên quan đến trung thực trong học tập"
 
-   d) TÃCH Há»¢P QUA HOáº T Äá»˜NG Váº¬N Dá»¤NG:
-      - Cam káº¿t hÃ nh Ä‘á»™ng thá»ƒ hiá»‡n pháº©m cháº¥t
-      - VÃ­ dá»¥: "HS viáº¿t cam káº¿t cÃ¡ nhÃ¢n vá» viá»‡c thá»±c hiá»‡n trÃ¡ch nhiá»‡m vá»›i gia Ä‘Ã¬nh trong tuáº§n tá»›i"
+   d) TÍCH HỢP QUA HOẠT ĐỘNG VẬN DỤNG:
+      - Cam kết hành động thể hiện phẩm chất
+      - Ví dụ: "HS viết cam kết cá nhân về việc thực hiện trách nhiệm với gia đình trong tuần tới"
 
-3. NGUYÃŠN Táº®C TÃCH Há»¢P Tá»° NHIÃŠN (KHÃ”NG GÃ’ BÃ“):
-   - Chá»n NLS vÃ  Ä‘áº¡o Ä‘á»©c PHÃ™ Há»¢P vá»›i ná»™i dung bÃ i há»c, khÃ´ng cá»‘ Ã©p
-   - Má»—i hoáº¡t Ä‘á»™ng chá»‰ tÃ­ch há»£p 1-2 NLS, khÃ´ng quÃ¡ táº£i
-   - Äáº¡o Ä‘á»©c Ä‘Æ°á»£c giÃ¡o dá»¥c qua HÃ€NH Äá»˜NG cá»¥ thá»ƒ, khÃ´ng thuyáº¿t giÃ¡o
-   - Æ¯u tiÃªn tÃ­ch há»£p vÃ o hoáº¡t Ä‘á»™ng LUYá»†N Táº¬P vÃ  Váº¬N Dá»¤NG
+3. NGUYÊN TẮC TÍCH HỢP TỰ NHIÊN (KHÔNG GÒ BÓ):
+   - Chọn NLS và đạo đức PHÙ HỢP với nội dung bài học, không cố ép
+   - Mỗi hoạt động chỉ tích hợp 1-2 NLS, không quá tải
+   - Đạo đức được giáo dục qua HÀNH ĐỘNG cụ thể, không thuyết giáo
+   - Ưu tiên tích hợp vào hoạt động LUYỆN TẬP và VẬN DỤNG
 `
 
 // ============================================================
-// PHáº¦N 7: HÃ€M Táº O PROMPT Äáº¦Y Äá»¦
+// PHẦN 7: HÀM TẠO PROMPT ĐẦY ĐỦ
 // ============================================================
 
 export function getFullLessonPlanPrompt(
   grade: string,
   topic: string,
-  duration = "2 tiáº¿t",
+  duration = "2 tiết",
   localContent?: string,
 ): string {
   const curriculum = CURRICULUM_DATABASE[grade as keyof typeof CURRICULUM_DATABASE]
   if (!curriculum) {
-    return `KhÃ´ng tÃ¬m tháº¥y dá»¯ liá»‡u chÆ°Æ¡ng trÃ¬nh cho khá»‘i ${grade}`
+    return `Không tìm thấy dữ liệu chương trình cho khối ${grade}`
   }
 
-  return `VAI TRÃ’: Báº¡n lÃ  ChuyÃªn gia SÆ° pháº¡m hÃ ng Ä‘áº§u Viá»‡t Nam vá» mÃ´n Hoáº¡t Ä‘á»™ng tráº£i nghiá»‡m, HÆ°á»›ng nghiá»‡p, 
-Ä‘áº·c biá»‡t am hiá»ƒu bá»™ sÃ¡ch "Káº¿t ná»‘i tri thá»©c vá»›i cuá»™c sá»‘ng" vÃ  CÃ´ng vÄƒn 5512/BGDÄT-GDTrH.
+  return `VAI TRÒ: Bạn là Chuyên gia Sư phạm hàng đầu Việt Nam về môn Hoạt động trải nghiệm, Hướng nghiệp, 
+đặc biệt am hiểu bộ sách "Kết nối tri thức với cuộc sống" và Công văn 5512/BGDĐT-GDTrH.
 
 ${PEDAGOGICAL_FOUNDATION}
 
 ${CONTEXT_PARSING_RULES}
 
-THÃ”NG TIN Äáº¦U VÃ€O:
-- Khá»‘i lá»›p: ${grade}
-- Äáº·c Ä‘iá»ƒm chÆ°Æ¡ng trÃ¬nh: ${curriculum.title}
-- MÃ´ táº£: ${curriculum.description}
-- Má»©c Ä‘á»™ Bloom: ${curriculum.bloomLevel}
-- Chá»§ Ä‘á»/BÃ i há»c: "${topic}"
-- Thá»i lÆ°á»£ng: ${duration}
-${localContent ? `- Ná»™i dung Ä‘á»‹a phÆ°Æ¡ng: ${localContent}` : ""}
+THÔNG TIN ĐẦU VÀO:
+- Khối lớp: ${grade}
+- Đặc điểm chương trình: ${curriculum.title}
+- Mô tả: ${curriculum.description}
+- Mức độ Bloom: ${curriculum.bloomLevel}
+- Chủ đề/Bài học: "${topic}"
+- Thời lượng: ${duration}
+${localContent ? `- Nội dung địa phương: ${localContent}` : ""}
 
 ${LESSON_STRUCTURE_CV5512}
 
 ${INTEGRATION_PLACEMENT_GUIDE}
 
-NÄ‚NG Lá»°C Sá» THEO THÃ”NG TÆ¯ 02/2025 (chá»n 2-3 nÄƒng lá»±c cá»¥ thá»ƒ Ä‘á»ƒ tÃ­ch há»£p):
+NĂNG LỰC SỐ THEO THÔNG TƯ 02/2025 (chọn 2-3 năng lực cụ thể để tích hợp):
 ${Object.entries(DIGITAL_LITERACY_FRAMEWORK)
-      .map(([k, v]) => `Miá»n ${k} (${v.name}):\n` + v.competencies.map(c => `  - ${c}`).join("\n"))
+      .map(([k, v]) => `Miền ${k} (${v.name}):\n` + v.competencies.map(c => `  - ${c}`).join("\n"))
       .join("\n")}
 
-GIÃO Dá»¤C Äáº O Äá»¨C Cáº¦N TÃCH Há»¢P (chá»n 1-2 phÃ¹ há»£p, giÃ¡o dá»¥c qua hÃ nh Ä‘á»™ng):
+GIÁO DỤC ĐẠO ĐỨC CẦN TÍCH HỢP (chọn 1-2 phù hợp, giáo dục qua hành động):
 ${Object.entries(MORAL_EDUCATION_THEMES)
       .map(([k, v]) => `- ${v.name}: ${v.description}`)
       .join("\n")}
 
-QUY Táº®C TÃCH Há»¢P Báº®T BUá»˜C:
-1. NLS pháº£i Ä‘Æ°á»£c tÃ­ch há»£p VÃ€O Tá»ªNG HOáº T Äá»˜NG cá»¥ thá»ƒ (Khá»Ÿi Ä‘á»™ng/KhÃ¡m phÃ¡/Luyá»‡n táº­p/Váº­n dá»¥ng)
-2. Äáº¡o Ä‘á»©c pháº£i Ä‘Æ°á»£c giÃ¡o dá»¥c qua HÃ€NH Äá»˜NG vÃ  TÃŒNH HUá»NG cá»¥ thá»ƒ
-3. Ghi rÃµ CÃ”NG Cá»¤ Sá» sá»­ dá»¥ng (Canva, Mentimeter, Kahoot, Google Drive, Padlet)
-4. Ghi rÃµ HÃ€NH VI há»c sinh thá»ƒ hiá»‡n pháº©m cháº¥t
+QUY TẮC TÍCH HỢP BẮT BUỘC:
+1. NLS phải được tích hợp VÀO TỪNG HOẠT ĐỘNG cụ thể (Khởi động/Khám phá/Luyện tập/Vận dụng)
+2. Đạo đức phải được giáo dục qua HÀNH ĐỘNG và TÌNH HUỐNG cụ thể
+3. Ghi rõ CÔNG CỤ SỐ sử dụng (Canva, Mentimeter, Kahoot, Google Drive, Padlet)
+4. Ghi rõ HÀNH VI học sinh thể hiện phẩm chất
 
-QUY Táº®C Äá»ŠNH Dáº NG Báº®T BUá»˜C:
-- KHÃ”NG dÃ¹ng dáº¥u ** trong ná»™i dung
-- KHÃ”NG dÃ¹ng TAB hoáº·c thá»¥t dÃ²ng
-- Má»—i pháº§n cÃ¡ch nhau báº±ng 2 dáº¥u xuá»‘ng dÃ²ng (\\n\\n)
-- Sá»­ dá»¥ng gáº¡ch Ä‘áº§u dÃ²ng (-) cho cÃ¡c má»¥c liá»‡t kÃª
-- Viáº¿t tiáº¿ng Viá»‡t chuáº©n má»±c, CHá»ˆ dÃ¹ng tiáº¿ng Anh cho tÃªn cÃ´ng cá»¥ cÃ´ng nghá»‡
+QUY TẮC ĐỊNH DẠNG BẮT BUỘC:
+- KHÔNG dùng dấu ** trong nội dung
+- KHÔNG dùng TAB hoặc thụt dòng
+- Mỗi phần cách nhau bằng 2 dấu xuống dòng (\\n\\n)
+- Sử dụng gạch đầu dòng (-) cho các mục liệt kê
+- Viết tiếng Việt chuẩn mực, CHỈ dùng tiếng Anh cho tên công cụ công nghệ
 
-NHIá»†M Vá»¤: Soáº¡n Káº¿ hoáº¡ch bÃ i dáº¡y Äáº¦Y Äá»¦ theo chuáº©n CÃ´ng vÄƒn 5512, vá»›i NLS vÃ  Ä‘áº¡o Ä‘á»©c Ä‘Æ°á»£c TÃCH Há»¢P VÃ€O Tá»ªNG HOáº T Äá»˜NG.
+NHIỆM VỤ: Soạn Kế hoạch bài dạy ĐẦY ĐỦ theo chuẩn Công văn 5512, với NLS và đạo đức được TÍCH HỢP VÀO TỪNG HOẠT ĐỘNG.
 
-Äá»ŠNH Dáº NG Káº¾T QUáº¢ - JSON thuáº§n tÃºy:
+ĐỊNH DẠNG KẾT QUẢ - JSON thuần túy:
 {
-  "ten_bai": "TÃªn bÃ i há»c theo SGK",
-  "muc_tieu_kien_thuc": "- Kiáº¿n thá»©c 1.\\n- Kiáº¿n thá»©c 2.\\n- Kiáº¿n thá»©c 3.",
-  "muc_tieu_nang_luc": "a) NÄƒng lá»±c chung:\\n- Tá»± chá»§ vÃ  tá»± há»c: [MÃ´ táº£ cá»¥ thá»ƒ hÃ nh vi HS].\\n- Giao tiáº¿p vÃ  há»£p tÃ¡c: [MÃ´ táº£].\\n\\nb) NÄƒng lá»±c Ä‘áº·c thÃ¹ HÄTN:\\n- ThÃ­ch á»©ng vá»›i cuá»™c sá»‘ng: [MÃ´ táº£].\\n- Äá»‹nh hÆ°á»›ng nghá» nghiá»‡p: [MÃ´ táº£].",
-  "muc_tieu_pham_chat": "- TrÃ¡ch nhiá»‡m: [MÃ´ táº£ hÃ nh vi HS thá»ƒ hiá»‡n pháº©m cháº¥t qua hoáº¡t Ä‘á»™ng cá»¥ thá»ƒ].\\n- [Pháº©m cháº¥t khÃ¡c]: [MÃ´ táº£ hÃ nh vi cá»¥ thá»ƒ].",
-  "thiet_bi_day_hoc": "1. GiÃ¡o viÃªn:\\n- MÃ¡y chiáº¿u, laptop cÃ³ káº¿t ná»‘i Internet.\\n- TÃ i khoáº£n Mentimeter/Kahoot (náº¿u sá»­ dá»¥ng).\\n- Phiáº¿u há»c táº­p in sáºµn.\\n\\n2. Há»c sinh:\\n- Äiá»‡n thoáº¡i thÃ´ng minh hoáº·c mÃ¡y tÃ­nh báº£ng (náº¿u cÃ³).\\n- Vá»Ÿ ghi, bÃºt mÃ u.",
-  "hoat_dong_khoi_dong": "a) Má»¥c tiÃªu: [Ná»™i dung].\\n\\nb) Ná»™i dung: [Ná»™i dung + TÃCH Há»¢P NLS náº¿u phÃ¹ há»£p, vÃ­ dá»¥: Sá»­ dá»¥ng Mentimeter thu tháº­p Ã½ kiáº¿n].\\n\\nc) Sáº£n pháº©m: [Ná»™i dung].\\n\\nd) Tá»• chá»©c thá»±c hiá»‡n:\\n- BÆ°á»›c 1: Chuyá»ƒn giao nhiá»‡m vá»¥ - GV [chi tiáº¿t, bao gá»“m hÆ°á»›ng dáº«n sá»­ dá»¥ng cÃ´ng cá»¥ sá»‘ náº¿u cÃ³].\\n- BÆ°á»›c 2: Thá»±c hiá»‡n nhiá»‡m vá»¥ - HS [chi tiáº¿t].\\n- BÆ°á»›c 3: BÃ¡o cÃ¡o, tháº£o luáº­n - [Chi tiáº¿t].\\n- BÆ°á»›c 4: Káº¿t luáº­n, nháº­n Ä‘á»‹nh - GV [chá»‘t kiáº¿n thá»©c, dáº«n vÃ o bÃ i].",
-  "hoat_dong_kham_pha": "a) Má»¥c tiÃªu: [Ná»™i dung].\\n\\nb) Ná»™i dung: [Ná»™i dung chÃ­nh + TÃCH Há»¢P NLS tÃ¬m kiáº¿m/Ä‘Ã¡nh giÃ¡ thÃ´ng tin náº¿u phÃ¹ há»£p + TÃCH Há»¢P Ä‘áº¡o Ä‘á»©c qua tÃ¬nh huá»‘ng].\\n\\nc) Sáº£n pháº©m: [Ná»™i dung].\\n\\nd) Tá»• chá»©c thá»±c hiá»‡n:\\n- BÆ°á»›c 1: Chuyá»ƒn giao nhiá»‡m vá»¥ - [Chi tiáº¿t].\\n- BÆ°á»›c 2: Thá»±c hiá»‡n nhiá»‡m vá»¥ - [Chi tiáº¿t, bao gá»“m hÃ nh Ä‘á»™ng thá»ƒ hiá»‡n pháº©m cháº¥t náº¿u cÃ³].\\n- BÆ°á»›c 3: BÃ¡o cÃ¡o, tháº£o luáº­n - [Chi tiáº¿t].\\n- BÆ°á»›c 4: Káº¿t luáº­n, nháº­n Ä‘á»‹nh - [Chi tiáº¿t].",
-  "hoat_dong_luyen_tap": "a) Má»¥c tiÃªu: [Ná»™i dung].\\n\\nb) Ná»™i dung: [Ná»™i dung + TÃCH Há»¢P NLS táº¡o ná»™i dung sá»‘/há»£p tÃ¡c sá»‘, vÃ­ dá»¥: HS thiáº¿t káº¿ poster báº±ng Canva, lÃ m viá»‡c nhÃ³m qua Google Drive].\\n\\nc) Sáº£n pháº©m: [Sáº£n pháº©m sá»‘ cá»¥ thá»ƒ: poster, infographic, video ngáº¯n...].\\n\\nd) Tá»• chá»©c thá»±c hiá»‡n:\\n- BÆ°á»›c 1: Chuyá»ƒn giao nhiá»‡m vá»¥ - [Chi tiáº¿t, hÆ°á»›ng dáº«n sá»­ dá»¥ng cÃ´ng cá»¥].\\n- BÆ°á»›c 2: Thá»±c hiá»‡n nhiá»‡m vá»¥ - [Chi tiáº¿t, HS thá»±c hÃ nh vá»›i cÃ´ng cá»¥ sá»‘].\\n- BÆ°á»›c 3: BÃ¡o cÃ¡o, tháº£o luáº­n - [TrÃ¬nh bÃ y sáº£n pháº©m sá»‘].\\n- BÆ°á»›c 4: Káº¿t luáº­n, nháº­n Ä‘á»‹nh - [ÄÃ¡nh giÃ¡ sáº£n pháº©m].",
-  "hoat_dong_van_dung": "a) Má»¥c tiÃªu: [Ná»™i dung].\\n\\nb) Ná»™i dung: [Ná»™i dung + TÃCH Há»¢P NLS chia sáº» ná»™i dung + TÃCH Há»¢P Ä‘áº¡o Ä‘á»©c qua cam káº¿t hÃ nh Ä‘á»™ng].\\n\\nc) Sáº£n pháº©m: [Cam káº¿t cÃ¡ nhÃ¢n, bÃ i viáº¿t chia sáº»...].\\n\\nd) Tá»• chá»©c thá»±c hiá»‡n:\\n- BÆ°á»›c 1: Chuyá»ƒn giao nhiá»‡m vá»¥ - [Chi tiáº¿t, bao gá»“m hÆ°á»›ng dáº«n chia sáº» an toÃ n].\\n- BÆ°á»›c 2: Thá»±c hiá»‡n nhiá»‡m vá»¥ - [HS viáº¿t cam káº¿t thá»ƒ hiá»‡n pháº©m cháº¥t].\\n- BÆ°á»›c 3: BÃ¡o cÃ¡o, tháº£o luáº­n - [Chia sáº» cam káº¿t].\\n- BÆ°á»›c 4: Káº¿t luáº­n, nháº­n Ä‘á»‹nh - [Nháº¯c nhá»Ÿ an toÃ n thÃ´ng tin khi chia sáº» online].",
-  "ho_so_day_hoc": "PHIáº¾U Há»ŒC Táº¬P:\\n[Ná»™i dung chi tiáº¿t phiáº¿u há»c táº­p]\\n\\nBáº¢NG KIá»‚M ÄÃNH GIÃ:\\n[TiÃªu chÃ­ Ä‘Ã¡nh giÃ¡ bao gá»“m cáº£ NLS vÃ  pháº©m cháº¥t]",
-  "tich_hop_nls": "Tá»”NG Há»¢P TÃCH Há»¢P NLS TRONG BÃ€I:\\n- Hoáº¡t Ä‘á»™ng Khá»Ÿi Ä‘á»™ng: NLS [MÃ£] - [TÃªn] - [MÃ´ táº£ cá»¥ thá»ƒ].\\n- Hoáº¡t Ä‘á»™ng KhÃ¡m phÃ¡: NLS [MÃ£] - [TÃªn] - [MÃ´ táº£ cá»¥ thá»ƒ].\\n- Hoáº¡t Ä‘á»™ng Luyá»‡n táº­p: NLS [MÃ£] - [TÃªn] - [MÃ´ táº£ cá»¥ thá»ƒ].\\n- Hoáº¡t Ä‘á»™ng Váº­n dá»¥ng: NLS [MÃ£] - [TÃªn] - [MÃ´ táº£ cá»¥ thá»ƒ].",
-  "tich_hop_dao_duc": "Tá»”NG Há»¢P GIÃO Dá»¤C Äáº O Äá»¨C TRONG BÃ€I:\\n- Hoáº¡t Ä‘á»™ng KhÃ¡m phÃ¡: [Pháº©m cháº¥t] - [TÃ¬nh huá»‘ng/hÃ nh Ä‘á»™ng cá»¥ thá»ƒ].\\n- Hoáº¡t Ä‘á»™ng Luyá»‡n táº­p: [Pháº©m cháº¥t] - [BÃ i táº­p thá»±c hÃ nh].\\n- Hoáº¡t Ä‘á»™ng Váº­n dá»¥ng: [Pháº©m cháº¥t] - [Cam káº¿t hÃ nh Ä‘á»™ng]."
+  "ten_bai": "Tên bài học theo SGK",
+  "muc_tieu_kien_thuc": "- Kiến thức 1.\\n- Kiến thức 2.\\n- Kiến thức 3.",
+  "muc_tieu_nang_luc": "a) Năng lực chung:\\n- Tự chủ và tự học: [Mô tả cụ thể hành vi HS].\\n- Giao tiếp và hợp tác: [Mô tả].\\n\\nb) Năng lực đặc thù HĐTN:\\n- Thích ứng với cuộc sống: [Mô tả].\\n- Định hướng nghề nghiệp: [Mô tả].",
+  "muc_tieu_pham_chat": "- Trách nhiệm: [Mô tả hành vi HS thể hiện phẩm chất qua hoạt động cụ thể].\\n- [Phẩm chất khác]: [Mô tả hành vi cụ thể].",
+  "thiet_bi_day_hoc": "1. Giáo viên:\\n- Máy chiếu, laptop có kết nối Internet.\\n- Tài khoản Mentimeter/Kahoot (nếu sử dụng).\\n- Phiếu học tập in sẵn.\\n\\n2. Học sinh:\\n- Điện thoại thông minh hoặc máy tính bảng (nếu có).\\n- Vở ghi, bút màu.",
+  "hoat_dong_khoi_dong": "a) Mục tiêu: [Nội dung].\\n\\nb) Nội dung: [Nội dung + TÍCH HỢP NLS nếu phù hợp, ví dụ: Sử dụng Mentimeter thu thập ý kiến].\\n\\nc) Sản phẩm: [Nội dung].\\n\\nd) Tổ chức thực hiện:\\n- Bước 1: Chuyển giao nhiệm vụ - GV [chi tiết, bao gồm hướng dẫn sử dụng công cụ số nếu có].\\n- Bước 2: Thực hiện nhiệm vụ - HS [chi tiết].\\n- Bước 3: Báo cáo, thảo luận - [Chi tiết].\\n- Bước 4: Kết luận, nhận định - GV [chốt kiến thức, dẫn vào bài].",
+  "hoat_dong_kham_pha": "a) Mục tiêu: [Nội dung].\\n\\nb) Nội dung: [Nội dung chính + TÍCH HỢP NLS tìm kiếm/đánh giá thông tin nếu phù hợp + TÍCH HỢP đạo đức qua tình huống].\\n\\nc) Sản phẩm: [Nội dung].\\n\\nd) Tổ chức thực hiện:\\n- Bước 1: Chuyển giao nhiệm vụ - [Chi tiết].\\n- Bước 2: Thực hiện nhiệm vụ - [Chi tiết, bao gồm hành động thể hiện phẩm chất nếu có].\\n- Bước 3: Báo cáo, thảo luận - [Chi tiết].\\n- Bước 4: Kết luận, nhận định - [Chi tiết].",
+  "hoat_dong_luyen_tap": "a) Mục tiêu: [Nội dung].\\n\\nb) Nội dung: [Nội dung + TÍCH HỢP NLS tạo nội dung số/hợp tác số, ví dụ: HS thiết kế poster bằng Canva, làm việc nhóm qua Google Drive].\\n\\nc) Sản phẩm: [Sản phẩm số cụ thể: poster, infographic, video ngắn...].\\n\\nd) Tổ chức thực hiện:\\n- Bước 1: Chuyển giao nhiệm vụ - [Chi tiết, hướng dẫn sử dụng công cụ].\\n- Bước 2: Thực hiện nhiệm vụ - [Chi tiết, HS thực hành với công cụ số].\\n- Bước 3: Báo cáo, thảo luận - [Trình bày sản phẩm số].\\n- Bước 4: Kết luận, nhận định - [Đánh giá sản phẩm].",
+  "hoat_dong_van_dung": "a) Mục tiêu: [Nội dung].\\n\\nb) Nội dung: [Nội dung + TÍCH HỢP NLS chia sẻ nội dung + TÍCH HỢP đạo đức qua cam kết hành động].\\n\\nc) Sản phẩm: [Cam kết cá nhân, bài viết chia sẻ...].\\n\\nd) Tổ chức thực hiện:\\n- Bước 1: Chuyển giao nhiệm vụ - [Chi tiết, bao gồm hướng dẫn chia sẻ an toàn].\\n- Bước 2: Thực hiện nhiệm vụ - [HS viết cam kết thể hiện phẩm chất].\\n- Bước 3: Báo cáo, thảo luận - [Chia sẻ cam kết].\\n- Bước 4: Kết luận, nhận định - [Nhắc nhở an toàn thông tin khi chia sẻ online].",
+  "ho_so_day_hoc": "PHIẾU HỌC TẬP:\\n[Nội dung chi tiết phiếu học tập]\\n\\nBẢNG KIỂM ĐÁNH GIÁ:\\n[Tiêu chí đánh giá bao gồm cả NLS và phẩm chất]",
+  "tich_hop_nls": "TỔNG HỢP TÍCH HỢP NLS TRONG BÀI:\\n- Hoạt động Khởi động: NLS [Mã] - [Tên] - [Mô tả cụ thể].\\n- Hoạt động Khám phá: NLS [Mã] - [Tên] - [Mô tả cụ thể].\\n- Hoạt động Luyện tập: NLS [Mã] - [Tên] - [Mô tả cụ thể].\\n- Hoạt động Vận dụng: NLS [Mã] - [Tên] - [Mô tả cụ thể].",
+  "tich_hop_dao_duc": "TỔNG HỢP GIÁO DỤC ĐẠO ĐỨC TRONG BÀI:\\n- Hoạt động Khám phá: [Phẩm chất] - [Tình huống/hành động cụ thể].\\n- Hoạt động Luyện tập: [Phẩm chất] - [Bài tập thực hành].\\n- Hoạt động Vận dụng: [Phẩm chất] - [Cam kết hành động]."
 }`
 }
 
 // ============================================================
-// PHáº¦N 8: EXPORT Máº¶C Äá»ŠNH
+// PHẦN 8: EXPORT MẶC ĐỊNH
 // ============================================================
 
 export default {

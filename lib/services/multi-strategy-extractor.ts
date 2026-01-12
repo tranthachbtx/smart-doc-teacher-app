@@ -79,7 +79,7 @@ export class MultiStrategyExtractor {
             console.log('[MultiStrategy] Falling back to Gemini Vision...');
             const geminiRes = await extractTextFromFile(
                 { mimeType: file.type, data: base64Data },
-                "HÃ£y phÃ¢n tÃ­ch tÃ i liá»‡u nÃ y. TÃ³m táº¯t ná»™i dung chÃ­nh vÃ  Ä‘á» xuáº¥t cáº¥u trÃºc bÃ i dáº¡y phÃ¹ há»£p. Tráº£ vá» text thuáº§n."
+                "Hãy phân tích tài liệu này. Tóm tắt nội dung chính và đề xuất cấu trúc bài dạy phù hợp. Trả về text thuần."
             );
 
             if (geminiRes.success && geminiRes.content) {

@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Zap, Plus, ShieldCheck, Copy, Loader2 } from "lucide-react";
 import { useLessonStore } from "@/lib/store/use-lesson-store";
-import { onRefineSection } from "@/lib/actions/gemini"; // Chuyá»ƒn logic refine sang action
+import { onRefineSection } from "@/lib/actions/gemini"; // Chuyển logic refine sang action
 
 interface SectionEditorItemProps {
     label: string;
@@ -29,15 +29,15 @@ export const SectionEditorItem = memo(({
 
     const handleAIAction = async (instruction: string) => {
         setIsRefining(true);
-        setStatus('success', `AI Ä‘ang tá»‘i Æ°u pháº§n: ${label}...`);
+        setStatus('success', `AI đang tối ưu phần: ${label}...`);
         try {
             const result = await onRefineSection(value, instruction, "gemini-1.5-flash");
             if (result.success && result.content) {
                 onChange(result.content);
-                setStatus('success', "ÄÃ£ cáº­p nháº­t ná»™i dung thÃ nh cÃ´ng!");
+                setStatus('success', "Đã cập nhật nội dung thành công!");
             }
         } catch (err: any) {
-            setStatus('error', "Lá»—i AI: " + err.message);
+            setStatus('error', "Lỗi AI: " + err.message);
         } finally {
             setIsRefining(false);
             setTimeout(() => setStatus('success', null), 3000);
@@ -54,7 +54,7 @@ export const SectionEditorItem = memo(({
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleAIAction("LÃ m cho ná»™i dung sÃ´i ná»•i vÃ  sinh Ä‘á»™ng hÆ¡n")}
+                        onClick={() => handleAIAction("Làm cho nội dung sôi nổi và sinh động hơn")}
                         className="h-8 w-8 p-0 rounded-xl text-orange-500 hover:bg-orange-50"
                     >
                         <Zap className="h-4 w-4 fill-orange-500" />
@@ -62,7 +62,7 @@ export const SectionEditorItem = memo(({
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => handleAIAction("ThÃªm yÃªu cáº§u nÄƒng lá»±c sá»‘ cho pháº§n nÃ y")}
+                        onClick={() => handleAIAction("Thêm yêu cầu năng lực số cho phần này")}
                         className="h-8 w-8 p-0 rounded-xl text-indigo-500 hover:bg-indigo-50"
                     >
                         <ShieldCheck className="h-4 w-4" />
@@ -72,7 +72,7 @@ export const SectionEditorItem = memo(({
                         size="sm"
                         onClick={() => {
                             navigator.clipboard.writeText(value);
-                            setStatus('success', "ÄÃ£ copy ná»™i dung!");
+                            setStatus('success', "Đã copy nội dung!");
                         }}
                         className="h-8 w-8 p-0 rounded-xl hover:bg-slate-50"
                     >

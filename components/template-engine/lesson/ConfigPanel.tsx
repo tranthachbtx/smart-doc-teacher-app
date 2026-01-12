@@ -31,14 +31,14 @@ export const ConfigPanel = React.memo(() => {
                         <BookOpen className="h-5 w-5" />
                     </div>
                     <div>
-                        <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 leading-tight">BÆ°á»›c 1: Cáº¥u hÃ¬nh</h3>
-                        <p className="text-[10px] text-slate-500 font-medium">Láº­p trÃ¬nh bá»‘i cáº£nh bÃ i dáº¡y</p>
+                        <h3 className="font-bold text-lg text-slate-800 dark:text-slate-100 leading-tight">Bước 1: Cấu hình</h3>
+                        <p className="text-[10px] text-slate-500 font-medium">Lập trình bối cảnh bài dạy</p>
                     </div>
                 </div>
 
                 <div className="space-y-5">
                     <div className="space-y-2">
-                        <Label htmlFor="lesson-grade-select" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Khá»‘i lá»›p (Grade)</Label>
+                        <Label htmlFor="lesson-grade-select" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Khối lớp (Grade)</Label>
                         <Select
                             value={lesson.grade}
                             onValueChange={(value) => {
@@ -50,18 +50,18 @@ export const ConfigPanel = React.memo(() => {
                             name="lessonGrade"
                         >
                             <SelectTrigger id="lesson-grade-select" className="h-12 rounded-2xl bg-white/50 dark:bg-slate-900/50 border-white dark:border-slate-800 shadow-sm">
-                                <SelectValue placeholder="Chá»n khá»‘i..." />
+                                <SelectValue placeholder="Chọn khối..." />
                             </SelectTrigger>
                             <SelectContent className="premium-glass rounded-2xl">
-                                <SelectItem value="10">Khá»‘i 10 (Grade 10)</SelectItem>
-                                <SelectItem value="11">Khá»‘i 11 (Grade 11)</SelectItem>
-                                <SelectItem value="12">Khá»‘i 12 (Grade 12)</SelectItem>
+                                <SelectItem value="10">Khối 10 (Grade 10)</SelectItem>
+                                <SelectItem value="11">Khối 11 (Grade 11)</SelectItem>
+                                <SelectItem value="12">Khối 12 (Grade 12)</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="lesson-theme-select" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Chá»§ Ä‘á» (PPCT Month)</Label>
+                        <Label htmlFor="lesson-theme-select" className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Chủ đề (PPCT Month)</Label>
                         <Select
                             value={lesson.chuDeSo}
                             onValueChange={(value) => {
@@ -79,7 +79,7 @@ export const ConfigPanel = React.memo(() => {
                             name="lessonTheme"
                         >
                             <SelectTrigger id="lesson-theme-select" className="h-14 rounded-2xl bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm focus:ring-4 focus:ring-indigo-50">
-                                <SelectValue placeholder={lesson.grade ? "Chá»n chá»§ Ä‘á»..." : "Chá»n khá»‘i trÆ°á»›c"} />
+                                <SelectValue placeholder={lesson.grade ? "Chọn chủ đề..." : "Chọn khối trước"} />
                             </SelectTrigger>
                             <SelectContent className="bg-white dark:bg-slate-900 rounded-3xl p-2 shadow-2xl border-indigo-100 max-h-[400px]">
                                 {lesson.grade &&
@@ -105,7 +105,7 @@ export const ConfigPanel = React.memo(() => {
                         <div className="premium-glass p-4 rounded-3xl space-y-3 border-indigo-200/50 bg-indigo-50/10">
                             <div className="flex items-center gap-2 border-b border-indigo-100/50 pb-2">
                                 <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
-                                <span className="text-[9px] font-bold text-indigo-800 uppercase tracking-wider">PhÃ¢n bá»• tiáº¿t há»c</span>
+                                <span className="text-[9px] font-bold text-indigo-800 uppercase tracking-wider">Phân bổ tiết học</span>
                             </div>
                             <div className="grid grid-cols-3 gap-2">
                                 <div className="text-center">
@@ -113,7 +113,7 @@ export const ConfigPanel = React.memo(() => {
                                     <p className="text-sm font-black text-indigo-600">{selectedChuDe.shdc}</p>
                                 </div>
                                 <div className="text-center border-x border-indigo-100">
-                                    <p className="text-[8px] text-slate-400 font-black uppercase">HÄGD</p>
+                                    <p className="text-[8px] text-slate-400 font-black uppercase">HĐGD</p>
                                     <p className="text-sm font-black text-emerald-600">{selectedChuDe.hdgd}</p>
                                 </div>
                                 <div className="text-center">

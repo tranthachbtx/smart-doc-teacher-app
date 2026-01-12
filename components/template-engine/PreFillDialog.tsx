@@ -1,6 +1,6 @@
 /**
- * ðŸŽ¯ PRE-FILL COMPONENT
- * GiÃºp ngÆ°á»i dÃ¹ng chá»n máº«u ná»™i dung trÆ°á»›c khi gá»­i AI
+ * 🎯 PRE-FILL COMPONENT
+ * Giúp người dùng chọn mẫu nội dung trước khi gửi AI
  */
 
 import React from "react";
@@ -46,18 +46,18 @@ export function PreFillDialog({ open, onOpenChange, section, topic, onApply }: P
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Lightbulb className="h-5 w-5 text-amber-500" />
-            Gá»£i Ã½ ná»™i dung cho {template.title}
+            Gợi ý nội dung cho {template.title}
           </DialogTitle>
           <DialogDescription>
-            Sá»­ dá»¥ng máº«u nÃ y Ä‘á»ƒ giáº£m táº£i AI vÃ  Ä‘áº£m báº£o ná»™i dung cháº¥t lÆ°á»£ng cao.
-            Báº¡n cÃ³ thá»ƒ chá»‰nh sá»­a trÆ°á»›c khi gá»­i cho Gemini Pro.
+            Sử dụng mẫu này để giảm tải AI và đảm bảo nội dung chất lượng cao.
+            Bạn có thể chỉnh sửa trước khi gửi cho Gemini Pro.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="text-xs">
-              Chá»§ Ä‘á»: {topic}
+              Chủ đề: {topic}
             </Badge>
             <Badge variant="secondary" className="text-xs">
               {section.toUpperCase()}
@@ -73,11 +73,11 @@ export function PreFillDialog({ open, onOpenChange, section, topic, onApply }: P
           <div className="flex gap-2 pt-2">
             <Button onClick={handleCopy} variant="outline" size="sm">
               <Copy className="h-4 w-4 mr-2" />
-              Sao chÃ©p
+              Sao chép
             </Button>
             <Button onClick={handleApply} className="w-full">
               <Sparkles className="h-4 w-4 mr-2" />
-              Ãp dá»¥ng gá»£i Ã½
+              Áp dụng gợi ý
             </Button>
           </div>
         </div>

@@ -1,6 +1,6 @@
 /**
- * ðŸŽ¯ SIMPLE AI CALLER - BACK TO BASICS ARCHITECTURE 17.0
- * Gá»i API Gemini má»™t cÃ¡ch Ä‘Æ¡n giáº£n vÃ  trá»±c tiáº¿p
+ * 🎯 SIMPLE AI CALLER - BACK TO BASICS ARCHITECTURE 17.0
+ * Gọi API Gemini một cách đơn giản và trực tiếp
  */
 
 export async function callSimpleAI(prompt: string): Promise<string> {

@@ -42,7 +42,7 @@ export class DocumentExportSystem {
     }
 
     // ========================================
-    // ðŸš€ CORE EXPORT METHODS
+    // 🚀 CORE EXPORT METHODS
     // ========================================
 
     async exportLesson(result: LessonResult, options: { onProgress?: (p: number) => void } = {}): Promise<boolean> {
@@ -51,60 +51,60 @@ export class DocumentExportSystem {
 
         try {
             const children: any[] = [
-                this.createHeader("Káº¾ HOáº CH BÃ€I Dáº Y (CHÆ¯Æ NG TRÃŒNH GDPT 2018)"),
-                this.createSectionTitle("I. TÃŠN BÃ€I Há»ŒC/CHá»¦ Äá»€"),
+                this.createHeader("KẾ HOẠCH BÀI DẠY (CHƯƠNG TRÌNH GDPT 2018)"),
+                this.createSectionTitle("I. TÊN BÀI HỌC/CHỦ ĐỀ"),
                 this.createField("", result.ten_bai || result.title || "..."),
 
-                this.createSectionTitle("II. Má»¤C TIÃŠU"),
-                new Paragraph({ children: [new TextRun({ text: "1. Kiáº¿n thá»©c:", bold: true, size: 24 })] }),
+                this.createSectionTitle("II. MỤC TIÊU"),
+                new Paragraph({ children: [new TextRun({ text: "1. Kiến thức:", bold: true, size: 24 })] }),
                 ...this.renderData(result.muc_tieu_kien_thuc),
-                new Paragraph({ children: [new TextRun({ text: "2. NÄƒng lá»±c:", bold: true, size: 24 })], spacing: { before: 100 } }),
+                new Paragraph({ children: [new TextRun({ text: "2. Năng lực:", bold: true, size: 24 })], spacing: { before: 100 } }),
                 ...this.renderData(result.muc_tieu_nang_luc),
-                new Paragraph({ children: [new TextRun({ text: "3. Pháº©m cháº¥t:", bold: true, size: 24 })], spacing: { before: 100 } }),
+                new Paragraph({ children: [new TextRun({ text: "3. Phẩm chất:", bold: true, size: 24 })], spacing: { before: 100 } }),
                 ...this.renderData(result.muc_tieu_pham_chat),
-                new Paragraph({ children: [new TextRun({ text: "4. TÃ­ch há»£p NÄƒng lá»±c sá»‘:", bold: true, size: 24 })], spacing: { before: 100 } }),
+                new Paragraph({ children: [new TextRun({ text: "4. Tích hợp Năng lực số:", bold: true, size: 24 })], spacing: { before: 100 } }),
                 ...this.renderData(result.tich_hop_nls),
 
-                this.createSectionTitle("III. THIáº¾T Bá»Š Dáº Y Há»ŒC VÃ€ Há»ŒC LIá»†U"),
-                new Paragraph({ children: [new TextRun({ text: "1. GV chuáº©n bá»‹:", bold: true, size: 24 })] }),
+                this.createSectionTitle("III. THIẾT BỊ DẠY HỌC VÀ HỌC LIỆU"),
+                new Paragraph({ children: [new TextRun({ text: "1. GV chuẩn bị:", bold: true, size: 24 })] }),
                 ...this.renderData(result.gv_chuan_bi || result.thiet_bi_day_hoc),
-                new Paragraph({ children: [new TextRun({ text: "2. HS chuáº©n bá»‹:", bold: true, size: 24 })], spacing: { before: 100 } }),
+                new Paragraph({ children: [new TextRun({ text: "2. HS chuẩn bị:", bold: true, size: 24 })], spacing: { before: 100 } }),
                 ...this.renderData(result.hs_chuan_bi),
 
-                this.createSectionTitle("IV. TIáº¾N TRÃŒNH Dáº Y Há»ŒC"),
+                this.createSectionTitle("IV. TIẾN TRÌNH DẠY HỌC"),
             ];
 
             options.onProgress?.(30);
 
             if (result.shdc) {
-                children.push(...this.createTwoColumnActivity("SINH HOáº T DÆ¯á»šI Cá»œ", result.shdc));
+                children.push(...this.createTwoColumnActivity("SINH HOẠT DƯỚI CỜ", result.shdc));
             }
 
-            children.push(...this.createTwoColumnActivity("HOáº T Äá»˜NG 1: KHá»žI Äá»˜NG (5-7 phÃºt)", result.hoat_dong_khoi_dong || ""));
-            children.push(...this.createTwoColumnActivity("HOáº T Äá»˜NG 2: KHÃM PHÃ (15-20 phÃºt)", (result.hoat_dong_kham_pha || result.hoat_dong_kham_pha_1) || ""));
-            children.push(...this.createTwoColumnActivity("HOáº T Äá»˜NG 3: LUYá»†N Táº¬P (10-15 phÃºt)", (result.hoat_dong_luyen_tap || result.hoat_dong_luyen_tap_1) || ""));
-            children.push(...this.createTwoColumnActivity("HOáº T Äá»˜NG 4: Váº¬N Dá»¤NG (5-10 phÃºt)", result.hoat_dong_van_dung || ""));
+            children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 1: KHỞI ĐỘNG (5-7 phút)", result.hoat_dong_khoi_dong || ""));
+            children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 2: KHÁM PHÁ (15-20 phút)", (result.hoat_dong_kham_pha || result.hoat_dong_kham_pha_1) || ""));
+            children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 3: LUYỆN TẬP (10-15 phút)", (result.hoat_dong_luyen_tap || result.hoat_dong_luyen_tap_1) || ""));
+            children.push(...this.createTwoColumnActivity("HOẠT ĐỘNG 4: VẬN DỤNG (5-10 phút)", result.hoat_dong_van_dung || ""));
 
             if (result.shl) {
-                children.push(...this.createTwoColumnActivity("SINH HOáº T Lá»šP", result.shl));
+                children.push(...this.createTwoColumnActivity("SINH HOẠT LỚP", result.shl));
             }
 
             options.onProgress?.(70);
 
             options.onProgress?.(80);
 
-            // Tá»° Äá»˜NG BÆ M PHá»¤ Lá»¤C (Inflation Trick v2.0)
-            children.push(this.createSectionTitle("V. Há»’ SÆ  Dáº Y Há»ŒC (PHá»¤ Lá»¤C)"));
+            // TỰ ĐỘNG BƠM PHỤ LỤC (Inflation Trick v2.0)
+            children.push(this.createSectionTitle("V. HỒ SƠ DẠY HỌC (PHỤ LỤC)"));
 
-            // 1. ThÃªm Phá»¥ lá»¥c tá»« AI viáº¿t
+            // 1. Thêm Phụ lục từ AI viết
             children.push(...this.renderData(result.ho_so_day_hoc || result.materials || ""));
 
-            // 2. Tá»± Ä‘á»™ng truy váº¥n Database Ä‘á»ƒ thÃªm Máº«u Phiáº¿u/Rubric chuáº©n (TÄƒng Ä‘á»™ dÃ i & chuyÃªn nghiá»‡p)
+            // 2. Tự động truy vấn Database để thêm Mẫu Phiếu/Rubric chuẩn (Tăng độ dài & chuyên nghiệp)
             const autoAppendices = this.generateAutoAppendices(result);
             children.push(...autoAppendices);
 
             children.push(
-                this.createSectionTitle("VI. HÆ¯á»šNG DáºªN Vá»€ NHÃ€"),
+                this.createSectionTitle("VI. HƯỚNG DẪN VỀ NHÀ"),
                 ...this.renderData(result.huong_dan_ve_nha || result.homework || "...")
             );
 
@@ -122,14 +122,14 @@ export class DocumentExportSystem {
         console.log(`[ExportSystem] Generating Meeting Minutes for Month ${month}...`);
         try {
             const children = [
-                this.createHeader(`BIÃŠN Báº¢N Há»ŒP Tá»” CHUYÃŠN MÃ”N - THÃNG ${month}`),
-                this.createField("Ná»™i dung:", result.noi_dung_chinh || result.title || "..."),
-                this.createSectionTitle("I. ÄÃNH GIÃ CÃ”NG TÃC THÃNG QUA"),
-                ...this.renderData(result.uu_diem || "ChÆ°a cÃ³ dá»¯ liá»‡u Æ°u Ä‘iá»ƒm"),
-                ...this.renderData(result.han_che || "ChÆ°a cÃ³ dá»¯ liá»‡u háº¡n cháº¿"),
-                this.createSectionTitle("II. TRIá»‚N KHAI CÃ”NG TÃC THÃNG Tá»šI"),
+                this.createHeader(`BIÊN BẢN HỌP TỔ CHUYÊN MÔN - THÁNG ${month}`),
+                this.createField("Nội dung:", result.noi_dung_chinh || result.title || "..."),
+                this.createSectionTitle("I. ĐÁNH GIÁ CÔNG TÁC THÁNG QUA"),
+                ...this.renderData(result.uu_diem || "Chưa có dữ liệu ưu điểm"),
+                ...this.renderData(result.han_che || "Chưa có dữ liệu hạn chế"),
+                this.createSectionTitle("II. TRIỂN KHAI CÔNG TÁC THÁNG TỚI"),
                 ...this.renderData(result.ke_hoach_thang_toi || result.content || "..."),
-                this.createSectionTitle("III. THá»NG NHáº¤T CHUYÃŠN MÃ”N"),
+                this.createSectionTitle("III. THỐNG NHẤT CHUYÊN MÔN"),
                 ...this.renderData(result.ket_luan_cuoc_hop || result.conclusion || "...")
             ];
             const doc = new Document({ sections: [{ children }] });
@@ -146,18 +146,18 @@ export class DocumentExportSystem {
         console.log(`[ExportSystem] Generating Event Script for ${result.ten_chu_de || "New Event"}...`);
         try {
             const children = [
-                this.createHeader(`Ká»ŠCH Báº¢N HOáº T Äá»˜NG NGOáº I KHÃ“A/Sá»° KIá»†N`),
-                this.createField("Chá»§ Ä‘á»:", result.ten_chu_de || result.title),
-                this.createField("Khá»‘i:", metadata.grade),
-                this.createField("ThÃ¡ng:", metadata.month),
+                this.createHeader(`KỊCH BẢN HOẠT ĐỘNG NGOẠI KHÓA/SỰ KIỆN`),
+                this.createField("Chủ đề:", result.ten_chu_de || result.title),
+                this.createField("Khối:", metadata.grade),
+                this.createField("Tháng:", metadata.month),
 
-                this.createSectionTitle("I. Má»¤C ÄÃCH & YÃŠU Cáº¦U"),
+                this.createSectionTitle("I. MỤC ĐÍCH & YÊU CẦU"),
                 ...this.renderData(result.muc_tieu || result.muc_dich_yeu_cau),
 
-                this.createSectionTitle("II. Ká»ŠCH Báº¢N CHI TIáº¾T"),
+                this.createSectionTitle("II. KỊCH BẢN CHI TIẾT"),
                 ...this.renderData(result.kich_ban_chi_tiet || result.noi_dung || result.content),
 
-                this.createSectionTitle("III. THÃ”NG ÄIá»†P Káº¾T THÃšC"),
+                this.createSectionTitle("III. THÔNG ĐIỆP KẾT THÚC"),
                 ...this.renderData(result.thong_diep_ket_thuc || result.conclusion)
             ];
 
@@ -175,32 +175,32 @@ export class DocumentExportSystem {
         console.log(`[ExportSystem] Generating NCBH Profile for Month ${metadata.month}...`);
         try {
             const children = [
-                this.createHeader(`Há»’ SÆ  NGHIÃŠN Cá»¨U BÃ€I Há»ŒC - THÃNG ${metadata.month}`),
-                this.createField("Khá»‘i:", metadata.grade),
-                this.createField("TÃªn bÃ i há»c nghiÃªn cá»©u:", result.ten_bai || result.title),
+                this.createHeader(`HỒ SƠ NGHIÊN CỨU BÀI HỌC - THÁNG ${metadata.month}`),
+                this.createField("Khối:", metadata.grade),
+                this.createField("Tên bài học nghiên cứu:", result.ten_bai || result.title),
 
-                this.createSectionTitle("I. LÃ DO CHá»ŒN BÃ€I"),
+                this.createSectionTitle("I. LÝ DO CHỌN BÀI"),
                 ...this.renderData(result.ly_do_chon),
 
-                this.createSectionTitle("II. Má»¤C TIÃŠU NGHIÃŠN Cá»¨U"),
+                this.createSectionTitle("II. MỤC TIÊU NGHIÊN CỨU"),
                 ...this.renderData(result.muc_tieu || result.objectives),
 
-                this.createSectionTitle("III. CHUá»–I HOáº T Äá»˜NG THIáº¾T Káº¾"),
+                this.createSectionTitle("III. CHUỖI HOẠT ĐỘNG THIẾT KẾ"),
                 ...this.renderData(result.chuoi_hoat_dong || result.methodology),
 
-                this.createSectionTitle("IV. PHÆ¯Æ NG ÃN Há»– TRá»¢"),
+                this.createSectionTitle("IV. PHƯƠNG ÁN HỖ TRỢ"),
                 ...this.renderData(result.phuong_an_ho_tro || result.observationFocus),
 
-                this.createSectionTitle("V. CHIA Sáºº Cá»¦A NGÆ¯á»œI Dáº Y"),
+                this.createSectionTitle("V. CHIA SẺ CỦA NGƯỜI DẠY"),
                 ...this.renderData(result.chia_se_nguoi_day),
 
-                this.createSectionTitle("VI. NHáº¬N XÃ‰T Cá»¦A NGÆ¯á»œI Dá»°"),
+                this.createSectionTitle("VI. NHẬN XÉT CỦA NGƯỜI DỰ"),
                 ...this.renderData(result.nhan_xet_nguoi_du || result.analysisPoints),
 
-                this.createSectionTitle("VII. NGUYÃŠN NHÃ‚N & GIáº¢I PHÃP"),
+                this.createSectionTitle("VII. NGUYÊN NHÂN & GIẢI PHÁP"),
                 ...this.renderData(result.nguyen_nhan_giai_phap),
 
-                this.createSectionTitle("VIII. BÃ€I Há»ŒC KINH NGHIá»†M"),
+                this.createSectionTitle("VIII. BÀI HỌC KINH NGHIỆM"),
                 ...this.renderData(result.bai_hoc_kinh_nghiem)
             ];
             const doc = new Document({ sections: [{ children }] });
@@ -217,20 +217,20 @@ export class DocumentExportSystem {
         console.log(`[ExportSystem] Generating Assessment Plan for ${metadata.term}...`);
         try {
             const children = [
-                this.createHeader(`Káº¾ HOáº CH KIá»‚M TRA ÄÃNH GIÃ - ${metadata.term}`),
-                this.createField("Khá»‘i:", metadata.grade),
-                this.createField("Trá»ng tÃ¢m:", result.title || result.ten_ke_hoach || metadata.term),
+                this.createHeader(`KẾ HOẠCH KIỂM TRA ĐÁNH GIÁ - ${metadata.term}`),
+                this.createField("Khối:", metadata.grade),
+                this.createField("Trọng tâm:", result.title || result.ten_ke_hoach || metadata.term),
 
-                this.createSectionTitle("I. Má»¤C ÄÃCH"),
+                this.createSectionTitle("I. MỤC ĐÍCH"),
                 ...this.renderData(result.purpose || result.muc_tieu),
 
-                this.createSectionTitle("II. MA TRáº¬N Äá»€ KIá»‚M TRA"),
+                this.createSectionTitle("II. MA TRẬN ĐỀ KIỂM TRA"),
                 ...this.renderData(result.matrix || "..."),
 
-                this.createSectionTitle("III. Cáº¤U TRÃšC / Äá»€ MINH Há»ŒA"),
+                this.createSectionTitle("III. CẤU TRÚC / ĐỀ MINH HỌA"),
                 ...this.renderData(result.structure || result.noi_dung_nhiem_vu),
 
-                this.createSectionTitle("IV. HÆ¯á»šNG DáºªN CHáº¤M (RUBRIC)"),
+                this.createSectionTitle("IV. HƯỚNG DẪN CHẤM (RUBRIC)"),
                 ...this.renderData(result.rubric_text || result.bang_kiem_rubric || result.cong_cu_danh_gia)
             ];
             const doc = new Document({ sections: [{ children }] });
@@ -244,7 +244,7 @@ export class DocumentExportSystem {
     }
 
     // ========================================
-    // ðŸ› ï¸ INTERNAL FORMATTING HELPERS
+    // 🛠️ INTERNAL FORMATTING HELPERS
     // ========================================
 
     private createHeader(text: string): Paragraph {
@@ -279,7 +279,7 @@ export class DocumentExportSystem {
     }
 
     private createTwoColumnActivity(title: string, content: any): any[] {
-        console.log(`[ExportSystem] ðŸš€ ARCH 26.1: Generating Multi-Segment Table for: ${title}`);
+        console.log(`[ExportSystem] 🚀 ARCH 26.1: Generating Multi-Segment Table for: ${title}`);
 
         const textContent = typeof content === "string" ? content : JSON.stringify(content);
         const { intro, segments } = this.parseAllSegmentsWithIntro(textContent);
@@ -291,7 +291,7 @@ export class DocumentExportSystem {
             })
         ];
 
-        // Náº¿u cÃ³ ná»™i dung dáº«n nháº­p (vÃ­ dá»¥: TÃªn hoáº¡t Ä‘á»™ng tá»« AI), in ra trÆ°á»›c
+        // Nếu có nội dung dẫn nhập (ví dụ: Tên hoạt động từ AI), in ra trước
         if (intro && intro.length > 5) {
             paragraphs.push(...this.renderData(intro));
         }
@@ -303,7 +303,7 @@ export class DocumentExportSystem {
                         width: { size: 50, type: WidthType.PERCENTAGE },
                         shading: { fill: "E8EEF7", type: ShadingType.CLEAR, color: "auto" },
                         children: [new Paragraph({
-                            children: [new TextRun({ text: "HOáº T Äá»˜NG Cá»¦A GIÃO VIÃŠN", bold: true, size: 22, color: "2E59A7" })],
+                            children: [new TextRun({ text: "HOẠT ĐỘNG CỦA GIÁO VIÊN", bold: true, size: 22, color: "2E59A7" })],
                             alignment: AlignmentType.CENTER
                         })]
                     }),
@@ -311,7 +311,7 @@ export class DocumentExportSystem {
                         width: { size: 50, type: WidthType.PERCENTAGE },
                         shading: { fill: "F2F5FA", type: ShadingType.CLEAR, color: "auto" },
                         children: [new Paragraph({
-                            children: [new TextRun({ text: "HOáº T Äá»˜NG Cá»¦A Há»ŒC SINH", bold: true, size: 22, color: "2E59A7" })],
+                            children: [new TextRun({ text: "HOẠT ĐỘNG CỦA HỌC SINH", bold: true, size: 22, color: "2E59A7" })],
                             alignment: AlignmentType.CENTER
                         })]
                     })
@@ -418,7 +418,7 @@ export class DocumentExportSystem {
                 if (typeof item === "string") {
                     paragraphs.push(new Paragraph({ children: [new TextRun({ text: `- ${item}`, size: 22 })], spacing: { after: 50 } }));
                 } else if (typeof item === "object") {
-                    paragraphs.push(new Paragraph({ children: [new TextRun({ text: `Má»¥c ${index + 1}:`, bold: true, size: 22 })], spacing: { before: 100 } }));
+                    paragraphs.push(new Paragraph({ children: [new TextRun({ text: `Mục ${index + 1}:`, bold: true, size: 22 })], spacing: { before: 100 } }));
                     paragraphs.push(...this.renderData(item));
                 }
             });
@@ -440,11 +440,11 @@ export class DocumentExportSystem {
 
     /**
      * Parse All Segments (Arch 26.0)
-     * Thay tháº¿ parseColumns cÅ© - Há»— trá»£ má»• xáº» Ä‘a táº§ng nhiá»u cáº·p GV/HS
+     * Thay thế parseColumns cũ - Hỗ trợ mổ xẻ đa tầng nhiều cặp GV/HS
      */
     private parseAllSegmentsWithIntro(content: string): { intro: string, segments: { cot1: string; cot2: string }[] } {
         if (!content || content.trim().length === 0) {
-            return { intro: "", segments: [{ cot1: "Äang cáº­p nháº­t ná»™i dung...", cot2: "..." }] };
+            return { intro: "", segments: [{ cot1: "Đang cập nhật nội dung...", cot2: "..." }] };
         }
 
         const segments: { cot1: string; cot2: string }[] = [];
@@ -458,8 +458,8 @@ export class DocumentExportSystem {
                 if (json.steps && Array.isArray(json.steps)) {
                     json.steps.forEach((s: any) => {
                         segments.push({
-                            cot1: s.teacher_action || s.instruction || "GV tá»• chá»©c.",
-                            cot2: s.student_action || s.product || "HS thá»±c hiá»‡n."
+                            cot1: s.teacher_action || s.instruction || "GV tổ chức.",
+                            cot2: s.student_action || s.product || "HS thực hiện."
                         });
                     });
                     return { intro: json.module_title || "", segments };
@@ -493,7 +493,7 @@ export class DocumentExportSystem {
     }
 
     // ========================================
-    // ðŸŽˆ INFLATION ENGINE (Tá»° Äá»˜NG BÆ M Ná»˜I DUNG)
+    // 🎈 INFLATION ENGINE (TỰ ĐỘNG BƠM NỘI DUNG)
     // ========================================
 
     private generateAutoAppendices(result: LessonResult): any[] {
@@ -501,10 +501,10 @@ export class DocumentExportSystem {
         const foundMaterials = new Set<string>();
 
         const searchTargets = [
-            { field: result.hoat_dong_khoi_dong, name: "Khá»Ÿi Ä‘á»™ng" },
-            { field: result.hoat_dong_kham_pha, name: "KhÃ¡m phÃ¡" },
-            { field: result.hoat_dong_luyen_tap, name: "Luyá»‡n táº­p" },
-            { field: result.hoat_dong_van_dung, name: "Váº­n dá»¥ng" }
+            { field: result.hoat_dong_khoi_dong, name: "Khởi động" },
+            { field: result.hoat_dong_kham_pha, name: "Khám phá" },
+            { field: result.hoat_dong_luyen_tap, name: "Luyện tập" },
+            { field: result.hoat_dong_van_dung, name: "Vận dụng" }
         ];
 
         searchTargets.forEach(target => {
@@ -520,7 +520,7 @@ export class DocumentExportSystem {
         // STRATEGY 2: Context-Aware (Theme-based) search v34.0
         const theme = result.ten_bai || result.title || "";
         if (theme) {
-            console.log(`[ExportSystem] ðŸ§ª Context-Aware Search for: ${theme}`);
+            console.log(`[ExportSystem] 🧪 Context-Aware Search for: ${theme}`);
             const themePhieus = getPhieuHocTapTheoTuKhoa(theme);
             const themeRubrics = getRubricTheoTuKhoa(theme);
             this.appendMaterials(blocks, themePhieus, themeRubrics, foundMaterials);
@@ -534,11 +534,11 @@ export class DocumentExportSystem {
             if (!foundSet.has(phieu.ma)) {
                 foundSet.add(phieu.ma);
                 blocks.push(new Paragraph({
-                    children: [new TextRun({ text: `\n\nPHá»¤ Lá»¤C: ${phieu.ten.toUpperCase()} (${phieu.ma})`, bold: true, size: 28 })],
+                    children: [new TextRun({ text: `\n\nPHỤ LỤC: ${phieu.ten.toUpperCase()} (${phieu.ma})`, bold: true, size: 28 })],
                     heading: HeadingLevel.HEADING_3
                 }));
                 blocks.push(new Paragraph({
-                    children: [new TextRun({ text: `MÃ´ táº£: ${phieu.mo_ta}`, italics: true, size: 22 })]
+                    children: [new TextRun({ text: `Mô tả: ${phieu.mo_ta}`, italics: true, size: 22 })]
                 }));
 
                 phieu.cau_truc.forEach((section: any) => {
@@ -547,7 +547,7 @@ export class DocumentExportSystem {
                         spacing: { before: 100 }
                     }));
                     blocks.push(new Paragraph({
-                        children: [new TextRun({ text: `HÆ°á»›ng dáº«n: ${section.huong_dan}`, size: 22 })]
+                        children: [new TextRun({ text: `Hướng dẫn: ${section.huong_dan}`, size: 22 })]
                     }));
                     const questions = section.cau_hoi_mau.map((q: string) => new Paragraph({
                         children: [new TextRun({ text: `- ${q}`, size: 22 })],
@@ -556,7 +556,7 @@ export class DocumentExportSystem {
                     blocks.push(...questions);
                 });
                 blocks.push(new Paragraph({
-                    children: [new TextRun({ text: `LÆ°u Ã½ sá»­ dá»¥ng: ${phieu.luu_y_su_dung.join('. ')}`, color: "666666", size: 20 })],
+                    children: [new TextRun({ text: `Lưu ý sử dụng: ${phieu.luu_y_su_dung.join('. ')}`, color: "666666", size: 20 })],
                     spacing: { before: 100 }
                 }));
             }
@@ -566,16 +566,16 @@ export class DocumentExportSystem {
             if (!foundSet.has(rubric.ma)) {
                 foundSet.add(rubric.ma);
                 blocks.push(new Paragraph({
-                    children: [new TextRun({ text: `\n\nPHá»¤ Lá»¤C: ${rubric.ten.toUpperCase()} (${rubric.ma})`, bold: true, size: 28 })],
+                    children: [new TextRun({ text: `\n\nPHỤ LỤC: ${rubric.ten.toUpperCase()} (${rubric.ma})`, bold: true, size: 28 })],
                     heading: HeadingLevel.HEADING_3
                 }));
 
                 const tableRows = [
                     new TableRow({
                         children: [
-                            this.createTableCell("TiÃªu chÃ­", true, "E0E0E0"),
-                            this.createTableCell("Má»©c 4 (Xuáº¥t sáº¯c)", true, "E0E0E0"),
-                            this.createTableCell("Má»©c 1 (ChÆ°a Ä‘áº¡t)", true, "E0E0E0")
+                            this.createTableCell("Tiêu chí", true, "E0E0E0"),
+                            this.createTableCell("Mức 4 (Xuất sắc)", true, "E0E0E0"),
+                            this.createTableCell("Mức 1 (Chưa đạt)", true, "E0E0E0")
                         ]
                     }),
                     ...rubric.tieu_chi.map((tc: any) => new TableRow({
@@ -624,8 +624,8 @@ export class DocumentExportSystem {
             window.URL.revokeObjectURL(url);
         }, 100);
 
-        // ðŸ’Ž INTEGRITY LOG
+        // 💎 INTEGRITY LOG
         const seal = await IntegrityService.seal(docxBlob, safeName);
-        console.log(`[Integrity] ðŸ›¡ï¸ DOCUMENT SEALED: ${seal.checksum} at ${seal.timestamp}`);
+        console.log(`[Integrity] 🛡️ DOCUMENT SEALED: ${seal.checksum} at ${seal.timestamp}`);
     }
 }

@@ -1,6 +1,6 @@
 /**
- * ðŸ—ï¸ TEMPLATE ENGINE v2.0 (REFACTORED)
- * ÄÃ£ chia nhá» God Component thÃ nh cÃ¡c modules riÃªng biá»‡t
+ * 🏗️ TEMPLATE ENGINE v2.0 (REFACTORED)
+ * Đã chia nhỏ God Component thành các modules riêng biệt
  */
 
 "use client";
@@ -116,9 +116,9 @@ export function TemplateEngine() {
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      setSuccess("ÄÃ£ sao chÃ©p vÃ o clipboard!");
+      setSuccess("Đã sao chép vào clipboard!");
     } catch (err) {
-      setError("KhÃ´ng thá»ƒ sao chÃ©p. Vui lÃ²ng thá»­ láº¡i.");
+      setError("Không thể sao chép. Vui lòng thử lại.");
     }
   };
 
@@ -139,11 +139,11 @@ export function TemplateEngine() {
           );
           if (meetingRes.success && meetingRes.data) {
             store.updateMeetingField('result', meetingRes.data);
-            store.setSuccess("ÄÃ£ táº¡o biÃªn báº£n há»p thÃ nh cÃ´ng!");
+            store.setSuccess("Đã tạo biên bản họp thành công!");
           } else {
             if (meetingRes.content) {
               await copyToClipboard(meetingRes.content);
-              store.setSuccess("âš ï¸ AI server quÃ¡ táº£i. ÄÃ£ COPY PROMPT vÃ o bá»™ nhá»› táº¡m. HÃ£y dÃ¡n vÃ o Gemini/ChatGPT!");
+              store.setSuccess("⚠️ AI server quá tải. Đã COPY PROMPT vào bộ nhớ tạm. Hãy dán vào Gemini/ChatGPT!");
               // Don't throw to avoid red error screen matching user preference for "Manual Workflow"
               return;
             }
@@ -165,12 +165,12 @@ export function TemplateEngine() {
           );
           if (lessonRes.success && lessonRes.data) {
             store.setLessonResult(lessonRes.data);
-            store.setSuccess("ÄÃ£ táº¡o káº¿ hoáº¡ch bÃ i dáº¡y thÃ nh cÃ´ng!");
+            store.setSuccess("Đã tạo kế hoạch bài dạy thành công!");
           } else {
             // Lesson plan usually works with Manual Workflow Hub, but if they use this legacy path:
             if (lessonRes.content) {
               await copyToClipboard(lessonRes.content);
-              store.setSuccess("âš ï¸ ÄÃ£ COPY PROMPT GiÃ¡o Ã¡n. HÃ£y dÃ¡n vÃ o AI!");
+              store.setSuccess("⚠️ Đã COPY PROMPT Giáo án. Hãy dán vào AI!");
               return;
             }
             throw new Error(lessonRes.error);
@@ -188,11 +188,11 @@ export function TemplateEngine() {
           );
           if (eventRes.success && eventRes.data) {
             store.updateEventField('result', eventRes.data);
-            store.setSuccess("ÄÃ£ táº¡o ká»‹ch báº£n ngoáº¡i khÃ³a thÃ nh cÃ´ng!");
+            store.setSuccess("Đã tạo kịch bản ngoại khóa thành công!");
           } else {
             if (eventRes.content) {
               await copyToClipboard(eventRes.content);
-              store.setSuccess("âš ï¸ ÄÃ£ COPY PROMPT ngoáº¡i khÃ³a. HÃ£y dÃ¡n vÃ o AI Ä‘á»ƒ táº¡o!");
+              store.setSuccess("⚠️ Đã COPY PROMPT ngoại khóa. Hãy dán vào AI để tạo!");
               return;
             }
             throw new Error(eventRes.error);
@@ -207,11 +207,11 @@ export function TemplateEngine() {
           );
           if (ncbhRes.success && ncbhRes.data) {
             store.updateNcbhField('result', ncbhRes.data);
-            store.setSuccess("ÄÃ£ táº¡o nghiÃªn cá»©u bÃ i há»c thÃ nh cÃ´ng!");
+            store.setSuccess("Đã tạo nghiên cứu bài học thành công!");
           } else {
             if (ncbhRes.content) {
               await copyToClipboard(ncbhRes.content);
-              store.setSuccess("âš ï¸ ÄÃ£ COPY PROMPT NCBH. HÃ£y dÃ¡n vÃ o AI Ä‘á»ƒ táº¡o!");
+              store.setSuccess("⚠️ Đã COPY PROMPT NCBH. Hãy dán vào AI để tạo!");
               return;
             }
             throw new Error(ncbhRes.error);
@@ -227,11 +227,11 @@ export function TemplateEngine() {
           );
           if (assessRes.success && assessRes.data) {
             store.updateAssessmentField('result', assessRes.data);
-            store.setSuccess("ÄÃ£ táº¡o káº¿ hoáº¡ch kiá»ƒm tra Ä‘Ã¡nh giÃ¡ thÃ nh cÃ´ng!");
+            store.setSuccess("Đã tạo kế hoạch kiểm tra đánh giá thành công!");
           } else {
             if (assessRes.content) {
               await copyToClipboard(assessRes.content);
-              store.setSuccess("âš ï¸ ÄÃ£ COPY PROMPT ÄÃ¡nh giÃ¡. HÃ£y dÃ¡n vÃ o AI Ä‘á»ƒ táº¡o!");
+              store.setSuccess("⚠️ Đã COPY PROMPT Đánh giá. Hãy dán vào AI để tạo!");
               return;
             }
             throw new Error(assessRes.error);
@@ -241,7 +241,7 @@ export function TemplateEngine() {
           throw new Error("Unknown mode");
       }
     } catch (err) {
-      store.setError(err instanceof Error ? err.message : "ÄÃ£ xáº£y ra lá»—i");
+      store.setError(err instanceof Error ? err.message : "Đã xảy ra lỗi");
     } finally {
       store.setGeneratingMode(null);
     }
@@ -254,46 +254,46 @@ export function TemplateEngine() {
     const exportSystem = DocumentExportSystem.getInstance(); // Keep as fallback/alternative for others
 
     try {
-      store.setSuccess("Äang xuáº¥t file dá»±a trÃªn máº«u chuáº©n...");
+      store.setSuccess("Đang xuất file dựa trên mẫu chuẩn...");
 
       let success = false;
       switch (mode) {
 
         case "lesson":
-          if (!lesson.result) throw new Error("ChÆ°a cÃ³ káº¿t quáº£ giÃ¡o Ã¡n Ä‘á»ƒ xuáº¥t");
+          if (!lesson.result) throw new Error("Chưa có kết quả giáo án để xuất");
           success = await TemplateExportService.exportLessonToTemplate(lesson.result);
           break;
         case "meeting":
-          if (!meeting.result) throw new Error("ChÆ°a cÃ³ káº¿t quáº£ biÃªn báº£n Ä‘á»ƒ xuáº¥t");
+          if (!meeting.result) throw new Error("Chưa có kết quả biên bản để xuất");
           success = await TemplateExportService.exportMeetingToTemplate(meeting.result);
           break;
         case "event":
-          if (!event.result) throw new Error("ChÆ°a cÃ³ káº¿t quáº£ ká»‹ch báº£n Ä‘á»ƒ xuáº¥t");
+          if (!event.result) throw new Error("Chưa có kết quả kịch bản để xuất");
           success = await TemplateExportService.exportEventToTemplate(event.result);
           break;
         case "ncbh":
-          if (!ncbh.result) throw new Error("ChÆ°a cÃ³ káº¿t quáº£ NCBH Ä‘á»ƒ xuáº¥t");
+          if (!ncbh.result) throw new Error("Chưa có kết quả NCBH để xuất");
           success = await TemplateExportService.exportNCBHToTemplate(ncbh.result);
           break;
         case "assessment":
-          if (!assessment.result) throw new Error("ChÆ°a cÃ³ káº¿t quáº£ Ä‘Ã¡nh giÃ¡ Ä‘á»ƒ xuáº¥t");
+          if (!assessment.result) throw new Error("Chưa có kết quả đánh giá để xuất");
           const templateInput = assessment.template?.data || "/templates/mau-ke-hoach-day-hoc.docx";
           // If we have a custom arrayBuffer from upload, docxtemplater needs a different handling, 
           // but for now we follow the template path pattern.
           success = await TemplateExportService.exportAssessmentToTemplate(assessment.result, typeof templateInput === 'string' ? templateInput : undefined);
           break;
         default:
-          throw new Error(`Cháº¿ Ä‘á»™ xuáº¥t "${mode}" chÆ°a Ä‘Æ°á»£c há»— trá»£ trong phiÃªn báº£n tinh gá»n.`);
+          throw new Error(`Chế độ xuất "${mode}" chưa được hỗ trợ trong phiên bản tinh gọn.`);
       }
 
       if (success) {
-        store.setSuccess("ÄÃ£ xuáº¥t file Word thÃ nh cÃ´ng!");
+        store.setSuccess("Đã xuất file Word thành công!");
       } else {
-        throw new Error("QuÃ¡ trÃ¬nh xuáº¥t file gáº·p sá»± cá»‘ ká»¹ thuáº­t.");
+        throw new Error("Quá trình xuất file gặp sự cố kỹ thuật.");
       }
     } catch (err) {
       console.error("Export Error:", err);
-      store.setError(err instanceof Error ? err.message : "Xuáº¥t file tháº¥t báº¡i");
+      store.setError(err instanceof Error ? err.message : "Xuất file thất bại");
     } finally {
       store.setLoading('isExporting', false);
     }
@@ -301,12 +301,12 @@ export function TemplateEngine() {
 
   const handleAudit = async () => {
     if (!lesson.result) {
-      store.setError("KhÃ´ng cÃ³ dá»¯ liá»‡u giÃ¡o Ã¡n Ä‘á»ƒ kiá»ƒm Ä‘á»‹nh.");
+      store.setError("Không có dữ liệu giáo án để kiểm định.");
       return;
     }
 
     store.setLoading('isAuditing', true);
-    store.setSuccess("ðŸ” Äang thá»±c hiá»‡n kiá»ƒm Ä‘á»‹nh chuyÃªn sÃ¢u (Pedagogical Audit V5)...");
+    store.setSuccess("🔍 Đang thực hiện kiểm định chuyên sâu (Pedagogical Audit V5)...");
 
     try {
       const result = await performAdvancedAudit(lesson.result);
@@ -314,12 +314,12 @@ export function TemplateEngine() {
         const report = result.report;
         store.updateLessonField('auditResult', report.professionalReasoning);
         store.updateLessonField('auditScore', report.overallScore);
-        store.setSuccess(`âœ… Kiá»ƒm Ä‘á»‹nh hoÃ n táº¥t! Äiá»ƒm: ${report.overallScore}/100`);
+        store.setSuccess(`✅ Kiểm định hoàn tất! Điểm: ${report.overallScore}/100`);
       } else {
-        throw new Error(result.error || "Kiá»ƒm Ä‘á»‹nh khÃ´ng thÃ nh cÃ´ng");
+        throw new Error(result.error || "Kiểm định không thành công");
       }
     } catch (err) {
-      store.setError(err instanceof Error ? err.message : "ÄÃ¡nh giÃ¡ tháº¥t báº¡i");
+      store.setError(err instanceof Error ? err.message : "Đánh giá thất bại");
     } finally {
       store.setLoading('isAuditing', false);
     }
@@ -328,7 +328,7 @@ export function TemplateEngine() {
   const handleRefineSection = async (content: string, instruction: string, model?: string): Promise<ActionResult> => {
     store.setGeneratingMode("refine");
     try {
-      const prompt = `Báº¡n lÃ  má»™t biÃªn táº­p viÃªn giÃ¡o dá»¥c chuyÃªn nghiá»‡p. HÃ£y chá»‰nh sá»­a ná»™i dung sau Ä‘Ã¢y dá»±a trÃªn yÃªu cáº§u.\n\nNá»˜I DUNG Gá»C:\n${content}\n\nYÃŠU Cáº¦U CHá»ˆNH Sá»¬A: ${instruction}\n\nLÆ°u Ã½: Chá»‰ tráº£ vá» ná»™i dung Ä‘Ã£ chá»‰nh sá»­a, khÃ´ng kÃ¨m lá»i dáº«n.`;
+      const prompt = `Bạn là một biên tập viên giáo dục chuyên nghiệp. Hãy chỉnh sửa nội dung sau đây dựa trên yêu cầu.\n\nNỘI DUNG GỐC:\n${content}\n\nYÊU CẦU CHỈNH SỬA: ${instruction}\n\nLưu ý: Chỉ trả về nội dung đã chỉnh sửa, không kèm lời dẫn.`;
       const res = await generateAIContent(prompt, model || store.selectedModel);
       return res;
     } catch (err: any) {
@@ -380,9 +380,9 @@ export function TemplateEngine() {
       const buffer = await file.arrayBuffer();
       await saveTemplate("assessment", file.name, buffer);
       store.updateAssessmentField('template', { name: file.name, data: buffer });
-      store.setSuccess(`ÄÃ£ táº£i lÃªn máº«u "${file.name}"`);
+      store.setSuccess(`Đã tải lên mẫu "${file.name}"`);
     } catch (err: any) {
-      store.setError(`Lá»—i táº£i máº«u: ${err.message}`);
+      store.setError(`Lỗi tải mẫu: ${err.message}`);
     }
   };
 
@@ -435,7 +435,7 @@ export function TemplateEngine() {
       store.updateLessonField('tasks', lesson.tasks.filter(t => t.id !== id));
     },
     addLessonTask: () => {
-      const newTask: LessonTask = { id: Date.now().toString(), name: "Task má»›i", content: "" };
+      const newTask: LessonTask = { id: Date.now().toString(), name: "Task mới", content: "" };
       store.updateLessonField('tasks', [...lesson.tasks, newTask]);
     },
     lessonCustomInstructions: lesson.customInstructions,
@@ -474,7 +474,7 @@ export function TemplateEngine() {
     setSelectedEventMonth: (v) => store.updateEventField('month', v),
     autoFilledTheme: event.theme,
     setAutoFilledTheme: (v) => store.updateEventField('theme', v),
-    eventType: "chuyÃªn Ä‘á»", // default
+    eventType: "chuyên đề", // default
     setEventType: () => { },
     eventBudget: event.budget,
     setEventBudget: (v) => store.updateEventField('budget', v),
@@ -501,10 +501,10 @@ export function TemplateEngine() {
         <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Trá»£ lÃ½ cho Tráº§n Tháº¡ch - TrÆ°á»ng THPT BÃ¹i Thá»‹ XuÃ¢n - MÅ©i NÃ© - LÃ¢m Äá»“ng
+              Trợ lý cho Trần Thạch - Trường THPT Bùi Thị Xuân - Mũi Né - Lâm Đồng
             </CardTitle>
             <CardDescription className="text-lg text-slate-600">
-              Há»‡ thá»‘ng AI há»— trá»£ táº¡o Káº¿ hoáº¡ch bÃ i há»c chuáº©n 5512, nghiÃªn cá»©u bÃ i há»c chuyÃªn sÃ¢u, káº¿ hoáº¡ch ngoáº¡i khÃ³a cháº¥t lÆ°á»£ng vÃ  káº¿ hoáº¡ch Ä‘Ã¡nh giÃ¡ khoa há»c!
+              Hệ thống AI hỗ trợ tạo Kế hoạch bài học chuẩn 5512, nghiên cứu bài học chuyên sâu, kế hoạch ngoại khóa chất lượng và kế hoạch đánh giá khoa học!
             </CardDescription>
           </CardHeader>
         </Card>
@@ -518,7 +518,7 @@ export function TemplateEngine() {
                 className="gap-2 data-[state=active]:bg-green-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <BookOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">BÃ i dáº¡y</span>
+                <span className="hidden sm:inline">Bài dạy</span>
                 <span className="sm:hidden">KHBD</span>
               </TabsTrigger>
               <TabsTrigger
@@ -526,23 +526,23 @@ export function TemplateEngine() {
                 className="gap-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <Sparkles className="w-4 h-4" />
-                <span className="hidden sm:inline">Ngoáº¡i khÃ³a</span>
-                <span className="sm:hidden">HÄNK</span>
+                <span className="hidden sm:inline">Ngoại khóa</span>
+                <span className="sm:hidden">HĐNK</span>
               </TabsTrigger>
               <TabsTrigger
                 value="meeting"
                 className="gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline">BiÃªn báº£n</span>
-                <span className="sm:hidden">Há»p</span>
+                <span className="hidden sm:inline">Biên bản</span>
+                <span className="sm:hidden">Họp</span>
               </TabsTrigger>
               <TabsTrigger
                 value="ncbh"
                 className="gap-2 data-[state=active]:bg-red-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <Zap className="w-4 h-4" />
-                <span className="hidden sm:inline">NC BÃ i há»c</span>
+                <span className="hidden sm:inline">NC Bài học</span>
                 <span className="sm:hidden">NCBH</span>
               </TabsTrigger>
               <TabsTrigger
@@ -550,15 +550,15 @@ export function TemplateEngine() {
                 className="gap-2 data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <CheckCircle className="w-4 h-4" />
-                <span className="hidden sm:inline">ÄÃ¡nh giÃ¡</span>
-                <span className="sm:hidden">ÄG</span>
+                <span className="hidden sm:inline">Đánh giá</span>
+                <span className="sm:hidden">ĐG</span>
               </TabsTrigger>
               <TabsTrigger
                 value="history"
                 className="gap-2 data-[state=active]:bg-slate-600 data-[state=active]:text-white rounded-lg transition-all duration-200"
               >
                 <Archive className="w-4 h-4" />
-                <span className="hidden sm:inline">LÆ°u trá»¯</span>
+                <span className="hidden sm:inline">Lưu trữ</span>
                 <span className="sm:hidden">Kho</span>
               </TabsTrigger>
             </TabsList>

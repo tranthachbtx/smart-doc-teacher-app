@@ -1,6 +1,6 @@
 
 /**
- * ðŸš€ SMART PROCESSOR WORKER - ARCHITECTURE 18.0
+ * 🚀 SMART PROCESSOR WORKER - ARCHITECTURE 18.0
  * Handles heavy PDF/Word extraction and analysis in a background thread.
  */
 
@@ -24,7 +24,7 @@ self.onmessage = async (e) => {
                     rawText: text,
                     sections,
                     structure,
-                    summary: `PhÃ¢n tÃ­ch hoÃ n táº¥t cho ${fileName}. TÃ¬m tháº¥y ${sections.length} pháº§n.`
+                    summary: `Phân tích hoàn tất cho ${fileName}. Tìm thấy ${sections.length} phần.`
                 }
             });
         } catch (error: any) {
@@ -35,9 +35,9 @@ self.onmessage = async (e) => {
 
 function extractSectionsLocally(text: string) {
     const sectionPatterns = [
-        { pattern: /má»¥c tiÃªu|tiÃªu chÃ­|kiáº¿n thá»©c|nÄƒng lá»±c/i, type: 'objective' },
-        { pattern: /hoáº¡t Ä‘á»™ng|bÃ i táº­p|thá»±c hÃ nh|luyá»‡n táº­p/i, type: 'activity' },
-        { pattern: /kiá»ƒm tra|Ä‘Ã¡nh giÃ¡|bÃ i kiá»ƒm tra/i, type: 'assessment' }
+        { pattern: /mục tiêu|tiêu chí|kiến thức|năng lực/i, type: 'objective' },
+        { pattern: /hoạt động|bài tập|thực hành|luyện tập/i, type: 'activity' },
+        { pattern: /kiểm tra|đánh giá|bài kiểm tra/i, type: 'assessment' }
     ];
 
     const lines = text.split('\n');
@@ -63,7 +63,7 @@ function extractSectionsLocally(text: string) {
 function analyzeStructureLocally(text: string) {
     return {
         estimatedPages: Math.ceil(text.length / 2000),
-        language: text.match(/[Ã Ã¡áº¡áº£Ã£]/i) ? 'vi' : 'en',
+        language: text.match(/[àáạảã]/i) ? 'vi' : 'en',
         density: text.length > 5000 ? 'high' : 'medium'
     };
 }

@@ -65,7 +65,7 @@ export function EventTab({
                 {/* Input Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="event-grade-select">Chá»n Khá»‘i</Label>
+                        <Label htmlFor="event-grade-select">Chọn Khối</Label>
                         <Select
                             value={selectedGradeEvent}
                             onValueChange={(value) => {
@@ -77,18 +77,18 @@ export function EventTab({
                             name="eventGrade"
                         >
                             <SelectTrigger id="event-grade-select">
-                                <SelectValue placeholder="Chá»n khá»‘i..." />
+                                <SelectValue placeholder="Chọn khối..." />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="10">Khá»‘i 10</SelectItem>
-                                <SelectItem value="11">Khá»‘i 11</SelectItem>
-                                <SelectItem value="12">Khá»‘i 12</SelectItem>
+                                <SelectItem value="10">Khối 10</SelectItem>
+                                <SelectItem value="11">Khối 11</SelectItem>
+                                <SelectItem value="12">Khối 12</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="event-topic-select">Chá»n Chá»§ Äá»</Label>
+                        <Label htmlFor="event-topic-select">Chọn Chủ Đề</Label>
                         <Select
                             value={selectedEventMonth}
                             onValueChange={(value) => {
@@ -105,12 +105,12 @@ export function EventTab({
                             name="eventMonth"
                         >
                             <SelectTrigger id="event-topic-select">
-                                <SelectValue placeholder={selectedGradeEvent ? "Chá»n chá»§ Ä‘á»..." : "Chá»n khá»‘i trÆ°á»›c"} />
+                                <SelectValue placeholder={selectedGradeEvent ? "Chọn chủ đề..." : "Chọn khối trước"} />
                             </SelectTrigger>
                             <SelectContent>
                                 {chuDeList.map((chuDe) => (
                                     <SelectItem key={chuDe.chu_de_so} value={chuDe.chu_de_so.toString()}>
-                                        Chá»§ Ä‘á» {chuDe.chu_de_so}: {chuDe.ten}
+                                        Chủ đề {chuDe.chu_de_so}: {chuDe.ten}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -122,12 +122,12 @@ export function EventTab({
                 {selectedChuDe && (
                     <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                         <p className="text-sm font-medium text-purple-800 mb-2">
-                            Chá»§ Ä‘á» tá»« SGK:
+                            Chủ đề từ SGK:
                         </p>
                         <p className="text-purple-700 font-semibold">{autoFilledTheme}</p>
                         {selectedChuDe.tuan_bat_dau && selectedChuDe.tuan_ket_thuc && (
                             <p className="text-xs text-purple-600 mt-2">
-                                <strong>Thá»i gian:</strong> Tuáº§n {selectedChuDe.tuan_bat_dau} - Tuáº§n {selectedChuDe.tuan_ket_thuc}
+                                <strong>Thời gian:</strong> Tuần {selectedChuDe.tuan_bat_dau} - Tuần {selectedChuDe.tuan_ket_thuc}
                             </p>
                         )}
                     </div>
@@ -137,7 +137,7 @@ export function EventTab({
                 <div className="space-y-2">
                     <Label htmlFor="event-duration-input" className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-purple-600" />
-                        Thá»i lÆ°á»£ng hoáº¡t Ä‘á»™ng
+                        Thời lượng hoạt động
                     </Label>
                     <div className="flex items-center gap-2">
                         <Input
@@ -151,7 +151,7 @@ export function EventTab({
                             className="w-24"
                             placeholder="45"
                         />
-                        <span className="text-sm text-muted-foreground">phÃºt</span>
+                        <span className="text-sm text-muted-foreground">phút</span>
                         <div className="flex gap-1 ml-2">
                             <Button
                                 type="button"
@@ -192,31 +192,31 @@ export function EventTab({
                         </div>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        Chá»n hoáº·c nháº­p thá»i lÆ°á»£ng phÃ¹ há»£p vá»›i káº¿ hoáº¡ch cá»§a trÆ°á»ng
+                        Chọn hoặc nhập thời lượng phù hợp với kế hoạch của trường
                     </p>
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="event-budget-textarea">Dá»± toÃ¡n kinh phÃ­ (tÃ¹y chá»n)</Label>
+                    <Label htmlFor="event-budget-textarea">Dự toán kinh phí (tùy chọn)</Label>
                     <Textarea
                         id="event-budget-textarea"
                         name="eventBudget"
-                        placeholder="Nháº­p dá»± toÃ¡n kinh phÃ­ náº¿u cáº§n...&#10;VD: Banner: 500.000Ä‘, Pháº§n thÆ°á»Ÿng: 1.000.000Ä‘..."
+                        placeholder="Nhập dự toán kinh phí nếu cần...&#10;VD: Banner: 500.000đ, Phần thưởng: 1.000.000đ..."
                         value={eventBudget}
                         onChange={(e) => setEventBudget(e.target.value)}
                         rows={3}
                     />
                     <p className="text-xs text-muted-foreground">
-                        Äá»ƒ trá»‘ng náº¿u khÃ´ng cáº§n dá»± toÃ¡n kinh phÃ­
+                        Để trống nếu không cần dự toán kinh phí
                     </p>
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="event-checklist-textarea">Checklist chuáº©n bá»‹ (tÃ¹y chá»n)</Label>
+                    <Label htmlFor="event-checklist-textarea">Checklist chuẩn bị (tùy chọn)</Label>
                     <Textarea
                         id="event-checklist-textarea"
                         name="eventChecklist"
-                        placeholder="Nháº­p cÃ¡c cÃ´ng viá»‡c cáº§n chuáº©n bá»‹...&#10;VD: In áº¥n tÃ i liá»‡u, Chuáº©n bá»‹ phÃ²ng há»p..."
+                        placeholder="Nhập các công việc cần chuẩn bị...&#10;VD: In ấn tài liệu, Chuẩn bị phòng họp..."
                         value={eventChecklist}
                         onChange={(e) => setEventChecklist(e.target.value)}
                         rows={3}
@@ -224,11 +224,11 @@ export function EventTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="event-instructions-textarea">YÃªu cáº§u bá»• sung</Label>
+                    <Label htmlFor="event-instructions-textarea">Yêu cầu bổ sung</Label>
                     <Textarea
                         id="event-instructions-textarea"
                         name="eventInstructions"
-                        placeholder="Nháº­p yÃªu cáº§u chi tiáº¿t hoáº·c Ä‘iá»u chá»‰nh vá» ná»™i dung káº¿ hoáº¡ch..."
+                        placeholder="Nhập yêu cầu chi tiết hoặc điều chỉnh về nội dung kế hoạch..."
                         value={eventCustomInstructions}
                         onChange={(e) => setEventCustomInstructions(e.target.value)}
                         rows={3}
@@ -244,12 +244,12 @@ export function EventTab({
                     {isGenerating ? (
                         <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Äang táº¡o...
+                            Đang tạo...
                         </>
                     ) : (
                         <>
                             <Sparkles className="mr-2 h-4 w-4" />
-                            Táº¡o Káº¿ hoáº¡ch Ngoáº¡i khÃ³a
+                            Tạo Kế hoạch Ngoại khóa
                         </>
                     )}
                 </Button>
@@ -259,7 +259,7 @@ export function EventTab({
                     <div className="space-y-4 p-4 bg-slate-50 rounded-lg border">
                         <div className="flex items-center justify-between">
                             <h3 className="text-lg font-semibold text-slate-800">
-                                Káº¿t quáº£
+                                Kết quả
                             </h3>
                             <div className="flex gap-2">
                                 <Button
@@ -283,7 +283,7 @@ export function EventTab({
                                     ) : (
                                         <Download className="h-4 w-4 mr-1" />
                                     )}
-                                    Xuáº¥t Word
+                                    Xuất Word
                                 </Button>
                             </div>
                         </div>
@@ -296,16 +296,16 @@ export function EventTab({
                                 </h4>
                                 <div className="grid grid-cols-2 gap-2 text-sm">
                                     <p>
-                                        <strong>Thá»i gian:</strong> {eventResult.thoi_gian}
+                                        <strong>Thời gian:</strong> {eventResult.thoi_gian}
                                     </p>
                                     <p>
-                                        <strong>Äá»‹a Ä‘iá»ƒm:</strong> {eventResult.dia_diem}
+                                        <strong>Địa điểm:</strong> {eventResult.dia_diem}
                                     </p>
                                     <p>
-                                        <strong>Äá»‘i tÆ°á»£ng:</strong> {eventResult.doi_tuong}
+                                        <strong>Đối tượng:</strong> {eventResult.doi_tuong}
                                     </p>
                                     <p>
-                                        <strong>Sá»‘ lÆ°á»£ng:</strong> {eventResult.so_luong}
+                                        <strong>Số lượng:</strong> {eventResult.so_luong}
                                     </p>
                                 </div>
                             </div>
@@ -313,7 +313,7 @@ export function EventTab({
                             {/* Objectives */}
                             {eventResult.muc_tieu && (
                                 <div className="p-3 bg-white rounded border">
-                                    <h5 className="font-medium text-sm mb-2">Má»¥c tiÃªu:</h5>
+                                    <h5 className="font-medium text-sm mb-2">Mục tiêu:</h5>
                                     <p className="text-sm text-slate-600">
                                         {typeof eventResult.muc_tieu === 'string'
                                             ? eventResult.muc_tieu
@@ -325,7 +325,7 @@ export function EventTab({
                             {/* Content */}
                             {eventResult.noi_dung && (
                                 <div className="p-3 bg-white rounded border">
-                                    <h5 className="font-medium text-sm mb-2">Ná»™i dung:</h5>
+                                    <h5 className="font-medium text-sm mb-2">Nội dung:</h5>
                                     {Array.isArray(eventResult.noi_dung) ? (
                                         <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
                                             {eventResult.noi_dung.map((item, idx) => (
@@ -345,7 +345,7 @@ export function EventTab({
                             {/* Timeline */}
                             {eventResult.tien_trinh && eventResult.tien_trinh.length > 0 && (
                                 <div className="p-3 bg-white rounded border">
-                                    <h5 className="font-medium text-sm mb-2">Tiáº¿n trÃ¬nh:</h5>
+                                    <h5 className="font-medium text-sm mb-2">Tiến trình:</h5>
                                     <div className="space-y-2">
                                         {eventResult.tien_trinh.map((step, idx) => (
                                             <div key={idx} className="flex gap-2 text-sm">
@@ -362,7 +362,7 @@ export function EventTab({
                             {/* Checklist */}
                             {eventResult.checklist_chuan_bi && eventResult.checklist_chuan_bi.length > 0 && (
                                 <div className="p-3 bg-white rounded border">
-                                    <h5 className="font-medium text-sm mb-2">CÃ´ng viá»‡c chuáº©n bá»‹:</h5>
+                                    <h5 className="font-medium text-sm mb-2">Công việc chuẩn bị:</h5>
                                     <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
                                         {eventResult.checklist_chuan_bi.map((item, idx) => (
                                             <li key={idx}>{item}</li>
@@ -374,7 +374,7 @@ export function EventTab({
                             {/* Budget */}
                             {eventResult.du_toan_kinh_phi && eventResult.du_toan_kinh_phi.length > 0 && (
                                 <div className="p-3 bg-white rounded border">
-                                    <h5 className="font-medium text-sm mb-2">Dá»± toÃ¡n kinh phÃ­:</h5>
+                                    <h5 className="font-medium text-sm mb-2">Dự toán kinh phí:</h5>
                                     <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
                                         {eventResult.du_toan_kinh_phi.map((item, idx) => (
                                             <li key={idx}>{item}</li>

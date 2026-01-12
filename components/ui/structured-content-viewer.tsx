@@ -15,11 +15,11 @@ interface StructuredContentViewerProps {
 }
 
 const TYPE_CONFIG: Record<string, { label: string, icon: any, variant: "default" | "secondary" | "outline" | "destructive" }> = {
-    objective: { label: "Má»¥c tiÃªu", icon: Target, variant: "default" },
-    activity: { label: "Hoáº¡t Ä‘á»™ng", icon: ClipboardCheck, variant: "secondary" },
-    knowledge: { label: "Kiáº¿n thá»©c", icon: Lightbulb, variant: "outline" },
-    assessment: { label: "ÄÃ¡nh giÃ¡", icon: Search, variant: "destructive" },
-    resource: { label: "Há»c liá»‡u", icon: Settings, variant: "outline" },
+    objective: { label: "Mục tiêu", icon: Target, variant: "default" },
+    activity: { label: "Hoạt động", icon: ClipboardCheck, variant: "secondary" },
+    knowledge: { label: "Kiến thức", icon: Lightbulb, variant: "outline" },
+    assessment: { label: "Đánh giá", icon: Search, variant: "destructive" },
+    resource: { label: "Học liệu", icon: Settings, variant: "outline" },
 };
 
 export function StructuredContentViewer({
@@ -47,10 +47,10 @@ export function StructuredContentViewer({
 
     const getActivityLabel = (key: string) => {
         const labels: Record<string, string> = {
-            khoi_dong: "Khá»Ÿi Ä‘á»™ng",
-            kham_pha: "KhÃ¡m phÃ¡",
-            luyen_tap: "Luyá»‡n táº­p",
-            van_dung: "Váº­n dá»¥ng"
+            khoi_dong: "Khởi động",
+            kham_pha: "Khám phá",
+            luyen_tap: "Luyện tập",
+            van_dung: "Vận dụng"
         };
         return labels[key] || key;
     };
@@ -62,9 +62,9 @@ export function StructuredContentViewer({
                 <div>
                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                         <FileText className="w-5 h-5 text-blue-600" />
-                        Ná»™i dung Ä‘Ã£ cáº¥u trÃºc hÃ³a
+                        Nội dung đã cấu trúc hóa
                     </h3>
-                    <p className="text-sm text-slate-500">TÃ¬m tháº¥y {structuredContent.sections.length} pháº§n ná»™i dung cÃ³ Ã½ nghÄ©a.</p>
+                    <p className="text-sm text-slate-500">Tìm thấy {structuredContent.sections.length} phần nội dung có ý nghĩa.</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                     <Button
@@ -73,7 +73,7 @@ export function StructuredContentViewer({
                         onClick={() => setFilterType('all')}
                         className="text-xs h-7"
                     >
-                        Táº¥t cáº£
+                        Tất cả
                     </Button>
                     {Object.entries(TYPE_CONFIG).map(([type, config]) => (
                         <Button
@@ -118,7 +118,7 @@ export function StructuredContentViewer({
                                     </div>
                                     <div className="flex items-center gap-3 shrink-0">
                                         <span className="text-[10px] font-medium text-slate-400">
-                                            {section.metadata.wordCount} chá»¯
+                                            {section.metadata.wordCount} chữ
                                         </span>
                                         <ChevronDown
                                             className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''
@@ -133,7 +133,7 @@ export function StructuredContentViewer({
                                     {/* Relevance scores */}
                                     <div className="mb-4 p-3 bg-slate-50 border border-slate-100 rounded-xl">
                                         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                                            Äá»™ liÃªn quan gá»£i Ã½:
+                                            Độ liên quan gợi ý:
                                         </div>
                                         <div className="grid grid-cols-4 gap-4">
                                             {Object.entries(section.relevance).map(([activity, score]) => (

@@ -1,6 +1,6 @@
 /**
  * AI RESILIENCE V7 - LEAN UTILITY
- * Quáº£n lÃ½ Rate Limit vÃ  Theo dÃµi sá»­ dá»¥ng tÃ i nguyÃªn AI.
+ * Quản lý Rate Limit và Theo dõi sử dụng tài nguyên AI.
  */
 
 export const AIResilienceService = {
@@ -9,7 +9,7 @@ export const AIResilienceService = {
     totalTokens: 0,
 
     /**
-     * Kiá»ƒm tra Rate Limit (Há»‡ thá»‘ng Ä‘iá»u tiáº¿t lÆ°u lÆ°á»£ng)
+     * Kiểm tra Rate Limit (Hệ thống điều tiết lưu lượng)
      */
     canMakeRequest(): boolean {
         const now = Date.now();
@@ -21,7 +21,7 @@ export const AIResilienceService = {
     },
 
     /**
-     * Æ¯á»›c tÃ­nh sá»‘ token sá»­ dá»¥ng (Monitoring)
+     * Ước tính số token sử dụng (Monitoring)
      */
     trackUsage(input: string, output: string) {
         const inputTokens = Math.ceil(input.split(/\s+/).length * 1.3);
@@ -36,10 +36,10 @@ export const AIResilienceService = {
     },
 
     /**
-     * Fallback tá»‘i giáº£n cho System V7
+     * Fallback tối giản cho System V7
      */
     async getFallbackContent(section: string, topic: string) {
         console.warn(`[Resilience] Triggering Lean Fallback for ${section}...`);
-        return `[Há»‡ thá»‘ng dá»± phÃ²ng V7] Äang chuáº©n bá»‹ ná»™i dung cho ${topic}. Vui lÃ²ng thá»­ láº¡i sau giÃ¢y lÃ¡t.`;
+        return `[Hệ thống dự phòng V7] Đang chuẩn bị nội dung cho ${topic}. Vui lòng thử lại sau giây lát.`;
     }
 };

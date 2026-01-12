@@ -27,10 +27,10 @@ export function ActivityContentBuilder({
 
     const getActivityLabel = (key: string) => {
         const labels: Record<string, string> = {
-            khoi_dong: "Khá»Ÿi Ä‘á»™ng",
-            kham_pha: "KhÃ¡m phÃ¡",
-            luyen_tap: "Luyá»‡n táº­p",
-            van_dung: "Váº­n dá»¥ng"
+            khoi_dong: "Khởi động",
+            kham_pha: "Khám phá",
+            luyen_tap: "Luyện tập",
+            van_dung: "Vận dụng"
         };
         return labels[key] || key;
     };
@@ -39,7 +39,7 @@ export function ActivityContentBuilder({
         setIsGenerating(true);
 
         try {
-            // Giáº£ láº­p xá»­ lÃ½ (vÃ¬ ContentFilter lÃ  sync, nhÆ°ng cÃ³ thá»ƒ má»Ÿ rá»™ng async sau nÃ y)
+            // Giả lập xử lý (vì ContentFilter là sync, nhưng có thể mở rộng async sau này)
             await new Promise(r => setTimeout(r, 800));
 
             const contentFilter = new ContentFilter();
@@ -53,14 +53,14 @@ export function ActivityContentBuilder({
             onContentGenerated(filtered.promptContent);
 
             toast({
-                title: "Tá»‘i Æ°u thÃ nh cÃ´ng!",
-                description: `ÄÃ£ chá»n ${filtered.sections.length} pháº§n ná»™i dung phÃ¹ há»£p nháº¥t cho ${getActivityLabel(activityType)}.`
+                title: "Tối ưu thành công!",
+                description: `Đã chọn ${filtered.sections.length} phần nội dung phù hợp nhất cho ${getActivityLabel(activityType)}.`
             });
         } catch (error) {
             console.error('Failed to generate content:', error);
             toast({
-                title: "Lá»—i tá»‘i Æ°u",
-                description: "KhÃ´ng thá»ƒ trÃ­ch lá»c ná»™i dung phÃ¹ há»£p.",
+                title: "Lỗi tối ưu",
+                description: "Không thể trích lọc nội dung phù hợp.",
                 variant: "destructive"
             });
         } finally {
@@ -81,14 +81,14 @@ export function ActivityContentBuilder({
                         </div>
                         {previewContent && (
                             <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-none">
-                                <CheckCircle className="w-3 h-3 mr-1" /> Sáºµn sÃ ng
+                                <CheckCircle className="w-3 h-3 mr-1" /> Sẵn sàng
                             </Badge>
                         )}
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="text-sm text-slate-600">
-                        Há»‡ thá»‘ng sáº½ tá»± Ä‘á»™ng lá»c cÃ¡c pháº§n dá»¯ liá»‡u cÃ³ Ä‘á»™ liÃªn quan cao nháº¥t tá»« file PDF Ä‘á»ƒ Ä‘Æ°a vÃ o Prompt cho hoáº¡t Ä‘á»™ng nÃ y.
+                        Hệ thống sẽ tự động lọc các phần dữ liệu có độ liên quan cao nhất từ file PDF để đưa vào Prompt cho hoạt động này.
                     </div>
 
                     <Button
@@ -99,12 +99,12 @@ export function ActivityContentBuilder({
                         {isGenerating ? (
                             <>
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                Äang trÃ­ch lá»c dá»¯ liá»‡u...
+                                Đang trích lọc dữ liệu...
                             </>
                         ) : (
                             <>
                                 <Wand2 className="w-4 h-4 mr-2" />
-                                Tá»± Ä‘á»™ng tá»‘i Æ°u Prompt Ngá»¯ cáº£nh
+                                Tự động tối ưu Prompt Ngữ cảnh
                             </>
                         )}
                     </Button>
@@ -112,17 +112,17 @@ export function ActivityContentBuilder({
                     {previewContent && (
                         <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Báº¢N TINH Lá»ŒC (Cáº®M VÃ€O PROMPT):</span>
+                                <span className="text-[10px] font-bold text-slate-400 uppercase">BẢN TINH LỌC (CẮM VÀO PROMPT):</span>
                                 <Button
                                     variant="ghost"
                                     size="sm"
                                     className="h-6 px-2 text-[10px] text-blue-600 hover:bg-blue-50"
                                     onClick={() => {
                                         navigator.clipboard.writeText(previewContent);
-                                        toast({ description: "ÄÃ£ sao chÃ©p ná»™i dung tinh lá»c!" });
+                                        toast({ description: "Đã sao chép nội dung tinh lọc!" });
                                     }}
                                 >
-                                    <Copy className="w-3 h-3 mr-1" /> Sao chÃ©p
+                                    <Copy className="w-3 h-3 mr-1" /> Sao chép
                                 </Button>
                             </div>
                             <div className="bg-slate-900 rounded-lg p-3 text-[11px] font-mono text-slate-300 leading-relaxed max-h-[150px] overflow-y-auto border border-slate-800">

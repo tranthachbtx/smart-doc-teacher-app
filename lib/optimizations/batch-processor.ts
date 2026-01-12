@@ -139,7 +139,7 @@ REQUEST ${reqIndex + 1}:
     }).join('\n');
 
     return `
-ROLE: Expert Curriculum Developer specializing in NghiÃªn cá»©u bÃ i há»c (NCBH).
+ROLE: Expert Curriculum Developer specializing in Nghiên cứu bài học (NCBH).
 
 TASK: Process ${requests.length} NCBH requests in a single response. Each request needs different sections.
 
@@ -152,15 +152,15 @@ INSTRUCTIONS:
 
 {
   "request_0": {
-    "ten_bai": "TÃªn bÃ i há»c",
-    "ly_do_chon": "LÃ½ do chá»n bÃ i...",
-    "muc_tieu": "Má»¥c tiÃªu...",
-    "chuoi_hoat_dong": "Chuá»—i hoáº¡t Ä‘á»™ng...",
-    "phuong_an_ho_tro": "PhÆ°Æ¡ng Ã¡n há»— trá»£...",
-    "chia_se_nguoi_day": "Chia sáº» ngÆ°á»i dáº¡y...",
-    "nhan_xet_nguoi_du": "Nháº­n xÃ©t ngÆ°á»i dá»±...",
-    "nguyen_nhan_giai_phap": "NguyÃªn nhÃ¢n giáº£i phÃ¡p...",
-    "bai_hoc_kinh_nghiem": "BÃ i há»c kinh nghiá»‡m..."
+    "ten_bai": "Tên bài học",
+    "ly_do_chon": "Lý do chọn bài...",
+    "muc_tieu": "Mục tiêu...",
+    "chuoi_hoat_dong": "Chuỗi hoạt động...",
+    "phuong_an_ho_tro": "Phương án hỗ trợ...",
+    "chia_se_nguoi_day": "Chia sẻ người dạy...",
+    "nhan_xet_nguoi_du": "Nhận xét người dự...",
+    "nguyen_nhan_giai_phap": "Nguyên nhân giải pháp...",
+    "bai_hoc_kinh_nghiem": "Bài học kinh nghiệm..."
   },
   "request_1": {
     ...similar structure...

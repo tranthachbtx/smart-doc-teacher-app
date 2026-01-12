@@ -1,6 +1,6 @@
 /**
- * ðŸŽ¯ ENHANCED PDF EXTRACTOR - ARCHITECTURE 18.0
- * TrÃ­ch xuáº¥t vÃ  phÃ¢n tÃ­ch ná»™i dung PDF vá»›i AI intelligence
+ * 🎯 ENHANCED PDF EXTRACTOR - ARCHITECTURE 18.0
+ * Trích xuất và phân tích nội dung PDF với AI intelligence
  */
 
 import { extractPDFContent } from './simple-pdf-extractor';
@@ -44,7 +44,7 @@ export interface PDFMetadata {
 
 export class EnhancedPDFExtractor {
   /**
-   * TrÃ­ch xuáº¥t vÃ  phÃ¢n tÃ­ch PDF vá»›i AI intelligence
+   * Trích xuất và phân tích PDF với AI intelligence
    */
   async extractAndAnalyzePDF(file: File): Promise<AnalyzedPDFContent> {
     console.log('[EnhancedPDF] Starting advanced analysis...');
@@ -77,7 +77,7 @@ export class EnhancedPDFExtractor {
   }
   
   /**
-   * PhÃ¢n tÃ­ch cáº¥u trÃºc PDF
+   * Phân tích cấu trúc PDF
    */
   private async analyzePDFStructure(text: string): Promise<PDFStructure> {
     const lines = text.split('\n');
@@ -107,18 +107,18 @@ export class EnhancedPDFExtractor {
   }
   
   /**
-   * TrÃ­ch xuáº¥t cÃ¡c pháº§n chÃ­nh cá»§a giÃ¡o Ã¡n
+   * Trích xuất các phần chính của giáo án
    */
   private async extractSections(text: string, structure: PDFStructure): Promise<PDFSection[]> {
     const sections: PDFSection[] = [];
     
     // Define section patterns for Vietnamese educational documents
     const sectionPatterns = [
-      { pattern: /má»¥c tiÃªu|tiÃªu chÃ­|kiáº¿n thá»©c|nÄƒng lá»±c/i, type: 'objective' as const },
-      { pattern: /hoáº¡t Ä‘á»™ng|bÃ i táº­p|thá»±c hÃ nh|luyá»‡n táº­p/i, type: 'activity' as const },
-      { pattern: /kiá»ƒm tra|Ä‘Ã¡nh giÃ¡|bÃ i kiá»ƒm tra|tá»± luáº­n/i, type: 'assessment' as const },
-      { pattern: /giá»›i thiá»‡u|tá»•ng quan|Ä‘áº·t váº¥n Ä‘á»/i, type: 'introduction' as const },
-      { pattern: /káº¿t luáº­n|tá»•ng káº¿t|Ä‘Ã¡nh giÃ¡ chung/i, type: 'conclusion' as const }
+      { pattern: /mục tiêu|tiêu chí|kiến thức|năng lực/i, type: 'objective' as const },
+      { pattern: /hoạt động|bài tập|thực hành|luyện tập/i, type: 'activity' as const },
+      { pattern: /kiểm tra|đánh giá|bài kiểm tra|tự luận/i, type: 'assessment' as const },
+      { pattern: /giới thiệu|tổng quan|đặt vấn đề/i, type: 'introduction' as const },
+      { pattern: /kết luận|tổng kết|đánh giá chung/i, type: 'conclusion' as const }
     ];
     
     const lines = text.split('\n');
@@ -167,7 +167,7 @@ export class EnhancedPDFExtractor {
   }
   
   /**
-   * TrÃ­ch xuáº¥t metadata tá»« PDF
+   * Trích xuất metadata từ PDF
    */
   private async extractMetadata(text: string, file: File): Promise<PDFMetadata> {
     const metadata: PDFMetadata = {
@@ -191,7 +191,7 @@ export class EnhancedPDFExtractor {
   }
   
   /**
-   * Táº¡o summary cho ná»™i dung PDF
+   * Tạo summary cho nội dung PDF
    */
   private async generateSummary(text: string, sections: PDFSection[]): Promise<string> {
     if (sections.length === 0) {
@@ -211,19 +211,19 @@ export class EnhancedPDFExtractor {
    * Helper methods
    */
   private detectTableOfContents(text: string): boolean {
-    return /má»¥c lá»¥c|table of contents|ná»™i dung/i.test(text);
+    return /mục lục|table of contents|nội dung/i.test(text);
   }
   
   private detectSections(text: string): boolean {
-    return /pháº§n|chÆ°Æ¡ng|má»¥c|section|chapter/i.test(text);
+    return /phần|chương|mục|section|chapter/i.test(text);
   }
   
   private detectTables(text: string): boolean {
-    return /\|.*\|/g.test(text) || /â”Œ|â”¬|â”|â”œ|â”¼|â”¤|â””|â”´|â”˜/.test(text);
+    return /\|.*\|/g.test(text) || /┌|┬|┐|├|┼|┤|└|┴|┘/.test(text);
   }
   
   private detectImages(text: string): boolean {
-    return /hÃ¬nh áº£nh|image|áº£nh|picture/i.test(text);
+    return /hình ảnh|image|ảnh|picture/i.test(text);
   }
   
   private calculateContentDensity(text: string): 'low' | 'medium' | 'high' {
@@ -234,7 +234,7 @@ export class EnhancedPDFExtractor {
   }
   
   private detectLanguage(text: string): 'vi' | 'en' | 'mixed' {
-    const vietnameseChars = text.match(/[Ã Ã¡áº¡áº£Ã£Ã¢áº§áº¥áº­áº©áº«Äƒáº±áº¯áº·áº³áºµÃ¨Ã©áº¹áº»áº½Ãªá»áº¿á»‡á»ƒá»…Ã¬Ã­á»‹á»‰Ä©Ã²Ã³á»á»ÃµÃ´á»“á»‘á»™á»•á»—Æ¡á»á»›á»£á»Ÿá»¡Ã¹Ãºá»¥á»§Å©Æ°á»«á»©á»±á»­á»¯á»³Ã½á»µá»·á»¹Ä‘]/gi);
+    const vietnameseChars = text.match(/[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/gi);
     const vietnameseRatio = vietnameseChars ? vietnameseChars.length / text.length : 0;
     
     if (vietnameseRatio > 0.05) return 'vi';
@@ -250,7 +250,7 @@ export class EnhancedPDFExtractor {
     let confidence = 0.5;
     
     // Boost confidence for common section headers
-    if (/^(má»¥c tiÃªu|hoáº¡t Ä‘á»™ng|kiá»ƒm tra|Ä‘Ã¡nh giÃ¡)$/i.test(line.trim())) {
+    if (/^(mục tiêu|hoạt động|kiểm tra|đánh giá)$/i.test(line.trim())) {
       confidence += 0.3;
     }
     

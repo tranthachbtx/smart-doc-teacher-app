@@ -37,7 +37,7 @@ function isKeyBlocked(key: string): boolean {
 function registerKeyFailure(key: string) {
   if (!key) return;
   FAILED_KEYS_REGISTRY[key] = Date.now();
-  console.warn(`[CIRCUIT-BREAKER] ðŸš¨ Trip registered for key: ${key.slice(0, 8)}...`);
+  console.warn(`[CIRCUIT-BREAKER] 🚨 Trip registered for key: ${key.slice(0, 8)}...`);
 }
 
 // Helper to deep clean API keys
@@ -125,10 +125,10 @@ export async function callAI(
           const errMsg = data.error?.message || "";
           // 429 Limit 0 Detection
           if (response.status === 429 && errMsg.includes("limit: 0")) {
-            errorLogs.push(`ðŸ’³ Lá»—i 429: Báº¡n chÆ°a liÃªn káº¿t tháº» VISA vÃ o Google Cloud cho Key ${key.slice(0, 5)}...`);
+            errorLogs.push(`💳 Lỗi 429: Bạn chưa liên kết thẻ VISA vào Google Cloud cho Key ${key.slice(0, 5)}...`);
             registerKeyFailure(key);
           } else if (response.status === 403) {
-            errorLogs.push(`ðŸŒ Lá»—i 403: Cháº·n vÃ¹ng Ä‘á»‹a lÃ½ (Geo-block). HÃ£y dÃ¹ng AI Gateway.`);
+            errorLogs.push(`🌏 Lỗi 403: Chặn vùng địa lý (Geo-block). Hãy dùng AI Gateway.`);
             registerKeyFailure(key);
           } else if (response.status === 404) {
             // Keep trying next model in pool if 404
@@ -155,7 +155,7 @@ export async function callAI(
 
   geminiKeys = geminiKeys.filter(k => !isKeyBlocked(k)).sort(() => Math.random() - 0.5);
 
-  if (geminiKeys.length === 0) console.warn("[AI-RELAY] âš ï¸ All Gemini keys blocked.");
+  if (geminiKeys.length === 0) console.warn("[AI-RELAY] ⚠️ All Gemini keys blocked.");
 
   // EXPANDED MODEL POOL FOR FALLBACK (Fix 404)
   const modelFallbackPool = [
@@ -188,7 +188,7 @@ export async function callAI(
         } else {
           const errMsg = data.error?.message || "";
           if (resp.status === 429 && errMsg.includes("limit: 0")) {
-            errorLogs.push(`ðŸ’³ Lá»—i 429: Báº¡n cáº§n liÃªn káº¿t tháº» VISA Ä‘á»ƒ má»Ÿ khÃ³a Key ${key.slice(0, 5)}...`);
+            errorLogs.push(`💳 Lỗi 429: Bạn cần liên kết thẻ VISA để mở khóa Key ${key.slice(0, 5)}...`);
             registerKeyFailure(key);
             break; // Skip models for this key
           }
@@ -322,9 +322,9 @@ export async function generateLessonPlan(
     // For Lesson Plan, we use the specialized wrapper in ai-prompts that handles KHDH logic
     const activitySuggestions = JSON.parse(suggestions || "{}");
     const sectionRequirements = `
-YÃŠU Cáº¦U CHO PHáº¦N THIáº¾T Káº¾: TOÃ€N BÃ€I
-Ngá»¯ cáº£nh hiá»‡n táº¡i: Thiáº¿t káº¿ bÃ i dáº¡y má»›i
-HÆ°á»›ng dáº«n chi tiáº¿t: ${customInstructions || "Thiáº¿t káº¿ sÆ° pháº¡m cao cáº¥p theo chuáº©n 5512"}
+YÊU CẦU CHO PHẦN THIẾT KẾ: TOÀN BÀI
+Ngữ cảnh hiện tại: Thiết kế bài dạy mới
+Hướng dẫn chi tiết: ${customInstructions || "Thiết kế sư phạm cao cấp theo chuẩn 5512"}
 `;
     // We construct the prompt manually using getKHDHPrompt equivalent or the wrapper
     // Actually, getLessonPrompt in ai-prompts is designed for sections.
@@ -391,7 +391,7 @@ export async function generateEventScript(
   try {
     // DIRECT USE of ai-prompts.ts (Event section)
     prompt = getEventPrompt(grade, topic);
-    if (instructions) prompt += `\n\nYÃŠU Cáº¦U Bá»” SUNG Tá»ª NGÆ¯á»œI DÃ™NG:\n${instructions}`;
+    if (instructions) prompt += `\n\nYÊU CẦU BỔ SUNG TỪ NGƯỜI DÙNG:\n${instructions}`;
 
     const text = await callAI(prompt, modelName);
     const data = parseSmartJSON(text);
@@ -410,7 +410,7 @@ export async function generateNCBH(
   let prompt = "";
   try {
     // DIRECT USE of ncbh-prompts.ts
-    prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHá»I: ${grade}\nCHá»¦ Äá»€: ${topic}\nHÆ¯á»šNG DáºªN: ${instructions || ""}`;
+    prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${instructions || ""}`;
     const text = await callAI(prompt, modelName);
     const data = parseSmartJSON(text);
     return { success: true, data };
@@ -467,7 +467,7 @@ export async function generateLessonSection(
       section as any,
       grade,
       topic,
-      duration || "45 phÃºt",
+      duration || "45 phút",
       context,
       customInstructions || "",
       tasks || [],

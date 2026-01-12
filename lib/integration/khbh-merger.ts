@@ -2,26 +2,26 @@
 import type { LessonResult } from "@/lib/types";
 
 /**
- * KHBHMerger: CÃ´ng cá»¥ pháº«u thuáº­t vÃ  tÃ­ch há»£p trÃ­ tuá»‡ nhÃ¢n táº¡o (v1.0)
- * ChuyÃªn trÃ¡ch viá»‡c trá»™n cÃ¡c gá»£i Ã½ chiáº¿n lÆ°á»£c tá»« Gemini Pro vÃ o giÃ¡o Ã¡n hiá»‡n táº¡i.
+ * KHBHMerger: Công cụ phẫu thuật và tích hợp trí tuệ nhân tạo (v1.0)
+ * Chuyên trách việc trộn các gợi ý chiến lược từ Gemini Pro vào giáo án hiện tại.
  */
 export class KHBHMerger {
     /**
-     * TÃ­ch há»£p cÃ¡c gá»£i Ã½ vÃ o giÃ¡o Ã¡n cÅ©
-     * @param currentPlan GiÃ¡o Ã¡n hiá»‡n táº¡i (Ä‘Ã£ Ä‘Æ°á»£c parse hoáº·c sinh ra)
-     * @param suggestions Chuá»—i vÄƒn báº£n gá»£i Ã½ tá»« "Expert Brain Injection"
+     * Tích hợp các gợi ý vào giáo án cũ
+     * @param currentPlan Giáo án hiện tại (đã được parse hoặc sinh ra)
+     * @param suggestions Chuỗi văn bản gợi ý từ "Expert Brain Injection"
      */
     static merge(currentPlan: LessonResult, suggestions: string): LessonResult {
         const updated = { ...currentPlan };
 
-        console.log("[Merger] ðŸ› ï¸ Báº¯t Ä‘áº§u pháº«u thuáº­t giÃ¡o Ã¡n vá»›i gá»£i Ã½ chiáº¿n lÆ°á»£c...");
+        console.log("[Merger] 🛠️ Bắt đầu phẫu thuật giáo án với gợi ý chiến lược...");
 
         // Try JSON parsing first
         try {
             const jsonPart = suggestions.match(/\{[\s\S]*\}/);
             if (jsonPart) {
                 const data = JSON.parse(jsonPart[0]);
-                console.log("[Merger] ðŸ§¬ PhÃ¡t hiá»‡n Ä‘á»‹nh dáº¡ng JSON - Äang tiáº¿n hÃ nh ghÃ©p táº¡ng...");
+                console.log("[Merger] 🧬 Phát hiện định dạng JSON - Đang tiến hành ghép tạng...");
 
                 return {
                     ...updated,
@@ -31,28 +31,28 @@ export class KHBHMerger {
                 };
             }
         } catch (e) {
-            console.log("[Merger] âš ï¸ KhÃ´ng pháº£i JSON hoáº·c JSON lá»—i, chuyá»ƒn sang phÃ¢n tÃ­ch Regex...");
+            console.log("[Merger] ⚠️ Không phải JSON hoặc JSON lỗi, chuyển sang phân tích Regex...");
         }
 
         // Fallback: Regex-based extraction (Existing logic)
         const directives = this.extractDirectives(suggestions);
 
-        // 2. TÃ­ch há»£p NÄƒng lá»±c sá»‘ (NLS) - Æ¯u tiÃªn hÃ ng Ä‘áº§u theo ThÃ´ng tÆ° 02/2025
+        // 2. Tích hợp Năng lực số (NLS) - Ưu tiên hàng đầu theo Thông tư 02/2025
         if (directives.nls) {
             updated.tich_hop_nls = this.appendSmartly(updated.tich_hop_nls, directives.nls);
         }
 
-        // 3. Cáº­p nháº­t Má»¥c tiÃªu kiáº¿n thá»©c/nÄƒng lá»±c/pháº©m cháº¥t
+        // 3. Cập nhật Mục tiêu kiến thức/năng lực/phẩm chất
         if (directives.mucTieu) {
             updated.muc_tieu_kien_thuc = this.appendSmartly(updated.muc_tieu_kien_thuc, directives.mucTieu);
         }
 
-        // 4. Cáº£i tiáº¿n Thiáº¿t bá»‹ dáº¡y há»c
+        // 4. Cải tiến Thiết bị dạy học
         if (directives.thietBi) {
             updated.gv_chuan_bi = this.appendSmartly(updated.gv_chuan_bi, directives.thietBi);
         }
 
-        // 5. NÃ¢ng cáº¥p cÃ¡c Hoáº¡t Ä‘á»™ng (Khá»Ÿi Ä‘á»™ng, KhÃ¡m phÃ¡, Luyá»‡n táº­p, Váº­n dá»¥ng)
+        // 5. Nâng cấp các Hoạt động (Khởi động, Khám phá, Luyện tập, Vận dụng)
         if (directives.activities) {
             if (directives.activities.khoi_dong) {
                 updated.hoat_dong_khoi_dong = this.patchActivity(updated.hoat_dong_khoi_dong || "", directives.activities.khoi_dong);
@@ -68,7 +68,7 @@ export class KHBHMerger {
             }
         }
 
-        // 6. LÆ°u trá»¯ chá»‰ thá»‹ gá»‘c vÃ o metadata hoáº·c custom field náº¿u cáº§n (dÃ nh cho AI pháº«u thuáº­t lá»›p sau)
+        // 6. Lưu trữ chỉ thị gốc vào metadata hoặc custom field nếu cần (dành cho AI phẫu thuật lớp sau)
         updated.expertGuidance = suggestions;
         updated.expert_instructions = suggestions; // Legacy compatibility
 
@@ -76,7 +76,7 @@ export class KHBHMerger {
     }
 
     /**
-     * TrÃ­ch xuáº¥t cÃ¡c khá»‘i ná»™i dung tá»« prompt response cá»§a Gemini
+     * Trích xuất các khối nội dung từ prompt response của Gemini
      */
     private static extractDirectives(text: string) {
         const sections: any = {
@@ -86,27 +86,27 @@ export class KHBHMerger {
             activities: {}
         };
 
-        // Regex thÃ´ng minh Ä‘á»ƒ báº¯t cÃ¡c block [SECTION] hoáº·c cÃ¡c tiÃªu Ä‘á» cÃ³ dáº¥u #
-        const nlsMatch = text.match(/#*\s*(NÄƒng lá»±c sá»‘|NLS|Digital Competency)([\s\S]*?)(?=#|$)/i);
+        // Regex thông minh để bắt các block [SECTION] hoặc các tiêu đề có dấu #
+        const nlsMatch = text.match(/#*\s*(Năng lực số|NLS|Digital Competency)([\s\S]*?)(?=#|$)/i);
         if (nlsMatch) sections.nls = nlsMatch[2].trim();
 
-        const mtMatch = text.match(/#*\s*(Má»¥c tiÃªu|Kiáº¿n thá»©c|YÃªu cáº§u cáº§n Ä‘áº¡t)([\s\S]*?)(?=#|$)/i);
+        const mtMatch = text.match(/#*\s*(Mục tiêu|Kiến thức|Yêu cầu cần đạt)([\s\S]*?)(?=#|$)/i);
         if (mtMatch) sections.mucTieu = mtMatch[2].trim();
 
-        const tbMatch = text.match(/#*\s*(Thiáº¿t bá»‹|Há»c liá»‡u|CÃ´ng cá»¥)([\s\S]*?)(?=#|$)/i);
+        const tbMatch = text.match(/#*\s*(Thiết bị|Học liệu|Công cụ)([\s\S]*?)(?=#|$)/i);
         if (tbMatch) sections.thietBi = tbMatch[2].trim();
 
-        // Hoáº¡t Ä‘á»™ng
-        const kdMatch = text.match(/#*\s*(Hoáº¡t Ä‘á»™ng 1|Khá»Ÿi Ä‘á»™ng)([\s\S]*?)(?=#|$)/i);
+        // Hoạt động
+        const kdMatch = text.match(/#*\s*(Hoạt động 1|Khởi động)([\s\S]*?)(?=#|$)/i);
         if (kdMatch) sections.activities.khoi_dong = kdMatch[2].trim();
 
-        const kpMatch = text.match(/#*\s*(Hoáº¡t Ä‘á»™ng 2|KhÃ¡m phÃ¡)([\s\S]*?)(?=#|$)/i);
+        const kpMatch = text.match(/#*\s*(Hoạt động 2|Khám phá)([\s\S]*?)(?=#|$)/i);
         if (kpMatch) sections.activities.kham_pha = kpMatch[2].trim();
 
-        const ltMatch = text.match(/#*\s*(Hoáº¡t Ä‘á»™ng 3|Luyá»‡n táº­p)([\s\S]*?)(?=#|$)/i);
+        const ltMatch = text.match(/#*\s*(Hoạt động 3|Luyện tập)([\s\S]*?)(?=#|$)/i);
         if (ltMatch) sections.activities.luyen_tap = ltMatch[2].trim();
 
-        const vdMatch = text.match(/#*\s*(Hoáº¡t Ä‘á»™ng 4|Váº­n dá»¥ng)([\s\S]*?)(?=#|$)/i);
+        const vdMatch = text.match(/#*\s*(Hoạt động 4|Vận dụng)([\s\S]*?)(?=#|$)/i);
         if (vdMatch) sections.activities.van_dung = vdMatch[2].trim();
 
         return sections;
@@ -115,14 +115,14 @@ export class KHBHMerger {
     private static appendSmartly(original: string | undefined, addition: string): string {
         if (!original) return addition;
         if (original.includes(addition)) return original;
-        return `${original}\n\n[Cáº¬P NHáº¬T CHIáº¾N LÆ¯á»¢C]:\n${addition}`;
+        return `${original}\n\n[CẬP NHẬT CHIẾN LƯỢC]:\n${addition}`;
     }
 
     private static patchActivity(original: string, improvement: string): string {
-        // Náº¿u hoáº¡t Ä‘á»™ng cÃ³ cáº¥u trÃºc [COT_1]...[COT_2], ta cá»‘ gáº¯ng nhÃ©t gá»£i Ã½ vÃ o pháº§n phÃ¹ há»£p
+        // Nếu hoạt động có cấu trúc [COT_1]...[COT_2], ta cố gắng nhét gợi ý vào phần phù hợp
         if (original.includes("[COT_2]")) {
-            return original.replace("[COT_2]", `[COT_2]\n\n[Gá»¢I Ã NÃ‚NG Cáº¤P]:\n${improvement}\n`);
+            return original.replace("[COT_2]", `[COT_2]\n\n[GỢI Ý NÂNG CẤP]:\n${improvement}\n`);
         }
-        return `${original}\n\n[Gá»¢I Ã NÃ‚NG Cáº¤P]:\n${improvement}`;
+        return `${original}\n\n[GỢI Ý NÂNG CẤP]:\n${improvement}`;
     }
 }

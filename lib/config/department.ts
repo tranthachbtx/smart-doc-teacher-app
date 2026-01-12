@@ -1,23 +1,23 @@
 // Department Information Constants
-// Tá»• HÄTN, HN & GDÄP - TrÆ°á»ng THPT BÃ¹i Thá»‹ XuÃ¢n - MÅ©i NÃ©
+// Tổ HĐTN, HN & GDĐP - Trường THPT Bùi Thị Xuân - Mũi Né
 
 export const DEPT_INFO = {
-  name: "Tá»• HÄTN, HN & GDÄP", // TÃªn tá»•
-  school: "TrÆ°á»ng THPT BÃ¹i Thá»‹ XuÃ¢n - MÅ©i NÃ©",
-  head: "Tráº§n HoÃ ng Tháº¡ch", // Tá»• trÆ°á»Ÿng
-  secretary: "Mai VÄƒn PhÆ°á»›c", // ThÆ° kÃ½
+  name: "Tổ HĐTN, HN & GDĐP", // Tên tổ
+  school: "Trường THPT Bùi Thị Xuân - Mũi Né",
+  head: "Trần Hoàng Thạch", // Tổ trưởng
+  secretary: "Mai Văn Phước", // Thư ký
   members: [
-    // CÃ¡c thÃ nh viÃªn cÃ²n láº¡i
-    "BÃ¹i Quang Máº«n",
-    "Tráº§n VÄƒn Táº¡",
-    "Nguyá»…n VÄƒn Linh",
+    // Các thành viên còn lại
+    "Bùi Quang Mẫn",
+    "Trần Văn Tạ",
+    "Nguyễn Văn Linh",
   ],
   // Auto-fill values for meeting minutes
   autoFill: {
-    chu_tri: "Tráº§n HoÃ ng Tháº¡ch",
-    to_truong: "Tráº§n HoÃ ng Tháº¡ch",
-    thu_ky: "Mai VÄƒn PhÆ°á»›c",
-    thanh_vien: "BÃ¹i Quang Máº«n, Tráº§n VÄƒn Táº¡, Nguyá»…n VÄƒn Linh",
+    chu_tri: "Trần Hoàng Thạch",
+    to_truong: "Trần Hoàng Thạch",
+    thu_ky: "Mai Văn Phước",
+    thanh_vien: "Bùi Quang Mẫn, Trần Văn Tạ, Nguyễn Văn Linh",
     si_so: "5",
     vang: "0",
     ly_do: "",

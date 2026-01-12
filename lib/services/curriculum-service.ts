@@ -37,14 +37,14 @@ export class CurriculumService {
     }
 
     /**
-     * Láº¥y toÃ n bá»™ chÆ°Æ¡ng trÃ¬nh cá»§a má»™t khá»‘i
+     * Lấy toàn bộ chương trình của một khối
      */
     public getFullProgram(grade: number): ChuongTrinhKhoi | undefined {
         return this.curriculumData.get(grade);
     }
 
     /**
-     * TÃ¬m chá»§ Ä‘á» theo thÃ¡ng vÃ  khá»‘i lá»›p
+     * Tìm chủ đề theo tháng và khối lớp
      */
     public getThemesByMonth(grade: number, month: number): ChuDe[] {
         const program = this.curriculumData.get(grade);
@@ -56,7 +56,7 @@ export class CurriculumService {
     }
 
     /**
-     * TÃ¬m chi tiáº¿t chá»§ Ä‘á» theo mÃ£ hoáº·c tÃªn
+     * Tìm chi tiết chủ đề theo mã hoặc tên
      */
     public getThemeDetail(grade: number, query: string): ChuDe | undefined {
         const program = this.curriculumData.get(grade);
@@ -68,7 +68,7 @@ export class CurriculumService {
     }
 
     /**
-     * Láº¥y gá»£i Ã½ tÃ­ch há»£p vÃ  lÆ°u Ã½ sÆ° pháº¡m cho má»™t chá»§ Ä‘á»
+     * Lấy gợi ý tích hợp và lưu ý sư phạm cho một chủ đề
      */
     public getPedagogicalContext(grade: number, themeMa: string) {
         const theme = this.getThemeDetail(grade, themeMa);
@@ -83,7 +83,7 @@ export class CurriculumService {
     }
 
     /**
-     * PhÃ¢n tÃ­ch text Ä‘á»ƒ tÃ¬m chá»§ Ä‘á» tÆ°Æ¡ng á»©ng (DÃ¹ng cho quy trÃ¬nh nháº­p PDF)
+     * Phân tích text để tìm chủ đề tương ứng (Dùng cho quy trình nhập PDF)
      */
     public identifyThemeFromText(text: string, grade?: number): { theme: ChuDe, grade: number } | null {
         const searchGrades = grade ? [grade] : [10, 11, 12];

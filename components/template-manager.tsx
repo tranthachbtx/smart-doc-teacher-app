@@ -269,7 +269,7 @@ export function TemplateManager({
     if (!file) return;
 
     if (!file.name.endsWith(".docx")) {
-      showMessage("error", "Vui lÃ²ng chá»n file .docx");
+      showMessage("error", "Vui lòng chọn file .docx");
       return;
     }
 
@@ -278,17 +278,17 @@ export function TemplateManager({
       await saveTemplate(type, file.name, arrayBuffer);
       await loadTemplates();
 
-      let templateName = "tÃ i liá»‡u";
-      if (type.includes("meeting")) templateName = "BiÃªn báº£n Há»p";
-      else if (type.includes("event")) templateName = "Káº¿ hoáº¡ch Ngoáº¡i khÃ³a";
-      else if (type.includes("lesson")) templateName = "Káº¿ hoáº¡ch BÃ i dáº¡y";
-      else if (type.includes("ncbh")) templateName = "NghiÃªn cá»©u BÃ i há»c";
-      else if (type.includes("assessment")) templateName = "Káº¿ hoáº¡ch Kiá»ƒm tra";
+      let templateName = "tài liệu";
+      if (type.includes("meeting")) templateName = "Biên bản Họp";
+      else if (type.includes("event")) templateName = "Kế hoạch Ngoại khóa";
+      else if (type.includes("lesson")) templateName = "Kế hoạch Bài dạy";
+      else if (type.includes("ncbh")) templateName = "Nghiên cứu Bài học";
+      else if (type.includes("assessment")) templateName = "Kế hoạch Kiểm tra";
 
       const isDefault = type.startsWith("default_");
       showMessage(
         "success",
-        `ÄÃ£ lÆ°u máº«u ${isDefault ? "máº·c Ä‘á»‹nh " : ""}${templateName}`
+        `Đã lưu mẫu ${isDefault ? "mặc định " : ""}${templateName}`
       );
 
       // Notify parent component if callback exists
@@ -302,7 +302,7 @@ export function TemplateManager({
       }
     } catch (error) {
       console.error("Error saving template:", error);
-      showMessage("error", "KhÃ´ng thá»ƒ lÆ°u template. Vui lÃ²ng thá»­ láº¡i.");
+      showMessage("error", "Không thể lưu template. Vui lòng thử lại.");
     }
 
     // Reset input
@@ -314,17 +314,17 @@ export function TemplateManager({
       await deleteTemplate(type);
       await loadTemplates();
 
-      let templateName = "tÃ i liá»‡u";
-      if (type.includes("meeting")) templateName = "BiÃªn báº£n Há»p";
-      else if (type.includes("event")) templateName = "Káº¿ hoáº¡ch Ngoáº¡i khÃ³a";
-      else if (type.includes("lesson")) templateName = "Káº¿ hoáº¡ch BÃ i dáº¡y";
-      else if (type.includes("ncbh")) templateName = "NghiÃªn cá»©u BÃ i há»c";
-      else if (type.includes("assessment")) templateName = "Káº¿ hoáº¡ch Kiá»ƒm tra";
+      let templateName = "tài liệu";
+      if (type.includes("meeting")) templateName = "Biên bản Họp";
+      else if (type.includes("event")) templateName = "Kế hoạch Ngoại khóa";
+      else if (type.includes("lesson")) templateName = "Kế hoạch Bài dạy";
+      else if (type.includes("ncbh")) templateName = "Nghiên cứu Bài học";
+      else if (type.includes("assessment")) templateName = "Kế hoạch Kiểm tra";
 
       const isDefault = type.startsWith("default_");
       showMessage(
         "success",
-        `ÄÃ£ xÃ³a máº«u ${isDefault ? "máº·c Ä‘á»‹nh " : ""}${templateName}`
+        `Đã xóa mẫu ${isDefault ? "mặc định " : ""}${templateName}`
       );
 
       // Notify parent component if callback exists
@@ -333,7 +333,7 @@ export function TemplateManager({
       }
     } catch (error) {
       console.error("Error deleting template:", error);
-      showMessage("error", "KhÃ´ng thá»ƒ xÃ³a template. Vui lÃ²ng thá»­ láº¡i.");
+      showMessage("error", "Không thể xóa template. Vui lòng thử lại.");
     }
   };
 
@@ -362,14 +362,14 @@ export function TemplateManager({
 
       // Create header rows
       const templateData: (string | number)[][] = [
-        ["PHÃ‚N PHá»I CHÆ¯Æ NG TRÃŒNH - HOáº T Äá»˜NG TRáº¢I NGHIá»†M, HÆ¯á»šNG NGHIá»†P"],
-        ["SÃ¡ch Káº¿t ná»‘i Tri thá»©c vá»›i Cuá»™c sá»‘ng"],
+        ["PHÂN PHỐI CHƯƠNG TRÌNH - HOẠT ĐỘNG TRẢI NGHIỆM, HƯỚNG NGHIỆP"],
+        ["Sách Kết nối Tri thức với Cuộc sống"],
         [""],
-        ["KHá»I:", ppctGrade, "", "", "", "", "", "", ""],
+        ["KHỐI:", ppctGrade, "", "", "", "", "", "", ""],
         [
-          "Tá»•ng sá»‘ tiáº¿t:",
+          "Tổng số tiết:",
           ppctDb.tong_tiet,
-          "tiáº¿t/nÄƒm (3 tiáº¿t/tuáº§n x 35 tuáº§n)",
+          "tiết/năm (3 tiết/tuần x 35 tuần)",
           "",
           "",
           "",
@@ -379,15 +379,15 @@ export function TemplateManager({
         ],
         [""],
         [
-          "Chá»§ Ä‘á»",
-          "TÃªn chá»§ Ä‘á»",
-          "Tá»•ng tiáº¿t",
+          "Chủ đề",
+          "Tên chủ đề",
+          "Tổng tiết",
           "SHDC",
-          "HÄGD",
+          "HĐGD",
           "SHL",
-          "Tuáº§n BÄ",
-          "Tuáº§n KT",
-          "Ghi chÃº",
+          "Tuần BĐ",
+          "Tuần KT",
+          "Ghi chú",
         ],
       ];
 
@@ -413,29 +413,29 @@ export function TemplateManager({
 
       // Add instructions
       templateData.push([""]);
-      templateData.push(["HÆ¯á»šNG DáºªN:"]);
-      templateData.push(["- Chá»‰nh sá»­a thÃ´ng tin trong cÃ¡c cá»™t vÃ  lÆ°u file"]);
+      templateData.push(["HƯỚNG DẪN:"]);
+      templateData.push(["- Chỉnh sửa thông tin trong các cột và lưu file"]);
       templateData.push([
-        "- Upload láº¡i file nÃ y vÃ o á»©ng dá»¥ng Ä‘á»ƒ cáº­p nháº­t PPCT",
+        "- Upload lại file này vào ứng dụng để cập nhật PPCT",
       ]);
       templateData.push([
-        "- SHDC: Sinh hoáº¡t dÆ°á»›i cá», HÄGD: Hoáº¡t Ä‘á»™ng giÃ¡o dá»¥c theo chá»§ Ä‘á», SHL: Sinh hoáº¡t lá»›p",
+        "- SHDC: Sinh hoạt dưới cờ, HĐGD: Hoạt động giáo dục theo chủ đề, SHL: Sinh hoạt lớp",
       ]);
       templateData.push([
-        "- Tá»•ng tiáº¿t = SHDC + HÄGD + SHL (má»—i tuáº§n 3 tiáº¿t: 1 SHDC + 1 HÄGD + 1 SHL)",
+        "- Tổng tiết = SHDC + HĐGD + SHL (mỗi tuần 3 tiết: 1 SHDC + 1 HĐGD + 1 SHL)",
       ]);
 
       const ws = XLSX.utils.aoa_to_sheet(templateData);
       ws["!cols"] = [
-        { wch: 10 }, // Chá»§ Ä‘á»
-        { wch: 55 }, // TÃªn chá»§ Ä‘á»
-        { wch: 10 }, // Tá»•ng tiáº¿t
+        { wch: 10 }, // Chủ đề
+        { wch: 55 }, // Tên chủ đề
+        { wch: 10 }, // Tổng tiết
         { wch: 8 }, // SHDC
-        { wch: 8 }, // HÄGD
+        { wch: 8 }, // HĐGD
         { wch: 8 }, // SHL
-        { wch: 10 }, // Tuáº§n BÄ
-        { wch: 10 }, // Tuáº§n KT
-        { wch: 40 }, // Ghi chÃº
+        { wch: 10 }, // Tuần BĐ
+        { wch: 10 }, // Tuần KT
+        { wch: 40 }, // Ghi chú
       ];
 
       XLSX.utils.book_append_sheet(wb, ws, "PPCT");
@@ -443,11 +443,11 @@ export function TemplateManager({
 
       showMessage(
         "success",
-        `ÄÃ£ táº£i máº«u Excel PPCT Khá»‘i ${ppctGrade} vá»›i ${ppctDb.chu_de.length} chá»§ Ä‘á»`
+        `Đã tải mẫu Excel PPCT Khối ${ppctGrade} với ${ppctDb.chu_de.length} chủ đề`
       );
     } catch (error) {
       console.error("Error creating PPCT template:", error);
-      showMessage("error", "KhÃ´ng thá»ƒ táº¡o file máº«u");
+      showMessage("error", "Không thể tạo file mẫu");
     }
   };
 
@@ -458,17 +458,17 @@ export function TemplateManager({
     for (const line of lines) {
       // Skip header lines
       if (
-        line.includes("PHÃ‚N PHá»I CHÆ¯Æ NG TRÃŒNH") ||
-        line.includes("KHá»I:") ||
-        line.includes("Tá»•ng sá»‘ tiáº¿t") ||
-        line.includes("HÆ¯á»šNG DáºªN") ||
-        line.includes("Chá»§ Ä‘á»,TÃªn chá»§ Ä‘á»") ||
-        line.includes("SÃ¡ch Káº¿t ná»‘i")
+        line.includes("PHÂN PHỐI CHƯƠNG TRÌNH") ||
+        line.includes("KHỐI:") ||
+        line.includes("Tổng số tiết") ||
+        line.includes("HƯỚNG DẪN") ||
+        line.includes("Chủ đề,Tên chủ đề") ||
+        line.includes("Sách Kết nối")
       ) {
         continue;
       }
 
-      // Try to parse new format: CÄ sá»‘, TÃªn, Tá»•ng tiáº¿t, SHDC, HÄGD, SHL, Tuáº§n BÄ, Tuáº§n KT, Ghi chÃº
+      // Try to parse new format: CĐ số, Tên, Tổng tiết, SHDC, HĐGD, SHL, Tuần BĐ, Tuần KT, Ghi chú
       const newFormatMatch = line.match(
         /^(\d+),([^,]+),(\d+),(\d+),(\d+),(\d+),(\d*),(\d*),?(.*)$/
       );
@@ -494,19 +494,19 @@ export function TemplateManager({
             theme: ten,
             periods: tongTiet,
             tasks: [
-              { name: "SHDC", description: `${shdc} tiáº¿t` },
-              { name: "HÄGD", description: `${hdgd} tiáº¿t` },
-              { name: "SHL", description: `${shl} tiáº¿t` },
+              { name: "SHDC", description: `${shdc} tiết` },
+              { name: "HĐGD", description: `${hdgd} tiết` },
+              { name: "SHL", description: `${shl} tiết` },
             ],
             notes:
               ghiChu ||
-              (tuanBD && tuanKT ? `Tuáº§n ${tuanBD}-${tuanKT}` : undefined),
+              (tuanBD && tuanKT ? `Tuần ${tuanBD}-${tuanKT}` : undefined),
           });
         }
         continue;
       }
 
-      // Try to parse old CSV format: ThÃ¡ng, TÃªn chá»§ Ä‘á», Sá»‘ tiáº¿t, ...
+      // Try to parse old CSV format: Tháng, Tên chủ đề, Số tiết, ...
       const csvMatch = line.match(/^(\d{1,2}),([^,]+),(\d+),?(.*)$/);
       if (csvMatch) {
         const month = csvMatch[1];
@@ -519,7 +519,7 @@ export function TemplateManager({
         for (let i = 0; i < remainingParts.length - 1; i++) {
           const taskDesc = remainingParts[i]?.trim();
           if (taskDesc) {
-            tasks.push({ name: `Nhiá»‡m vá»¥ ${i + 1}`, description: taskDesc });
+            tasks.push({ name: `Nhiệm vụ ${i + 1}`, description: taskDesc });
           }
         }
 
@@ -537,9 +537,9 @@ export function TemplateManager({
         continue;
       }
 
-      // Try to parse text format: "ThÃ¡ng X: Chá»§ Ä‘á» - Y tiáº¿t"
+      // Try to parse text format: "Tháng X: Chủ đề - Y tiết"
       const textMatch = line.match(
-        /[Tt]hÃ¡ng\s*(\d{1,2})[:\s]+([^-â€“]+)[-â€“]\s*(\d+)\s*tiáº¿t/i
+        /[Tt]háng\s*(\d{1,2})[:\s]+([^-–]+)[-–]\s*(\d+)\s*tiết/i
       );
       if (textMatch) {
         items.push({
@@ -581,7 +581,7 @@ export function TemplateManager({
       } else {
         showMessage(
           "error",
-          "Äá»‹nh dáº¡ng file khÃ´ng Ä‘Æ°á»£c há»— trá»£. Vui lÃ²ng dÃ¹ng .txt, .csv, .docx, .xlsx"
+          "Định dạng file không được hỗ trợ. Vui lòng dùng .txt, .csv, .docx, .xlsx"
         );
         return;
       }
@@ -592,17 +592,17 @@ export function TemplateManager({
         setPpctData(parsedItems);
         showMessage(
           "success",
-          `ÄÃ£ Ä‘á»c ${parsedItems.length} má»¥c PPCT tá»« file "${file.name}"`
+          `Đã đọc ${parsedItems.length} mục PPCT từ file "${file.name}"`
         );
       } else {
         showMessage(
           "error",
-          "KhÃ´ng tÃ¬m tháº¥y dá»¯ liá»‡u PPCT há»£p lá»‡. Vui lÃ²ng kiá»ƒm tra Ä‘á»‹nh dáº¡ng file."
+          "Không tìm thấy dữ liệu PPCT hợp lệ. Vui lòng kiểm tra định dạng file."
         );
       }
     } catch (err) {
       console.error("Error parsing PPCT file:", err);
-      showMessage("error", "KhÃ´ng thá»ƒ Ä‘á»c file. Vui lÃ²ng kiá»ƒm tra Ä‘á»‹nh dáº¡ng.");
+      showMessage("error", "Không thể đọc file. Vui lòng kiểm tra định dạng.");
     }
 
     e.target.value = "";
@@ -610,14 +610,14 @@ export function TemplateManager({
 
   const handleAddPPCTItem = () => {
     if (!newPPCTItem.month || !newPPCTItem.theme) {
-      showMessage("error", "Vui lÃ²ng Ä‘iá»n Ä‘áº§y Ä‘á»§ ThÃ¡ng vÃ  Chá»§ Ä‘á»");
+      showMessage("error", "Vui lòng điền đầy đủ Tháng và Chủ đề");
       return;
     }
 
     setPpctData((prev) => [...prev, { ...newPPCTItem }]);
     setNewPPCTItem({ month: "", theme: "", periods: 2 });
     setShowAddPPCTDialog(false);
-    showMessage("success", "ÄÃ£ thÃªm má»¥c PPCT má»›i");
+    showMessage("success", "Đã thêm mục PPCT mới");
   };
 
   const handleRemovePPCTItem = (index: number) => {
@@ -627,7 +627,7 @@ export function TemplateManager({
   const handleSavePPCT = async () => {
     try {
       await savePPCT(ppctGrade, ppctData);
-      showMessage("success", `ÄÃ£ lÆ°u PPCT cho Khá»‘i ${ppctGrade}`);
+      showMessage("success", `Đã lưu PPCT cho Khối ${ppctGrade}`);
 
       // Notify parent component
       if (onPPCTChange) {
@@ -635,7 +635,7 @@ export function TemplateManager({
       }
     } catch (error) {
       console.error("Error saving PPCT:", error);
-      showMessage("error", "KhÃ´ng thá»ƒ lÆ°u PPCT");
+      showMessage("error", "Không thể lưu PPCT");
     }
   };
 
@@ -726,7 +726,7 @@ export function TemplateManager({
                 >
                   <span>
                     <Upload className="w-3 h-3 mr-1" />
-                    Thay Ä‘á»•i
+                    Thay đổi
                   </span>
                 </Button>
               </label>
@@ -755,7 +755,7 @@ export function TemplateManager({
             >
               <span>
                 <Upload className="w-3 h-3 mr-1" />
-                Táº£i lÃªn máº«u .docx
+                Tải lên mẫu .docx
               </span>
             </Button>
           </label>
@@ -773,10 +773,10 @@ export function TemplateManager({
       a.download = "Mau-Bien-ban-Hop-To.docx";
       a.click();
       URL.revokeObjectURL(url);
-      showMessage("success", "ÄÃ£ táº£i máº«u BiÃªn báº£n Há»p Tá»•");
+      showMessage("success", "Đã tải mẫu Biên bản Họp Tổ");
     } catch (error) {
       console.error("Error creating meeting template:", error);
-      showMessage("error", "KhÃ´ng thá»ƒ táº¡o máº«u Word");
+      showMessage("error", "Không thể tạo mẫu Word");
     }
   };
 
@@ -789,10 +789,10 @@ export function TemplateManager({
       a.download = "Mau-Ke-hoach-Bai-day.docx";
       a.click();
       URL.revokeObjectURL(url);
-      showMessage("success", "ÄÃ£ táº£i máº«u Káº¿ hoáº¡ch BÃ i dáº¡y");
+      showMessage("success", "Đã tải mẫu Kế hoạch Bài dạy");
     } catch (error) {
       console.error("Error creating lesson template:", error);
-      showMessage("error", "KhÃ´ng thá»ƒ táº¡o máº«u Word");
+      showMessage("error", "Không thể tạo mẫu Word");
     }
   };
 
@@ -810,10 +810,10 @@ export function TemplateManager({
       const arrayBuffer = await blob.arrayBuffer();
       await saveTemplate("default_assessment" as any, "Mau_Ke_Hoach_Kiem_Tra.docx", arrayBuffer);
       await loadTemplates();
-      showMessage("success", "ÄÃ£ táº£i vÃ  lÆ°u máº«u Káº¿ hoáº¡ch Kiá»ƒm tra");
+      showMessage("success", "Đã tải và lưu mẫu Kế hoạch Kiểm tra");
     } catch (error) {
       console.error("Error creating Assessment Word template:", error);
-      showMessage("error", "KhÃ´ng thá»ƒ táº¡o file máº«u Word");
+      showMessage("error", "Không thể tạo file mẫu Word");
     }
   };
 
@@ -826,10 +826,10 @@ export function TemplateManager({
       a.download = "Mau-Ke-hoach-Ngoai-khoa.docx";
       a.click();
       URL.revokeObjectURL(url);
-      showMessage("success", "ÄÃ£ táº£i máº«u Káº¿ hoáº¡ch Ngoáº¡i khÃ³a");
+      showMessage("success", "Đã tải mẫu Kế hoạch Ngoại khóa");
     } catch (error) {
       console.error("Error creating event template:", error);
-      showMessage("error", "KhÃ´ng thá»ƒ táº¡o máº«u Word");
+      showMessage("error", "Không thể tạo mẫu Word");
     }
   };
 
@@ -849,10 +849,10 @@ export function TemplateManager({
       await saveTemplate("default_ncbh" as any, "Mau_Nghien_Cuu_Bai_Hoc.docx", arrayBuffer);
       await loadTemplates();
 
-      showMessage("success", "ÄÃ£ táº£i vÃ  lÆ°u máº«u NghiÃªn cá»©u BÃ i há»c");
+      showMessage("success", "Đã tải và lưu mẫu Nghiên cứu Bài học");
     } catch (error) {
       console.error("Error creating NCBH template:", error);
-      showMessage("error", "KhÃ´ng thá»ƒ táº¡o máº«u Word");
+      showMessage("error", "Không thể tạo mẫu Word");
     }
   };
 
@@ -864,10 +864,10 @@ export function TemplateManager({
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              CÃ i Ä‘áº·t Máº«u & PPCT
+              Cài đặt Mẫu & PPCT
             </DialogTitle>
             <DialogDescription>
-              Quáº£n lÃ½ máº«u xuáº¥t file Word
+              Quản lý mẫu xuất file Word
             </DialogDescription>
           </DialogHeader>
 
@@ -887,11 +887,11 @@ export function TemplateManager({
             <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
               <TabsTrigger value="default" className="gap-1.5 text-xs">
                 <Star className="w-3.5 h-3.5" />
-                Máº«u
+                Mẫu
               </TabsTrigger>
               <TabsTrigger value="session" className="gap-1.5 text-xs">
                 <FileText className="w-3.5 h-3.5" />
-                PhiÃªn
+                Phiên
               </TabsTrigger>
               <TabsTrigger value="ppct" className="gap-1.5 text-xs">
                 <BookOpen className="w-3.5 h-3.5" />
@@ -903,7 +903,7 @@ export function TemplateManager({
               </TabsTrigger>
               <TabsTrigger value="khtt" className="gap-1.5 text-xs">
                 <CheckCircle className="w-3.5 h-3.5" />
-                KTÄG
+                KTĐG
               </TabsTrigger>
               <TabsTrigger value="guide" className="gap-1.5 text-xs">
                 <HelpCircle className="w-3.5 h-3.5" />
@@ -920,10 +920,10 @@ export function TemplateManager({
                     <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-semibold text-blue-900 text-sm">
-                        Thiáº¿t láº­p máº«u máº·c Ä‘á»‹nh láº§n Ä‘áº§u
+                        Thiết lập mẫu mặc định lần đầu
                       </h4>
                       <p className="text-xs text-blue-700 mt-1">
-                        Táº£i lÃªn cÃ¡c file máº«u Word (.docx). Chá»‰ cáº§n lÃ m 1 láº§n, sau Ä‘Ã³ máº«u sáº½ Ä‘Æ°á»£c lÆ°u vÄ©nh viá»…n.
+                        Tải lên các file mẫu Word (.docx). Chỉ cần làm 1 lần, sau đó mẫu sẽ được lưu vĩnh viễn.
                       </p>
                     </div>
                   </div>
@@ -933,7 +933,7 @@ export function TemplateManager({
                     onClick={() => setShowSetupGuide(false)}
                     className="text-xs"
                   >
-                    ÄÃ£ hiá»ƒu
+                    Đã hiểu
                   </Button>
                 </div>
               )}
@@ -944,7 +944,7 @@ export function TemplateManager({
                   <div className="flex items-center gap-2 text-sm text-amber-800">
                     <Star className="w-4 h-4 text-amber-600" />
                     <span>
-                      ÄÃ£ thiáº¿t láº­p {defaultTemplateCount} máº«u máº·c Ä‘á»‹nh
+                      Đã thiết lập {defaultTemplateCount} mẫu mặc định
                     </span>
                   </div>
                 </div>
@@ -954,42 +954,42 @@ export function TemplateManager({
                 <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                   <div className="flex items-center gap-2 text-sm text-green-800">
                     <Check className="w-4 h-4 text-green-600" />
-                    <span>ÄÃ£ thiáº¿t láº­p Ä‘áº§y Ä‘á»§ cÃ¡c máº«u máº·c Ä‘á»‹nh!</span>
+                    <span>Đã thiết lập đầy đủ các mẫu mặc định!</span>
                   </div>
                 </div>
               )}
 
               {isLoading ? (
                 <div className="text-center py-6 text-gray-500 text-sm">
-                  Äang táº£i...
+                  Đang tải...
                 </div>
               ) : (
                 <div className="space-y-3">
                   <TemplateCard
                     type="default_meeting"
-                    title="Máº«u BiÃªn Báº£n Há»p Tá»•"
-                    description="Template máº·c Ä‘á»‹nh cho biÃªn báº£n há»p tá»• chuyÃªn mÃ´n"
+                    title="Mẫu Biên Bản Họp Tổ"
+                    description="Template mặc định cho biên bản họp tổ chuyên môn"
                     template={defaultMeetingTemplate}
                     isDefault
                   />
                   <TemplateCard
                     type="default_event"
-                    title="Máº«u Káº¿ Hoáº¡ch Ngoáº¡i KhÃ³a"
-                    description="Template máº·c Ä‘á»‹nh cho káº¿ hoáº¡ch ngoáº¡i khÃ³a"
+                    title="Mẫu Kế Hoạch Ngoại Khóa"
+                    description="Template mặc định cho kế hoạch ngoại khóa"
                     template={defaultEventTemplate}
                     isDefault
                   />
                   <TemplateCard
                     type="default_lesson"
-                    title="Máº«u KHBD (Báº£ng 2 Cá»™t)"
-                    description="Máº«u Káº¿ hoáº¡ch bÃ i dáº¡y chuáº©n 2 cá»™t (Xu hÆ°á»›ng 2024-2025)"
+                    title="Mẫu KHBD (Bảng 2 Cột)"
+                    description="Mẫu Kế hoạch bài dạy chuẩn 2 cột (Xu hướng 2024-2025)"
                     template={defaultLessonTemplate}
                     isDefault
                   />
                   <TemplateCard
                     type="default_ncbh"
-                    title="Máº«u NghiÃªn Cá»©u BÃ i Há»c"
-                    description="Template máº·c Ä‘á»‹nh cho há»“ sÆ¡ & biÃªn báº£n NCBH"
+                    title="Mẫu Nghiên Cứu Bài Học"
+                    description="Template mặc định cho hồ sơ & biên bản NCBH"
                     template={defaultNcbhTemplate}
                     isDefault
                   />
@@ -1002,15 +1002,15 @@ export function TemplateManager({
                         onClick={downloadNCBHWordTemplate}
                       >
                         <Sparkles className="w-3 h-3 mr-1" />
-                        Táº¡o máº«u NCBH chuáº©n
+                        Tạo mẫu NCBH chuẩn
                       </Button>
                     </div>
                   )}
                   <div className="pt-4 border-t border-dashed">
                     <TemplateCard
                       type="default_assessment"
-                      title="Máº«u Káº¿ Hoáº¡ch Kiá»ƒm Tra"
-                      description="Template máº·c Ä‘á»‹nh cho káº¿ hoáº¡ch kiá»ƒm tra Ä‘Ã¡nh giÃ¡"
+                      title="Mẫu Kế Hoạch Kiểm Tra"
+                      description="Template mặc định cho kế hoạch kiểm tra đánh giá"
                       template={defaultAssessmentTemplate}
                       isDefault
                     />
@@ -1023,7 +1023,7 @@ export function TemplateManager({
                           onClick={downloadAssessmentWordTemplate}
                         >
                           <Sparkles className="w-4 h-4 mr-2" />
-                          Táº¡o máº«u Kiá»ƒm tra chuáº©n
+                          Tạo mẫu Kiểm tra chuẩn
                         </Button>
                       </div>
                     )}
@@ -1037,45 +1037,45 @@ export function TemplateManager({
               <div className="flex gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-blue-800">
-                  <strong>Máº«u phiÃªn lÃ m viá»‡c</strong> Ä‘Æ°á»£c Æ°u tiÃªn sá»­ dá»¥ng trÆ°á»›c
-                  máº«u máº·c Ä‘á»‹nh.
+                  <strong>Mẫu phiên làm việc</strong> được ưu tiên sử dụng trước
+                  mẫu mặc định.
                 </p>
               </div>
 
               {isLoading ? (
                 <div className="text-center py-6 text-gray-500 text-sm">
-                  Äang táº£i...
+                  Đang tải...
                 </div>
               ) : (
                 <div className="space-y-3">
                   <TemplateCard
                     type="meeting"
-                    title="Máº«u BiÃªn Báº£n Há»p"
-                    description="Template cho biÃªn báº£n há»p tá»• (phiÃªn nÃ y)"
+                    title="Mẫu Biên Bản Họp"
+                    description="Template cho biên bản họp tổ (phiên này)"
                     template={sessionMeetingTemplate}
                   />
                   <TemplateCard
                     type="event"
-                    title="Máº«u Káº¿ Hoáº¡ch Ngoáº¡i KhÃ³a"
-                    description="Template cho káº¿ hoáº¡ch ngoáº¡i khÃ³a (phiÃªn nÃ y)"
+                    title="Mẫu Kế Hoạch Ngoại Khóa"
+                    description="Template cho kế hoạch ngoại khóa (phiên này)"
                     template={sessionEventTemplate}
                   />
                   <TemplateCard
                     type="lesson"
-                    title="Máº«u Káº¿ Hoáº¡ch BÃ i Dáº¡y"
-                    description="Template cho KHBD (phiÃªn nÃ y)"
+                    title="Mẫu Kế Hoạch Bài Dạy"
+                    description="Template cho KHBD (phiên này)"
                     template={sessionLessonTemplate}
                   />
                   <TemplateCard
                     type="ncbh"
-                    title="Máº«u NghiÃªn Cá»©u BÃ i Há»c"
-                    description="Template cho NCBH (phiÃªn nÃ y)"
+                    title="Mẫu Nghiên Cứu Bài Học"
+                    description="Template cho NCBH (phiên này)"
                     template={sessionNcbhTemplate}
                   />
                   <TemplateCard
                     type="assessment"
-                    title="Máº«u Káº¿ Hoáº¡ch Kiá»ƒm Tra"
-                    description="Template cho Káº¿ hoáº¡ch kiá»ƒm tra (phiÃªn nÃ y)"
+                    title="Mẫu Kế Hoạch Kiểm Tra"
+                    description="Template cho Kế hoạch kiểm tra (phiên này)"
                     template={sessionAssessmentTemplate}
                   />
                 </div>
@@ -1088,22 +1088,22 @@ export function TemplateManager({
               <div className="flex gap-2 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
                 <BookOpen className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-indigo-800">
-                  <strong>PhÃ¢n phá»‘i ChÆ°Æ¡ng trÃ¬nh (PPCT)</strong> giÃºp tá»± Ä‘á»™ng
-                  Ä‘iá»n nhiá»‡m vá»¥ vÃ  gá»£i Ã½ sá»‘ tiáº¿t khi táº¡o KHBD.
+                  <strong>Phân phối Chương trình (PPCT)</strong> giúp tự động
+                  điền nhiệm vụ và gợi ý số tiết khi tạo KHBD.
                 </p>
               </div>
 
               {/* Grade Selection */}
               <div className="flex items-center gap-4">
-                <Label className="text-sm font-medium">Khá»‘i:</Label>
+                <Label className="text-sm font-medium">Khối:</Label>
                 <Select value={ppctGrade} onValueChange={setPpctGrade}>
                   <SelectTrigger className="w-24">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="10">Khá»‘i 10</SelectItem>
-                    <SelectItem value="11">Khá»‘i 11</SelectItem>
-                    <SelectItem value="12">Khá»‘i 12</SelectItem>
+                    <SelectItem value="10">Khối 10</SelectItem>
+                    <SelectItem value="11">Khối 11</SelectItem>
+                    <SelectItem value="12">Khối 12</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1116,7 +1116,7 @@ export function TemplateManager({
                   onClick={handleDownloadPPCTTemplate}
                 >
                   <Download className="w-4 h-4 mr-1" />
-                  Táº£i máº«u Excel
+                  Tải mẫu Excel
                 </Button>
                 <input
                   ref={ppctFileRef}
@@ -1139,19 +1139,19 @@ export function TemplateManager({
                   onClick={() => setShowAddPPCTDialog(true)}
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  ThÃªm thá»§ cÃ´ng
+                  Thêm thủ công
                 </Button>
                 {ppctData.length > 0 && (
                   <Button variant="default" size="sm" onClick={handleSavePPCT}>
                     <Save className="w-4 h-4 mr-1" />
-                    LÆ°u PPCT
+                    Lưu PPCT
                   </Button>
                 )}
               </div>
 
               {ppctFileName && (
                 <p className="text-xs text-indigo-600">
-                  File Ä‘Ã£ upload: {ppctFileName}
+                  File đã upload: {ppctFileName}
                 </p>
               )}
 
@@ -1159,7 +1159,7 @@ export function TemplateManager({
               {ppctData.length > 0 ? (
                 <div className="space-y-2 max-h-[300px] overflow-y-auto">
                   <div className="text-xs text-indigo-600 mb-2">
-                    ÄÃ£ cÃ³ {ppctData.length} má»¥c PPCT cho Khá»‘i {ppctGrade}.
+                    Đã có {ppctData.length} mục PPCT cho Khối {ppctGrade}.
                   </div>
                   {ppctData.map((item, index) => (
                     <div
@@ -1168,13 +1168,13 @@ export function TemplateManager({
                     >
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm w-20">
-                          ThÃ¡ng {item.month}:
+                          Tháng {item.month}:
                         </span>
                         <span className="flex-1 text-sm font-medium">
                           {item.theme}
                         </span>
                         <span className="text-xs bg-indigo-100 px-2 py-1 rounded">
-                          {item.periods} tiáº¿t
+                          {item.periods} tiết
                         </span>
                         {item.notes && (
                           <span className="text-xs text-gray-500 italic">
@@ -1192,7 +1192,7 @@ export function TemplateManager({
                       {item.tasks && item.tasks.length > 0 && (
                         <div className="pl-20 space-y-1">
                           <p className="text-xs font-medium text-indigo-700">
-                            CÃ¡c nhiá»‡m vá»¥:
+                            Các nhiệm vụ:
                           </p>
                           {item.tasks.map((task, taskIndex) => (
                             <div
@@ -1212,33 +1212,33 @@ export function TemplateManager({
                 </div>
               ) : (
                 <div className="text-sm text-indigo-600 space-y-2 p-4 bg-indigo-50/50 rounded-lg">
-                  <p>ChÆ°a cÃ³ PPCT cho Khá»‘i {ppctGrade}.</p>
+                  <p>Chưa có PPCT cho Khối {ppctGrade}.</p>
                   <div className="text-xs space-y-1">
                     <p>
-                      1. Click <strong>"Táº£i máº«u Excel"</strong> Ä‘á»ƒ táº£i file máº«u
+                      1. Click <strong>"Tải mẫu Excel"</strong> để tải file mẫu
                     </p>
-                    <p>2. Äiá»n thÃ´ng tin PPCT vÃ o file Excel</p>
+                    <p>2. Điền thông tin PPCT vào file Excel</p>
                     <p>
-                      3. Click <strong>"Upload PPCT"</strong> Ä‘á»ƒ táº£i lÃªn
+                      3. Click <strong>"Upload PPCT"</strong> để tải lên
                     </p>
                     <p>
-                      4. Click <strong>"LÆ°u PPCT"</strong> Ä‘á»ƒ lÆ°u vÄ©nh viá»…n
+                      4. Click <strong>"Lưu PPCT"</strong> để lưu vĩnh viễn
                     </p>
                   </div>
                 </div>
               )}
             </TabsContent>
 
-            {/* KHTT - Káº¿ hoáº¡ch Kiá»ƒm tra Tab */}
+            {/* KHTT - Kế hoạch Kiểm tra Tab */}
             <TabsContent value="khtt" className="space-y-4 mt-4">
               <div className="space-y-4">
                 <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-200">
                   <h3 className="font-semibold text-indigo-900 text-sm mb-2 flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" />
-                    Máº«u Káº¿ hoáº¡ch Kiá»ƒm tra ÄÃ¡nh giÃ¡
+                    Mẫu Kế hoạch Kiểm tra Đánh giá
                   </h3>
                   <p className="text-xs text-indigo-700 mb-3">
-                    Táº£i máº«u Word Ä‘á»ƒ xem trÆ°á»›c vÃ  chá»‰nh sá»­a cáº¥u trÃºc káº¿ hoáº¡ch kiá»ƒm tra theo nhu cáº§u cá»§a báº¡n.
+                    Tải mẫu Word để xem trước và chỉnh sửa cấu trúc kế hoạch kiểm tra theo nhu cầu của bạn.
                   </p>
                 </div>
 
@@ -1247,9 +1247,9 @@ export function TemplateManager({
                   <Card className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-sm text-gray-800">Máº«u Káº¿ hoáº¡ch Kiá»ƒm tra chuáº©n</h4>
+                        <h4 className="font-medium text-sm text-gray-800">Mẫu Kế hoạch Kiểm tra chuẩn</h4>
                         <p className="text-xs text-gray-500 mt-1">
-                          File Word vá»›i cÃ¡c placeholder Ä‘á»ƒ xuáº¥t Káº¿ hoáº¡ch Kiá»ƒm tra
+                          File Word với các placeholder để xuất Kế hoạch Kiểm tra
                         </p>
                       </div>
                       <Button
@@ -1258,7 +1258,7 @@ export function TemplateManager({
                         size="sm"
                       >
                         <Download className="w-4 h-4 mr-2" />
-                        Táº£i máº«u
+                        Tải mẫu
                       </Button>
                     </div>
                   </Card>
@@ -1269,7 +1269,7 @@ export function TemplateManager({
                         <div className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-green-600" />
                           <div>
-                            <h4 className="font-medium text-sm text-green-800">ÄÃ£ cÃ³ máº«u máº·c Ä‘á»‹nh</h4>
+                            <h4 className="font-medium text-sm text-green-800">Đã có mẫu mặc định</h4>
                             <p className="text-xs text-green-600">{defaultAssessmentTemplate.name}</p>
                           </div>
                         </div>
@@ -1280,7 +1280,7 @@ export function TemplateManager({
                           className="text-red-600 border-red-200"
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
-                          XÃ³a
+                          Xóa
                         </Button>
                       </div>
                     </Card>
@@ -1290,22 +1290,22 @@ export function TemplateManager({
                 {/* Placeholder Variables */}
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm text-gray-800">
-                    CÃ¡c biáº¿n placeholder trong máº«u
+                    Các biến placeholder trong mẫu
                   </h4>
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono">
-                    <p><span className="text-blue-600">{"{{ten_truong}}"}</span> - TÃªn trÆ°á»ng</p>
-                    <p><span className="text-blue-600">{"{{to_chuyen_mon}}"}</span> - TÃªn tá»• chuyÃªn mÃ´n</p>
-                    <p><span className="text-blue-600">{"{{hoc_ky}}"}</span> - Há»c ká»³</p>
-                    <p><span className="text-blue-600">{"{{khoi}}"}</span> - Khá»‘i lá»›p</p>
-                    <p><span className="text-blue-600">{"{{ky_danh_gia}}"}</span> - Ká»³ Ä‘Ã¡nh giÃ¡</p>
-                    <p><span className="text-blue-600">{"{{ten_chu_de}}"}</span> - TÃªn chá»§ Ä‘á»</p>
-                    <p><span className="text-blue-600">{"{{san_pham}}"}</span> - Loáº¡i sáº£n pháº©m</p>
-                    <p><span className="text-blue-600">{"{{muc_tieu}}"}</span> - Má»¥c tiÃªu Ä‘Ã¡nh giÃ¡</p>
-                    <p><span className="text-blue-600">{"{{noi_dung_nhiem_vu}}"}</span> - Ná»™i dung nhiá»‡m vá»¥</p>
-                    <p><span className="text-blue-600">{"{{hinh_thuc_to_chuc}}"}</span> - HÃ¬nh thá»©c tá»• chá»©c</p>
-                    <p><span className="text-blue-600">{"{{ma_tran_dac_ta}}"}</span> - Ma tráº­n Ä‘áº·c táº£</p>
-                    <p><span className="text-blue-600">{"{{bang_kiem_rubric}}"}</span> - Rubric Ä‘Ã¡nh giÃ¡</p>
-                    <p><span className="text-blue-600">{"{{loi_khuyen}}"}</span> - Lá»i khuyÃªn cho giÃ¡o viÃªn</p>
+                    <p><span className="text-blue-600">{"{{ten_truong}}"}</span> - Tên trường</p>
+                    <p><span className="text-blue-600">{"{{to_chuyen_mon}}"}</span> - Tên tổ chuyên môn</p>
+                    <p><span className="text-blue-600">{"{{hoc_ky}}"}</span> - Học kỳ</p>
+                    <p><span className="text-blue-600">{"{{khoi}}"}</span> - Khối lớp</p>
+                    <p><span className="text-blue-600">{"{{ky_danh_gia}}"}</span> - Kỳ đánh giá</p>
+                    <p><span className="text-blue-600">{"{{ten_chu_de}}"}</span> - Tên chủ đề</p>
+                    <p><span className="text-blue-600">{"{{san_pham}}"}</span> - Loại sản phẩm</p>
+                    <p><span className="text-blue-600">{"{{muc_tieu}}"}</span> - Mục tiêu đánh giá</p>
+                    <p><span className="text-blue-600">{"{{noi_dung_nhiem_vu}}"}</span> - Nội dung nhiệm vụ</p>
+                    <p><span className="text-blue-600">{"{{hinh_thuc_to_chuc}}"}</span> - Hình thức tổ chức</p>
+                    <p><span className="text-blue-600">{"{{ma_tran_dac_ta}}"}</span> - Ma trận đặc tả</p>
+                    <p><span className="text-blue-600">{"{{bang_kiem_rubric}}"}</span> - Rubric đánh giá</p>
+                    <p><span className="text-blue-600">{"{{loi_khuyen}}"}</span> - Lời khuyên cho giáo viên</p>
                   </div>
                 </div>
 
@@ -1313,10 +1313,10 @@ export function TemplateManager({
                   <div className="flex gap-2">
                     <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
                     <div className="text-xs text-yellow-700">
-                      <p className="font-medium">LÆ°u Ã½ quan trá»ng:</p>
+                      <p className="font-medium">Lưu ý quan trọng:</p>
                       <p className="mt-1">
-                        Hiá»‡n táº¡i, chá»©c nÄƒng xuáº¥t Káº¿ hoáº¡ch Kiá»ƒm tra sá»­ dá»¥ng thÆ° viá»‡n táº¡o file Word trá»±c tiáº¿p
-                        thay vÃ¬ dÃ¹ng template, Ä‘á»ƒ Ä‘áº£m báº£o tÃ­nh á»•n Ä‘á»‹nh. Máº«u nÃ y chá»‰ Ä‘á»ƒ tham kháº£o cáº¥u trÃºc.
+                        Hiện tại, chức năng xuất Kế hoạch Kiểm tra sử dụng thư viện tạo file Word trực tiếp
+                        thay vì dùng template, để đảm bảo tính ổn định. Mẫu này chỉ để tham khảo cấu trúc.
                       </p>
                     </div>
                   </div>
@@ -1330,10 +1330,10 @@ export function TemplateManager({
                 <div className="p-4 bg-rose-50 rounded-xl border border-rose-200">
                   <h3 className="font-semibold text-rose-900 text-sm mb-2 flex items-center gap-2">
                     <Zap className="w-4 h-4" />
-                    Máº«u NghiÃªn Cá»©u BÃ i Há»c (NCBH)
+                    Mẫu Nghiên Cứu Bài Học (NCBH)
                   </h3>
                   <p className="text-xs text-rose-700 mb-3">
-                    Há»“ sÆ¡ NCBH káº¿t há»£p giá»¯a Giai Ä‘oáº¡n 1 (Thiáº¿t káº¿) vÃ  Giai Ä‘oáº¡n 2 & 3 (PhÃ¢n tÃ­ch bÃ i há»c).
+                    Hồ sơ NCBH kết hợp giữa Giai đoạn 1 (Thiết kế) và Giai đoạn 2 & 3 (Phân tích bài học).
                   </p>
                 </div>
 
@@ -1341,9 +1341,9 @@ export function TemplateManager({
                   <Card className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-sm text-gray-800">Máº«u NCBH máº·c Ä‘á»‹nh (Code)</h4>
+                        <h4 className="font-medium text-sm text-gray-800">Mẫu NCBH mặc định (Code)</h4>
                         <p className="text-xs text-gray-500 mt-1">
-                          File Word chuáº©n 2024-2025 vá»›i Ä‘áº§y Ä‘á»§ biáº¿n placeholder.
+                          File Word chuẩn 2024-2025 với đầy đủ biến placeholder.
                         </p>
                       </div>
                       <Button
@@ -1352,7 +1352,7 @@ export function TemplateManager({
                         size="sm"
                       >
                         <Download className="w-4 h-4 mr-2" />
-                        Táº£i máº«u chuáº©n
+                        Tải mẫu chuẩn
                       </Button>
                     </div>
                   </Card>
@@ -1363,7 +1363,7 @@ export function TemplateManager({
                         <div className="flex items-center gap-2">
                           <Check className="w-4 h-4 text-green-600" />
                           <div>
-                            <h4 className="font-medium text-sm text-green-800">ÄÃ£ kÃ­ch hoáº¡t máº«u máº·c Ä‘á»‹nh</h4>
+                            <h4 className="font-medium text-sm text-green-800">Đã kích hoạt mẫu mặc định</h4>
                             <p className="text-xs text-green-600">{defaultNcbhTemplate.name}</p>
                           </div>
                         </div>
@@ -1374,7 +1374,7 @@ export function TemplateManager({
                           className="text-red-600 border-red-200 h-8 text-xs"
                         >
                           <Trash2 className="w-3.5 h-3.5 mr-1" />
-                          XÃ³a
+                          Xóa
                         </Button>
                       </div>
                     </Card>
@@ -1389,11 +1389,11 @@ export function TemplateManager({
                 <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
                   <h3 className="font-semibold text-blue-900 text-sm mb-2 flex items-center gap-2">
                     <FileText className="w-4 h-4" />
-                    HÆ°á»›ng dáº«n táº¡o Máº«u vÄƒn báº£n Word (.docx)
+                    Hướng dẫn tạo Mẫu văn bản Word (.docx)
                   </h3>
                   <p className="text-xs text-blue-700 mb-3">
-                    Sá»­ dá»¥ng cÃ¡c biáº¿n placeholder trong file Word Ä‘á»ƒ há»‡ thá»‘ng tá»±
-                    Ä‘á»™ng thay tháº¿ ná»™i dung khi xuáº¥t file.
+                    Sử dụng các biến placeholder trong file Word để hệ thống tự
+                    động thay thế nội dung khi xuất file.
                   </p>
                 </div>
 
@@ -1401,61 +1401,61 @@ export function TemplateManager({
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm text-gray-800 flex items-center gap-2">
                     <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-xs">
-                      BiÃªn báº£n Há»p Tá»•
+                      Biên bản Họp Tổ
                     </span>
                   </h4>
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono">
                     <p>
                       <span className="text-blue-600">{"{{ten_truong}}"}</span>{" "}
-                      - TÃªn trÆ°á»ng
+                      - Tên trường
                     </p>
                     <p>
                       <span className="text-blue-600">
                         {"{{to_chuyen_mon}}"}
                       </span>{" "}
-                      - TÃªn tá»• chuyÃªn mÃ´n
+                      - Tên tổ chuyên môn
                     </p>
                     <p>
                       <span className="text-blue-600">{"{{so_bien_ban}}"}</span>{" "}
-                      - Sá»‘ biÃªn báº£n
+                      - Số biên bản
                     </p>
                     <p>
                       <span className="text-blue-600">{"{{ngay_hop}}"}</span> -
-                      NgÃ y há»p
+                      Ngày họp
                     </p>
                     <p>
                       <span className="text-blue-600">{"{{dia_diem}}"}</span> -
-                      Äá»‹a Ä‘iá»ƒm
+                      Địa điểm
                     </p>
                     <p>
                       <span className="text-blue-600">{"{{chu_tri}}"}</span> -
-                      NgÆ°á»i chá»§ trÃ¬
+                      Người chủ trì
                     </p>
                     <p>
                       <span className="text-blue-600">{"{{thu_ky}}"}</span> -
-                      ThÆ° kÃ½
+                      Thư ký
                     </p>
                     <p>
                       <span className="text-blue-600">
                         {"{{thanh_vien_vang}}"}
                       </span>{" "}
-                      - ThÃ nh viÃªn váº¯ng máº·t
+                      - Thành viên vắng mặt
                     </p>
                     <p>
                       <span className="text-blue-600">
                         {"{{noi_dung_hop}}"}
                       </span>{" "}
-                      - Ná»™i dung cuá»™c há»p (AI táº¡o)
+                      - Nội dung cuộc họp (AI tạo)
                     </p>
                     <p>
                       <span className="text-blue-600">{"{{ket_luan}}"}</span> -
-                      Káº¿t luáº­n cuá»™c há»p
+                      Kết luận cuộc họp
                     </p>
                     <p>
                       <span className="text-blue-600">
                         {"{{ke_hoach_thang_toi}}"}
                       </span>{" "}
-                      - Káº¿ hoáº¡ch thÃ¡ng tá»›i
+                      - Kế hoạch tháng tới
                     </p>
                   </div>
                 </div>
@@ -1465,56 +1465,56 @@ export function TemplateManager({
                   <div className="flex items-center justify-between">
                     <h4 className="font-semibold text-sm text-gray-800 flex items-center gap-2">
                       <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs">
-                        Káº¿ hoáº¡ch BÃ i dáº¡y (KHBD 2 Cá»™t)
+                        Kế hoạch Bài dạy (KHBD 2 Cột)
                       </span>
                     </h4>
                     <span className="text-[10px] text-amber-600 font-medium px-2 py-0.5 bg-amber-50 rounded border border-amber-100">
-                      KhuyÃªn dÃ¹ng 2024-2025
+                      Khuyên dùng 2024-2025
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">ThÃ´ng tin chung</p>
+                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Thông tin chung</p>
                       <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono border border-slate-100">
-                        <p><span className="text-green-600">{"{{ten_truong}}"}</span> - TÃªn trÆ°á»ng</p>
-                        <p><span className="text-green-600">{"{{to_chuyen_mon}}"}</span> - Tá»• chuyÃªn mÃ´n</p>
-                        <p><span className="text-green-600">{"{{ten_giao_vien}}"}</span> - Há» tÃªn giÃ¡o viÃªn</p>
-                        <p><span className="text-green-600">{"{{ngay_soan}}"}</span> - NgÃ y soáº¡n bÃ i</p>
-                        <p><span className="text-green-600">{"{{chu_de}}"}</span> - Sá»‘ thá»© tá»± chá»§ Ä‘á»</p>
-                        <p><span className="text-green-600">{"{{ten_chu_de}}"}</span> - TÃªn chá»§ Ä‘á» há»c táº­p</p>
-                        <p><span className="text-green-600">{"{{lop}}"}</span> - Khá»‘i lá»›p (10/11/12)</p>
-                        <p><span className="text-green-600">{"{{so_tiet}}"}</span> - Tá»•ng sá»‘ tiáº¿t</p>
+                        <p><span className="text-green-600">{"{{ten_truong}}"}</span> - Tên trường</p>
+                        <p><span className="text-green-600">{"{{to_chuyen_mon}}"}</span> - Tổ chuyên môn</p>
+                        <p><span className="text-green-600">{"{{ten_giao_vien}}"}</span> - Họ tên giáo viên</p>
+                        <p><span className="text-green-600">{"{{ngay_soan}}"}</span> - Ngày soạn bài</p>
+                        <p><span className="text-green-600">{"{{chu_de}}"}</span> - Số thứ tự chủ đề</p>
+                        <p><span className="text-green-600">{"{{ten_chu_de}}"}</span> - Tên chủ đề học tập</p>
+                        <p><span className="text-green-600">{"{{lop}}"}</span> - Khối lớp (10/11/12)</p>
+                        <p><span className="text-green-600">{"{{so_tiet}}"}</span> - Tổng số tiết</p>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Má»¥c tiÃªu & Chuáº©n bá»‹</p>
+                      <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Mục tiêu & Chuẩn bị</p>
                       <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono border border-slate-100">
-                        <p><span className="text-green-600">{"{{muc_tieu_kien_thuc}}"}</span> - YÃªu cáº§u cáº§n Ä‘áº¡t</p>
-                        <p><span className="text-green-600">{"{{muc_tieu_nang_luc}}"}</span> - NÄƒng lá»±c</p>
-                        <p><span className="text-green-600">{"{{muc_tieu_pham_chat}}"}</span> - Pháº©m cháº¥t</p>
-                        <p><span className="text-green-600">{"{{gv_chuan_bi}}"}</span> - Chuáº©n bá»‹ cá»§a GV</p>
-                        <p><span className="text-green-600">{"{{hs_chuan_bi}}"}</span> - Chuáº©n bá»‹ cá»§a HS</p>
-                        <p><span className="text-green-600">{"{{shdc}}"}</span> - Sinh hoáº¡t dÆ°á»›i cá»</p>
-                        <p><span className="text-green-600">{"{{shl}}"}</span> - Sinh hoáº¡t lá»›p</p>
+                        <p><span className="text-green-600">{"{{muc_tieu_kien_thuc}}"}</span> - Yêu cầu cần đạt</p>
+                        <p><span className="text-green-600">{"{{muc_tieu_nang_luc}}"}</span> - Năng lực</p>
+                        <p><span className="text-green-600">{"{{muc_tieu_pham_chat}}"}</span> - Phẩm chất</p>
+                        <p><span className="text-green-600">{"{{gv_chuan_bi}}"}</span> - Chuẩn bị của GV</p>
+                        <p><span className="text-green-600">{"{{hs_chuan_bi}}"}</span> - Chuẩn bị của HS</p>
+                        <p><span className="text-green-600">{"{{shdc}}"}</span> - Sinh hoạt dưới cờ</p>
+                        <p><span className="text-green-600">{"{{shl}}"}</span> - Sinh hoạt lớp</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tiáº¿n trÃ¬nh (DÃ nh cho báº£ng 2 Cá»™t)</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Tiến trình (Dành cho bảng 2 Cột)</p>
                     <div className="bg-indigo-50/50 rounded-lg p-3 space-y-2 text-[11px] border border-indigo-100">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                          <p className="font-semibold text-indigo-900 border-b border-indigo-100 pb-1 mb-1">Cá»˜T 1: ThÃ´ng tin HÄ</p>
+                          <p className="font-semibold text-indigo-900 border-b border-indigo-100 pb-1 mb-1">CỘT 1: Thông tin HĐ</p>
                           <p className="font-mono text-indigo-600">{"{{hoat_dong_khoi_dong_cot_1}}"}</p>
                           <p className="font-mono text-indigo-600">{"{{hoat_dong_kham_pha_cot_1}}"}</p>
                           <p className="font-mono text-indigo-600">{"{{hoat_dong_luyen_tap_cot_1}}"}</p>
                           <p className="font-mono text-indigo-600">{"{{hoat_dong_van_dung_cot_1}}"}</p>
                         </div>
                         <div className="space-y-1">
-                          <p className="font-semibold text-indigo-900 border-b border-indigo-100 pb-1 mb-1">Cá»˜T 2: Tá»• chá»©c thá»±c hiá»‡n</p>
+                          <p className="font-semibold text-indigo-900 border-b border-indigo-100 pb-1 mb-1">CỘT 2: Tổ chức thực hiện</p>
                           <p className="font-mono text-indigo-600">{"{{hoat_dong_khoi_dong_cot_2}}"}</p>
                           <p className="font-mono text-indigo-600">{"{{hoat_dong_kham_pha_cot_2}}"}</p>
                           <p className="font-mono text-indigo-600">{"{{hoat_dong_luyen_tap_cot_2}}"}</p>
@@ -1522,18 +1522,18 @@ export function TemplateManager({
                         </div>
                       </div>
                       <p className="text-indigo-700 italic mt-2 py-1 px-2 bg-white rounded border border-indigo-50">
-                        * Máº¹o: Thiáº¿t káº¿ báº£ng 2 cá»™t trong Word, Ä‘iá»n cÃ¡c biáº¿n tÆ°Æ¡ng á»©ng vÃ o tá»«ng Ã´ Ä‘á»ƒ ná»™i dung tá»± Ä‘á»™ng tÃ¡ch biá»‡t.
+                        * Mẹo: Thiết kế bảng 2 cột trong Word, điền các biến tương ứng vào từng ô để nội dung tự động tách biệt.
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Phá»¥ lá»¥c & KhÃ¡c</p>
+                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Phụ lục & Khác</p>
                     <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono border border-slate-100">
-                      <p><span className="text-green-600">{"{{ho_so_day_hoc}}"}</span> - Phá»¥ lá»¥c / Phiáº¿u há»c táº­p / Rubric</p>
-                      <p><span className="text-green-600">{"{{huong_dan_ve_nha}}"}</span> - HÆ°á»›ng dáº«n vá» nhÃ </p>
-                      <p><span className="text-green-600">{"{{tich_hop_nls}}"}</span> - Báº£ng tá»•ng há»£p tÃ­ch há»£p NLS</p>
-                      <p><span className="text-green-600">{"{{tich_hop_dao_duc}}"}</span> - Báº£ng tá»•ng há»£p GD Ä‘áº¡o Ä‘á»©c</p>
+                      <p><span className="text-green-600">{"{{ho_so_day_hoc}}"}</span> - Phụ lục / Phiếu học tập / Rubric</p>
+                      <p><span className="text-green-600">{"{{huong_dan_ve_nha}}"}</span> - Hướng dẫn về nhà</p>
+                      <p><span className="text-green-600">{"{{tich_hop_nls}}"}</span> - Bảng tổng hợp tích hợp NLS</p>
+                      <p><span className="text-green-600">{"{{tich_hop_dao_duc}}"}</span> - Bảng tổng hợp GD đạo đức</p>
                     </div>
                   </div>
                 </div>
@@ -1542,7 +1542,7 @@ export function TemplateManager({
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm text-gray-800 flex items-center gap-2">
                     <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-xs">
-                      Káº¿ hoáº¡ch Ngoáº¡i khÃ³a
+                      Kế hoạch Ngoại khóa
                     </span>
                   </h4>
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono">
@@ -1550,85 +1550,85 @@ export function TemplateManager({
                       <span className="text-purple-600">
                         {"{{ten_truong}}"}
                       </span>{" "}
-                      - TÃªn trÆ°á»ng
+                      - Tên trường
                     </p>
                     <p>
                       <span className="text-purple-600">
                         {"{{to_chuyen_mon}}"}
                       </span>{" "}
-                      - TÃªn tá»• chuyÃªn mÃ´n
+                      - Tên tổ chuyên môn
                     </p>
                     <p>
                       <span className="text-purple-600">
                         {"{{so_ke_hoach}}"}
                       </span>{" "}
-                      - Sá»‘ káº¿ hoáº¡ch
+                      - Số kế hoạch
                     </p>
                     <p>
                       <span className="text-purple-600">
                         {"{{ten_hoat_dong}}"}
                       </span>{" "}
-                      - TÃªn hoáº¡t Ä‘á»™ng ngoáº¡i khÃ³a
+                      - Tên hoạt động ngoại khóa
                     </p>
                     <p>
                       <span className="text-purple-600">{"{{chu_de}}"}</span> -
-                      Chá»§ Ä‘á» liÃªn quan
+                      Chủ đề liên quan
                     </p>
                     <p>
                       <span className="text-purple-600">{"{{khoi_lop}}"}</span>{" "}
-                      - Khá»‘i lá»›p tham gia
+                      - Khối lớp tham gia
                     </p>
                     <p>
                       <span className="text-purple-600">
                         {"{{ngay_to_chuc}}"}
                       </span>{" "}
-                      - NgÃ y tá»• chá»©c
+                      - Ngày tổ chức
                     </p>
                     <p>
                       <span className="text-purple-600">{"{{dia_diem}}"}</span>{" "}
-                      - Äá»‹a Ä‘iá»ƒm
+                      - Địa điểm
                     </p>
                     <p>
                       <span className="text-purple-600">
                         {"{{thoi_luong}}"}
                       </span>{" "}
-                      - Thá»i lÆ°á»£ng
+                      - Thời lượng
                     </p>
                     <p>
                       <span className="text-purple-600">{"{{muc_tieu}}"}</span>{" "}
-                      - Má»¥c tiÃªu (yÃªu cáº§u cáº§n Ä‘áº¡t, nÄƒng lá»±c, pháº©m cháº¥t)
+                      - Mục tiêu (yêu cầu cần đạt, năng lực, phẩm chất)
                     </p>
                     <p>
                       <span className="text-purple-600">{"{{noi_dung}}"}</span>{" "}
-                      - Ná»™i dung chÆ°Æ¡ng trÃ¬nh (AI táº¡o)
+                      - Nội dung chương trình (AI tạo)
                     </p>
                     <p>
                       <span className="text-purple-600">{"{{kich_ban}}"}</span>{" "}
-                      - Ká»‹ch báº£n chi tiáº¿t
+                      - Kịch bản chi tiết
                     </p>
                     <p>
                       <span className="text-purple-600">
                         {"{{cau_hoi_tuong_tac}}"}
                       </span>{" "}
-                      - CÃ¢u há»i tÆ°Æ¡ng tÃ¡c
+                      - Câu hỏi tương tác
                     </p>
                     <p>
                       <span className="text-purple-600">
                         {"{{thong_diep}}"}
                       </span>{" "}
-                      - ThÃ´ng Ä‘iá»‡p káº¿t thÃºc
+                      - Thông điệp kết thúc
                     </p>
                     <p>
                       <span className="text-purple-600">{"{{kinh_phi}}"}</span>{" "}
-                      - Kinh phÃ­ dá»± kiáº¿n
+                      - Kinh phí dự kiến
                     </p>
                     <p>
                       <span className="text-purple-600">{"{{phan_cong}}"}</span>{" "}
-                      - PhÃ¢n cÃ´ng nhiá»‡m vá»¥
+                      - Phân công nhiệm vụ
                     </p>
                     <p>
                       <span className="text-purple-600">{"{{noi_nhan}}"}</span>{" "}
-                      - NÆ¡i nháº­n
+                      - Nơi nhận
                     </p>
                   </div>
                 </div>
@@ -1637,52 +1637,52 @@ export function TemplateManager({
                 <div className="space-y-2">
                   <h4 className="font-semibold text-sm text-gray-800 flex items-center gap-2">
                     <span className="bg-red-100 text-red-800 px-2 py-0.5 rounded text-xs">
-                      NghiÃªn cá»©u bÃ i há»c (NCBH)
+                      Nghiên cứu bài học (NCBH)
                     </span>
                   </h4>
                   <div className="bg-gray-50 rounded-lg p-3 space-y-1 text-xs font-mono">
-                    <p><span className="text-red-600">{"{{ten_truong}}"}</span> - TÃªn trÆ°á»ng</p>
-                    <p><span className="text-red-600">{"{{to_chuyen_mon}}"}</span> - TÃªn tá»• chuyÃªn mÃ´n</p>
-                    <p><span className="text-red-600">{"{{ten_bai}}"}</span> - TÃªn bÃ i há»c nghiÃªn cá»©u</p>
-                    <p><span className="text-red-600">{"{{ngay_thuc_hien}}"}</span> - NgÃ y thá»±c hiá»‡n/Ghi biÃªn báº£n</p>
-                    <p><span className="text-red-600">{"{{ly_do_chon}}"}</span> - LÃ½ do chá»n bÃ i há»c (Thiáº¿t káº¿)</p>
-                    <p><span className="text-red-600">{"{{muc_tieu}}"}</span> - Má»¥c tiÃªu bÃ i há»c (Thiáº¿t káº¿)</p>
-                    <p><span className="text-red-600">{"{{chuoi_hoat_dong}}"}</span> - Chuá»—i hoáº¡t Ä‘á»™ng thá»‘ng nháº¥t (Thiáº¿t káº¿)</p>
-                    <p><span className="text-red-600">{"{{phuong_an_ho_tro}}"}</span> - PhÆ°Æ¡ng Ã¡n há»— trá»£ HS khÃ³ khÄƒn (Thiáº¿t káº¿)</p>
-                    <p><span className="text-red-600">{"{{chia_se_nguoi_day}}"}</span> - Chia sáº» cá»§a giÃ¡o viÃªn dáº¡y minh há»a (PhÃ¢n tÃ­ch)</p>
-                    <p><span className="text-red-600">{"{{nhan_xet_nguoi_du}}"}</span> - Minh chá»©ng viá»‡c há»c cá»§a HS (PhÃ¢n tÃ­ch)</p>
-                    <p><span className="text-red-600">{"{{nguyen_nhan_giai_phap}}"}</span> - NguyÃªn nhÃ¢n & Giáº£i phÃ¡p Ä‘iá»u chá»‰nh (PhÃ¢n tÃ­ch)</p>
-                    <p><span className="text-red-600">{"{{bai_hoc_kinh_nghiem}}"}</span> - BÃ i há»c kinh nghiá»‡m rÃºt ra (PhÃ¢n tÃ­ch)</p>
+                    <p><span className="text-red-600">{"{{ten_truong}}"}</span> - Tên trường</p>
+                    <p><span className="text-red-600">{"{{to_chuyen_mon}}"}</span> - Tên tổ chuyên môn</p>
+                    <p><span className="text-red-600">{"{{ten_bai}}"}</span> - Tên bài học nghiên cứu</p>
+                    <p><span className="text-red-600">{"{{ngay_thuc_hien}}"}</span> - Ngày thực hiện/Ghi biên bản</p>
+                    <p><span className="text-red-600">{"{{ly_do_chon}}"}</span> - Lý do chọn bài học (Thiết kế)</p>
+                    <p><span className="text-red-600">{"{{muc_tieu}}"}</span> - Mục tiêu bài học (Thiết kế)</p>
+                    <p><span className="text-red-600">{"{{chuoi_hoat_dong}}"}</span> - Chuỗi hoạt động thống nhất (Thiết kế)</p>
+                    <p><span className="text-red-600">{"{{phuong_an_ho_tro}}"}</span> - Phương án hỗ trợ HS khó khăn (Thiết kế)</p>
+                    <p><span className="text-red-600">{"{{chia_se_nguoi_day}}"}</span> - Chia sẻ của giáo viên dạy minh họa (Phân tích)</p>
+                    <p><span className="text-red-600">{"{{nhan_xet_nguoi_du}}"}</span> - Minh chứng việc học của HS (Phân tích)</p>
+                    <p><span className="text-red-600">{"{{nguyen_nhan_giai_phap}}"}</span> - Nguyên nhân & Giải pháp điều chỉnh (Phân tích)</p>
+                    <p><span className="text-red-600">{"{{bai_hoc_kinh_nghiem}}"}</span> - Bài học kinh nghiệm rút ra (Phân tích)</p>
                   </div>
                 </div>
 
                 {/* Instructions */}
                 <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
                   <h4 className="font-semibold text-amber-900 text-sm">
-                    LÆ°u Ã½ quan trá»ng:
+                    Lưu ý quan trọng:
                   </h4>
                   <ul className="text-xs text-amber-800 space-y-1 list-disc list-inside">
                     <li>
-                      Biáº¿n pháº£i Ä‘áº·t trong cáº·p dáº¥u ngoáº·c nhá»n kÃ©p:{" "}
+                      Biến phải đặt trong cặp dấu ngoặc nhọn kép:{" "}
                       <code className="bg-amber-100 px-1 rounded">
                         {"{{ten_bien}}"}
                       </code>
                     </li>
                     <li>
-                      TÃªn biáº¿n pháº£i viáº¿t Ä‘Ãºng chÃ­nh táº£, khÃ´ng dáº¥u, dÃ¹ng dáº¥u gáº¡ch
-                      dÆ°á»›i
+                      Tên biến phải viết đúng chính tả, không dấu, dùng dấu gạch
+                      dưới
                     </li>
                     <li>
-                      Ná»™i dung trong biáº¿n sáº½ Ä‘Æ°á»£c AI tá»± Ä‘á»™ng táº¡o hoáº·c láº¥y tá»«
-                      thÃ´ng tin báº¡n nháº­p
+                      Nội dung trong biến sẽ được AI tự động tạo hoặc lấy từ
+                      thông tin bạn nhập
                     </li>
                     <li>
-                      Báº¡n cÃ³ thá»ƒ thÃªm ná»™i dung cá»‘ Ä‘á»‹nh xung quanh biáº¿n trong máº«u
+                      Bạn có thể thêm nội dung cố định xung quanh biến trong mẫu
                       Word
                     </li>
                     <li>
-                      Äá»‹nh dáº¡ng (font, size, mÃ u...) trong máº«u Word sáº½ Ä‘Æ°á»£c giá»¯
-                      nguyÃªn
+                      Định dạng (font, size, màu...) trong mẫu Word sẽ được giữ
+                      nguyên
                     </li>
                   </ul>
                 </div>
@@ -1690,11 +1690,11 @@ export function TemplateManager({
                 {/* Download sample templates */}
                 <div className="p-4 bg-gray-50 rounded-xl border space-y-3">
                   <h4 className="font-semibold text-gray-800 text-sm">
-                    Táº£i máº«u Word cÃ³ sáºµn:
+                    Tải mẫu Word có sẵn:
                   </h4>
                   <p className="text-xs text-gray-600">
-                    Báº¡n cÃ³ thá»ƒ táº£i cÃ¡c máº«u Word máº·c Ä‘á»‹nh Ä‘Ã£ Ä‘Æ°á»£c thiáº¿t láº­p sáºµn
-                    cÃ¡c biáº¿n placeholder, sau Ä‘Ã³ chá»‰nh sá»­a theo Ã½ muá»‘n.
+                    Bạn có thể tải các mẫu Word mặc định đã được thiết lập sẵn
+                    các biến placeholder, sau đó chỉnh sửa theo ý muốn.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -1704,7 +1704,7 @@ export function TemplateManager({
                       onClick={downloadMeetingWordTemplate}
                     >
                       <Download className="w-3 h-3 mr-1" />
-                      Máº«u BiÃªn báº£n Há»p
+                      Mẫu Biên bản Họp
                     </Button>
                     <Button
                       variant="outline"
@@ -1713,7 +1713,7 @@ export function TemplateManager({
                       onClick={downloadLessonWordTemplate}
                     >
                       <Download className="w-3 h-3 mr-1" />
-                      Máº«u KHBD
+                      Mẫu KHBD
                     </Button>
                     <Button
                       variant="outline"
@@ -1722,7 +1722,7 @@ export function TemplateManager({
                       onClick={downloadEventWordTemplate}
                     >
                       <Download className="w-3 h-3 mr-1" />
-                      Máº«u Ngoáº¡i khÃ³a
+                      Mẫu Ngoại khóa
                     </Button>
                     <Button
                       variant="outline"
@@ -1731,7 +1731,7 @@ export function TemplateManager({
                       onClick={downloadNCBHWordTemplate}
                     >
                       <Download className="w-3 h-3 mr-1" />
-                      Máº«u NCBH
+                      Mẫu NCBH
                     </Button>
                   </div>
                 </div>
@@ -1745,15 +1745,15 @@ export function TemplateManager({
       < Dialog open={showAddPPCTDialog} onOpenChange={setShowAddPPCTDialog} >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>ThÃªm má»¥c PPCT</DialogTitle>
+            <DialogTitle>Thêm mục PPCT</DialogTitle>
             <DialogDescription>
-              ThÃªm chá»§ Ä‘á» má»›i vÃ o PhÃ¢n phá»‘i ChÆ°Æ¡ng trÃ¬nh Khá»‘i {ppctGrade}
+              Thêm chủ đề mới vào Phân phối Chương trình Khối {ppctGrade}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>ThÃ¡ng</Label>
+                <Label>Tháng</Label>
                 <Select
                   value={newPPCTItem.month}
                   onValueChange={(v) =>
@@ -1761,13 +1761,13 @@ export function TemplateManager({
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chá»n thÃ¡ng" />
+                    <SelectValue placeholder="Chọn tháng" />
                   </SelectTrigger>
                   <SelectContent>
                     {["9", "10", "11", "12", "1", "2", "3", "4", "5"].map(
                       (m) => (
                         <SelectItem key={m} value={m}>
-                          ThÃ¡ng {m}
+                          Tháng {m}
                         </SelectItem>
                       )
                     )}
@@ -1775,7 +1775,7 @@ export function TemplateManager({
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Sá»‘ tiáº¿t</Label>
+                <Label>Số tiết</Label>
                 <Select
                   value={String(newPPCTItem.periods)}
                   onValueChange={(v) =>
@@ -1792,7 +1792,7 @@ export function TemplateManager({
                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(
                       (n) => (
                         <SelectItem key={n} value={String(n)}>
-                          {n} tiáº¿t
+                          {n} tiết
                         </SelectItem>
                       )
                     )}
@@ -1801,24 +1801,24 @@ export function TemplateManager({
               </div>
             </div>
             <div className="space-y-2">
-              <Label>Chá»§ Ä‘á» / Ná»™i dung</Label>
+              <Label>Chủ đề / Nội dung</Label>
               <Textarea
                 value={newPPCTItem.theme}
                 onChange={(e) =>
                   setNewPPCTItem((p) => ({ ...p, theme: e.target.value }))
                 }
-                placeholder="Nháº­p tÃªn chá»§ Ä‘á»..."
+                placeholder="Nhập tên chủ đề..."
                 rows={2}
               />
             </div>
             <div className="space-y-2">
-              <Label>Ghi chÃº (tÃ¹y chá»n)</Label>
+              <Label>Ghi chú (tùy chọn)</Label>
               <Input
                 value={newPPCTItem.notes || ""}
                 onChange={(e) =>
                   setNewPPCTItem((p) => ({ ...p, notes: e.target.value }))
                 }
-                placeholder="VD: Káº¿t há»£p vá»›i 20/11..."
+                placeholder="VD: Kết hợp với 20/11..."
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -1826,9 +1826,9 @@ export function TemplateManager({
                 variant="outline"
                 onClick={() => setShowAddPPCTDialog(false)}
               >
-                Há»§y
+                Hủy
               </Button>
-              <Button onClick={handleAddPPCTItem}>ThÃªm</Button>
+              <Button onClick={handleAddPPCTItem}>Thêm</Button>
             </div>
           </div>
         </DialogContent>

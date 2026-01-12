@@ -14,12 +14,12 @@ export const LessonActionCenter = React.memo(() => {
     if (!lessonResult) return null;
 
     const handleCopyToClipboard = () => {
-        const content = `TÃŠN BÃ€I: ${lessonResult.ten_bai || lessonAutoFilledTheme}
-        \n\nMá»¤C TIÃŠU KIáº¾N THá»¨C:\n${lessonResult.muc_tieu_kien_thuc || ""}
-        \n\nDIá»„N TRÃŒNH HOáº T Äá»˜NG:\n${lessonResult.hoat_dong_khoi_dong || ""}`;
+        const content = `TÊN BÀI: ${lessonResult.ten_bai || lessonAutoFilledTheme}
+        \n\nMỤC TIÊU KIẾN THỨC:\n${lessonResult.muc_tieu_kien_thuc || ""}
+        \n\nDIỄN TRÌNH HOẠT ĐỘNG:\n${lessonResult.hoat_dong_khoi_dong || ""}`;
 
         navigator.clipboard.writeText(content);
-        setStatus('success', "ÄÃ£ sao chÃ©p toÃ n bá»™ ná»™i dung giÃ¡o Ã¡n!");
+        setStatus('success', "Đã sao chép toàn bộ nội dung giáo án!");
         setTimeout(() => setStatus('success', null), 3000);
     };
 
@@ -28,7 +28,7 @@ export const LessonActionCenter = React.memo(() => {
             {isExporting && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-top-4 duration-500">
                     <div className="flex justify-between items-center px-1">
-                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Äang khá»Ÿi táº¡o file DOCX...</span>
+                        <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Đang khởi tạo file DOCX...</span>
                         <span className="text-[10px] font-black text-indigo-600 italic">{exportProgress}%</span>
                     </div>
                     <div className="h-2 w-full bg-indigo-50 rounded-full overflow-hidden border border-indigo-100/50">
@@ -46,8 +46,8 @@ export const LessonActionCenter = React.memo(() => {
                         <CheckCircle className="h-6 w-6" />
                     </div>
                     <div>
-                        <h4 className="font-black text-lg text-slate-900">HoÃ n táº¥t & Kiá»ƒm tra</h4>
-                        <p className="text-sm text-slate-500 font-medium">LÆ°u trá»¯ hoáº·c chia sáº» giÃ¡o Ã¡n cá»§a báº¡n</p>
+                        <h4 className="font-black text-lg text-slate-900">Hoàn tất & Kiểm tra</h4>
+                        <p className="text-sm text-slate-500 font-medium">Lưu trữ hoặc chia sẻ giáo án của bạn</p>
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-4 w-full md:w-auto">

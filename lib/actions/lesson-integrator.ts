@@ -40,7 +40,7 @@ async function callGeminiWithRetry(genAI: GoogleGenAI, prompt: string, maxRetrie
     }
   }
 
-  throw new Error("ÄÃ£ háº¿t quota API. Vui lÃ²ng Ä‘á»£i 1 phÃºt rá»“i thá»­ láº¡i, hoáº·c kiá»ƒm tra billing táº¡i https://ai.google.dev")
+  throw new Error("Đã hết quota API. Vui lòng đợi 1 phút rồi thử lại, hoặc kiểm tra billing tại https://ai.google.dev")
 }
 
 export async function processLessonPlanWithSmartInjection(
@@ -64,13 +64,13 @@ export async function processLessonPlanWithSmartInjection(
   if (!apiKey || apiKey.trim() === "") {
     return {
       success: false,
-      error: "API Key khÃ´ng Ä‘Æ°á»£c cáº¥u hÃ¬nh. Vui lÃ²ng thÃªm GEMINI_API_KEY vÃ o Vars.",
-      logs: ["Lá»—i: API Key khÃ´ng Ä‘Æ°á»£c cáº¥u hÃ¬nh"],
+      error: "API Key không được cấu hình. Vui lòng thêm GEMINI_API_KEY vào Vars.",
+      logs: ["Lỗi: API Key không được cấu hình"],
     }
   }
 
   try {
-    logs.push("Báº¯t Ä‘áº§u xá»­ lÃ½ file giÃ¡o Ã¡n...")
+    logs.push("Bắt đầu xử lý file giáo án...")
 
     // Import mammoth for reading docx
     const mammoth = await import("mammoth")
@@ -78,48 +78,48 @@ export async function processLessonPlanWithSmartInjection(
     // Convert ArrayBuffer to Buffer for mammoth
     const buffer = Buffer.from(fileBuffer)
 
-    logs.push("Äang Ä‘á»c ná»™i dung file Word...")
+    logs.push("Đang đọc nội dung file Word...")
     const result = await mammoth.extractRawText({ buffer })
     const documentText = result.value
 
-    logs.push(`ÄÃ£ Ä‘á»c Ä‘Æ°á»£c ${documentText.length} kÃ½ tá»± tá»« file`)
-    logs.push(`Chá»§ Ä‘á»: ${theme} - Khá»‘i: ${grade}`)
+    logs.push(`Đã đọc được ${documentText.length} ký tự từ file`)
+    logs.push(`Chủ đề: ${theme} - Khối: ${grade}`)
 
     // Call Gemini to analyze and generate content
     const genAI = new GoogleGenAI({ apiKey })
 
-    const prompt = `Báº¡n lÃ  ChuyÃªn gia TÃ¡i cáº¥u trÃºc GiÃ¡o Ã¡n (Pedagogical Surgeon).
+    const prompt = `Bạn là Chuyên gia Tái cấu trúc Giáo án (Pedagogical Surgeon).
     
-THÃ”NG TIN: Khá»‘i ${grade}, Chá»§ Ä‘á» "${theme}".
+THÔNG TIN: Khối ${grade}, Chủ đề "${theme}".
 
-Ná»˜I DUNG GIÃO ÃN Cá»¦A GIÃO VIÃŠN:
+NỘI DUNG GIÁO ÁN CỦA GIÁO VIÊN:
 ---
 ${documentText.substring(0, 10000)}
 ---
 
-NHIá»†M Vá»¤: KHÃ”NG CHá»ˆ LÃ€ TÃCH Há»¢P, HÃƒY "NÃ‚NG Cáº¤P" GIÃO ÃN QUA 2 Ná»˜I DUNG SAU:
+NHIỆM VỤ: KHÔNG CHỈ LÀ TÍCH HỢP, HÃY "NÂNG CẤP" GIÁO ÁN QUA 2 NỘI DUNG SAU:
 
-1. TÃI Cáº¤U TRÃšC NÄ‚NG Lá»°C Sá» (tich_hop_nls):
-   - PhÃ¢n tÃ­ch hoáº¡t Ä‘á»™ng cÅ©, tÃ¬m chá»— cÃ³ thá»ƒ Ä‘Æ°a cÃ´ng cá»¥ sá»‘ vÃ o Ä‘á»ƒ HS thá»±c hÃ nh (Canva, AI, Mentimeter...).
-   - Viáº¿t ká»‹ch báº£n chi tiáº¿t: GV hÆ°á»›ng dáº«n gÃ¬? HS thao tÃ¡c gÃ¬? Sáº£n pháº©m sá»‘ lÃ  gÃ¬?
-   - Äáº£m báº£o theo chuáº©n ThÃ´ng tÆ° 02/2025.
+1. TÁI CẤU TRÚC NĂNG LỰC SỐ (tich_hop_nls):
+   - Phân tích hoạt động cũ, tìm chỗ có thể đưa công cụ số vào để HS thực hành (Canva, AI, Mentimeter...).
+   - Viết kịch bản chi tiết: GV hướng dẫn gì? HS thao tác gì? Sản phẩm số là gì?
+   - Đảm bảo theo chuẩn Thông tư 02/2025.
 
-2. NÃ‚NG Táº¦M Äáº O Äá»¨C & GIÃ TRá»Š (tich_hop_dao_duc):
-   - TÃ¬m cÃ¡c tÃ¬nh huá»‘ng trong giÃ¡o Ã¡n cÅ© vÃ  lá»“ng ghÃ©p pháº£n biá»‡n Ä‘áº¡o Ä‘á»©c.
-   - XÃ¢y dá»±ng thÃ´ng Ä‘iá»‡p sá»‘ng vÃ  cam káº¿t hÃ nh Ä‘á»™ng cá»¥ thá»ƒ cho HS khá»‘i ${grade}.
-   - Viáº¿t dÆ°á»›i dáº¡ng ká»‹ch báº£n Ä‘á»‘i thoáº¡i hoáº·c bÃ i táº­p tÃ¬nh huá»‘ng chi tiáº¿t.
+2. NÂNG TẦM ĐẠO ĐỨC & GIÁ TRỊ (tich_hop_dao_duc):
+   - Tìm các tình huống trong giáo án cũ và lồng ghép phản biện đạo đức.
+   - Xây dựng thông điệp sống và cam kết hành động cụ thể cho HS khối ${grade}.
+   - Viết dưới dạng kịch bản đối thoại hoặc bài tập tình huống chi tiết.
 
 OUTPUT JSON:
 {
-  "tich_hop_nls": "Ná»™i dung nÃ¢ng cáº¥p nÄƒng lá»±c sá»‘ chi tiáº¿t...",
-  "tich_hop_dao_duc": "Ná»™i dung nÃ¢ng cáº¥p Ä‘áº¡o Ä‘á»©c chi tiáº¿t..."
+  "tich_hop_nls": "Nội dung nâng cấp năng lực số chi tiết...",
+  "tich_hop_dao_duc": "Nội dung nâng cấp đạo đức chi tiết..."
 }`
 
-    logs.push("Äang gá»i AI Ä‘á»ƒ phÃ¢n tÃ­ch giÃ¡o Ã¡n...")
+    logs.push("Đang gọi AI để phân tích giáo án...")
 
     const text = await callGeminiWithRetry(genAI, prompt)
 
-    logs.push("ÄÃ£ nháº­n Ä‘Æ°á»£c pháº£n há»“i tá»« AI")
+    logs.push("Đã nhận được phản hồi từ AI")
 
     // Extract JSON from response
     let jsonStr = text
@@ -143,12 +143,12 @@ OUTPUT JSON:
       const nlsMatch = text.match(/tich_hop_nls["\s:]+["']([\s\S]+?)["']/)
       const ddMatch = text.match(/tich_hop_dao_duc["\s:]+["']([\s\S]+?)["']/)
       aiData = {
-        tich_hop_nls: nlsMatch?.[1] || "ChÆ°a cÃ³ ná»™i dung",
-        tich_hop_dao_duc: ddMatch?.[1] || "ChÆ°a cÃ³ ná»™i dung",
+        tich_hop_nls: nlsMatch?.[1] || "Chưa có nội dung",
+        tich_hop_dao_duc: ddMatch?.[1] || "Chưa có nội dung",
       }
     }
 
-    logs.push("ÄÃ£ parse ná»™i dung AI thÃ nh cÃ´ng")
+    logs.push("Đã parse nội dung AI thành công")
 
     // Process the document using docxtemplater
     const PizZip = (await import("pizzip")).default
@@ -159,7 +159,7 @@ OUTPUT JSON:
       zip = new PizZip(buffer)
     } catch {
       // If template can't be parsed, return content without modifying file
-      logs.push("KhÃ´ng thá»ƒ xá»­ lÃ½ file template, tráº£ vá» ná»™i dung AI")
+      logs.push("Không thể xử lý file template, trả về nội dung AI")
       return {
         success: true,
         logs,
@@ -198,9 +198,9 @@ OUTPUT JSON:
         khoi: grade,
       })
       doc.render()
-      logs.push("ÄÃ£ inject ná»™i dung vÃ o template")
+      logs.push("Đã inject nội dung vào template")
     } catch (renderError) {
-      logs.push("Template khÃ´ng cÃ³ placeholder chuáº©n, tráº£ vá» ná»™i dung AI riÃªng")
+      logs.push("Template không có placeholder chuẩn, trả về nội dung AI riêng")
       return {
         success: true,
         logs,
@@ -220,7 +220,7 @@ OUTPUT JSON:
     // We use Uint8Array to copy the data, ensuring it's not a SharedArrayBuffer
     const finalArrayBuffer = new Uint8Array(outputBuffer).buffer as ArrayBuffer;
 
-    logs.push("HoÃ n thÃ nh xá»­ lÃ½ file!");
+    logs.push("Hoàn thành xử lý file!");
 
     return {
       success: true,
@@ -233,10 +233,10 @@ OUTPUT JSON:
     }
   } catch (error: any) {
     console.error("[v0] Lesson integrator error:", error)
-    logs.push(`Lá»—i: ${error.message}`)
+    logs.push(`Lỗi: ${error.message}`)
     return {
       success: false,
-      error: error?.message || "Lá»—i khi xá»­ lÃ½ giÃ¡o Ã¡n",
+      error: error?.message || "Lỗi khi xử lý giáo án",
       logs,
     }
   }
@@ -252,5 +252,5 @@ export async function processLessonPlan(
   logs?: string[]
   error?: string
 }> {
-  return processLessonPlanWithSmartInjection(fileBuffer, "10", "Chá»§ Ä‘á» chung", reviewMode)
+  return processLessonPlanWithSmartInjection(fileBuffer, "10", "Chủ đề chung", reviewMode)
 }
