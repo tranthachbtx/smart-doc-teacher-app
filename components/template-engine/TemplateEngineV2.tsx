@@ -203,7 +203,8 @@ export function TemplateEngine() {
             event.budget,
             event.checklist,
             "", // evaluation placeholder
-            store.selectedModel
+            store.selectedModel,
+            parseInt(event.month) || 10
           );
           if (eventRes.success && eventRes.data) {
             store.updateEventField("result", eventRes.data);
@@ -212,7 +213,7 @@ export function TemplateEngine() {
             // Updated: Show error instead of Copy Prompt fallback for Event mode
             throw new Error(
               eventRes.error ||
-                "Không thể tạo kế hoạch ngoại khóa. Vui lòng thử lại!"
+              "Không thể tạo kế hoạch ngoại khóa. Vui lòng thử lại!"
             );
           }
           break;
@@ -477,7 +478,7 @@ export function TemplateEngine() {
     lessonDuration: lesson.duration,
     setLessonDuration: (v) => store.updateLessonField("duration", v),
     selectedChuDe: null, // Legacy, can be derived or removed if unused
-    setSelectedChuDe: () => {},
+    setSelectedChuDe: () => { },
     setLessonMonth: (v) => store.updateLessonField("month", v),
     shdcSuggestion: lesson.shdcSuggestion,
     setShdcSuggestion: (v) => store.updateLessonField("shdcSuggestion", v),
@@ -488,7 +489,7 @@ export function TemplateEngine() {
     curriculumTasks: [],
     distributeTimeForTasks,
     showCurriculumTasks: false,
-    setShowCurriculumTasks: () => {},
+    setShowCurriculumTasks: () => { },
     lessonTasks: lesson.tasks,
     updateLessonTask: (id, field, value) => {
       store.updateLessonField(
@@ -540,7 +541,7 @@ export function TemplateEngine() {
     onRefineSection: handleRefineSection,
     onGenerateSection: handleGenerateSection,
     lessonFullPlanMode: true,
-    setLessonFullPlanMode: () => {},
+    setLessonFullPlanMode: () => { },
   };
 
   const eventEngineProps: EventEngineProps = {
@@ -551,13 +552,13 @@ export function TemplateEngine() {
     autoFilledTheme: event.theme,
     setAutoFilledTheme: (v) => store.updateEventField("theme", v),
     eventType: "chuyên đề", // default
-    setEventType: () => {},
+    setEventType: () => { },
     eventBudget: event.budget,
     setEventBudget: (v) => store.updateEventField("budget", v),
     eventChecklist: event.checklist,
     setEventChecklist: (v) => store.updateEventField("checklist", v),
     eventEvaluation: "",
-    setEventEvaluation: () => {},
+    setEventEvaluation: () => { },
     eventResult: event.result,
     setEventResult: (v) => store.updateEventField("result", v),
     isGenerating: store.generatingMode === "event",

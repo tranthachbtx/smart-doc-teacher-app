@@ -144,12 +144,11 @@ export async function callAI(
 
     for (const key of shuffledProxyKeys) {
       try {
-        const url = `${
-          proxyUrl.startsWith("http") ? "" : "https://"
-        }${proxyUrl.replace(
-          /\/$/,
-          ""
-        )}/${version}/${model}:generateContent?key=${key}`;
+        const url = `${proxyUrl.startsWith("http") ? "" : "https://"
+          }${proxyUrl.replace(
+            /\/$/,
+            ""
+          )}/${version}/${model}:generateContent?key=${key}`;
 
         const response = await fetch(url, {
           method: "POST",
@@ -421,9 +420,8 @@ export async function generateLessonPlan(
     const sectionRequirements = `
 YÊU CẦU CHO PHẦN THIẾT KẾ: TOÀN BÀI
 Ngữ cảnh hiện tại: Thiết kế bài dạy mới
-Hướng dẫn chi tiết: ${
-      customInstructions || "Thiết kế sư phạm cao cấp theo chuẩn 5512"
-    }
+Hướng dẫn chi tiết: ${customInstructions || "Thiết kế sư phạm cao cấp theo chuẩn 5512"
+      }
 `;
     // We construct the prompt manually using getKHDHPrompt equivalent or the wrapper
     // Actually, getLessonPrompt in ai-prompts is designed for sections.
@@ -493,12 +491,21 @@ export async function generateEventScript(
   budget?: string,
   checklist?: string,
   evaluation?: string,
-  modelName = "gemini-2.0-flash"
+  modelName = "gemini-2.0-flash",
+  month?: number
 ): Promise<ActionResult<any>> {
+  console.log(`[EVENT_DIRECTOR_V40] 🚀 Khởi động Đạo diễn Sự kiện cho Khối: ${grade}, Chủ đề: ${topic}`);
+  if (month) console.log(`[EVENT_DIRECTOR_V40] 📅 Tháng thực hiện: ${month}`);
+
   let prompt = "";
   try {
-    // DIRECT USE of ai-prompts.ts (Event section)
-    prompt = getEventPrompt(grade, topic);
+    // DIRECT USE of ai-prompts.ts (Event section) - Now with Month support
+    prompt = getEventPrompt(grade, topic, month);
+
+    // AUDIT: Xác nhận kích hoạt mode Scripting chuyên sâu
+    if (prompt.includes("EVENT CONCEPT") && prompt.includes("VERBATIM SCRIPT")) {
+      console.log("[EVENT_DIRECTOR_V40] ✅ Hệ thống Prompt v40.0 (Concept/Script/Logistics) đã kích hoạt.");
+    }
 
     let additionalInfo = "";
     const safeInstructions = sanitize(instructions);
@@ -506,23 +513,32 @@ export async function generateEventScript(
     const safeChecklist = sanitize(checklist);
 
     if (safeInstructions)
-      additionalInfo += `\n- YÊU CẦU BỔ SUNG: ${safeInstructions}`;
+      additionalInfo += `\n- Ý TƯỞNG/YÊU CẦU RIÊNG TỪ GIÁO VIÊN: ${safeInstructions}`;
     if (safeBudget)
-      additionalInfo += `\n- DỰ TOÁN KINH PHÍ NGƯỜI DÙNG NHẬP: ${safeBudget}`;
+      additionalInfo += `\n- NGÂN SÁCH DỰ KIẾN (Ưu tiên dùng dữ liệu này): ${safeBudget}`;
     if (safeChecklist)
-      additionalInfo += `\n- CHECKLIST CHUẨN BỊ NGƯỜI DÙNG NHẬP: ${safeChecklist}`;
+      additionalInfo += `\n- CHECKLIST ĐÃ CÓ (Ưu tiên dùng dữ liệu này): ${safeChecklist}`;
 
     if (additionalInfo) {
-      prompt += `\n\nTHÔNG TIN ĐẦU VÀO TỪ NGƯỜI DÙNG (CẦN TÍCH HỢP VÀO KẾ HOẠCH):${additionalInfo}`;
+      prompt += `\n\n============================================================\nCHỈ ĐẠO CỤ THỂ TỪ NGƯỜI TỔ CHỨC (PHẢI TUÂN THỦ TUYỆT ĐỐI):\n${additionalInfo}\n============================================================`;
     }
 
-    // SIMPLE SYSTEM PROMPT FOR EVENT
-    const eventSystemPrompt = `ROLE: Event Planner & Youth Union Leader. TASK: Creative Script & Logistics Plan. OUTPUT: Valid JSON. LANGUAGE: Vietnamese.`;
+    // SYSTEM PROMPT ĐỊA PHƯƠNG HÓA
+    const eventSystemPrompt = `Bạn là Tổng đạo diễn sự kiện trường học chuyên nghiệp. 
+Nhiệm vụ: Soạn kế hoạch ngoại khóa ĐẶC SẮC, GIÀU CHI TIẾT, CÓ LỜI THOẠI MC.
+Địa điểm: Trường THPT Bùi Thị Xuân - Mũi Né.
+Phong cách: Trẻ trung, năng lượng, bắt trend Gen Z.
+Định dạng: Trả về JSON thuần túy.`;
 
     const text = await callAI(prompt, modelName, undefined, eventSystemPrompt);
+    console.log("[EVENT_DIRECTOR_V40] 📥 Phản hồi AI đã nhận. Độ dài:", text.length, "ký tự.");
+
     const data = parseSmartJSON(text);
+    console.log("[EVENT_DIRECTOR_V40] ✨ Kế hoạch đã được biên tập xong. Keys:", Object.keys(data).join(", "));
+
     return { success: true, data };
   } catch (e: any) {
+    console.error("[EVENT_DIRECTOR_V40] ❌ THẤT BẠI:", e);
     return { success: false, error: e.message, content: prompt };
   }
 }
@@ -536,9 +552,8 @@ export async function generateNCBH(
   let prompt = "";
   try {
     // DIRECT USE of ncbh-prompts.ts
-    prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${
-      instructions || ""
-    }`;
+    prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${instructions || ""
+      }`;
 
     // SYSTEM PROMPT FOR NCBH
     const ncbhSystemPrompt = `ROLE: Lesson Study Expert. TASK: Analyze learning process. OUTPUT: Valid JSON. LANGUAGE: Vietnamese.`;

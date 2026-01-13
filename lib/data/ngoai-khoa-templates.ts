@@ -913,38 +913,78 @@ export function taoContextNgoaiKhoaChiTiet(khoi: number, tenChuDe: string): stri
   const goiY = goiYLoaiKichBan(tenChuDe)
 
   let context = `
-## MẪU KỊCH BẢN NGOẠI KHÓA ĐÃ THỰC HIỆN THÀNH CÔNG (Phong cách: Văn hóa sân khấu kịch giữa sân trường)
+## MẪU KỊCH BẢN NGOẠI KHÓA ĐÃ THỰC HIỆN THÀNH CÔNG (TÀI LIỆU MẬT - CẦN HỌC HỎI CHI TIẾT)
+Phong cách: Văn hóa sân khấu kịch giữa sân trường, giáo dục qua trải nghiệm và cảm xúc.
 
-### CẤU TRÚC TIÊU CHUẨN:
-- Tổng thời gian: 45 phút
-- Khởi động: 5-7 phút (trò chơi dẫn dắt)
-- Phần chính: 20-25 phút (tiểu phẩm kịch hoặc cuộc thi)
-- Kết thúc: 10-15 phút (câu hỏi tương tác + thông điệp)
+### QUY TẮC VÀNG:
+1. ĐỪNG VIẾT SƠ SÀI. Hãy nhìn độ chi tiết của các mẫu bên dưới.
+2. Viết thoại và hành động cụ thể, không viết chung chung kiểu "Học sinh thảo luận".
+3. Kịch bản phải có Cao trào và Giải quyết mâu thuẫn.
 
-### NGUYÊN TẮC TẠO KỊCH BẢN:
-${HUONG_DAN_TAO_KICH_BAN.nguyen_tac_chung.map((n, i) => `${i + 1}. ${n}`).join("\n")}
-
-### MẪU THAM KHẢO KHỐI ${khoi}:
+### MẪU THAM KHẢO CHI TIẾT KHỐI ${khoi}:
 `
 
   mauThamKhao.forEach((mau) => {
     context += `
-**${mau.ten_chu_de}**
-- Loại hình: ${mau.cau_truc.phan_chinh.loai === "kich" ? "Tiểu phẩm kịch" : "Cuộc thi"}
-- Khởi động: ${mau.cau_truc.khoi_dong.hoat_dong.ten}
-- Thông điệp: ${mau.cau_truc.ket_thuc.thong_diep_ket_thuc}
+========================================
+MẪU: ${mau.ten_chu_de.toUpperCase()}
+========================================
+1. KHỞI ĐỘNG (${mau.cau_truc.khoi_dong.thoi_gian}):
+   - Hoạt động: ${mau.cau_truc.khoi_dong.hoat_dong.ten}
+   - Cách chơi: ${mau.cau_truc.khoi_dong.hoat_dong.cach_choi}
+   - Lời dẫn MC: "${mau.cau_truc.khoi_dong.loi_dan_dat_mc}"
+
+2. PHẦN CHÍNH (${mau.cau_truc.phan_chinh.thoi_gian}) - Loại: ${mau.cau_truc.phan_chinh.loai
+      }
 `
+
     if (mau.cau_truc.phan_chinh.kich_ban) {
-      context += `- Kịch bản: ${mau.cau_truc.phan_chinh.kich_ban.ten} - ${mau.cau_truc.phan_chinh.kich_ban.chu_de}\n`
+      const kb = mau.cau_truc.phan_chinh.kich_ban
+      context += `   KỊCH BẢN: "${kb.ten}"
+   - Chủ đề: ${kb.chu_de}
+   - Bối cảnh: ${kb.boi_canh}
+   - Nhân vật: ${kb.nhan_vat.join(", ")}
+   - CÁC PHÂN CẢNH (HÃY HỌC TẬP KHAI THÁC CHI TIẾT NHƯ SAU):
+`
+      kb.phan_canh.forEach((pc: any, idx: number) => {
+        context += `     * Cảnh ${idx + 1}: ${pc.ten}
+       + Nội dung: ${pc.noi_dung}
+       + Hành động:
+${pc.hanh_dong.map((hd: string) => `         - ${hd}`).join("\n")}
+${pc.loi_thoai_mau
+            ? `       + Thoại đắt: "${pc.loi_thoai_mau.join('" / "')}"`
+            : ""
+          }
+`
+      })
+      context += `   - Thông điệp kịch: "${kb.thong_diep}"\n`
+    } else if (mau.cau_truc.phan_chinh.cuoc_thi) {
+      const ct = mau.cau_truc.phan_chinh.cuoc_thi
+      context += `   CUỘC THI: "${ct.ten}"
+   - Hình thức: ${ct.hinh_thuc}
+   - Vòng 1: ${ct.vong_1.ten} (${ct.vong_1.hinh_thuc})
+   - Vòng 2: ${ct.vong_2.ten} (${ct.vong_2.hinh_thuc})
+`
     }
+
+    context += `
+3. KẾT THÚC (${mau.cau_truc.ket_thuc.thoi_gian}):
+   - Thông điệp chốt: "${mau.cau_truc.ket_thuc.thong_diep_ket_thuc}"
+   - Câu hỏi tương tác mẫu:
+${mau.cau_truc.ket_thuc.cau_hoi_tuong_tac
+        .map((ch: any) => `     + ${ch.cau_hoi}`)
+        .join("\n")}
+`
   })
 
   if (goiY.length > 0) {
     context += `
-### GỢI Ý LOẠI KỊCH BẢN PHÙ HỢP VỚI CHỦ ĐỀ "${tenChuDe}":
+### GỢI Ý FORMAT PHÙ HỢP CÔNG VĂN MỚI CHO CHỦ ĐỀ "${tenChuDe}":
 `
     goiY.forEach((g) => {
-      context += `- **${g.ten}**: ${g.mo_ta}\n`
+      context += `- **${g.ten}**: ${g.mo_ta} (Phù hợp với: ${g.phu_hop_voi.join(
+        ", ",
+      )})\n`
     })
   }
 
