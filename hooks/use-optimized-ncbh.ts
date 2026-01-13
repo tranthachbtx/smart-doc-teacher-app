@@ -50,7 +50,7 @@ export function useOptimizedNCBH({
   // Check cache first
   const checkCache = useCallback(() => {
     if (!enableCache) return null;
-    
+
     const cached = localCache.getCachedNCBH(grade, month, topic);
     if (cached) {
       setState(prev => ({
@@ -118,7 +118,7 @@ export function useOptimizedNCBH({
   // Batch processing method
   const generateWithBatch = useCallback(async (): Promise<NCBHResult> => {
     const requestId = `ncbh_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const request: NCBHRequest = {
       id: requestId,
       grade,
@@ -156,7 +156,7 @@ export function useOptimizedNCBH({
 
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
-      
+
       setState(prev => ({
         ...prev,
         progress: Math.round((i / totalSections) * 100)
@@ -193,7 +193,7 @@ export function useOptimizedNCBH({
     await freeTierLimiter.waitForToken();
 
     // Import gemini actions
-    const { generateNCBH } = await import('@/lib/actions/gemini');
+    const { generateNCBHAction } = await import('@/lib/actions/gemini');
 
     // Create context-aware prompt
     const contextString = Object.entries(context)
@@ -212,8 +212,8 @@ ${contextString}
 Focus only on the "${section}" section. Provide detailed, professional content.
 `;
 
-    const response = await generateNCBH(grade, topic, prompt);
-    
+    const response = await generateNCBHAction(grade, topic, prompt);
+
     if (!response.success) {
       throw new Error(response.error || 'Failed to generate section');
     }
@@ -264,7 +264,7 @@ Focus only on the "${section}" section. Provide detailed, professional content.
     // Actions
     generateNCBH,
     reset,
-    
+
     // Utilities
     getRateLimitStatus,
     getCacheStats,

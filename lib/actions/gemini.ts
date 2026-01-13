@@ -1,6 +1,6 @@
 "use server";
 
-import { DEFAULT_LESSON_SYSTEM_PROMPT } from "@/lib/prompts/system-prompts";
+import { DEFAULT_LESSON_SYSTEM_PROMPT, MASTER_SYSTEM_INSTRUCTION_V60 } from "@/lib/prompts/system-prompts";
 import {
   getMeetingPrompt,
   getEventPrompt,
@@ -91,7 +91,7 @@ export async function callAI(
   prompt: string,
   modelName = "gemini-1.5-flash",
   file?: { mimeType: string; data: string },
-  systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
+  systemContent: string = MASTER_SYSTEM_INSTRUCTION_V60
 ): Promise<string> {
   const errorLogs: string[] = [];
 
@@ -337,18 +337,46 @@ export async function callAI(
 
 /**
  * ROBUST JSON PARSER: Extracts JSON object even if wrapped in Markdown or chat text.
- */
-/**
  * 🧠 SMART JSON PARSER v52.0 (DEEP SANITIZATION)
  * Giải quyết triệt để lỗi "Bad control character in string literal".
  */
+export async function generateAIContent(
+  prompt: string,
+  modelName = "gemini-2.0-flash",
+  type: "meeting" | "event" | "ncbh" | "lesson" = "lesson",
+  file?: any
+): Promise<ActionResult<any>> {
+  try {
+    console.log(`[DEEP_TRACE:1_INPUT] Type: ${type}, Prompt Length: ${prompt.length}, File present: ${!!file}`);
+    const text = await callAI(prompt, modelName, file);
+    console.log(`[DEEP_TRACE:2_AI_RESPOND] Response Length: ${text.length}`);
+
+    // Fail Fast: if text is empty or too short
+    if (!text || text.length < 50) {
+      throw new Error(`AI_RESPONSE_TOO_SHORT: Only received ${text?.length || 0} characters.`);
+    }
+
+    const data = type === "event" ? parseHybridJSON(text) : parseSmartJSON(text);
+
+    // Fail Loud: Audit keys
+    const keys = Object.keys(data);
+    console.log(`[DEEP_TRACE:3_PARSED] Keys found: ${keys.join(", ")}`);
+
+    return { success: true, data };
+  } catch (e: any) {
+    console.error(`[DEEP_TRACE:FATAL] ${e.message}`);
+    return { success: false, error: e.message };
+  }
+}
+
+/**
+ * 🧠 SMART JSON PARSER v60.1
+ * Tự động sửa lỗi kịch bản và biểu thức toán học.
+ */
 function parseSmartJSON(text: string): any {
   let cleaned = text.trim();
-
-  // 1. Gỡ bỏ Markdown Code Blocks
   cleaned = cleaned.replace(/^```json\s*/g, "").replace(/```\s*$/g, "").trim();
 
-  // 2. Tìm khối JSON đầu tiên { ... }
   const firstOpen = cleaned.indexOf("{");
   const lastClose = cleaned.lastIndexOf("}");
 
@@ -359,126 +387,105 @@ function parseSmartJSON(text: string): any {
   }
 
   try {
-    // Thử parse bản gốc
     return JSON.parse(cleaned);
-  } catch (e1: any) {
+  } catch (e1) {
     console.warn("[SmartJSON] Thử nghiệm Deep Sanitization...");
+    let healed = cleaned
+      .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F-\x9F]/g, "")
+      .replace(/,\s*}/g, "}")
+      .replace(/,\s*]/g, "]")
+      .replace(/:\s*(\d+\s*[\*\+\-\/]\s*[\d\s\*\+\-\/]+)([,}\]])/g, ': "$1"$2');
 
+    let finalJson = "";
     try {
-      /**
-       * 🩺 BÁC SĨ JSON: Xử lý ký tự điều khiển lỗi
-       * AI thường để nguyên dấu xuống dòng (0x0A) hoặc Tab trong chuỗi JSON.
-       * Chúng ta sẽ quét qua nội dung và thay thế chúng một cách an toàn.
-       */
-      let healed = cleaned
-        // Gỡ bỏ các ký tự điều khiển thực sự nguy hiểm (TAB, NULL, v.v. trừ xuống dòng)
-        .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F-\x9F]/g, "")
-        // Gỡ dấu phẩy dư thừa
-        .replace(/,\s*}/g, "}")
-        .replace(/,\s*]/g, "]");
-
-      /**
-       * Kỹ thuật "Phẫu thuật chuỗi": 
-       * Tìm tất cả các giá trị nằm giữa dấu ngoặc kép và thay thế xuống dòng thực bằng \n
-       */
       const parts = healed.split(/("(?:\\.|[^"])*")/g);
-      const sanitiedParts = parts.map(part => {
+      const sanitiedParts = parts.map((part) => {
         if (part.startsWith('"') && part.endsWith('"')) {
-          // Đây là một chuỗi JSON (hoặc key/value)
-          // Escape các dấu xuống dòng thực nằm TRONG chuỗi
           return part.replace(/\n/g, "\\n").replace(/\r/g, "\\r");
         }
         return part;
       });
-
-      const finalJson = sanitiedParts.join("");
+      finalJson = sanitiedParts.join("");
       return JSON.parse(finalJson);
     } catch (e2: any) {
-      console.error("[DEEP_TRACE:4_REPORT] 🚨 CRITICAL PARSE FAILURE");
-
-      // Tìm vị trí lỗi để báo cáo
       const posMatch = e2.message.match(/position (\d+)/);
       if (posMatch) {
         const pos = parseInt(posMatch[1]);
-        const snippet = cleaned.substring(Math.max(0, pos - 50), Math.min(cleaned.length, pos + 50));
-        console.error(`[DEEP_TRACE:4_REPORT] Đoạn mã lỗi tại vĩ độ ${pos}: "...${snippet}..."`);
+        const start = Math.max(0, pos - 40);
+        const end = Math.min(finalJson.length, pos + 40);
+        console.error(`[DEEP_TRACE:4_REPORT] Lỗi JSON tại vị trí ${pos}: ...${finalJson.substring(start, end)}...`);
       }
-
-      throw new Error(`Cấu trúc kịch bản quá phức tạp khiến AI bị lỗi định dạng: ${e2.message}`);
+      throw new Error(`JSON_PARSE_FAILED: ${e2.message}`);
     }
   }
 }
 
 /**
- * 🥪 HYBRID-SANDWICH PARSER v35.0
- * Tách biệt JSON cấu trúc và Kịch bản văn bản thô.
- * Giải quyết triệt để lỗi vỡ JSON khi có nội dung dài.
+ * 🥪 HYBRID-SANDWICH PARSER v60.1
+ * Phân tách kịch bản Markdown Structured.
  */
 function parseHybridJSON(text: string): any {
+  let finalData: any = {};
   try {
-    let finalData: any = {};
-    let scriptContent = "";
-
-    // 1. Trích xuất phần JSON (Metadata)
-    const jsonMatch = text.match(/\[PHẦN_1_JSON\]([\s\S]*?)\[\/PHẦN_1_JSON\]/);
-    if (jsonMatch && jsonMatch[1]) {
-      finalData = JSON.parse(jsonMatch[1].trim());
-    } else {
-      // Fallback: Tìm khối JSON đầu tiên nếu AI quên tag
-      const firstOpen = text.indexOf("{");
-      const lastClose = text.lastIndexOf("}");
-      if (firstOpen !== -1 && lastClose !== -1) {
-        finalData = JSON.parse(text.substring(firstOpen, lastClose + 1));
+    // 1. Extract Metadata JSON
+    const jsonPatterns = [
+      /@@@META_JSON_START@@@([\s\S]*?)@@@META_JSON_END@@@/,
+      /@@@META_START@@@([\s\S]*?)@@@META_END@@@/, // Backward compatibility
+      /\{[\s\S]*?"theme"[\s\S]*?\}/
+    ];
+    let jsonRaw = "";
+    for (const pattern of jsonPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        jsonRaw = match[1] || match[0];
+        break;
       }
     }
 
-    // 2. Trích xuất phần Kịch bản (Raw Text)
-    const scriptMatch = text.match(/\[PHẦN_2_KICH_BAN_CHI_TIET\]([\s\S]*?)\[\/PHẦN_2_KICH_BAN_CHI_TIET\]/);
-    if (scriptMatch && scriptMatch[1]) {
-      scriptContent = scriptMatch[1].trim();
-    } else {
-      // Fallback: Lấy phần text sau tag đóng JSON
-      const splitParts = text.split("[/PHẦN_1_JSON]");
-      if (splitParts.length > 1) {
-        scriptContent = splitParts[1]
-          .replace(/\[PHẦN_2_KICH_BAN_CHI_TIET\]/g, "")
-          .replace(/\[\/PHẦN_2_KICH_BAN_CHI_TIET\]/g, "")
-          .trim();
-      }
+    if (jsonRaw) {
+      try { finalData = parseSmartJSON(jsonRaw); } catch (e) { }
     }
 
-    // Gỡ bỏ các dòng hướng dẫn trong ngoặc đơn ở đầu (AI thường tự thêm vào)
-    scriptContent = scriptContent.replace(/^\s*\([\s\S]*?\)\s*/, "").trim();
+    // 2. Extract Markdown Sections based on v60.0 markers
+    const sectionMarkers = [
+      { tag: "### SECTION: MUCTIEU", field: "muc_dich_yeu_cau" },
+      { tag: "### SECTION: NANGLUC_PHAMCHAT", field: "nang_luc" },
+      { tag: "### SECTION: LOGISTICS", field: "kinh_phi" },
+      { tag: "### SECTION: CHUANBI", field: "chuan_bi" },
+      { tag: "### SECTION: KICHBAN", field: "kich_ban_chi_tiet" },
+      { tag: "### SECTION: THONGDIEP", field: "thong_diep_ket_thuc" }
+    ];
 
-    // 3. MERGE
-    return {
-      ...finalData,
-      kich_ban_chi_tiet: scriptContent
-    };
-  } catch (e: any) {
-    console.error("[HYBRID_PARSER] Lỗi nghiêm trọng:", e.message);
-    // Fallback sang parseSmartJSON nếu hybrid fail
-    return parseSmartJSON(text);
+    sectionMarkers.forEach((marker, index) => {
+      const startIdx = text.indexOf(marker.tag);
+      if (startIdx !== -1) {
+        const contentStart = startIdx + marker.tag.length;
+        let contentEnd = text.length;
+
+        // Find the next marker
+        let nearestNext = text.length;
+        sectionMarkers.forEach((m) => {
+          const nextIdx = text.indexOf(m.tag, contentStart);
+          if (nextIdx !== -1 && nextIdx < nearestNext) {
+            nearestNext = nextIdx;
+          }
+        });
+        contentEnd = nearestNext;
+
+        finalData[marker.field] = text.substring(contentStart, contentEnd).trim();
+      }
+    });
+
+    if (finalData.kich_ban_chi_tiet) {
+      finalData.kich_ban_chi_tiet = finalData.kich_ban_chi_tiet.replace(/^\s*\([\s\S]*?\)\s*/, "").trim();
+    }
+
+    return finalData;
+  } catch (e) {
+    return finalData || {};
   }
 }
 
-/**
- * Compatibility wrapper for generateAIContent
- */
-export async function generateAIContent(
-  prompt: string,
-  modelName = "gemini-2.0-flash",
-  type: "meeting" | "event" | "ncbh" | "lesson" = "lesson",
-  file?: any
-): Promise<ActionResult<any>> {
-  try {
-    const text = await callAI(prompt, modelName, file);
-    const data = type === "event" ? parseHybridJSON(text) : parseSmartJSON(text);
-    return { success: true, data };
-  } catch (e: any) {
-    return { success: false, error: e.message };
-  }
-}
 
 /**
  * CRITICAL: Fixed signature for extractTextFromFile (matching legacy calls)
@@ -546,7 +553,7 @@ Hướng dẫn chi tiết: ${customInstructions || "Thiết kế sư phạm cao 
   }
 }
 
-export async function generateMeetingMinutes(
+export async function genMtgMinutes(
   month?: string,
   session?: string,
   keyContent?: string,
@@ -567,7 +574,7 @@ export async function generateMeetingMinutes(
     );
 
     // SIMPLE SYSTEM PROMPT FOR MEETING
-    const meetingSystemPrompt = `ROLE: Professional Secretary. TASK: Create meeting minutes. OUTPUT: Valid JSON. LANGUAGE: Vietnamese.`;
+    const meetingSystemPrompt = `ROLE: Professional Secretary.TASK: Create meeting minutes.OUTPUT: Valid JSON.LANGUAGE: Vietnamese.`;
 
     const text = await callAI(
       prompt,
@@ -594,9 +601,8 @@ export async function generateEventScript(
   duration: string = "45"
 ): Promise<ActionResult<any>> {
   console.log(
-    `[EVENT_DIRECTOR_V52] 🚀 Khởi động Đạo diễn Sự kiện (v52.0) - Khối: ${grade}, Thời lượng: ${duration}p`
+    `[EVENT_DIRECTOR_V55] 🚀 Master Prompt v55.0 Activated - Khối: ${grade}, Thời lượng: ${duration} p`
   );
-  if (month) console.log(`[EVENT_DIRECTOR_V52] 📅 Tháng thực hiện: ${month}`);
 
   let eventPrompt = "";
   try {
@@ -610,37 +616,21 @@ export async function generateEventScript(
       duration
     );
 
-    // AUDIT: Xác nhận kích hoạt mode Scripting chuyên sâu
-    if (eventPrompt.includes("Master Event Director")) {
-      console.log(
-        "[EVENT_DIRECTOR_V62] ✅ Hệ thống Master Prompt v62.0 (Direct-Injection) đã kích hoạt."
-      );
-    }
-
-    // SYSTEM PROMPT ĐỊA PHƯƠNG HÓA VÀ CHỐNG SÁO RỖNG
-    const eventSystemPrompt = `BẠN LÀ BẬC THẦY ĐẠO DIỄN SỰ KIỆN & CHUYÊN GIA SƯ PHẠM (Master Architect v65.0).
-YÊU CẦU CỐT LÕI: 
-1. CHỐNG SÁO RỖNG: Mục tiêu phải là HÀNH VI CỤ THỂ (Verbs + Content + Context). Không dùng từ khóa rỗng nếu không có hoạt động minh chứng.
-2. LOGIC SƯ PHẠM: Tranh biện/Diễn đàn phải có chiều sâu, lập luận sắc bén, không phản giáo dục.
-3. VĂN PHONG BẢN ĐỊA: Lời thoại MC phải đậm chất học đường Việt Nam, hào hứng, tự nhiên. Tuyệt đối không dùng văn phong dịch thuật ("Chào mọi người", "Mình rất vui").
-4. ĐỊA PHƯƠNG HÓA 100%: Gắn chặt với bối cảnh Mũi Né (Biển, rác thải đại dương, du lịch, làng chài).
-SẢN PHẨM: Kịch bản ngoại khóa SIÊU CHI TIẾT (>2000 từ). Trả về JSON chuẩn.`;
+    // SYSTEM PROMPT ĐỊA PHƯƠNG HÓA VÀ CHỐNG SÁO RỖNG (v60.0 Master)
+    const eventSystemPrompt = MASTER_SYSTEM_INSTRUCTION_V60;
 
     const text = await callAI(eventPrompt, modelName, undefined, eventSystemPrompt);
-    console.log(`[DEEP_TRACE:2_FLOW] Gemini raw response length: ${text.length} chars`);
+    console.log(`[DEEP_TRACE:2_FLOW] Response length: ${text.length} chars`);
 
     const data = parseHybridJSON(text);
-    console.log(`[DEEP_TRACE:2_FLOW] Parsed Data keys: ${Object.keys(data).join(", ")}`);
-    console.log(`[DEEP_TRACE:3_LOGIC] doi_tuong value: "${data.doi_tuong}"`);
-
     return { success: true, data };
   } catch (e: any) {
-    console.error("[EVENT_DIRECTOR_V52_HYBRID] ❌ THẤT BẠI:", e);
+    console.error("[EVENT_DIRECTOR_V55] ❌ THẤT BẠI:", e);
     return { success: false, error: e.message, content: eventPrompt };
   }
 }
 
-export async function generateNCBH(
+export async function generateNCBHAction(
   grade: string,
   topic: string,
   instructions?: string,
@@ -649,11 +639,11 @@ export async function generateNCBH(
   let prompt = "";
   try {
     // DIRECT USE of ncbh-prompts.ts
-    prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${instructions || ""
-      }`;
+    prompt = `${NCBH_ROLE} \n\n${NCBH_TASK} \n\nKHỐI: ${grade} \nCHỦ ĐỀ: ${topic} \nHƯỚNG DẪN: ${instructions || ""
+      } `;
 
     // SYSTEM PROMPT FOR NCBH
-    const ncbhSystemPrompt = `ROLE: Lesson Study Expert. TASK: Analyze learning process. OUTPUT: Valid JSON. LANGUAGE: Vietnamese.`;
+    const ncbhSystemPrompt = `ROLE: Lesson Study Expert.TASK: Analyze learning process.OUTPUT: Valid JSON.LANGUAGE: Vietnamese.`;
 
     const text = await callAI(prompt, modelName, undefined, ncbhSystemPrompt);
     const data = parseSmartJSON(text);
@@ -676,7 +666,7 @@ export async function generateAssessmentPlan(
     prompt = getAssessmentPrompt(grade, term, productType, topic);
 
     // SYSTEM PROMPT FOR ASSESSMENT (Focus on measurement & evaluation)
-    const assessmentSystemPrompt = `ROLE: Educational Assessment Expert. TASK: Design Rubrics & Evaluation Plan. OUTPUT: Valid JSON. LANGUAGE: Vietnamese.`;
+    const assessmentSystemPrompt = `ROLE: Educational Assessment Expert.TASK: Design Rubrics & Evaluation Plan.OUTPUT: Valid JSON.LANGUAGE: Vietnamese.`;
 
     const text = await callAI(
       prompt,

@@ -1,5 +1,5 @@
-
 import { type Document as DocxDocument } from "docx";
+import { WORD_STANDARDS, NO_BORDER, createStandardHeader } from "./services/word-style-helper";
 
 export const createMeetingTemplate = async (): Promise<Blob> => {
     const {
@@ -20,12 +20,12 @@ export const createMeetingTemplate = async (): Promise<Blob> => {
             default: {
                 document: {
                     run: {
-                        font: "Times New Roman",
-                        size: 26, // 13pt
+                        font: WORD_STANDARDS.font,
+                        size: WORD_STANDARDS.fontSize, // 13pt
                     },
                     paragraph: {
                         spacing: {
-                            line: 276, // 1.15 line spacing
+                            line: WORD_STANDARDS.lineSpacing,
                             before: 80,
                             after: 80,
                         },
@@ -37,102 +37,17 @@ export const createMeetingTemplate = async (): Promise<Blob> => {
             {
                 properties: {
                     page: {
-                        margin: {
-                            top: 1134, // 2cm
-                            right: 1134,
-                            bottom: 1134,
-                            left: 1701, // 3cm
-                        },
+                        margin: WORD_STANDARDS.margins,
                     },
                 },
                 children: [
                     // Header - 2 columns layout
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
-                        borders: {
-                            top: { style: BorderStyle.NONE },
-                            bottom: { style: BorderStyle.NONE },
-                            left: { style: BorderStyle.NONE },
-                            right: { style: BorderStyle.NONE },
-                            insideHorizontal: { style: BorderStyle.NONE },
-                            insideVertical: { style: BorderStyle.NONE },
-                        },
-                        rows: [
-                            new TableRow({
-                                children: [
-                                    new TableCell({
-                                        width: { size: 45, type: WidthType.PERCENTAGE },
-                                        children: [
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({ text: "SỞ GD&ĐT LÂM ĐỒNG", size: 24 }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "TRƯỜNG THPT {{ten_truong}}",
-                                                        bold: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "TỔ {{to_chuyen_mon}}",
-                                                        bold: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                                spacing: { after: 120 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "———", size: 24 })],
-                                            }),
-                                        ],
-                                    }),
-                                    new TableCell({
-                                        width: { size: 55, type: WidthType.PERCENTAGE },
-                                        children: [
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "CỘNG HÀA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
-                                                        bold: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "Độc lập - Tự do - Hạnh phúc",
-                                                        bold: true,
-                                                        size: 26,
-                                                    }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "—————————", size: 24 })],
-                                                spacing: { after: 120 },
-                                            }),
-                                        ],
-                                    }),
-                                ],
-                            }),
-                        ],
+                        borders: NO_BORDER,
+                        rows: createStandardHeader(
+                            ["SỞ GD&ĐT LÂM ĐỒNG", "TRƯỜNG THPT {{ten_truong}}", "TỔ {{to_chuyen_mon}}"]
+                        ),
                     }),
 
                     new Paragraph({ text: "", spacing: { before: 240, after: 240 } }),
@@ -141,7 +56,7 @@ export const createMeetingTemplate = async (): Promise<Blob> => {
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
                         children: [
-                            new TextRun({ text: "BIÊN BẢN", bold: true, size: 32 }),
+                            new TextRun({ text: "BIÊN BẢN", bold: true, size: WORD_STANDARDS.fontSizeTitle }),
                         ],
                         spacing: { after: 0 },
                     }),
@@ -151,14 +66,14 @@ export const createMeetingTemplate = async (): Promise<Blob> => {
                             new TextRun({
                                 text: "Sinh hoạt định kỳ của tổ/nhóm chuyên môn tháng {{thang}}/{{nam}}",
                                 bold: true,
-                                size: 26,
+                                size: WORD_STANDARDS.fontSize,
                             }),
                         ],
                         spacing: { after: 0 },
                     }),
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
-                        children: [new TextRun({ text: "Lần: {{lan_hop}}", italics: true, size: 24 })],
+                        children: [new TextRun({ text: "Lần: {{lan_hop}}", italics: true, size: WORD_STANDARDS.fontSizeSmall })],
                         spacing: { after: 240 },
                     }),
 
@@ -426,12 +341,12 @@ export const createLessonTemplate = async (): Promise<Blob> => {
             default: {
                 document: {
                     run: {
-                        font: "Times New Roman",
-                        size: 26, // 13pt
+                        font: WORD_STANDARDS.font,
+                        size: WORD_STANDARDS.fontSize, // 13pt
                     },
                     paragraph: {
                         spacing: {
-                            line: 276, // 1.15 line spacing
+                            line: WORD_STANDARDS.lineSpacing,
                             before: 80,
                             after: 80,
                         },
@@ -443,25 +358,29 @@ export const createLessonTemplate = async (): Promise<Blob> => {
             {
                 properties: {
                     page: {
-                        margin: {
-                            top: 1134, // 2cm
-                            right: 1134,
-                            bottom: 1134,
-                            left: 1701, // 3cm
-                        },
+                        margin: WORD_STANDARDS.margins,
                     },
                 },
                 children: [
+                    // Header chuẩn
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        borders: NO_BORDER,
+                        rows: createStandardHeader(
+                            ["SỞ GD&ĐT LÂM ĐỒNG", "TRƯỜNG THPT {{ten_truong}}", "TỔ {{to_chuyen_mon}}"]
+                        ),
+                    }),
+
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
                         children: [
                             new TextRun({
                                 text: "KẾ HOẠCH GIÁO DỤC CHỦ ĐỀ",
                                 bold: true,
-                                size: 32,
+                                size: WORD_STANDARDS.fontSizeTitle,
                             }),
                         ],
-                        spacing: { after: 240 },
+                        spacing: { before: 240, after: 240 },
                     }),
 
                     new Paragraph({
@@ -788,12 +707,12 @@ export const createAssessmentTemplate = async (): Promise<Blob> => {
             default: {
                 document: {
                     run: {
-                        font: "Times New Roman",
-                        size: 26, // 13pt
+                        font: WORD_STANDARDS.font,
+                        size: WORD_STANDARDS.fontSize, // 13pt
                     },
                     paragraph: {
                         spacing: {
-                            line: 276, // 1.15 line spacing
+                            line: WORD_STANDARDS.lineSpacing,
                             before: 80,
                             after: 80,
                         },
@@ -805,104 +724,18 @@ export const createAssessmentTemplate = async (): Promise<Blob> => {
             {
                 properties: {
                     page: {
-                        margin: {
-                            top: 1134, // 2cm
-                            right: 1134,
-                            bottom: 1134,
-                            left: 1701, // 3cm
-                        },
+                        margin: WORD_STANDARDS.margins,
                     },
                 },
                 children: [
-                    // Header - Decree 30 Layout
+                    // Header chuẩn
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
-                        borders: {
-                            top: { style: BorderStyle.NONE },
-                            bottom: { style: BorderStyle.NONE },
-                            left: { style: BorderStyle.NONE },
-                            right: { style: BorderStyle.NONE },
-                            insideHorizontal: { style: BorderStyle.NONE },
-                            insideVertical: { style: BorderStyle.NONE },
-                        },
-                        rows: [
-                            new TableRow({
-                                children: [
-                                    new TableCell({
-                                        width: { size: 45, type: WidthType.PERCENTAGE },
-                                        children: [
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({ text: "SỞ GD&ĐT LÂM ĐỒNG", size: 24 }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "TRƯỜNG THPT {{ten_truong}}",
-                                                        bold: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "TỔ {{to_chuyen_mon}}",
-                                                        bold: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                                spacing: { after: 120 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "———", size: 24 })],
-                                            }),
-                                        ],
-                                    }),
-                                    new TableCell({
-                                        width: { size: 55, type: WidthType.PERCENTAGE },
-                                        children: [
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "CỘNG HÀA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
-                                                        bold: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "Độc lập - Tự do - Hạnh phúc",
-                                                        bold: true,
-                                                        size: 26,
-                                                    }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "—————————", size: 24 })],
-                                                spacing: { after: 120 },
-                                            }),
-                                        ],
-                                    }),
-                                ],
-                            }),
-                        ],
+                        borders: NO_BORDER,
+                        rows: createStandardHeader(
+                            ["SỞ GD&ĐT LÂM ĐỒNG", "TRƯỜNG THPT {{ten_truong}}", "TỔ {{to_chuyen_mon}}"]
+                        ),
                     }),
-
                     new Paragraph({ text: "", spacing: { before: 240, after: 240 } }),
 
                     // Title Section
@@ -1086,12 +919,12 @@ export const createEventTemplate = async (): Promise<Blob> => {
             default: {
                 document: {
                     run: {
-                        font: "Times New Roman",
-                        size: 26, // 13pt
+                        font: WORD_STANDARDS.font,
+                        size: WORD_STANDARDS.fontSize, // 13pt
                     },
                     paragraph: {
                         spacing: {
-                            line: 276, // 1.15 line spacing
+                            line: WORD_STANDARDS.lineSpacing,
                             before: 80,
                             after: 80,
                         },
@@ -1103,118 +936,22 @@ export const createEventTemplate = async (): Promise<Blob> => {
             {
                 properties: {
                     page: {
-                        margin: {
-                            top: 1134, // 2cm
-                            right: 1134,
-                            bottom: 1134,
-                            left: 1701, // 3cm
-                        },
+                        margin: WORD_STANDARDS.margins,
                     },
                 },
                 children: [
-                    // Header - Decree 30 Layout
+                    // Header chuẩn
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
-                        borders: {
-                            top: { style: BorderStyle.NONE },
-                            bottom: { style: BorderStyle.NONE },
-                            left: { style: BorderStyle.NONE },
-                            right: { style: BorderStyle.NONE },
-                            insideHorizontal: { style: BorderStyle.NONE },
-                            insideVertical: { style: BorderStyle.NONE },
-                        },
-                        rows: [
-                            new TableRow({
-                                children: [
-                                    new TableCell({
-                                        width: { size: 45, type: WidthType.PERCENTAGE },
-                                        children: [
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({ text: "SỞ GD&ĐT LÂM ĐỒNG", size: 24 }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "TRƯỜNG THPT {{ten_truong}}",
-                                                        bold: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "TỔ {{to_chuyen_mon}}",
-                                                        bold: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                                spacing: { after: 120 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "Số: {{so_ke_hoach}}/KHNK-HĐTN-HN",
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                            }),
-                                        ],
-                                    }),
-                                    new TableCell({
-                                        width: { size: 55, type: WidthType.PERCENTAGE },
-                                        children: [
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "CỘNG HÀA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
-                                                        bold: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "Độc lập – Tự do – Hạnh phúc",
-                                                        bold: true,
-                                                        size: 26,
-                                                    }),
-                                                ],
-                                                spacing: { after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "─────────", size: 24 })],
-                                                spacing: { after: 120 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [
-                                                    new TextRun({
-                                                        text: "Mũi Né, ngày {{ngay}} tháng {{thang}} năm {{nam}}",
-                                                        italics: true,
-                                                        size: 24,
-                                                    }),
-                                                ],
-                                            }),
-                                        ],
-                                    }),
-                                ],
-                            }),
-                        ],
+                        borders: NO_BORDER,
+                        rows: createStandardHeader(
+                            ["SỞ GD&ĐT LÂM ĐỒNG", "TRƯỜNG THPT {{ten_truong}}", "TỔ {{to_chuyen_mon}}"],
+                            undefined,
+                            "Số: {{so_ke_hoach}}/KHNK-HĐTN-HN"
+                        ),
                     }),
+
+                    new Paragraph({ text: "", spacing: { before: 240, after: 240 } }),
 
                     new Paragraph({ text: "", spacing: { before: 240, after: 240 } }),
 
@@ -1522,14 +1259,14 @@ export const createNCBHTemplate = async (): Promise<Blob> => {
             default: {
                 document: {
                     run: {
-                        font: "Times New Roman",
-                        size: 26, // equivalent to 13pt
+                        font: WORD_STANDARDS.font,
+                        size: WORD_STANDARDS.fontSize, // 13pt
                     },
                     paragraph: {
                         spacing: {
-                            line: 276, // equivalent to 1.15 line spacing (more compact and professional)
-                            before: 60, // 3pt
-                            after: 60, // 3pt
+                            line: WORD_STANDARDS.lineSpacing,
+                            before: 60,
+                            after: 60,
                         },
                     },
                 },
@@ -1539,72 +1276,17 @@ export const createNCBHTemplate = async (): Promise<Blob> => {
             {
                 properties: {
                     page: {
-                        margin: {
-                            top: 1134, // 2cm
-                            right: 1134, // 2cm
-                            bottom: 1134, // 2cm
-                            left: 1701, // 3cm
-                        },
+                        margin: WORD_STANDARDS.margins,
                     },
                 },
                 children: [
                     // Header Section
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
-                        borders: {
-                            top: { style: BorderStyle.NONE },
-                            bottom: { style: BorderStyle.NONE },
-                            left: { style: BorderStyle.NONE },
-                            right: { style: BorderStyle.NONE },
-                            insideHorizontal: { style: BorderStyle.NONE },
-                            insideVertical: { style: BorderStyle.NONE },
-                        },
-                        rows: [
-                            new TableRow({
-                                children: [
-                                    new TableCell({
-                                        width: { size: 40, type: WidthType.PERCENTAGE },
-                                        children: [
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "{{ten_truong}}", bold: true, size: 24 })],
-                                                spacing: { before: 0, after: 0, line: 240 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "TỔ: {{to_chuyen_mon}}", bold: true, size: 24 })],
-                                                spacing: { before: 0, after: 0, line: 240 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "———", size: 24 })],
-                                                spacing: { before: 0, after: 0, line: 240 },
-                                            }),
-                                        ],
-                                    }),
-                                    new TableCell({
-                                        width: { size: 60, type: WidthType.PERCENTAGE },
-                                        children: [
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", bold: true, size: 24 })],
-                                                spacing: { before: 0, after: 0, line: 240 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "Độc lập - Tự do - Hạnh phúc", bold: true, size: 26 })],
-                                                spacing: { before: 0, after: 0, line: 240 },
-                                            }),
-                                            new Paragraph({
-                                                alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "—————————", bold: true, size: 24 })],
-                                                spacing: { before: 0, after: 0, line: 240 },
-                                            }),
-                                        ],
-                                    }),
-                                ],
-                            }),
-                        ],
+                        borders: NO_BORDER,
+                        rows: createStandardHeader(
+                            ["{{ten_truong}}", "TỔ: {{to_chuyen_mon}}"]
+                        ),
                     }),
 
                     new Paragraph({ text: "", spacing: { before: 240, after: 240 } }),

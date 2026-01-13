@@ -165,6 +165,7 @@ export interface EventResult {
   kinh_phi?: string;
   thanh_phan_tham_du?: string;
   to_chuc_thuc_hien_chuan_bi?: string;
+  chuan_bi?: string;
   so_ke_hoach?: string;
   grade?: string;
 }

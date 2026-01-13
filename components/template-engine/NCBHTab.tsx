@@ -116,7 +116,7 @@ export function NCBHTab({
                             id="ncbh-topic-custom"
                             name="ncbhTopicCustom"
                             placeholder="VD: Giao tiếp tự tin trong các mối quan hệ (Cánh Diều/Kết nối Tri thức)..."
-                            value={ncbhTopic}
+                            value={ncbhTopic || ""}
                             onChange={(e) => setNcbhTopic(e.target.value)}
                             className="mt-2"
                         />
@@ -129,7 +129,7 @@ export function NCBHTab({
                         id="ncbh-instructions"
                         name="ncbhInstructions"
                         placeholder="VD: Em Nam tổ 2 gục đầu khi thảo luận nhóm. Một số học sinh lúng túng khi xử lý tình huống sắm vai..."
-                        value={ncbhCustomInstructions}
+                        value={ncbhCustomInstructions || ""}
                         onChange={(e) => setNcbhCustomInstructions(e.target.value)}
                         rows={4}
                     />

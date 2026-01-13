@@ -212,43 +212,66 @@ export const TemplateExportService = {
   },
 
   async exportEventToTemplate(
-    event: EventResult
+    event: EventResult,
+    templatePath: string = "/templates/mau-ke-hoach-ngoai-khoa.docx"
   ) {
+    let zip: any = null;
     try {
-      const { generateEventDocx } = await import("./event-template-generator");
+      console.log("[v34.25] 🚀 Exporting Event to Template...");
+      const response = await fetch(templatePath);
+      if (!response.ok)
+        throw new Error(`Template not found at ${templatePath}`);
+      const buffer = await response.arrayBuffer();
+      zip = new PizZip(buffer);
+      repairTags(zip);
+
+      const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+        delimiters: { start: "{{", end: "}}" },
+        nullGetter: () => "",
+      });
 
       const now = new Date();
       const data = {
-        upper_agency: DEPT_INFO.upperAgency,
-        ten_truong: DEPT_INFO.school.toUpperCase().replace("TRƯỜNG THPT", "").trim(),
-        to_chuyen_mon: DEPT_INFO.name.toUpperCase().replace("TỔ", "").trim(),
-        so_ke_hoach: event.so_ke_hoach || "..../KH-BTX",
+        upper_agency: clean(DEPT_INFO.upperAgency),
+        ten_truong: clean(DEPT_INFO.school.toUpperCase().replace("TRƯỜNG THPT", "").trim()),
+        to_chuyen_mon: clean(DEPT_INFO.name.toUpperCase().replace("TỔ", "").trim()),
+        so_ke_hoach: clean(event.so_ke_hoach || "..../KH-BTX"),
         ngay_thang: `Mũi Né, ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}`,
-
-        khoi_lop: (event.doi_tuong || event.grade || "").toString().replace(/Học sinh khối|Khối/gi, "").trim(),
-        ten_chu_de: event.ten_chu_de || event.title || event.ten_ke_hoach,
-        muc_dich_yeu_cau: event.muc_tieu || event.muc_dich_yeu_cau,
-        thoi_gian: event.thoi_gian,
-        dia_diem: event.dia_diem || "Sân trường",
-        noi_dung: event.noi_dung || event.content,
-        kich_ban_chi_tiet: event.kich_ban_chi_tiet,
-        kinh_phi: event.kinh_phi || event.du_toan_kinh_phi,
-        to_chuc_thuc_hien_chuan_bi: event.to_chuc_thuc_hien_chuan_bi,
-        to_truong: DEPT_INFO.head,
+        khoi: clean(event.grade || event.doi_tuong || "12"),
+        khoi_lop: clean(event.grade || event.doi_tuong || "12"),
+        ten_chu_de: clean(event.ten_chu_de || event.title || event.ten_ke_hoach),
+        muc_dich_yeu_cau: clean(event.muc_tieu || event.muc_dich_yeu_cau),
+        nang_luc: clean(event.nang_luc),
+        pham_chat: clean(event.pham_chat),
+        thoi_gian: clean(event.thoi_gian),
+        dia_diem: clean(event.dia_diem || "Sân trường"),
+        noi_dung: clean(event.noi_dung || event.content || event.kich_ban_chi_tiet),
+        kich_ban_chi_tiet: clean(event.kich_ban_chi_tiet),
+        kinh_phi: clean(event.kinh_phi || event.du_toan_kinh_phi),
+        chuan_bi: clean(event.checklist_chuan_bi || event.to_chuc_thuc_hien_chuan_bi),
+        to_chuc_thuc_hien: clean(event.to_chuc_thuc_hien_chuan_bi),
+        to_truong: clean(DEPT_INFO.head),
       };
 
-      const out = await generateEventDocx(data);
-      saveAs(out, `KHNK_${event.grade}_${Date.now()}.docx`);
+      doc.render(data);
+      const out = doc.getZip().generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      });
+
+      saveAs(out, `KHNK_${event.grade || "Event"}_${Date.now()}.docx`);
       return true;
     } catch (error: any) {
-      console.error("Pure Programmatic Export Error:", error);
+      this.handleError(error, zip);
       throw error;
     }
   },
 
   async exportNCBHToTemplate(
     ncbh: NCBHResult,
-    templatePath: string = "/templates/mau-ke-hoach-day-hoc.docx"
+    templatePath: string = "/templates/NCBH_Template.docx"
   ) {
     let zip: any = null;
     try {
@@ -305,7 +328,7 @@ export const TemplateExportService = {
 
   async exportAssessmentToTemplate(
     assessment: AssessmentResult,
-    templatePath: string = "/templates/mau-ke-hoach-day-hoc.docx"
+    templatePath: string = "/templates/Assessment_Template.docx"
   ) {
     let zip: any = null;
     try {

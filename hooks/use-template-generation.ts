@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
-  generateMeetingMinutes,
+  genMtgMinutes,
   generateLessonPlan,
   generateLessonSection,
   generateEventScript,
   auditLessonPlan,
-  generateNCBH as generateNCBHAction,
+  generateNCBHAction,
   generateAIContent,
 } from "@/lib/actions/gemini";
 import { check5512Compliance } from "@/lib/actions/compliance-checker";
@@ -33,7 +33,7 @@ export function useTemplateGeneration() {
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await generateMeetingMinutes(month, session, keyContent, conclusion, model);
+      const result = await genMtgMinutes(month, session, keyContent, conclusion, model);
       if (result.success && result.data) {
         return { success: true, data: result.data as MeetingResult };
       } else {

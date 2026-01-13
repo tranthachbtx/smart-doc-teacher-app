@@ -11,9 +11,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Sparkles, Download, Loader2, Copy, Clock } from "lucide-react";
+import { Sparkles, Download, Loader2, Copy, Clock, AlertCircle } from "lucide-react";
 import type { EventResult, EventTabProps } from "@/lib/types";
 import { getChuDeListByKhoi, type PPCTChuDe } from "@/lib/data/ppct-database";
+
+// Safety helper to render potentially nested objects from AI
+const formatAIValue = (val: any): React.ReactNode => {
+  if (val === null || val === undefined) return "";
+  if (typeof val === "string") return val;
+  if (typeof val === "number") return val.toString();
+  if (Array.isArray(val)) {
+    return (
+      <ul className="list-disc list-inside space-y-1">
+        {val.map((item, i) => (
+          <li key={i}>{formatAIValue(item)}</li>
+        ))}
+      </ul>
+    );
+  }
+  if (typeof val === "object") {
+    return (
+      <div className="space-y-1">
+        {Object.entries(val).map(([key, value]) => (
+          <div key={key}>
+            <span className="font-semibold">{key}:</span> {formatAIValue(value)}
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return String(val);
+};
 
 // EventTabProps is now imported from @/lib/types
 
@@ -162,7 +190,7 @@ export function EventTab({
               type="number"
               min="15"
               max="240"
-              value={eventDuration}
+              value={eventDuration || ""}
               onChange={(e) => setEventDuration(e.target.value)}
               className="w-24"
               placeholder="45"
@@ -236,7 +264,7 @@ export function EventTab({
             id="event-budget-textarea"
             name="eventBudget"
             placeholder="Nhập dự toán kinh phí nếu cần...&#10;VD: Banner: 500.000đ, Phần thưởng: 1.000.000đ..."
-            value={eventBudget}
+            value={eventBudget || ""}
             onChange={(e) => setEventBudget(e.target.value)}
             rows={3}
           />
@@ -253,7 +281,7 @@ export function EventTab({
             id="event-checklist-textarea"
             name="eventChecklist"
             placeholder="Nhập các công việc cần chuẩn bị...&#10;VD: In ấn tài liệu, Chuẩn bị phòng họp..."
-            value={eventChecklist}
+            value={eventChecklist || ""}
             onChange={(e) => setEventChecklist(e.target.value)}
             rows={3}
           />
@@ -265,7 +293,7 @@ export function EventTab({
             id="event-instructions-textarea"
             name="eventInstructions"
             placeholder={smartPlaceholder}
-            value={eventCustomInstructions}
+            value={eventCustomInstructions || ""}
             onChange={(e) => setEventCustomInstructions(e.target.value)}
             rows={3}
           />
@@ -326,7 +354,7 @@ export function EventTab({
             <div className="space-y-3">
               <div className="p-3 bg-white rounded border">
                 <h4 className="font-medium text-purple-800 mb-2">
-                  {eventResult.ten_ke_hoach}
+                  {eventResult.ten_chu_de || eventResult.ten_ke_hoach || eventResult.title || "Kế hoạch ngoại khoa"}
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <p>
@@ -336,23 +364,21 @@ export function EventTab({
                     <strong>Địa điểm:</strong> {eventResult.dia_diem}
                   </p>
                   <p>
-                    <strong>Đối tượng:</strong> {eventResult.doi_tuong}
+                    <strong>Đối tượng:</strong> {eventResult.doi_tuong || eventResult.grade || "..."}
                   </p>
                   <p>
-                    <strong>Số lượng:</strong> {eventResult.so_luong}
+                    <strong>Số lượng:</strong> {eventResult.so_luong || "Toàn khối"}
                   </p>
                 </div>
               </div>
 
               {/* Objectives */}
-              {eventResult.muc_tieu && (
+              {(eventResult.muc_tieu || eventResult.muc_dich_yeu_cau) && (
                 <div className="p-3 bg-white rounded border">
-                  <h5 className="font-medium text-sm mb-2">Mục tiêu:</h5>
-                  <p className="text-sm text-slate-600">
-                    {typeof eventResult.muc_tieu === "string"
-                      ? eventResult.muc_tieu
-                      : JSON.stringify(eventResult.muc_tieu)}
-                  </p>
+                  <h5 className="font-medium text-sm mb-2 text-purple-700 uppercase">Mục đích - Yêu cầu:</h5>
+                  <div className="text-sm text-slate-600 whitespace-pre-wrap">
+                    {formatAIValue(eventResult.muc_tieu || eventResult.muc_dich_yeu_cau)}
+                  </div>
                 </div>
               )}
 
@@ -360,37 +386,35 @@ export function EventTab({
               {eventResult.noi_dung && (
                 <div className="p-3 bg-white rounded border">
                   <h5 className="font-medium text-sm mb-2">Nội dung:</h5>
-                  {Array.isArray(eventResult.noi_dung) ? (
-                    <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
-                      {eventResult.noi_dung.map((item, idx) => (
-                        <li key={idx}>
-                          {typeof item === "string"
-                            ? item
-                            : JSON.stringify(item)}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-sm text-slate-600">
-                      {typeof eventResult.noi_dung === "string"
-                        ? eventResult.noi_dung
-                        : JSON.stringify(eventResult.noi_dung)}
-                    </p>
-                  )}
+                  <div className="text-sm text-slate-600">
+                    {formatAIValue(eventResult.noi_dung)}
+                  </div>
                 </div>
               )}
 
-              {/* Timeline */}
-              {eventResult.tien_trinh && eventResult.tien_trinh.length > 0 && (
+              {/* Detailed Script - CRITICAL SECTION */}
+              {eventResult.kich_ban_chi_tiet && (
+                <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
+                  <h5 className="font-bold text-sm mb-3 text-purple-900 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-purple-600" /> KỊCH BẢN CHI TIẾT (SCRIPT):
+                  </h5>
+                  <div className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">
+                    {formatAIValue(eventResult.kich_ban_chi_tiet)}
+                  </div>
+                </div>
+              )}
+
+              {/* Timeline (Legacy fallback) */}
+              {eventResult.tien_trinh && eventResult.tien_trinh.length > 0 && !eventResult.kich_ban_chi_tiet && (
                 <div className="p-3 bg-white rounded border">
-                  <h5 className="font-medium text-sm mb-2">Tiến trình:</h5>
+                  <h5 className="font-medium text-sm mb-2 text-purple-700 uppercase">Tiến trình hoạt động:</h5>
                   <div className="space-y-2">
                     {eventResult.tien_trinh.map((step, idx) => (
                       <div key={idx} className="flex gap-2 text-sm">
                         <span className="font-medium text-purple-600 whitespace-nowrap">
                           {step.thoi_gian}:
                         </span>
-                        <span className="text-slate-600">{step.hoat_dong}</span>
+                        <span className="text-slate-600">{formatAIValue(step.hoat_dong)}</span>
                       </div>
                     ))}
                   </div>
@@ -410,14 +434,24 @@ export function EventTab({
               )}
 
               {/* Organization Prep */}
-              {eventResult.to_chuc_thuc_hien_chuan_bi && (
+              {(eventResult.to_chuc_thuc_hien_chuan_bi || eventResult.chuan_bi) && (
                 <div className="p-3 bg-white rounded border">
-                  <h5 className="font-medium text-sm mb-2">
+                  <h5 className="font-medium text-sm mb-2 text-purple-700 uppercase">
                     Tổ chức thực hiện (Chuẩn bị):
                   </h5>
-                  <p className="text-sm text-slate-600 whitespace-pre-line">
-                    {eventResult.to_chuc_thuc_hien_chuan_bi}
-                  </p>
+                  <div className="text-sm text-slate-600 whitespace-pre-wrap">
+                    {formatAIValue(eventResult.to_chuc_thuc_hien_chuan_bi || eventResult.chuan_bi)}
+                  </div>
+                </div>
+              )}
+
+              {/* Closing Message */}
+              {eventResult.thong_diep_ket_thuc && (
+                <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-lg">
+                  <h5 className="font-bold text-sm mb-2 text-indigo-900 uppercase">Thông điệp kết thúc:</h5>
+                  <div className="text-sm text-indigo-800 italic">
+                    {formatAIValue(eventResult.thong_diep_ket_thuc)}
+                  </div>
                 </div>
               )}
 
@@ -427,9 +461,9 @@ export function EventTab({
                   <h5 className="font-medium text-sm mb-2">
                     Kinh phí thực hiện:
                   </h5>
-                  <p className="text-sm text-slate-600 whitespace-pre-line">
-                    {eventResult.kinh_phi}
-                  </p>
+                  <div className="text-sm text-slate-600">
+                    {formatAIValue(eventResult.kinh_phi)}
+                  </div>
                 </div>
               )}
 

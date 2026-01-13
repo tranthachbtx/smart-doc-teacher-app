@@ -115,7 +115,7 @@ export function MeetingTab({
                         id="meeting-key-content"
                         name="meetingKeyContent"
                         placeholder="VD: Triển khai hoạt động 20/11, tổ chức sinh hoạt chuyên môn theo nghiên cứu bài học, phân công giáo viên dự giờ, thảo luận về phương pháp dạy học tích cực..."
-                        value={meetingKeyContent}
+                        value={meetingKeyContent || ""}
                         onChange={(e) => setMeetingKeyContent(e.target.value)}
                         rows={5}
                         className="resize-y"
@@ -132,7 +132,7 @@ export function MeetingTab({
                         id="meeting-conclusion"
                         name="meetingConclusion"
                         placeholder="Nhập nội dung kết luận cuộc họp nếu có sẵn..."
-                        value={meetingConclusion}
+                        value={meetingConclusion || ""}
                         onChange={(e) => setMeetingConclusion(e.target.value)}
                         rows={5}
                         className="resize-y"

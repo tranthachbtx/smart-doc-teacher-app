@@ -127,7 +127,7 @@ export function AssessmentTab({
                             <Input
                                 id="assessment-topic-input"
                                 name="assessmentTopic"
-                                value={assessmentTopic}
+                                value={assessmentTopic || ""}
                                 onChange={(e) => setAssessmentTopic(e.target.value)}
                                 placeholder="VD: Chủ đề 3 - Xây dựng tình bạn..."
                             />

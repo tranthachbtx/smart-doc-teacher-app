@@ -55,10 +55,10 @@ import {
   checkApiKeyStatus,
   generateAssessmentPlan,
   generateLessonSection,
-  generateMeetingMinutes,
+  genMtgMinutes,
   generateLessonPlan,
   generateEventScript,
-  generateNCBH as generateNCBHAction,
+  generateNCBHAction,
   generateAIContent,
 } from "@/lib/actions/gemini";
 import { performAdvancedAudit } from "@/lib/actions/advanced-audit";
@@ -91,11 +91,11 @@ import { DocumentExportSystem } from "@/lib/services/document-export-system";
 export function TemplateEngine() {
   const store = useAppStore();
   const {
-    lesson,
-    meeting,
-    event,
-    assessment,
-    ncbh,
+    lesson: lessonData,
+    meeting: meetingData,
+    event: eventData,
+    assessment: assessmentData,
+    ncbh: ncbhData,
     error,
     success,
     setError,
@@ -141,11 +141,15 @@ export function TemplateEngine() {
     try {
       switch (mode) {
         case "meeting":
-          const meetingRes = await generateMeetingMinutes(
-            meeting.month,
-            meeting.session,
-            meeting.keyContent,
-            meeting.conclusion,
+          // Fail Fast: Meeting
+          if (!meetingData.month || !meetingData.session) {
+            throw new Error("REQUIRED_FIELDS_MISSING: Month and Session must be provided.");
+          }
+          const meetingRes = await genMtgMinutes(
+            meetingData.month,
+            meetingData.session,
+            meetingData.keyContent,
+            meetingData.conclusion,
             store.selectedModel
           );
           if (meetingRes.success && meetingRes.data) {
@@ -155,7 +159,7 @@ export function TemplateEngine() {
             if (meetingRes.content) {
               await copyToClipboard(meetingRes.content);
               store.setSuccess(
-                "⚠️ AI server quá tải. Đã COPY PROMPT vào bộ nhớ tạm. Hãy dán vào Gemini/ChatGPT!"
+                "Đã COPY PROMPT vào bộ nhớ tạm. Hãy dán vào Gemini/ChatGPT!"
               );
               // Don't throw to avoid red error screen matching user preference for "Manual Workflow"
               return;
@@ -164,22 +168,22 @@ export function TemplateEngine() {
           }
           break;
         case "lesson":
-          const effectiveTopicLabel = lesson.theme;
+          const effectiveTopicLabel = lessonData.theme;
           const lessonRes = await generateLessonPlan(
-            lesson.grade,
+            lessonData.grade,
             effectiveTopicLabel,
-            lesson.duration,
-            lesson.customInstructions,
-            lesson.tasks
+            lessonData.duration,
+            lessonData.customInstructions,
+            lessonData.tasks
               .filter((t) => t.selected)
               .map((t) => `${t.name}: ${t.content}`),
-            Number(lesson.chuDeSo).toString(),
+            Number(lessonData.chuDeSo).toString(),
             JSON.stringify({
-              shdc: lesson.shdcSuggestion,
-              hdgd: lesson.hdgdSuggestion,
-              shl: lesson.shlSuggestion,
+              shdc: lessonData.shdcSuggestion,
+              hdgd: lessonData.hdgdSuggestion,
+              shl: lessonData.shlSuggestion,
             }),
-            lesson.file || undefined,
+            lessonData.file || undefined,
             store.selectedModel
           );
           if (lessonRes.success && lessonRes.data) {
@@ -198,30 +202,33 @@ export function TemplateEngine() {
         case "event":
           console.log("[DEEP_TRACE:1_INPUT] Event generation triggered.");
           console.log("[DEEP_TRACE:1_INPUT] Payload details:", {
-            grade: event.grade,
-            theme: event.theme,
-            instructions: event.instructions,
-            budget: event.budget,
-            checklist: event.checklist,
-            month: event.month,
+            grade: eventData.grade,
+            theme: eventData.theme,
+            instructions: eventData.instructions,
+            budget: eventData.budget,
+            checklist: eventData.checklist,
+            month: eventData.month,
             model: store.selectedModel,
           });
 
-          // Logic Check: Empty inputs?
-          if (!event.theme) {
-            console.warn("[DEEP_TRACE:3_LOGIC] WARNING: event.theme is empty! AI might fail or produce generic output.");
+          // Logic Check: Fail Fast
+          if (!eventData.theme || eventData.theme.trim().length < 2) {
+            throw new Error("MIN_DATA_REQUIRED: Event theme is mandatory.");
+          }
+          if (!eventData.grade) {
+            throw new Error("MIN_DATA_REQUIRED: Event grade is mandatory.");
           }
 
           const eventRes = await generateEventScript(
-            event.grade,
-            event.theme,
-            event.instructions,
-            event.budget,
-            event.checklist,
+            eventData.grade,
+            eventData.theme,
+            eventData.instructions,
+            eventData.budget,
+            eventData.checklist,
             "", // evaluation placeholder
             store.selectedModel,
-            parseInt(event.month) || 10,
-            event.duration
+            parseInt(eventData.month) || 10,
+            eventData.duration
           );
 
           console.log("[DEEP_TRACE:2_FLOW] Response from generateEventScript:", eventRes.success ? "SUCCESS" : "FAILED");
@@ -240,10 +247,14 @@ export function TemplateEngine() {
           }
           break;
         case "ncbh":
+          // Fail Fast: NCBH
+          if (!ncbhData.grade || !ncbhData.topic) {
+            throw new Error("MIN_DATA_REQUIRED: NCBH grade and topic are mandatory.");
+          }
           const ncbhRes = await generateNCBHAction(
-            ncbh.grade,
-            ncbh.topic,
-            ncbh.instructions,
+            ncbhData.grade,
+            ncbhData.topic,
+            ncbhData.instructions,
             store.selectedModel
           );
           if (ncbhRes.success && ncbhRes.data) {
@@ -253,7 +264,7 @@ export function TemplateEngine() {
             if (ncbhRes.content) {
               await copyToClipboard(ncbhRes.content);
               store.setSuccess(
-                "⚠️ Đã COPY PROMPT NCBH. Hãy dán vào AI để tạo!"
+                "Đã COPY PROMPT NCBH. Hãy dán vào AI để tạo!"
               );
               return;
             }
@@ -261,11 +272,15 @@ export function TemplateEngine() {
           }
           break;
         case "assessment":
+          // Fail Fast: Assessment
+          if (!assessmentData.grade || !assessmentData.topic || !assessmentData.productType) {
+            throw new Error("MIN_DATA_REQUIRED: Grade, Topic and Product Type are mandatory.");
+          }
           const assessRes = await generateAssessmentPlan(
-            assessment.grade,
-            assessment.term,
-            assessment.productType,
-            assessment.topic,
+            assessmentData.grade,
+            assessmentData.term,
+            assessmentData.productType,
+            assessmentData.topic,
             store.selectedModel
           );
           if (assessRes.success && assessRes.data) {
@@ -275,7 +290,7 @@ export function TemplateEngine() {
             if (assessRes.content) {
               await copyToClipboard(assessRes.content);
               store.setSuccess(
-                "⚠️ Đã COPY PROMPT Đánh giá. Hãy dán vào AI để tạo!"
+                "Đã COPY PROMPT Đánh giá. Hãy dán vào AI để tạo!"
               );
               return;
             }
@@ -306,41 +321,41 @@ export function TemplateEngine() {
       let success = false;
       switch (mode) {
         case "lesson":
-          if (!lesson.result)
+          if (!lessonData.result)
             throw new Error("Chưa có kết quả giáo án để xuất");
           success = await TemplateExportService.exportLessonToTemplate(
-            lesson.result
+            lessonData.result
           );
           break;
         case "meeting":
-          if (!meeting.result)
+          if (!meetingData.result)
             throw new Error("Chưa có kết quả biên bản để xuất");
           success = await TemplateExportService.exportMeetingToTemplate(
-            meeting.result
+            meetingData.result
           );
           break;
         case "event":
-          if (!event.result)
+          if (!eventData.result)
             throw new Error("Chưa có kết quả kịch bản để xuất");
           success = await TemplateExportService.exportEventToTemplate(
-            event.result
+            eventData.result
           );
           break;
         case "ncbh":
-          if (!ncbh.result) throw new Error("Chưa có kết quả NCBH để xuất");
+          if (!ncbhData.result) throw new Error("Chưa có kết quả NCBH để xuất");
           success = await TemplateExportService.exportNCBHToTemplate(
-            ncbh.result
+            ncbhData.result
           );
           break;
         case "assessment":
-          if (!assessment.result)
+          if (!assessmentData.result)
             throw new Error("Chưa có kết quả đánh giá để xuất");
           const templateInput =
-            assessment.template?.data || "/templates/mau-ke-hoach-day-hoc.docx";
+            assessmentData.template?.data || "/templates/Assessment_Template.docx";
           // If we have a custom arrayBuffer from upload, docxtemplater needs a different handling,
           // but for now we follow the template path pattern.
           success = await TemplateExportService.exportAssessmentToTemplate(
-            assessment.result,
+            assessmentData.result,
             typeof templateInput === "string" ? templateInput : undefined
           );
           break;
@@ -364,7 +379,7 @@ export function TemplateEngine() {
   };
 
   const handleAudit = async () => {
-    if (!lesson.result) {
+    if (!lessonData.result) {
       store.setError("Không có dữ liệu giáo án để kiểm định.");
       return;
     }
@@ -375,7 +390,7 @@ export function TemplateEngine() {
     );
 
     try {
-      const result = await performAdvancedAudit(lesson.result);
+      const result = await performAdvancedAudit(lessonData.result);
       if (result.success && result.report) {
         const report = result.report;
         store.updateLessonField("auditResult", report.professionalReasoning);
@@ -417,31 +432,31 @@ export function TemplateEngine() {
   ): Promise<ActionResult> => {
     store.setGeneratingMode("section");
     try {
-      const effectiveTopic = lesson.theme;
+      const effectiveTopic = lessonData.theme;
       const result = await generateLessonSection(
-        lesson.grade,
+        lessonData.grade,
         effectiveTopic,
         section,
         typeof context === "string" ? context : JSON.stringify(context || ""),
-        lesson.duration,
-        lesson.customInstructions,
-        lesson.tasks
+        lessonData.duration,
+        lessonData.customInstructions,
+        lessonData.tasks
           .filter((t) => t.selected)
           .map((t) => `${t.name}: ${t.content}`),
-        Number(lesson.chuDeSo).toString(),
+        Number(lessonData.chuDeSo).toString(),
         JSON.stringify({
-          shdc: lesson.shdcSuggestion,
-          hdgd: lesson.hdgdSuggestion,
-          shl: lesson.shlSuggestion,
+          shdc: lessonData.shdcSuggestion,
+          hdgd: lessonData.hdgdSuggestion,
+          shl: lessonData.shlSuggestion,
         }),
         store.selectedModel,
-        lesson.file || undefined,
+        lessonData.file || undefined,
         stepInstruction
       );
 
       if (result.success && result.data) {
         store.setLessonResult({
-          ...(lesson.result || ({} as any)),
+          ...(lessonData.result || ({} as any)),
           ...result.data,
         });
       }
@@ -473,15 +488,15 @@ export function TemplateEngine() {
 
   // --- Props for Engines ---
   const meetingEngineProps: MeetingEngineProps = {
-    selectedMonth: meeting.month,
+    selectedMonth: meetingData.month,
     setSelectedMonth: (v) => store.updateMeetingField("month", v),
-    selectedSession: meeting.session,
+    selectedSession: meetingData.session,
     setSelectedSession: (v) => store.updateMeetingField("session", v),
-    meetingKeyContent: meeting.keyContent,
+    meetingKeyContent: meetingData.keyContent,
     setMeetingKeyContent: (v) => store.updateMeetingField("keyContent", v),
-    meetingConclusion: meeting.conclusion,
+    meetingConclusion: meetingData.conclusion,
     setMeetingConclusion: (v) => store.updateMeetingField("conclusion", v),
-    meetingResult: meeting.result,
+    meetingResult: meetingData.result,
     setMeetingResult: (v) => store.updateMeetingField("result", v),
     isGenerating: store.generatingMode === "meeting",
     onGenerate: () => handleGenerate("meeting"),
@@ -491,38 +506,38 @@ export function TemplateEngine() {
   };
 
   const lessonEngineProps: LessonEngineProps = {
-    lessonGrade: lesson.grade,
+    lessonGrade: lessonData.grade,
     setLessonGrade: store.setLessonGrade,
-    selectedChuDeSo: lesson.chuDeSo,
+    selectedChuDeSo: lessonData.chuDeSo,
     setSelectedChuDeSo: (v) => store.updateLessonField("chuDeSo", v),
-    lessonAutoFilledTheme: lesson.theme,
+    lessonAutoFilledTheme: lessonData.theme,
     setLessonAutoFilledTheme: store.setLessonTheme,
-    lessonDuration: lesson.duration,
+    lessonDuration: lessonData.duration,
     setLessonDuration: (v) => store.updateLessonField("duration", v),
     selectedChuDe: null, // Legacy, can be derived or removed if unused
     setSelectedChuDe: () => { },
     setLessonMonth: (v) => store.updateLessonField("month", v),
-    shdcSuggestion: lesson.shdcSuggestion,
+    shdcSuggestion: lessonData.shdcSuggestion,
     setShdcSuggestion: (v) => store.updateLessonField("shdcSuggestion", v),
-    hdgdSuggestion: lesson.hdgdSuggestion,
+    hdgdSuggestion: lessonData.hdgdSuggestion,
     setHdgdSuggestion: (v) => store.updateLessonField("hdgdSuggestion", v),
-    shlSuggestion: lesson.shlSuggestion,
+    shlSuggestion: lessonData.shlSuggestion,
     setShlSuggestion: (v) => store.updateLessonField("shlSuggestion", v),
     curriculumTasks: [],
     distributeTimeForTasks,
     showCurriculumTasks: false,
     setShowCurriculumTasks: () => { },
-    lessonTasks: lesson.tasks,
+    lessonTasks: lessonData.tasks,
     updateLessonTask: (id, field, value) => {
       store.updateLessonField(
         "tasks",
-        lesson.tasks.map((t) => (t.id === id ? { ...t, [field]: value } : t))
+        lessonData.tasks.map((t) => (t.id === id ? { ...t, [field]: value } : t))
       );
     },
     removeLessonTask: (id) => {
       store.updateLessonField(
         "tasks",
-        lesson.tasks.filter((t) => t.id !== id)
+        lessonData.tasks.filter((t) => t.id !== id)
       );
     },
     addLessonTask: () => {
@@ -531,12 +546,12 @@ export function TemplateEngine() {
         name: "Task mới",
         content: "",
       };
-      store.updateLessonField("tasks", [...lesson.tasks, newTask]);
+      store.updateLessonField("tasks", [...lessonData.tasks, newTask]);
     },
-    lessonCustomInstructions: lesson.customInstructions,
+    lessonCustomInstructions: lessonData.customInstructions,
     setLessonCustomInstructions: (v) =>
       store.updateLessonField("customInstructions", v),
-    lessonResult: lesson.result,
+    lessonResult: lessonData.result,
     setLessonResult: store.setLessonResult,
     isGenerating:
       store.generatingMode === "lesson" ||
@@ -548,17 +563,17 @@ export function TemplateEngine() {
     copyToClipboard,
     isAuditing: store.isAuditing,
     onAudit: handleAudit,
-    auditResult: lesson.auditResult,
-    auditScore: lesson.auditScore,
+    auditResult: lessonData.auditResult,
+    auditScore: lessonData.auditScore,
     setSuccess: store.setSuccess,
     setError: store.setError,
     success: store.success,
     error: store.error,
-    lessonTopic: lesson.theme,
+    lessonTopic: lessonData.theme,
     setLessonTopic: store.setLessonTheme,
     selectedModel: store.selectedModel,
     setSelectedModel: store.setSelectedModel,
-    lessonFile: lesson.file,
+    lessonFile: lessonData.file,
     setLessonFile: (v) => store.updateLessonField("file", v),
     onRefineSection: handleRefineSection,
     onGenerateSection: handleGenerateSection,
@@ -567,31 +582,31 @@ export function TemplateEngine() {
   };
 
   const eventEngineProps: EventEngineProps = {
-    selectedGradeEvent: event.grade,
+    selectedGradeEvent: eventData.grade,
     setSelectedGradeEvent: (v) => store.updateEventField("grade", v),
-    selectedEventMonth: event.month,
+    selectedEventMonth: eventData.month,
     setSelectedEventMonth: (v) => store.updateEventField("month", v),
-    autoFilledTheme: event.theme,
+    autoFilledTheme: eventData.theme,
     setAutoFilledTheme: (v) => store.updateEventField("theme", v),
     eventType: "chuyên đề", // default
     setEventType: () => { },
-    eventBudget: event.budget,
+    eventBudget: eventData.budget,
     setEventBudget: (v) => store.updateEventField("budget", v),
-    eventChecklist: event.checklist,
+    eventChecklist: eventData.checklist,
     setEventChecklist: (v) => store.updateEventField("checklist", v),
     eventEvaluation: "",
     setEventEvaluation: () => { },
-    eventResult: event.result,
+    eventResult: eventData.result,
     setEventResult: (v) => store.updateEventField("result", v),
     isGenerating: store.generatingMode === "event",
     onGenerate: () => handleGenerate("event"),
     isExporting: store.isExporting,
     onExport: () => handleExport("event"),
     copyToClipboard,
-    eventCustomInstructions: event.instructions,
+    eventCustomInstructions: eventData.instructions,
     setEventCustomInstructions: (v) =>
       store.updateEventField("instructions", v),
-    eventDuration: event.duration,
+    eventDuration: eventData.duration,
     setEventDuration: (v) => store.updateEventField("duration", v),
   };
 
@@ -702,17 +717,17 @@ export function TemplateEngine() {
 
           <TabsContent value="ncbh">
             <NCBHTab
-              selectedMonth={ncbh.month}
+              selectedMonth={ncbhData.month}
               setSelectedMonth={(v) => store.updateNcbhField("month", v)}
-              ncbhGrade={ncbh.grade}
+              ncbhGrade={ncbhData.grade}
               setNcbhGrade={(v) => store.updateNcbhField("grade", v)}
-              ncbhTopic={ncbh.topic}
+              ncbhTopic={ncbhData.topic}
               setNcbhTopic={(v) => store.updateNcbhField("topic", v)}
-              ncbhCustomInstructions={ncbh.instructions}
+              ncbhCustomInstructions={ncbhData.instructions}
               setNcbhCustomInstructions={(v) =>
                 store.updateNcbhField("instructions", v)
               }
-              ncbhResult={ncbh.result}
+              ncbhResult={ncbhData.result}
               setNcbhResult={(v) => store.updateNcbhField("result", v)}
               isGenerating={store.generatingMode === "ncbh"}
               onGenerate={() => handleGenerate("ncbh")}
@@ -725,23 +740,23 @@ export function TemplateEngine() {
 
           <TabsContent value="assessment">
             <AssessmentTab
-              assessmentGrade={assessment.grade}
+              assessmentGrade={assessmentData.grade}
               setAssessmentGrade={(v) =>
                 store.updateAssessmentField("grade", v)
               }
-              assessmentTerm={assessment.term}
+              assessmentTerm={assessmentData.term}
               setAssessmentTerm={(v) => store.updateAssessmentField("term", v)}
-              assessmentProductType={assessment.productType}
+              assessmentProductType={assessmentData.productType}
               setAssessmentProductType={(v) =>
                 store.updateAssessmentField("productType", v)
               }
-              assessmentTopic={assessment.topic}
+              assessmentTopic={assessmentData.topic}
               setAssessmentTopic={(v) =>
                 store.updateAssessmentField("topic", v)
               }
-              assessmentTemplate={assessment.template}
+              assessmentTemplate={assessmentData.template}
               onTemplateUpload={onTemplateUpload}
-              assessmentResult={assessment.result}
+              assessmentResult={assessmentData.result}
               isGenerating={store.generatingMode === "assessment"}
               onGenerate={() => handleGenerate("assessment")}
               isExporting={store.isExporting}
