@@ -338,31 +338,121 @@ export async function callAI(
 /**
  * ROBUST JSON PARSER: Extracts JSON object even if wrapped in Markdown or chat text.
  */
+/**
+ * 🧠 SMART JSON PARSER v52.0 (DEEP SANITIZATION)
+ * Giải quyết triệt để lỗi "Bad control character in string literal".
+ */
 function parseSmartJSON(text: string): any {
+  let cleaned = text.trim();
+
+  // 1. Gỡ bỏ Markdown Code Blocks
+  cleaned = cleaned.replace(/^```json\s*/g, "").replace(/```\s*$/g, "").trim();
+
+  // 2. Tìm khối JSON đầu tiên { ... }
+  const firstOpen = cleaned.indexOf("{");
+  const lastClose = cleaned.lastIndexOf("}");
+
+  if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
+    cleaned = cleaned.substring(firstOpen, lastClose + 1);
+  } else {
+    throw new Error("Không tìm thấy khối JSON { } trong phản hồi từ AI.");
+  }
+
   try {
-    // 1. Try removing Markdown code blocks
-    let cleanText = text
-      .replace(/```json\s*/g, "")
-      .replace(/```\s*$/g, "")
-      .trim();
+    // Thử parse bản gốc
+    return JSON.parse(cleaned);
+  } catch (e1: any) {
+    console.warn("[SmartJSON] Thử nghiệm Deep Sanitization...");
 
-    // 2. Find first '{' and last '}'
-    const firstOpen = cleanText.indexOf("{");
-    const lastClose = cleanText.lastIndexOf("}");
+    try {
+      /**
+       * 🩺 BÁC SĨ JSON: Xử lý ký tự điều khiển lỗi
+       * AI thường để nguyên dấu xuống dòng (0x0A) hoặc Tab trong chuỗi JSON.
+       * Chúng ta sẽ quét qua nội dung và thay thế chúng một cách an toàn.
+       */
+      let healed = cleaned
+        // Gỡ bỏ các ký tự điều khiển thực sự nguy hiểm (TAB, NULL, v.v. trừ xuống dòng)
+        .replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F-\x9F]/g, "")
+        // Gỡ dấu phẩy dư thừa
+        .replace(/,\s*}/g, "}")
+        .replace(/,\s*]/g, "]");
 
-    if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
-      cleanText = cleanText.substring(firstOpen, lastClose + 1);
-      return JSON.parse(cleanText);
+      /**
+       * Kỹ thuật "Phẫu thuật chuỗi": 
+       * Tìm tất cả các giá trị nằm giữa dấu ngoặc kép và thay thế xuống dòng thực bằng \n
+       */
+      const parts = healed.split(/("(?:\\.|[^"])*")/g);
+      const sanitiedParts = parts.map(part => {
+        if (part.startsWith('"') && part.endsWith('"')) {
+          // Đây là một chuỗi JSON (hoặc key/value)
+          // Escape các dấu xuống dòng thực nằm TRONG chuỗi
+          return part.replace(/\n/g, "\\n").replace(/\r/g, "\\r");
+        }
+        return part;
+      });
+
+      const finalJson = sanitiedParts.join("");
+      return JSON.parse(finalJson);
+    } catch (e2: any) {
+      console.error("[DEEP_TRACE:4_REPORT] 🚨 CRITICAL PARSE FAILURE");
+
+      // Tìm vị trí lỗi để báo cáo
+      const posMatch = e2.message.match(/position (\d+)/);
+      if (posMatch) {
+        const pos = parseInt(posMatch[1]);
+        const snippet = cleaned.substring(Math.max(0, pos - 50), Math.min(cleaned.length, pos + 50));
+        console.error(`[DEEP_TRACE:4_REPORT] Đoạn mã lỗi tại vĩ độ ${pos}: "...${snippet}..."`);
+      }
+
+      throw new Error(`Cấu trúc kịch bản quá phức tạp khiến AI bị lỗi định dạng: ${e2.message}`);
+    }
+  }
+}
+
+/**
+ * 🥪 HYBRID-SANDWICH PARSER v35.0
+ * Tách biệt JSON cấu trúc và Kịch bản văn bản thô.
+ * Giải quyết triệt để lỗi vỡ JSON khi có nội dung dài.
+ */
+function parseHybridJSON(text: string): any {
+  try {
+    let finalData: any = {};
+    let scriptContent = "";
+
+    // 1. Trích xuất phần JSON (Metadata)
+    const jsonMatch = text.match(/\[PHẦN_1_JSON\]([\s\S]*?)\[\/PHẦN_1_JSON\]/);
+    if (jsonMatch && jsonMatch[1]) {
+      finalData = JSON.parse(jsonMatch[1].trim());
+    } else {
+      // Fallback: Tìm khối JSON đầu tiên nếu AI quên tag
+      const firstOpen = text.indexOf("{");
+      const lastClose = text.lastIndexOf("}");
+      if (firstOpen !== -1 && lastClose !== -1) {
+        finalData = JSON.parse(text.substring(firstOpen, lastClose + 1));
+      }
     }
 
-    // 3. Last ditch: Fallback to simple parse (might throw)
-    return JSON.parse(text);
-  } catch (e) {
-    console.error(
-      "[SmartJSON] Parsing failed. Raw text:",
-      text.substring(0, 100) + "..."
-    );
-    throw new Error("AI returned text but it wasn't valid JSON.");
+    // 2. Trích xuất phần Kịch bản (Raw Text)
+    const scriptMatch = text.match(/\[PHẦN_2_KICH_BAN_CHI_TIET\]([\s\S]*?)\[\/PHẦN_2_KICH_BAN_CHI_TIET\]/);
+    if (scriptMatch && scriptMatch[1]) {
+      scriptContent = scriptMatch[1].trim();
+    } else {
+      // Fallback: Lấy phần text sau tag đóng JSON
+      const splitParts = text.split("[/PHẦN_1_JSON]");
+      if (splitParts.length > 1) {
+        scriptContent = splitParts[1].replace(/\[\/PHẦN_2_KICH_BAN_CHI_TIET\]/g, "").trim();
+      }
+    }
+
+    // 3. MERGE
+    return {
+      ...finalData,
+      kich_ban_chi_tiet: scriptContent
+    };
+  } catch (e: any) {
+    console.error("[HYBRID_PARSER] Lỗi nghiêm trọng:", e.message);
+    // Fallback sang parseSmartJSON nếu hybrid fail
+    return parseSmartJSON(text);
   }
 }
 
@@ -371,14 +461,16 @@ function parseSmartJSON(text: string): any {
  */
 export async function generateAIContent(
   prompt: string,
-  model?: string,
+  modelName = "gemini-2.0-flash",
+  type: "meeting" | "event" | "ncbh" | "lesson" = "lesson",
   file?: any
-): Promise<ActionResult<string>> {
+): Promise<ActionResult<any>> {
   try {
-    const text = await callAI(prompt, model || "gemini-2.0-flash", file);
-    return { success: true, content: text, data: text };
+    const text = await callAI(prompt, modelName, file);
+    const data = type === "event" ? parseHybridJSON(text) : parseSmartJSON(text);
+    return { success: true, data };
   } catch (e: any) {
-    return { success: false, error: e.message, content: prompt };
+    return { success: false, error: e.message };
   }
 }
 
@@ -494,8 +586,8 @@ export async function generateEventScript(
   modelName = "gemini-2.0-flash",
   month?: number
 ): Promise<ActionResult<any>> {
-  console.log(`[EVENT_DIRECTOR_V40] 🚀 Khởi động Đạo diễn Sự kiện cho Khối: ${grade}, Chủ đề: ${topic}`);
-  if (month) console.log(`[EVENT_DIRECTOR_V40] 📅 Tháng thực hiện: ${month}`);
+  console.log(`[EVENT_DIRECTOR_V51] 🚀 Khởi động Đạo diễn Sự kiện cho Khối: ${grade}, Chủ đề: ${topic}`);
+  if (month) console.log(`[EVENT_DIRECTOR_V51] 📅 Tháng thực hiện: ${month}`);
 
   let prompt = "";
   try {
@@ -503,8 +595,8 @@ export async function generateEventScript(
     prompt = getEventPrompt(grade, topic, month);
 
     // AUDIT: Xác nhận kích hoạt mode Scripting chuyên sâu
-    if (prompt.includes("EVENT CONCEPT") && prompt.includes("VERBATIM SCRIPT")) {
-      console.log("[EVENT_DIRECTOR_V40] ✅ Hệ thống Prompt v40.0 (Concept/Script/Logistics) đã kích hoạt.");
+    if (prompt.includes("Master Event Director")) {
+      console.log("[EVENT_DIRECTOR_V51] ✅ Hệ thống Master Prompt v51.0 (High-Fidelity) đã kích hoạt.");
     }
 
     let additionalInfo = "";
@@ -524,21 +616,22 @@ export async function generateEventScript(
     }
 
     // SYSTEM PROMPT ĐỊA PHƯƠNG HÓA
-    const eventSystemPrompt = `Bạn là Tổng đạo diễn sự kiện trường học chuyên nghiệp. 
-Nhiệm vụ: Soạn kế hoạch ngoại khóa ĐẶC SẮC, GIÀU CHI TIẾT, CÓ LỜI THOẠI MC.
+    const eventSystemPrompt = `BẠN LÀ TỔNG ĐẠO DIỄN SỰ KIỆN XUẤT SẮC NHẤT. 
+YÊU CẦU: Soạn kịch bản ngoại khóa SIÊU CHI TIẾT (Ít nhất 1000 từ).
+NỘI DUNG PHẢI CÓ: Lời thoại MC đôi tung hứng dài, phần tranh biện có lập luận đa chiều sắc bén.
 Địa điểm: Trường THPT Bùi Thị Xuân - Mũi Né.
-Phong cách: Trẻ trung, năng lượng, bắt trend Gen Z.
-Định dạng: Trả về JSON thuần túy.`;
+Phong cách: Hào hứng, trẻ trung, Gen Z.
+ĐỊNH DẠNG: Trả về JSON chuẩn, thoát chuỗi đúng quy cách.`;
 
     const text = await callAI(prompt, modelName, undefined, eventSystemPrompt);
-    console.log("[EVENT_DIRECTOR_V40] 📥 Phản hồi AI đã nhận. Độ dài:", text.length, "ký tự.");
+    console.log("[EVENT_DIRECTOR_V52_HYBRID] 📥 Phản hồi Hybrid đã nhận. Độ dài:", text.length, "ký tự.");
 
-    const data = parseSmartJSON(text);
-    console.log("[EVENT_DIRECTOR_V40] ✨ Kế hoạch đã được biên tập xong. Keys:", Object.keys(data).join(", "));
+    const data = parseHybridJSON(text);
+    console.log("[EVENT_DIRECTOR_V52_HYBRID] ✨ Kế hoạch đã được biên tập xong 10/10. Keys:", Object.keys(data).join(", "));
 
     return { success: true, data };
   } catch (e: any) {
-    console.error("[EVENT_DIRECTOR_V40] ❌ THẤT BẠI:", e);
+    console.error("[EVENT_DIRECTOR_V52_HYBRID] ❌ THẤT BẠI:", e);
     return { success: false, error: e.message, content: prompt };
   }
 }

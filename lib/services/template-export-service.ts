@@ -222,45 +222,44 @@ export const TemplateExportService = {
         nullGetter: () => "",
       });
 
-      // FULL SYNC with ai-prompts.ts (EventSection)
+      // FULL SYNC with Decree 30/2020/NĐ-CP & ai-prompts.ts
+      const now = new Date();
       const data = {
-        ten_chu_de: clean(
-          event.ten_chu_de || event.title || event.ten_ke_hoach
-        ),
-        ten_ke_hoach: clean(
-          event.ten_ke_hoach || event.ten_chu_de || event.title
-        ), // Alias
+        // Administrative Header
+        upper_agency: clean(DEPT_INFO.upperAgency),
+        ten_truong: clean(DEPT_INFO.school.toUpperCase()),
+        to_chuyen_mon: clean(DEPT_INFO.name.toUpperCase()),
+        so_ke_hoach: clean(event.so_ke_hoach || "..../KH-BTX"),
+        dia_danh: "Mũi Né",
+        ngay_thang: `Mũi Né, ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}`,
+
+        // Content
+        ten_chu_de: clean(event.ten_chu_de || event.title || event.ten_ke_hoach),
+        ten_ke_hoach: clean(event.ten_ke_hoach || event.ten_chu_de || event.title),
         thoi_gian: clean(event.thoi_gian),
         dia_diem: clean(event.dia_diem),
         doi_tuong: clean(event.doi_tuong),
         so_luong: clean(event.so_luong),
         muc_tieu: clean(event.muc_tieu || event.muc_dich_yeu_cau),
-        muc_dich_yeu_cau: clean(event.muc_dich_yeu_cau || event.muc_tieu), // Alias
+        muc_dich_yeu_cau: clean(event.muc_dich_yeu_cau || event.muc_tieu),
         nang_luc: clean(event.nang_luc),
         pham_chat: clean(event.pham_chat),
         noi_dung: clean(event.noi_dung || event.content),
         kich_ban_chi_tiet: clean(event.kich_ban_chi_tiet),
-        kich_ban: clean(event.kich_ban_chi_tiet), // Alias
+        kich_ban: clean(event.kich_ban_chi_tiet),
         thong_diep_ket_thuc: clean(event.thong_diep_ket_thuc),
         du_toan_kinh_phi: clean(event.du_toan_kinh_phi),
         kinh_phi: clean(event.kinh_phi),
         checklist_chuan_bi: clean(event.checklist_chuan_bi),
-        chuan_bi: clean(event.checklist_chuan_bi), // Alias for template tag
+        chuan_bi: clean(event.checklist_chuan_bi),
         thanh_phan_tham_du: clean(event.thanh_phan_tham_du),
         to_chuc_thuc_hien_chuan_bi: clean(event.to_chuc_thuc_hien_chuan_bi),
 
-        // Static & Auto Fields from Template Audit
-        ten_truong: clean(DEPT_INFO.school.toUpperCase()),
-        to_chuyen_mon: clean(DEPT_INFO.name.toUpperCase()),
-        so_ke_hoach: "...",
-        thang: new Date().getMonth() + 1,
-        nam: new Date().getFullYear(),
-        khoi_lop: clean(
-          event.doi_tuong ? event.doi_tuong.replace(/[^0-9]/g, "") : ""
-        ),
-        giao_vien_phu_trach: clean(DEPT_INFO.head), // Default to Head
+        // Signatures
         to_truong: clean(DEPT_INFO.head),
         hieu_truong: "........................",
+        thang: now.getMonth() + 1,
+        nam: now.getFullYear(),
       };
 
       doc.render(data);
@@ -353,7 +352,7 @@ export const TemplateExportService = {
         noi_dung_nhiem_vu: clean(assessment.noi_dung_nhiem_vu),
         hinh_thuc_to_chuc: clean(
           assessment.metadata?.hinh_thuc_to_chuc ||
-            (assessment as any).hinh_thuc_to_chuc
+          (assessment as any).hinh_thuc_to_chuc
         ), // Extracted from result if available
         ma_tran_dac_ta: clean(
           assessment.matrix || (assessment as any).ma_tran_dac_ta

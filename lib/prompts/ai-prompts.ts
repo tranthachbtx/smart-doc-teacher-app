@@ -371,90 +371,89 @@ export function getEventPrompt(
     ten_chu_de: theme,
   });
 
+  const teacherPool = "Thầy Trần Hoàng Thạch, Thầy Lê Quang Hiệp, Thầy Nguyễn Thanh Hoang, Thầy Bùi Quang Mẫn, Thầy Nguyễn Văn Linh, Thầy Mai Văn Phước, Thầy Dương Quang, Thầy Trần Văn Tạ, Thầy Ngô Anh Toàn, Thầy Nguyễn Vỹ, Cô Nguyễn Thị Hải";
+
   return `
-# VAI TRÒ: Tổng đạo diễn Sự kiện Giáo dục (Event Director & Scriptwriter v40.0).
+# VAI TRÒ: TỔNG ĐẠO DIỄN SỰ KIỆN & CỐ VẤN BIÊN KỊCH (Master Event Director v52.5)
+
+# THÀNH PHẦN HÀNH CHÍNH (NGHỊ ĐỊNH 30/2020/NĐ-CP):
+Bạn phải soạn thảo kịch bản theo đúng format KẾ HOẠCH hành chính của ngành Giáo dục:
+- Cơ quan chủ quản: SỞ GD&ĐT BÌNH THUẬN.
+- Đơn vị ban hành: TRƯỜNG THPT BÙI THỊ XUÂN - MŨI NÉ.
+- Quốc hiệu: CỘNG HÀA XÃ HỘI CHỦ NGHĨA VIỆT NAM.
+- Tiêu ngữ: Độc lập - Tự do - Hạnh phúc.
+
+# THÔNG ĐIỆP TỪ NGƯỜI DÙNG:
+"Hãy đảm bảo kế hoạch ngoại khoá tạo ra đúng thời gian tôi chọn, đạt chất lượng 10/10 và đúng chuẩn văn bản hành chính (công văn mới)."
 
 # NHIỆM VỤ:
-Bạn đang soạn thảo KẾ HOẠCH NGOẠI KHÓA/SHDC cho ${location}. 
-Mục tiêu là tạo ra một tài liệu "SỐNG ĐỘNG", "THỰC TẾ" và "CÓ LINH HỒN", không được phép trả về một bộ khung sơ sài.
+Soạn Kế hoạch Ngoại khóa cho trường Bùi Thị Xuân - Mũi Né.
+**TIÊU CHUẨN 10/10:** Kịch bản phải dài (ít nhất 1500 từ), giàu cảm xúc, có lời thoại MC tung hứng, và lập luận tranh biện sắc bén.
 
-# DỮ LIỆU ĐẦU VÀO (CONTEXT):
-- **Khối lớp:** ${grade} (Tâm lý: ${gradeInfo.profile} - ${gradeInfo.focus}).
-- **Chủ đề chính:** "${theme}".
-- **Trọng tâm giáo dục:** ${gradeInfo.bookFocus}.
-- **Dữ liệu Database:** ${topicData ? topicData.coreActivity : "Tự sáng tạo dựa trên bối cảnh địa phương"}.
+# CONTEXT ĐỊA PHƯƠNG & NHÂN SỰ:
+- Địa điểm: Sân trường THPT Bùi Thị Xuân - Mũi Né.
+- Nhân sự: ${teacherPool}.
 
-# CHIẾN LƯỢC SÁNG TẠO - MÔ HÌNH 3 LỚP (BẮT BUỘC):
+# ĐỊNH DẠNG ĐẦU RA (HYBRID FORMAT v35.0 - BẮT BUỘC):
+Để đảm bảo nội dung kịch bản đạt điểm 10/10, bạn PHẢI trả về theo cấu trúc chính xác sau:
 
-## LỚP 1: CONCEPT HÓA (EVENT CONCEPT)
-- **Tên chương trình:** Không đặt tên khô khan. Hãy đặt tên theo kiểu Slogan/Brand (VD: "Community Z - Kiến tạo tương lai", "Mũi Né Xanh - Sóng trẻ vươn xa").
-- **Mục tiêu (Event Goals):** Viết mục tiêu dưới dạng "Thông điệp truyền tải" và "Cảm xúc đọng lại" (Phải đo lường được sự thay đổi hành vi/cảm xúc).
-
-## LỚP 2: KỊCH BẢN CHI TIẾT (SCRIPTING - TRỌNG TÂM CHIẾN LƯỢC)
-- **Lời dẫn MC (Verbatim Script):** Không viết chỉ dẫn. Phải viết nguyên văn lời thoại MC (Chào mừng, dẫn dắt, đố vui). Giọng văn phải hào hứng, "bắt trend" Gen Z.
-- **Nội dung Tranh biện/Tọa đàm (Professional Content):** 
-  - Đừng chỉ ghi tên hoạt động. Phải đưa ra một **KIẾN NGHỊ (Motion)** cụ thể, gây tranh cãi và sát với thực tế địa phương.
-  - Ví dụ: "Phát triển du lịch Mũi Né: Nên ưu tiên Resort cao cấp hay Bảo tồn làng chài?"
-  - Phải viết tóm tắt **3 luận điểm cho phe Ủng hộ** và **3 luận điểm cho phe Phản đối**.
-- **Tương tác (Interaction):** Thiết kế 3 câu hỏi trắc nghiệm/đố vui hóc búa kèm đáp án và gợi ý phần quà cụ thể.
-
-## LỚP 3: TỔ CHỨC & LOGISTICS (REAL-WORLD PLANNING)
-- **Phân công chi tiết:** Không ghi "phân công ai làm gì". Phải ghi rõ nhiệm vụ cho từng Ban (Nội dung, Hậu cần, Truyền thông) và gán cho các đơn vị chịu trách nhiệm (Lớp trực tuần, Đoàn trường).
-- **Checklist:** Liệt kê các đầu việc cần làm trước 1 tuần, 1 ngày và trong sự kiện (Banner, Loa đài, Duyệt văn nghệ...).
-
-# QUY TẮC HÀNH CHÍNH (COMPLIANCE):
-- Tuân thủ cấu trúc văn bản hành chính Việt Nam mới nhất (Nghị định 187/2025/NĐ-CP).
-- Không sử dụng dấu **. Sử dụng gạch đầu dòng (-) và In hoa tiêu đề.
-
-# ĐỊNH DẠNG ĐẦU RA (JSON MAP):
+[PHẦN_1_JSON]
 {
-  "ten_ke_hoach": "[TÊN CHƯƠNG TRÌNH SÁNG TẠO - VIẾT HOA]",
+  "ten_ke_hoach": "[TÊN CHƯƠNG TRÌNH VIẾT HOA HÀO HÙNG]",
   "ten_chu_de": "${theme}",
-  "thoi_gian": "7h00 - 7h45 (45 phút Chào cờ/HĐTN)",
+  "thoi_gian": "7h00 - 7h45 (Hoặc theo yêu cầu cụ thể)",
   "dia_diem": "Sân trường THPT Bùi Thị Xuân - Mũi Né",
   "doi_tuong": "Học sinh khối ${grade}",
-  "so_luong": "Toàn thể học sinh khối ${grade} (Khoảng ... em)",
-  "muc_tieu": "- Thông điệp: [Viết thông điệp cảm xúc]\\n- Yêu cầu cần đạt: [Mục tiêu cụ thể]\\n- Năng lực: [NLS, Giao tiếp,...]\\n- Phẩm chất: [Trách nhiệm, Nhân ái,...]",
-  "muc_dich_yeu_cau": "...",
-  "nang_luc": "...",
-  "pham_chat": "...",
-  "kinh_phi": "[Bảng dự toán: Decor, Quà tặng, Thuê loa đài, Market...]",
-  "du_toan_kinh_phi": ["Trang trí: 500.000đ", "Quà tặng: 300.000đ"],
-  "checklist_chuan_bi": ["Duyệt kịch bản", "Thu âm nhạc nền", "In Banner/Backdrop"],
-  "thanh_phan_tham_du": "Ban Giám hiệu, Toàn thể GV và HS khối ${grade}.",
-  "to_chuc_thuc_hien_chuan_bi": "**1. Ban Nội dung (Chi đoàn 11A1):** Soạn lời dẫn, chuẩn bị tranh biện.\\n**2. Ban Hậu cần (Chi đoàn 11A2):** Kê ghế, loa đài.\\n**3. Ban Truyền thông:** Chụp ảnh, đưa tin lên Fanpage trường.",
-  "noi_dung": "I. KHỞI ĐỘNG\\nII. HOẠT ĐỘNG CHÍNH\\nIII. TỔNG KẾT",
-  "tien_trinh": [
-    {"thoi_gian": "7h00 - 7h10", "hoat_dong": "Văn nghệ & Khởi động: [Tên tiết mục]"},
-    {"thoi_gian": "7h10 - 7h35", "hoat_dong": "Trọng tâm: [Tên hoạt động - VD: Tọa đàm/Tranh biện]"},
-    {"thoi_gian": "7h35 - 7h45", "hoat_dong": "Giao lưu - Thông điệp"}
+  "so_luong": "Khoảng 500 học sinh và giáo viên",
+  "muc_tieu": "1. Kiến thức: ...\\n2. Kỹ năng: ...\\n3. Thái độ: ...",
+  "muc_dich_yeu_cau": "Thiết kế sân chơi bùng nổ, rèn luyện bản lĩnh Gen Z.",
+  "nang_luc": "Giao tiếp, Hợp tác, Tư duy phản biện, Năng lực số.",
+  "pham_chat": "Yêu nước, Trách nhiệm, Nhân ái.",
+  "kinh_phi": "2.500.000đ",
+  "du_toan_kinh_phi": [
+    "Maquette & Backdrop: 500.000đ",
+    "Quà tặng: 1.000.000đ",
+    "Đạo cụ & Hậu cần: 1.000.000đ"
   ],
-  "kich_ban_chi_tiet": "
-[VIẾT CỰC KỲ CHI TIẾT TẠI ĐÂY]
-I. PHẦN LỄ & KHỞI ĐỘNG (10 phút):
-- Lời dẫn MC: '[MC Minh Anh: Chào mừng các bạn... MC Quốc Bình: Hôm nay chúng ta sẽ...]'
-- Trò chơi khởi động: '[Tên trò chơi + Luật chơi]'
-
-II. HOẠT ĐỘNG CHÍNH: [TÊN CONCEPT] (25 phút):
-1. Đặt vấn đề: [Mô tả tình huống/vở kịch ngắn]
-2. Tranh biện/Tọa đàm:
-   - Topic (Motion): [Ví dụ: 'Nên ưu tiên du lịch bền vững hơn là xây dựng ồ ạt tại Mũi Né']
-   - Phe Ủng hộ (3 luận điểm): ...
-   - Phe Phản đối (3 luận điểm): ...
-   - Lời dẫn dẫn dắt nảy lửa của MC.
-
-III. TƯƠNG TÁC KHÁN GIẢ (10 phút):
-- Câu hỏi 1: [Nội dung] - Đáp án [X] - Quà: [Y]
-- Câu hỏi 2: ...
-
-IV. KẾT LUẬN & THÔNG ĐIỆP:
-- Lời bình cuối của MC đọng lại cảm xúc.
-  ",
-  "thong_diep_ket_thuc": "[Một câu châm ngôn/Slogan chốt hạ]",
+  "checklist_chuan_bi": [
+    "Duyệt kịch bản MC đôi",
+    "Chuẩn bị âm thanh, backdrop",
+    "Chuẩn bị quà tặng & phiếu câu hỏi"
+  ],
+  "thanh_phan_tham_du": "BGH, Toàn thể GV và HS; Phụ trách chính: ${teacherPool}.",
+  "to_chuc_thuc_hien_chuan_bi": "1. Ban Nội dung: Thầy Trần Hoàng Thạch (Chủ trì).\\n2. Ban Hậu cần: Thầy Lê Quang Hiệp, Thầy Nguyễn Thanh Hoang.\\n3. Ban Văn nghệ: Thầy Bùi Quang Mẫn.",
+  "noi_dung": "I. KHỞI ĐỘNG (10P)\\nII. TRỌNG TÂM (25P)\\nIII. TỔNG KẾT (10P)",
+  "tien_trinh": [
+    {"thoi_gian": "7h00 - 7h10", "hoat_dong": "Khởi động & MC dẫn nhập"},
+    {"thoi_gian": "7h10 - 7h35", "hoat_dong": "Trọng tâm: Tranh biện/Tọa đàm"},
+    {"thoi_gian": "7h35 - 7h45", "hoat_dong": "Tổng kết & Trao quà"}
+  ],
+  "thong_diep_ket_thuc": "[CÂU SLOGAN CHỐT HẠ ĐỈNH CAO]",
   "to_truong": "Trần Hoàng Thạch",
   "hieu_truong": "........................"
-}`;
 }
+[/PHẦN_1_JSON]
+
+[PHẦN_2_KICH_BAN_CHI_TIET]
+(Tại đây bạn viết tự do kịch bản chi tiết trên 1500 từ. Sử dụng dấu ngoặc kép, xuống dòng, ký tự đặc biệt thoải mái).
+
+I. PHẦN KHỞI ĐỘNG (10 PHÚT)
+- MC Nam (Quốc Bình): [Lời thoại...]
+- MC Nữ (Minh Anh): [Lời thoại...]
+
+II. PHẦN TRỌNG TÂM: [TÊN CONCEPT] (25 PHÚT)
+- Vấn đề thực tế tại Mũi Né: [Mô tả...]
+- Tranh biện nảy lửa:
+  + Kiến nghị: ...
+  + Phe 1 (Ủng hộ - 3 luận điểm sâu): ...
+  + Phe 2 (Phản đối - 3 luận điểm đanh thép): ...
+  + MC điều phối & GV chuyên môn nhận xét.
+
+III. TỔNG KẾT & LAN TỎA (10 PHÚT)
+- Giao lưu khán giả: [Câu hỏi & Đáp án]
+- Thông điệp truyền cảm hứng cuối cùng: [Đoạn văn dài về quê hương].
+[/PHẦN_2_KICH_BAN_CHI_TIET]
+`;
 }
 
 // ============================================================

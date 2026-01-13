@@ -196,6 +196,22 @@ export function TemplateEngine() {
           }
           break;
         case "event":
+          console.log("[DEEP_TRACE:1_INPUT] Event generation triggered.");
+          console.log("[DEEP_TRACE:1_INPUT] Payload details:", {
+            grade: event.grade,
+            theme: event.theme,
+            instructions: event.instructions,
+            budget: event.budget,
+            checklist: event.checklist,
+            month: event.month,
+            model: store.selectedModel,
+          });
+
+          // Logic Check: Empty inputs?
+          if (!event.theme) {
+            console.warn("[DEEP_TRACE:3_LOGIC] WARNING: event.theme is empty! AI might fail or produce generic output.");
+          }
+
           const eventRes = await generateEventScript(
             event.grade,
             event.theme,
@@ -206,10 +222,15 @@ export function TemplateEngine() {
             store.selectedModel,
             parseInt(event.month) || 10
           );
+
+          console.log("[DEEP_TRACE:2_FLOW] Response from generateEventScript:", eventRes.success ? "SUCCESS" : "FAILED");
+
           if (eventRes.success && eventRes.data) {
+            console.log("[DEEP_TRACE:2_FLOW] Data received. Keys:", Object.keys(eventRes.data).join(", "));
             store.updateEventField("result", eventRes.data);
             store.setSuccess("Đã tạo kịch bản ngoại khóa thành công!");
           } else {
+            console.error("[DEEP_TRACE:2_FLOW] Generation failed. Error:", eventRes.error);
             // Updated: Show error instead of Copy Prompt fallback for Event mode
             throw new Error(
               eventRes.error ||
