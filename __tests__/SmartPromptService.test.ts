@@ -29,7 +29,7 @@ describe('SmartPromptService', () => {
             pedagogicalNotes: "Pedagogical notes"
         };
 
-        const prompt = SmartPromptService.buildFinalSmartPrompt(mockData);
+        const prompt = SmartPromptService.buildFinalSmartPrompt("Base Prompt", mockData);
         expect(prompt).toContain("Khá»‘i lá»›p: 11");
         expect(prompt).toContain("CHá»¦ Äá»€: Test Topic");
         expect(prompt).toContain("5512");

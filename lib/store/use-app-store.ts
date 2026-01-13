@@ -71,6 +71,7 @@ interface AppState {
         budget: string;
         checklist: string;
         instructions: string;
+        duration: string;
         result: EventResult | null;
     };
 
@@ -175,6 +176,7 @@ export const useAppStore = create<AppState>()(
                 budget: "",
                 checklist: "",
                 instructions: "",
+                duration: "45",
                 result: null,
             },
 

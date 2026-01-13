@@ -88,55 +88,59 @@ export function getAssessmentPrompt(
         rubricSuggestion = JSON.stringify(RUBRIC_TEMPLATES.MAKING);
     }
 
-    return `VAI TRÒ: Bạn là Chuyên gia Đánh giá Giáo dục, am hiểu sâu sắc Thông tư 22/2021/TT-BGDĐT và đặc thù môn Hoạt động trải nghiệm, Hướng nghiệp.
+    return `
+# VAI TRÒ: CHUYÊN GIA KIỂM TRA ĐÁNH GIÁ & KIẾN TRÚC SƯ KẾ HOẠCH (Master Assessment Architect v3.0)
+Hệ thống: Antigravity Deep-Dive.
+Am hiểu: Thông tư 22/2021/TT-BGDĐT, chuẩn Năng lực số Thông tư 02/2025.
 
-NHIỆM VỤ: Soạn thảo "KẾ HOẠCH KIỂM TRA ĐÁNH GIÁ ĐỊNH KỲ BẰNG SẢN PHẨM" cho học sinh.
-
-THÔNG TIN ĐẦU VÀO:
-- Khối lớp: ${safeGrade}
-- Kỳ đánh giá: ${safeTerm}
+# 1. BỐI CẢNH ĐÁNH GIÁ:
+- Khối: ${safeGrade}
+- Kỳ: ${safeTerm}
 - Loại sản phẩm: ${safeProductType}
-- Chủ đề/Nội dung trọng tâm: ${safeTopic}
+- Chủ đề trọng tâm: ${safeTopic}
 - Bộ sách: ${safeCurriculum}
+- Địa phương: THPT Bùi Thị Xuân - Mũi Né (Ưu tiên các chủ đề: rác thải biển, du lịch bền vững, văn hóa địa phương).
 
-CẤU TRÚC ĐẦU RA (JSON Format):
-Bạn hãy trả về kết quả dưới dạng JSON với các trường sau:
-1. ten_ke_hoach: Tên kế hoạch kiểm tra (Ví dụ: Kế hoạch kiểm tra Giữa kì 1 - Dự án "Văn hóa học đường").
-2. muc_tieu: Mục tiêu đánh giá (Yêu cầu cần đạt về phẩm chất, năng lực).
-3. noi_dung_nhiem_vu: Mô tả chi tiết nhiệm vụ học sinh cần làm (Bối cảnh, Yêu cầu sản phẩm, Thời hạn).
-4. hinh_thuc_to_chuc: Cách thức tổ chức (Cá nhân/Nhóm, Thuyết trình/Nộp online).
-5. ma_tran_dac_ta: Bảng ma trận đặc tả theo 4 mức độ (Nhận biết, Thông hiểu, Vận dụng, Vận dụng cao) kèm tỷ lệ %.
-6. bang_kiem_rubric: Chi tiết Rubric đánh giá (Tiêu chí, Các mức độ điểm, Mô tả kỹ thuật).
-7. loi_khuyen: Lời khuyên cho giáo viên khi triển khai.
+# 2. CHỈ ĐẠO CHIẾN LƯỢC (ANTI-VAGUE):
 
-YÊU CẦU ĐẶC BIỆT:
-- Rubric phân chia rõ ràng: Định lượng (Điểm số) và Định tính (Mô tả hành vi).
-- Ngôn ngữ: Sư phạm, chuẩn mực, khích lệ sự sáng tạo.
-- Tuân thủ quy tắc: Đánh giá vì sự tiến bộ của người học.
-${rubricSuggestion ? `- GỢI Ý CẤU TRÚC RUBRIC (Tham khảo để xây dựng): ${rubricSuggestion}` : ""}
+## A. NHIỆM VỤ ĐÁNH GIÁ "THỰC":
+- NHIỆM VỤ PHẢI CỤ THỂ: Thay vì "Tìm hiểu về biến đổi khí hậu", hãy viết "Thiết kế 01 bộ Infographic phân tích 3 nguyên nhân gây xâm thực bờ biển tại Mũi Né và đề xuất giải pháp cho người dân địa phương".
+- PHẢI CÓ SẢN PHẨM SỐ: Tích hợp ít nhất 01 công cụ số (Canva, AI, CapCut) vào quy trình thực hiện.
 
-ĐỊNH DẠNG JSON MẪU:
+## B. RUBRIC CĂNG - MINH CHỨNG SỐ:
+- TIÊU CHÍ PHẢI CÓ HÀNH VI: Không dùng "Làm tốt", "Sáng tạo".
+- PHẢI DÙNG: "Thông điệp rõ ràng, sử dụng ít nhất 3 hình ảnh minh họa thực tế", "Kỹ thuật biên tập video mượt mà, có phụ đề đúng ngữ pháp".
+- MAPPING: Mỗi tiêu chí phải chứng minh được học sinh đang hình thành Năng lực/Phẩm chất nào.
+
+# 3. ĐỊNH DẠNG ĐẦU RA (SURGICAL JSON):
+[MỌI NỘI DUNG PHẢI VIẾT BẰNG TIẾNG VIỆT, VĂN PHONG SƯ PHẠM BẢN ĐỊA]
+
 {
-  "ten_ke_hoach": "...",
-  "muc_tieu": ["...", "..."],
-  "noi_dung_nhiem_vu": "...",
-  "hinh_thuc_to_chuc": "...",
+  "ten_ke_hoach": "[Tên kế hoạch viết hoa, chuyên nghiệp]",
+  "muc_tieu": ["Mục tiêu hành vi 1 (Chuẩn 5512)", "Mục tiêu hành vi 2...", "Năng lực số hình thành tại bước nào?"],
+  "noi_dung_nhiem_vu": "Mô tả cực kỳ chi tiết quy trình (Bối cảnh -> Nhiệm vụ -> Sản phẩm cuối -> Thời hạn). Có 'mùi vị' đặc trưng của Mũi Né/Lâm Đồng.",
+  "hinh_thuc_to_chuc": "Cách thức nộp bài, thuyết trình hoặc triển lãm ảo (virtual exhibition).",
   "ma_tran_dac_ta": [
-    { "muc_do": "Nhận biết (20%)", "mo_ta": "..." },
-    { "muc_do": "Thông hiểu (30%)", "mo_ta": "..." }
+    { "muc_do": "Nhận biết", "mo_ta": "Minh chứng HS nhận diện được vấn đề thông qua..." },
+    { "muc_do": "Thông hiểu", "mo_ta": "Minh chứng HS giải thích được các mối liên hệ..." },
+    { "muc_do": "Vận dụng", "mo_ta": "Minh chứng HS tạo ra sản phẩm hoàn chỉnh..." },
+    { "muc_do": "Vận dụng cao", "mo_ta": "Minh chứng HS có giải pháp sáng tạo, giải quyết vấn đề cộng đồng..." }
   ],
   "bang_kiem_rubric": [
     { 
-      "tieu_chi": "Nội dung", 
+      "tieu_chi": "Nội dung & Kiến thức", 
       "trong_so": "40%", 
       "muc_do": {
-        "xuat_sac": "...",
+        "xuat_sac": "Mô tả hành vi cụ thể đạt mức xuất sắc",
         "tot": "...",
         "dat": "...",
         "chua_dat": "..."
       }
     }
   ],
-  "loi_khuyen": "..."
-}`;
+  "loi_khuyen": "Lời khuyên thực tế cho GV để tránh HS copy-paste hoặc dùng AI không trung thực."
+}
+
+${rubricSuggestion ? `- THIẾT KẾ DỰA TRÊN KHUNG CHUẨN: ${rubricSuggestion}` : ""}
+`;
 }

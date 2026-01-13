@@ -19,6 +19,10 @@ export interface MeetingResult {
   summary?: string;
   conclusion?: string;
   metadata?: any;
+  lan_hop?: string;
+  chu_tri?: string;
+  thu_ky?: string;
+  thanh_vien?: string;
 }
 
 export interface LessonTask {
@@ -161,6 +165,8 @@ export interface EventResult {
   kinh_phi?: string;
   thanh_phan_tham_du?: string;
   to_chuc_thuc_hien_chuan_bi?: string;
+  so_ke_hoach?: string;
+  grade?: string;
 }
 
 export interface NCBHResult {
@@ -318,6 +324,8 @@ export interface EventTabProps {
   setEventChecklist: (value: string) => void;
   eventCustomInstructions: string;
   setEventCustomInstructions: (value: string) => void;
+  eventDuration: string;
+  setEventDuration: (value: string) => void;
   eventResult: EventResult | null;
   setEventResult: (result: EventResult | null) => void;
   isGenerating: boolean;

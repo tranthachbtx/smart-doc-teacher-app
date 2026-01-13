@@ -104,10 +104,8 @@ export const TemplateExportService = {
       });
 
       const data = {
-        ten_truong: clean(lesson.ten_truong || "........................"),
-        to_chuyen_mon: clean(
-          lesson.to_chuyen_mon || "........................"
-        ),
+        ten_truong: clean(DEPT_INFO.school.toUpperCase()),
+        to_chuyen_mon: clean(DEPT_INFO.name.toUpperCase()),
         chu_de: clean(lesson.chuDeSo || "......"),
         ten_chu_de: clean(
           lesson.theme || lesson.ten_bai || "........................"
@@ -118,6 +116,7 @@ export const TemplateExportService = {
         lop: lesson.grade ? `12A${lesson.grade.replace(/\D/g, "")}` : "12A...",
         so_tiet: (lesson.duration || lesson.so_tiet || "03").replace(/\D/g, ""),
         ngay_soan: new Date().toLocaleDateString("vi-VN"),
+        upper_agency: clean(DEPT_INFO.upperAgency),
         muc_tieu_kien_thuc: clean(lesson.muc_tieu_kien_thuc),
         muc_tieu_nang_luc: clean(lesson.muc_tieu_nang_luc),
         muc_tieu_pham_chat: clean(lesson.muc_tieu_pham_chat),
@@ -135,6 +134,8 @@ export const TemplateExportService = {
         hoat_dong_van_dung_cot_2: clean(lesson.hoat_dong_van_dung_cot_2),
         ho_so_day_hoc: clean(lesson.ho_so_day_hoc),
         huong_dan_ve_nha: clean(lesson.huong_dan_ve_nha),
+        to_truong: clean(DEPT_INFO.head),
+        hieu_truong: "........................",
       };
 
       doc.render(data);
@@ -172,9 +173,17 @@ export const TemplateExportService = {
         nullGetter: () => "",
       });
 
-      // FULL SYNC with meeting-prompts.ts
+      // FULL SYNC with meeting-prompts.ts & docx-templates.ts
+      const now = new Date();
       const data = {
-        thang: new Date().getMonth() + 1,
+        ten_truong: clean(DEPT_INFO.school.toUpperCase()),
+        to_chuyen_mon: clean(DEPT_INFO.name.toUpperCase()),
+        thang: now.getMonth() + 1,
+        nam: now.getFullYear(),
+        lan_hop: clean(meeting.lan_hop || "01"),
+        chu_tri: clean(meeting.chu_tri || DEPT_INFO.head),
+        thu_ky: clean(meeting.thu_ky || DEPT_INFO.members[1] || "................"),
+        thanh_vien: clean(meeting.thanh_vien || DEPT_INFO.members.join(", ")),
         noi_dung_chinh: clean(meeting.noi_dung_chinh || meeting.content),
         uu_diem: clean(meeting.uu_diem),
         han_che: clean(meeting.han_che),
@@ -203,75 +212,36 @@ export const TemplateExportService = {
   },
 
   async exportEventToTemplate(
-    event: EventResult,
-    templatePath: string = "/templates/mau-ke-hoach-ngoai-khoa.docx"
+    event: EventResult
   ) {
-    let zip: any = null;
     try {
-      const response = await fetch(templatePath);
-      if (!response.ok)
-        throw new Error(`Template not found at ${templatePath}`);
-      const buffer = await response.arrayBuffer();
-      zip = new PizZip(buffer);
-      repairTags(zip);
+      const { generateEventDocx } = await import("./event-template-generator");
 
-      const doc = new Docxtemplater(zip, {
-        paragraphLoop: true,
-        linebreaks: true,
-        delimiters: { start: "{{", end: "}}" },
-        nullGetter: () => "",
-      });
-
-      // FULL SYNC with Decree 30/2020/NĐ-CP & ai-prompts.ts
       const now = new Date();
       const data = {
-        // Administrative Header
-        upper_agency: clean(DEPT_INFO.upperAgency),
-        ten_truong: clean(DEPT_INFO.school.toUpperCase()),
-        to_chuyen_mon: clean(DEPT_INFO.name.toUpperCase()),
-        so_ke_hoach: clean(event.so_ke_hoach || "..../KH-BTX"),
-        dia_danh: "Mũi Né",
+        upper_agency: DEPT_INFO.upperAgency,
+        ten_truong: DEPT_INFO.school.toUpperCase().replace("TRƯỜNG THPT", "").trim(),
+        to_chuyen_mon: DEPT_INFO.name.toUpperCase().replace("TỔ", "").trim(),
+        so_ke_hoach: event.so_ke_hoach || "..../KH-BTX",
         ngay_thang: `Mũi Né, ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}`,
 
-        // Content
-        ten_chu_de: clean(event.ten_chu_de || event.title || event.ten_ke_hoach),
-        ten_ke_hoach: clean(event.ten_ke_hoach || event.ten_chu_de || event.title),
-        thoi_gian: clean(event.thoi_gian),
-        dia_diem: clean(event.dia_diem),
-        doi_tuong: clean(event.doi_tuong),
-        so_luong: clean(event.so_luong),
-        muc_tieu: clean(event.muc_tieu || event.muc_dich_yeu_cau),
-        muc_dich_yeu_cau: clean(event.muc_dich_yeu_cau || event.muc_tieu),
-        nang_luc: clean(event.nang_luc),
-        pham_chat: clean(event.pham_chat),
-        noi_dung: clean(event.noi_dung || event.content),
-        kich_ban_chi_tiet: clean(event.kich_ban_chi_tiet),
-        kich_ban: clean(event.kich_ban_chi_tiet),
-        thong_diep_ket_thuc: clean(event.thong_diep_ket_thuc),
-        du_toan_kinh_phi: clean(event.du_toan_kinh_phi),
-        kinh_phi: clean(event.kinh_phi),
-        checklist_chuan_bi: clean(event.checklist_chuan_bi),
-        chuan_bi: clean(event.checklist_chuan_bi),
-        thanh_phan_tham_du: clean(event.thanh_phan_tham_du),
-        to_chuc_thuc_hien_chuan_bi: clean(event.to_chuc_thuc_hien_chuan_bi),
-
-        // Signatures
-        to_truong: clean(DEPT_INFO.head),
-        hieu_truong: "........................",
-        thang: now.getMonth() + 1,
-        nam: now.getFullYear(),
+        khoi_lop: (event.doi_tuong || event.grade || "").toString().replace(/Học sinh khối|Khối/gi, "").trim(),
+        ten_chu_de: event.ten_chu_de || event.title || event.ten_ke_hoach,
+        muc_dich_yeu_cau: event.muc_tieu || event.muc_dich_yeu_cau,
+        thoi_gian: event.thoi_gian,
+        dia_diem: event.dia_diem || "Sân trường",
+        noi_dung: event.noi_dung || event.content,
+        kich_ban_chi_tiet: event.kich_ban_chi_tiet,
+        kinh_phi: event.kinh_phi || event.du_toan_kinh_phi,
+        to_chuc_thuc_hien_chuan_bi: event.to_chuc_thuc_hien_chuan_bi,
+        to_truong: DEPT_INFO.head,
       };
 
-      doc.render(data);
-      const out = doc.getZip().generate({
-        type: "blob",
-        mimeType:
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      });
-      saveAs(out, `Ke_Hoach_Ngoai_Khoa_${Date.now()}.docx`);
+      const out = await generateEventDocx(data);
+      saveAs(out, `KHNK_${event.grade}_${Date.now()}.docx`);
       return true;
     } catch (error: any) {
-      this.handleError(error, zip);
+      console.error("Pure Programmatic Export Error:", error);
       throw error;
     }
   },
@@ -297,7 +267,14 @@ export const TemplateExportService = {
       });
 
       // FULL SYNC with ncbh-prompts.ts
+      const now = new Date();
       const data = {
+        ten_truong: clean(DEPT_INFO.school.toUpperCase()),
+        to_chuyen_mon: clean(DEPT_INFO.name.toUpperCase()),
+        upper_agency: clean(DEPT_INFO.upperAgency),
+        ngay: now.getDate(),
+        thang: now.getMonth() + 1,
+        nam: now.getFullYear(),
         ten_bai: clean(ncbh.ten_bai || ncbh.title),
         ly_do_chon: clean(ncbh.ly_do_chon),
         ly_do: clean(ncbh.ly_do_chon), // Alias
@@ -309,6 +286,7 @@ export const TemplateExportService = {
         nguyen_nhan_giai_phap: clean(ncbh.nguyen_nhan_giai_phap),
         bai_hoc_kinh_nghiem: clean(ncbh.bai_hoc_kinh_nghiem),
         bai_hoc: clean(ncbh.bai_hoc_kinh_nghiem), // Alias
+        to_truong: clean(DEPT_INFO.head),
       };
 
       doc.render(data);
@@ -346,7 +324,14 @@ export const TemplateExportService = {
       });
 
       // FULL SYNC with assessment-prompts.ts
+      const now = new Date();
       const data = {
+        ten_truong: clean(DEPT_INFO.school.toUpperCase()),
+        to_chuyen_mon: clean(DEPT_INFO.name.toUpperCase()),
+        upper_agency: clean(DEPT_INFO.upperAgency),
+        ngay: now.getDate(),
+        thang: now.getMonth() + 1,
+        nam: now.getFullYear(),
         ten_ke_hoach: clean(assessment.ten_ke_hoach || assessment.title),
         muc_tieu: clean(assessment.muc_tieu),
         noi_dung_nhiem_vu: clean(assessment.noi_dung_nhiem_vu),
@@ -365,6 +350,8 @@ export const TemplateExportService = {
           assessment.rubric_text || (assessment as any).bang_kiem_rubric
         ), // Alias
         loi_khuyen: clean(assessment.loi_khuyen),
+        to_truong: clean(DEPT_INFO.head),
+        hieu_truong: "........................",
       };
 
       doc.render(data);

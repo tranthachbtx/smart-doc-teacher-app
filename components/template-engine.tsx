@@ -160,6 +160,7 @@ const TemplateEngine = () => {
   const [eventBudget, setEventBudget] = useState("");
   const [eventChecklist, setEventChecklist] = useState("");
   const [eventEvaluation, setEventEvaluation] = useState("");
+  const [eventDuration, setEventDuration] = useState("45");
 
   // Library/History state
   const [projects, setProjects] = useState<ProjectHistory[]>([]);
@@ -771,7 +772,9 @@ const TemplateEngine = () => {
       eventBudget,
       eventChecklist,
       eventEvaluation,
-      selectedModel
+      selectedModel,
+      parseInt(selectedEventMonth) || 10,
+      eventDuration
     );
 
     if (result.success && result.data) {
@@ -1630,6 +1633,8 @@ const TemplateEngine = () => {
               setEventChecklist={setEventChecklist}
               eventCustomInstructions={eventCustomInstructions}
               setEventCustomInstructions={setEventCustomInstructions}
+              eventDuration={eventDuration}
+              setEventDuration={setEventDuration}
               eventResult={eventResult}
               setEventResult={setEventResult}
               isGenerating={isGenerating}

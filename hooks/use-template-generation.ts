@@ -148,20 +148,32 @@ YÃŠU Cáº¦U Äáº¶C BIá»†T Vá»€ CHáº¤T LÆ¯á»¢NG & Äá
     budget?: string,
     checklist?: string,
     evaluation?: string,
-    model?: string
+    model?: string,
+    month?: number,
+    duration?: string
   ): Promise<ActionResult<EventResult>> => {
     setIsGenerating(true);
     setError(null);
     try {
-      const result = await generateEventScript(grade, theme, customInstructions, budget, checklist, evaluation, model);
+      const result = await generateEventScript(
+        grade,
+        theme,
+        customInstructions || "",
+        budget,
+        checklist,
+        evaluation,
+        model,
+        month,
+        duration
+      );
       if (result.success && result.data) {
         return { success: true, data: result.data as EventResult };
       } else {
-        setError(result.error || "Lá»—i khi táº¡o káº¿ hoáº¡ch ngoáº¡i khÃ³a");
+        setError(result.error || "Lỗi khi tạo kế hoạch ngoại khóa");
         return { success: false, error: result.error };
       }
     } catch (err: any) {
-      setError(err.message || "Lá»—i khÃ´ng xÃ¡c Ä‘á»‹nh");
+      setError(err.message || "Lỗi không xác định");
       return { success: false, error: err.message };
     } finally {
       setIsGenerating(false);

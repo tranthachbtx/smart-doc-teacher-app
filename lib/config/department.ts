@@ -2,7 +2,7 @@
 // Tổ HĐTN, HN & GDĐP - Trường THPT Bùi Thị Xuân - Mũi Né
 
 export const DEPT_INFO = {
-  upperAgency: "SỞ GD&ĐT BÌNH THUẬN",
+  upperAgency: "SỞ GD&ĐT Lâm Đồng",
   name: "Tổ HĐTN, HN & GDĐP", // Tên tổ
   school: "Trường THPT Bùi Thị Xuân - Mũi Né",
   head: "Trần Hoàng Thạch", // Tổ trưởng

@@ -348,111 +348,91 @@ function xacDinhLoaiChuDe(tenChuDe: string): string {
 export function getEventPrompt(
   grade: string,
   theme: string,
-  month?: number
+  month?: number,
+  instructions?: string,
+  budget?: string,
+  checklist?: string,
+  duration: string = "45"
 ): string {
-  const gradeInfo =
-    GRADE_PSYCHOLOGY[grade as keyof typeof GRADE_PSYCHOLOGY] ||
-    GRADE_PSYCHOLOGY["10"];
-  const gradeNumber = Number.parseInt(grade) || 10;
-  const location = "Trường THPT Bùi Thị Xuân - Mũi Né";
+  const { getGradeDNA, getTopicSuggestion } = require("@/lib/data/event-dna-database");
+  const dna = getGradeDNA(grade);
+  const suggestion = getTopicSuggestion(grade, month || 0);
 
-  // 1. DATABASE INJECTION: Lấy dữ liệu chuyên môn từ Database
-  const topicData = findTopicInCurriculum(grade, theme);
-  const chuDeDuLieu = month ? getChuDeTheoThang(gradeNumber as 10 | 11 | 12, month) : null;
+  const gradeInfo = dna || {
+    psychology: "Học sinh năng động",
+    tone_voice: "Trẻ trung",
+    preferred_formats: ["Hội thi"]
+  };
 
-  // 2. CONTEXT CONSTRUCTION: Xây dựng bối cảnh sự kiện
-  const contextNgoaiKhoa = taoContextNgoaiKhoaChiTiet(gradeNumber, theme);
+  const durationNum = parseInt(duration) || 45;
+  const periods = Math.ceil(durationNum / 45);
+
+  // Logic Layer: Determine Mode
+  let mode = "FAST_AND_FURIOUS";
+  let modeConstraint = "KHÔNG chọn hoạt động làm sản phẩm tại chỗ (vẽ, viết). Ưu tiên: Trình diễn sân khấu, Gameshow nhanh, Hùng biện.";
+  if (durationNum >= 120) {
+    mode = "FESTIVAL";
+    modeConstraint = "Phải thiết kế hoạt động quy mô lớn: Hội thảo, Hội trại, Hoạt động toàn trường với nhiều trạm/gian hàng.";
+  } else if (durationNum >= 90) {
+    mode = "DEEP_DIVE";
+    modeConstraint = "Phải thiết kế hoạt động có chiều sâu: Talkshow, Workshop kỹ năng, Tranh biện hoặc Diễn đàn sân khấu.";
+  }
+
+  const smartSuggestion = suggestion?.smart_suggestion || "Sáng tạo dựa trên đặc thù địa phương Mũi Né.";
+
+  // Administrative Context
   const administrativeContext = taoContextVanBanHanhChinh({
-    ten_tinh: "Bình Thuận",
+    ten_tinh: "Lâm Đồng",
     ten_truong: "Bùi Thị Xuân - Mũi Né",
     ngay: new Date().getDate(),
     thang: new Date().getMonth() + 1,
     nam: new Date().getFullYear(),
     ten_chu_de: theme,
+    lop: grade
   });
 
-  const teacherPool = "Thầy Trần Hoàng Thạch, Thầy Lê Quang Hiệp, Thầy Nguyễn Thanh Hoang, Thầy Bùi Quang Mẫn, Thầy Nguyễn Văn Linh, Thầy Mai Văn Phước, Thầy Dương Quang, Thầy Trần Văn Tạ, Thầy Ngô Anh Toàn, Thầy Nguyễn Vỹ, Cô Nguyễn Thị Hải";
-
   return `
-# VAI TRÒ: TỔNG ĐẠO DIỄN SỰ KIỆN & CỐ VẤN BIÊN KỊCH (Master Event Director v52.5)
+# VAI TRÒ: Tổng đạo diễn Sự kiện & Chuyên gia HĐTN (Master Prompt v53.0 - Spoken Focus).
 
-# THÀNH PHẦN HÀNH CHÍNH (NGHỊ ĐỊNH 30/2020/NĐ-CP):
-Bạn phải soạn thảo kịch bản theo đúng format KẾ HOẠCH hành chính của ngành Giáo dục:
-- Cơ quan chủ quản: SỞ GD&ĐT BÌNH THUẬN.
-- Đơn vị ban hành: TRƯỜNG THPT BÙI THỊ XUÂN - MŨI NÉ.
-- Quốc hiệu: CỘNG HÀA XÃ HỘI CHỦ NGHĨA VIỆT NAM.
-- Tiêu ngữ: Độc lập - Tự do - Hạnh phúc.
+# I. DỮ LIỆU ĐẦU VÀO (CONTEXT):
+1. **Đối tượng:** Khối lớp ${grade} (Tâm lý: ${gradeInfo.psychology}).
+2. **Chủ đề:** "${theme}"
+3. **Thời lượng:** ${durationNum} phút (${mode} Mode).
+4. **Bối cảnh:** THPT Bùi Thị Xuân, Mũi Né (Nắng rực, gió biển, du lịch, làng chài).
 
-# THÔNG ĐIỆP TỪ NGƯỜI DÙNG:
-"Hãy đảm bảo kế hoạch ngoại khoá tạo ra đúng thời gian tôi chọn, đạt chất lượng 10/10 và đúng chuẩn văn bản hành chính (công văn mới)."
+${administrativeContext}
 
-# NHIỆM VỤ:
-Soạn Kế hoạch Ngoại khóa cho trường Bùi Thị Xuân - Mũi Né.
-**TIÊU CHUẨN 10/10:** Kịch bản phải dài (ít nhất 1500 từ), giàu cảm xúc, có lời thoại MC tung hứng, và lập luận tranh biện sắc bén.
+# II. CHỈ THỊ CHỐNG SÁO RỖNG (SPOKEN VOICE ONLY):
 
-# CONTEXT ĐỊA PHƯƠNG & NHÂN SỰ:
-- Địa điểm: Sân trường THPT Bùi Thị Xuân - Mũi Né.
-- Nhân sự: ${teacherPool}.
+## 1. MC "THOÁT VAI" VĂN BẢN (QUAN TRỌNG):
+- **TUYỆT ĐỐI KHÔNG** dùng văn phong viết: "Chúng ta cùng nhau...", "Tăng cường nhận thức...", "Hãy cùng đến với...".
+- **PHẢI DÙNG** văn phong nói (Spoken Language):
+   + *Mở đầu:* "Alo alo! 11A1 có đó không ạ? Các bạn ơi, nhìn cái nắng Mũi Né sáng nay các bạn thấy... thèm đi tắm biển hay thèm đi học hơn?"
+   + *Dẫn dắt:* "Biết gì chưa? Đằng kia kìa, mấy bạn 10A1 đang chuẩn bị một 'vũ khí bí mật'..."
+   + *Kết thúc:* "Chốt hạ lại nhé! Đừng để rác nhựa thành 'di sản' của chúng mình ở Mũi Né."
 
-# ĐỊNH DẠNG ĐẦU RA (HYBRID FORMAT v35.0 - BẮT BUỘC):
-Để đảm bảo nội dung kịch bản đạt điểm 10/10, bạn PHẢI trả về theo cấu trúc chính xác sau:
+## 2. CHẾ ĐỘ THỜI GIAN (${mode}):
+- ${modeConstraint}
 
-[PHẦN_1_JSON]
+## 3. ĐỊA PHƯƠNG HÓA MŨI NÉ:
+- Lồng ghép từ ngữ địa phương: Biển, nắng, đồi cát, rác nhựa đại dương, du lịch, hải sản.
+
+# III. ĐỊNH DẠNG ĐẦU RA (JSON MAPPING - CHUẨN ĐÉT):
+Trả về JSON sạch (Không markdown):
+
 {
-  "ten_ke_hoach": "[TÊN CHƯƠNG TRÌNH VIẾT HOA HÀO HÙNG]",
-  "ten_chu_de": "${theme}",
-  "thoi_gian": "7h00 - 7h45 (Hoặc theo yêu cầu cụ thể)",
-  "dia_diem": "Sân trường THPT Bùi Thị Xuân - Mũi Né",
-  "doi_tuong": "Học sinh khối ${grade}",
-  "so_luong": "Khoảng 500 học sinh và giáo viên",
-  "muc_tieu": "1. Kiến thức: ...\\n2. Kỹ năng: ...\\n3. Thái độ: ...",
-  "muc_dich_yeu_cau": "Thiết kế sân chơi bùng nổ, rèn luyện bản lĩnh Gen Z.",
-  "nang_luc": "Giao tiếp, Hợp tác, Tư duy phản biện, Năng lực số.",
-  "pham_chat": "Yêu nước, Trách nhiệm, Nhân ái.",
-  "kinh_phi": "2.500.000đ",
-  "du_toan_kinh_phi": [
-    "Maquette & Backdrop: 500.000đ",
-    "Quà tặng: 1.000.000đ",
-    "Đạo cụ & Hậu cần: 1.000.000đ"
-  ],
-  "checklist_chuan_bi": [
-    "Duyệt kịch bản MC đôi",
-    "Chuẩn bị âm thanh, backdrop",
-    "Chuẩn bị quà tặng & phiếu câu hỏi"
-  ],
-  "thanh_phan_tham_du": "BGH, Toàn thể GV và HS; Phụ trách chính: ${teacherPool}.",
-  "to_chuc_thuc_hien_chuan_bi": "1. Ban Nội dung: Thầy Trần Hoàng Thạch (Chủ trì).\\n2. Ban Hậu cần: Thầy Lê Quang Hiệp, Thầy Nguyễn Thanh Hoang.\\n3. Ban Văn nghệ: Thầy Bùi Quang Mẫn.",
-  "noi_dung": "I. KHỞI ĐỘNG (10P)\\nII. TRỌNG TÂM (25P)\\nIII. TỔNG KẾT (10P)",
-  "tien_trinh": [
-    {"thoi_gian": "7h00 - 7h10", "hoat_dong": "Khởi động & MC dẫn nhập"},
-    {"thoi_gian": "7h10 - 7h35", "hoat_dong": "Trọng tâm: Tranh biện/Tọa đàm"},
-    {"thoi_gian": "7h35 - 7h45", "hoat_dong": "Tổng kết & Trao quà"}
-  ],
-  "thong_diep_ket_thuc": "[CÂU SLOGAN CHỐT HẠ ĐỈNH CAO]",
-  "to_truong": "Trần Hoàng Thạch",
-  "hieu_truong": "........................"
+  "ten_chu_de": "[Slogan Gen Z - Ví dụ: Mũi Né Xanh: Không Nhành Nhựa]",
+  "muc_dich_yeu_cau": "- [Mục tiêu 1: CỤ THỂ theo động từ hành động]\\n- [Mục tiêu 2: Gắn với thực tế địa phương]",
+  "nang_luc": "...",
+  "pham_chat": "...",
+  "thoi_gian": "${durationNum} phút",
+  "dia_diem": "Sân trường/Hội trường",
+  "doi_tuong": "${grade}",
+  "kinh_phi": "${budget || "Dự toán chi tiết: âm thanh, đạo cụ, quà tặng"}",
+  "chuan_bi": "[Danh sách tech-list chi tiết]",
+  "kich_ban_chi_tiet": "[Bản thảo kịch bản sân khấu chi tiết]\\n**I. WARM-UP (10%):**\\n- MC 1: \\"...\\"\\n- MC 2: \\"...\\"\\n**II. TRỌNG TÂM (80%):**\\n- Diễn biến chính (Mô tả như một đạo diễn hiện trường)\\n**III. WRAP-UP (10%):**\\n- Thông điệp và Slogan cuối.",
+  "thong_diep_ket_thuc": "[Slogan ngắn]"
 }
-[/PHẦN_1_JSON]
-
-[PHẦN_2_KICH_BAN_CHI_TIET]
-(Tại đây bạn viết tự do kịch bản chi tiết trên 1500 từ. Sử dụng dấu ngoặc kép, xuống dòng, ký tự đặc biệt thoải mái).
-
-I. PHẦN KHỞI ĐỘNG (10 PHÚT)
-- MC Nam (Quốc Bình): [Lời thoại...]
-- MC Nữ (Minh Anh): [Lời thoại...]
-
-II. PHẦN TRỌNG TÂM: [TÊN CONCEPT] (25 PHÚT)
-- Vấn đề thực tế tại Mũi Né: [Mô tả...]
-- Tranh biện nảy lửa:
-  + Kiến nghị: ...
-  + Phe 1 (Ủng hộ - 3 luận điểm sâu): ...
-  + Phe 2 (Phản đối - 3 luận điểm đanh thép): ...
-  + MC điều phối & GV chuyên môn nhận xét.
-
-III. TỔNG KẾT & LAN TỎA (10 PHÚT)
-- Giao lưu khán giả: [Câu hỏi & Đáp án]
-- Thông điệp truyền cảm hứng cuối cùng: [Đoạn văn dài về quê hương].
-[/PHẦN_2_KICH_BAN_CHI_TIET]
 `;
 }
 
@@ -461,44 +441,44 @@ III. TỔNG KẾT & LAN TỎA (10 PHÚT)
 // ============================================================
 
 export const SURGICAL_UPGRADE_PROMPT = (fileSummary: string, topic: string) => `
-BẠN LÀ: Chuyên gia Khai phá Dữ liệu Giáo dục (Educational Data Mining Expert) với sự ám ảnh về độ chính xác nguyên bản (verbatim accuracy).
+BẠN LÀ: Chuyên gia Khai phá Dữ liệu Giáo dục(Educational Data Mining Expert) với sự ám ảnh về độ chính xác nguyên bản(verbatim accuracy).
 
-MỤC TIÊU: Thực hiện "Content Surgery" (Phẫu thuật nội dung) trên tóm tắt giáo án cũ để trích xuất nguyên liệu thô trước khi tái cấu trúc theo chuẩn 5512.
+MỤC TIÊU: Thực hiện "Content Surgery"(Phẫu thuật nội dung) trên tóm tắt giáo án cũ để trích xuất nguyên liệu thô trước khi tái cấu trúc theo chuẩn 5512.
 
-NGUYÊN TẮC BẤT DI BẤT DỊCH (STRICT RULES):
-1. KHÔNG TÓM TẮT (NO SUMMARIZATION): Tuyệt đối không rút gọn, cải biên. Nếu ví dụ dài, phải trích xuất đủ.
-2. PHẬN TÁCH 2 CỘT (2-COLUMN STRUCTURE): Mọi hoạt động phải được định hướng theo cấu trúc GV - HS.
-   - Sử dụng marker {{cot_1}} cho Hoạt động của Giáo viên.
-   - Sử dụng marker {{cot_2}} cho Hoạt động của Học sinh.
-3. INJECT HỆ THỐNG NLS & ĐẠO ĐỨC: Chèn các chỉ dẫn công cụ số (Canva, AI, Mentimeter) vào đúng các nhiệm vụ trích xuất.
+NGUYÊN TẮC BẤT DI BẤT DỊCH(STRICT RULES):
+1. KHÔNG TÓM TẮT(NO SUMMARIZATION): Tuyệt đối không rút gọn, cải biên.Nếu ví dụ dài, phải trích xuất đủ.
+2. PHẬN TÁCH 2 CỘT(2 - COLUMN STRUCTURE): Mọi hoạt động phải được định hướng theo cấu trúc GV - HS.
+   - Sử dụng marker { { cot_1 } } cho Hoạt động của Giáo viên.
+   - Sử dụng marker { { cot_2 } } cho Hoạt động của Học sinh.
+3. INJECT HỆ THỐNG NLS & ĐẠO ĐỨC: Chèn các chỉ dẫn công cụ số(Canva, AI, Mentimeter) vào đúng các nhiệm vụ trích xuất.
 
 VĂN BẢN CẦN PHẪU THUẬT:
 ---
-${fileSummary}
+  ${fileSummary}
 ---
-CHỦ ĐỀ/BỐI CẢNH: ${topic}
+  CHỦ ĐỀ / BỐI CẢNH: ${topic}
 
-QUY TRÌNH TƯ DUY (SURGICAL PROCESS):
-1. Bước 1 [Quét]: Xác định ranh giới (Start/End) của tất cả Ví dụ, Hoạt động trò chơi, Câu hỏi dẫn dắt. Tìm các anchor keywords (Ví dụ, Xét, Cho, Trò chơi...).
-2. Bước 2 [Trích xuất & Tái cấu trúc]: Sao chép nguyên văn nội dung, đồng thời phân bổ vào {{cot_1}} (GV) và {{cot_2}} (HS) cho phần Tổ chức thực hiện.
-3. Bước 3 [Kiểm chứng]: Tự đối chiếu: "Mình có vừa tóm tắt nội dung này không?". "Đã dùng đúng marker {{cot_1}}, {{cot_2}} chưa?".
+QUY TRÌNH TƯ DUY(SURGICAL PROCESS):
+1. Bước 1[Quét]: Xác định ranh giới(Start / End) của tất cả Ví dụ, Hoạt động trò chơi, Câu hỏi dẫn dắt.Tìm các anchor keywords(Ví dụ, Xét, Cho, Trò chơi...).
+2. Bước 2[Trích xuất & Tái cấu trúc]: Sao chép nguyên văn nội dung, đồng thời phân bổ vào { { cot_1 } } (GV) và { { cot_2 } } (HS) cho phần Tổ chức thực hiện.
+3. Bước 3[Kiểm chứng]: Tự đối chiếu: "Mình có vừa tóm tắt nội dung này không?". "Đã dùng đúng marker {{cot_1}}, {{cot_2}} chưa?".
 
-CẤU TRÚC PHẢN HỒI (BẮT BUỘC):
+CẤU TRÚC PHẢN HỒI(BẮT BUỘC):
 
-# 🔍 PHÂN TÍCH LỖI THỜI (Audit)
-- Phân tích ngắn gọn tại sao giáo án cũ chưa đạt chuẩn Năng lực số 2025 (Thông tư 02).
+# 🔍 PHÂN TÍCH LỖI THỜI(Audit)
+  - Phân tích ngắn gọn tại sao giáo án cũ chưa đạt chuẩn Năng lực số 2025(Thông tư 02).
 - Chỉ ra các bước 5512 còn thiếu.
 
-# 💾 TRÍ TUỆ CỐT LÕI (VERBATIM DATA & 2-COLUMN MAP)
+# 💾 TRÍ TUỆ CỐT LÕI(VERBATIM DATA & 2 - COLUMN MAP)
 [Danh sách tất cả ví dụ, câu hỏi, kịch bản trò chơi TRÍCH XUẤT NGUYÊN VĂN và gán marker]
-- Ví dụ 1: {{cot_1}} GV giới thiệu... {{cot_2}} HS quan sát...
-- Hoạt động 2: {{cot_1}} GV giao nhiệm vụ nhóm... {{cot_2}} HS thảo luận...
+- Ví dụ 1: { { cot_1 } } GV giới thiệu... { { cot_2 } } HS quan sát...
+- Hoạt động 2: { { cot_1 } } GV giao nhiệm vụ nhóm... { { cot_2 } } HS thảo luận...
 
-# 🚀 CHỈ THỊ PHẪU THUẬT (ACTIONABLE DIRECTIVES)
-[Cung cấp 5-10 chỉ dẫn cụ thể cho AI thế hệ sau]
-1. [Khởi động]: Sử dụng marker {{cot_1}} cho phần dẫn dắt của GV...
-2. [Tổ chức]: Bắt buộc dùng {{cot_1}} và {{cot_2}} trong mục d) Tổ chức thực hiện của 4 hoạt động 5512.
-3. [Năng lực số]: Sử dụng AI (Gemini/ChatGPT) để hỗ trợ học sinh ở phần...
+# 🚀 CHỈ THỊ PHẪU THUẬT(ACTIONABLE DIRECTIVES)
+[Cung cấp 5 - 10 chỉ dẫn cụ thể cho AI thế hệ sau]
+1.[Khởi động]: Sử dụng marker { { cot_1 } } cho phần dẫn dắt của GV...
+2.[Tổ chức]: Bắt buộc dùng { { cot_1 } } và { { cot_2 } } trong mục d) Tổ chức thực hiện của 4 hoạt động 5512.
+3.[Năng lực số]: Sử dụng AI(Gemini / ChatGPT) để hỗ trợ học sinh ở phần...
 
-LƯU Ý: Phản hồi này là nguyên liệu đầu vào cho Prompt AI sau. Hãy viết ngắn gọn ở phần Chỉ thị nhưng DÀI VÀ ĐẦY ĐỦ ở phần Trí tuệ cốt lõi.
+LƯU Ý: Phản hồi này là nguyên liệu đầu vào cho Prompt AI sau.Hãy viết ngắn gọn ở phần Chỉ thị nhưng DÀI VÀ ĐẦY ĐỦ ở phần Trí tuệ cốt lõi.
 `;

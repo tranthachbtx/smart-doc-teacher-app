@@ -220,7 +220,8 @@ export function TemplateEngine() {
             event.checklist,
             "", // evaluation placeholder
             store.selectedModel,
-            parseInt(event.month) || 10
+            parseInt(event.month) || 10,
+            event.duration
           );
 
           console.log("[DEEP_TRACE:2_FLOW] Response from generateEventScript:", eventRes.success ? "SUCCESS" : "FAILED");
@@ -590,6 +591,8 @@ export function TemplateEngine() {
     eventCustomInstructions: event.instructions,
     setEventCustomInstructions: (v) =>
       store.updateEventField("instructions", v),
+    eventDuration: event.duration,
+    setEventDuration: (v) => store.updateEventField("duration", v),
   };
 
   // --- Render ---

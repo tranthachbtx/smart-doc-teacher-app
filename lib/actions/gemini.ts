@@ -440,9 +440,15 @@ function parseHybridJSON(text: string): any {
       // Fallback: Lấy phần text sau tag đóng JSON
       const splitParts = text.split("[/PHẦN_1_JSON]");
       if (splitParts.length > 1) {
-        scriptContent = splitParts[1].replace(/\[\/PHẦN_2_KICH_BAN_CHI_TIET\]/g, "").trim();
+        scriptContent = splitParts[1]
+          .replace(/\[PHẦN_2_KICH_BAN_CHI_TIET\]/g, "")
+          .replace(/\[\/PHẦN_2_KICH_BAN_CHI_TIET\]/g, "")
+          .trim();
       }
     }
+
+    // Gỡ bỏ các dòng hướng dẫn trong ngoặc đơn ở đầu (AI thường tự thêm vào)
+    scriptContent = scriptContent.replace(/^\s*\([\s\S]*?\)\s*/, "").trim();
 
     // 3. MERGE
     return {
@@ -481,7 +487,7 @@ export async function extractTextFromFile(
   file: { mimeType: string; data: string },
   prompt: string
 ): Promise<ActionResult<string>> {
-  return generateAIContent(prompt, "gemini-2.0-flash", file);
+  return generateAIContent(prompt, "gemini-2.0-flash", "lesson", file);
 }
 
 export async function generateLesson(
@@ -584,55 +590,53 @@ export async function generateEventScript(
   checklist?: string,
   evaluation?: string,
   modelName = "gemini-2.0-flash",
-  month?: number
+  month?: number,
+  duration: string = "45"
 ): Promise<ActionResult<any>> {
-  console.log(`[EVENT_DIRECTOR_V51] 🚀 Khởi động Đạo diễn Sự kiện cho Khối: ${grade}, Chủ đề: ${topic}`);
-  if (month) console.log(`[EVENT_DIRECTOR_V51] 📅 Tháng thực hiện: ${month}`);
+  console.log(
+    `[EVENT_DIRECTOR_V52] 🚀 Khởi động Đạo diễn Sự kiện (v52.0) - Khối: ${grade}, Thời lượng: ${duration}p`
+  );
+  if (month) console.log(`[EVENT_DIRECTOR_V52] 📅 Tháng thực hiện: ${month}`);
 
-  let prompt = "";
+  let eventPrompt = "";
   try {
-    // DIRECT USE of ai-prompts.ts (Event section) - Now with Month support
-    prompt = getEventPrompt(grade, topic, month);
+    eventPrompt = getEventPrompt(
+      grade,
+      topic,
+      month,
+      instructions,
+      budget,
+      checklist,
+      duration
+    );
 
     // AUDIT: Xác nhận kích hoạt mode Scripting chuyên sâu
-    if (prompt.includes("Master Event Director")) {
-      console.log("[EVENT_DIRECTOR_V51] ✅ Hệ thống Master Prompt v51.0 (High-Fidelity) đã kích hoạt.");
+    if (eventPrompt.includes("Master Event Director")) {
+      console.log(
+        "[EVENT_DIRECTOR_V62] ✅ Hệ thống Master Prompt v62.0 (Direct-Injection) đã kích hoạt."
+      );
     }
 
-    let additionalInfo = "";
-    const safeInstructions = sanitize(instructions);
-    const safeBudget = sanitize(budget);
-    const safeChecklist = sanitize(checklist);
+    // SYSTEM PROMPT ĐỊA PHƯƠNG HÓA VÀ CHỐNG SÁO RỖNG
+    const eventSystemPrompt = `BẠN LÀ BẬC THẦY ĐẠO DIỄN SỰ KIỆN & CHUYÊN GIA SƯ PHẠM (Master Architect v65.0).
+YÊU CẦU CỐT LÕI: 
+1. CHỐNG SÁO RỖNG: Mục tiêu phải là HÀNH VI CỤ THỂ (Verbs + Content + Context). Không dùng từ khóa rỗng nếu không có hoạt động minh chứng.
+2. LOGIC SƯ PHẠM: Tranh biện/Diễn đàn phải có chiều sâu, lập luận sắc bén, không phản giáo dục.
+3. VĂN PHONG BẢN ĐỊA: Lời thoại MC phải đậm chất học đường Việt Nam, hào hứng, tự nhiên. Tuyệt đối không dùng văn phong dịch thuật ("Chào mọi người", "Mình rất vui").
+4. ĐỊA PHƯƠNG HÓA 100%: Gắn chặt với bối cảnh Mũi Né (Biển, rác thải đại dương, du lịch, làng chài).
+SẢN PHẨM: Kịch bản ngoại khóa SIÊU CHI TIẾT (>2000 từ). Trả về JSON chuẩn.`;
 
-    if (safeInstructions)
-      additionalInfo += `\n- Ý TƯỞNG/YÊU CẦU RIÊNG TỪ GIÁO VIÊN: ${safeInstructions}`;
-    if (safeBudget)
-      additionalInfo += `\n- NGÂN SÁCH DỰ KIẾN (Ưu tiên dùng dữ liệu này): ${safeBudget}`;
-    if (safeChecklist)
-      additionalInfo += `\n- CHECKLIST ĐÃ CÓ (Ưu tiên dùng dữ liệu này): ${safeChecklist}`;
-
-    if (additionalInfo) {
-      prompt += `\n\n============================================================\nCHỈ ĐẠO CỤ THỂ TỪ NGƯỜI TỔ CHỨC (PHẢI TUÂN THỦ TUYỆT ĐỐI):\n${additionalInfo}\n============================================================`;
-    }
-
-    // SYSTEM PROMPT ĐỊA PHƯƠNG HÓA
-    const eventSystemPrompt = `BẠN LÀ TỔNG ĐẠO DIỄN SỰ KIỆN XUẤT SẮC NHẤT. 
-YÊU CẦU: Soạn kịch bản ngoại khóa SIÊU CHI TIẾT (Ít nhất 1000 từ).
-NỘI DUNG PHẢI CÓ: Lời thoại MC đôi tung hứng dài, phần tranh biện có lập luận đa chiều sắc bén.
-Địa điểm: Trường THPT Bùi Thị Xuân - Mũi Né.
-Phong cách: Hào hứng, trẻ trung, Gen Z.
-ĐỊNH DẠNG: Trả về JSON chuẩn, thoát chuỗi đúng quy cách.`;
-
-    const text = await callAI(prompt, modelName, undefined, eventSystemPrompt);
-    console.log("[EVENT_DIRECTOR_V52_HYBRID] 📥 Phản hồi Hybrid đã nhận. Độ dài:", text.length, "ký tự.");
+    const text = await callAI(eventPrompt, modelName, undefined, eventSystemPrompt);
+    console.log(`[DEEP_TRACE:2_FLOW] Gemini raw response length: ${text.length} chars`);
 
     const data = parseHybridJSON(text);
-    console.log("[EVENT_DIRECTOR_V52_HYBRID] ✨ Kế hoạch đã được biên tập xong 10/10. Keys:", Object.keys(data).join(", "));
+    console.log(`[DEEP_TRACE:2_FLOW] Parsed Data keys: ${Object.keys(data).join(", ")}`);
+    console.log(`[DEEP_TRACE:3_LOGIC] doi_tuong value: "${data.doi_tuong}"`);
 
     return { success: true, data };
   } catch (e: any) {
     console.error("[EVENT_DIRECTOR_V52_HYBRID] ❌ THẤT BẠI:", e);
-    return { success: false, error: e.message, content: prompt };
+    return { success: false, error: e.message, content: eventPrompt };
   }
 }
 

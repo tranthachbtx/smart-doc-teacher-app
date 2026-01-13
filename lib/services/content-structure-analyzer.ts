@@ -107,7 +107,7 @@ export class ContentStructureAnalyzer {
 
         try {
             // SỬ DỤNG CHẾ ĐỘ MULTIMODAL (Gửi file trực tiếp thay vì text trích xuất lỗi)
-            const result = await generateAIContent(prompt, "gemini-2.0-flash", filePayload);
+            const result = await generateAIContent(prompt, "gemini-2.0-flash", "lesson", filePayload);
 
             if (!result.success) {
                 console.error("[Analyzer] AI Error Response:", result.error);

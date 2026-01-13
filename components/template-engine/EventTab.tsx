@@ -30,6 +30,8 @@ export function EventTab({
   setEventChecklist,
   eventCustomInstructions,
   setEventCustomInstructions,
+  eventDuration,
+  setEventDuration,
   eventResult,
   setEventResult,
   isGenerating,
@@ -43,8 +45,16 @@ export function EventTab({
     null
   );
 
-  // State for event duration (in minutes)
-  const [eventDuration, setEventDuration] = React.useState("45");
+  const { getTopicSuggestion } = require("@/lib/data/event-dna-database");
+  const suggestion = React.useMemo(() => {
+    return selectedGradeEvent && selectedEventMonth
+      ? getTopicSuggestion(selectedGradeEvent, parseInt(selectedEventMonth))
+      : null;
+  }, [selectedGradeEvent, selectedEventMonth]);
+
+  const smartPlaceholder = suggestion?.smart_suggestion
+    ? `Gợi ý: ${suggestion.smart_suggestion}`
+    : "Nhập yêu cầu chi tiết hoặc điều chỉnh về nội dung kế hoạch...";
 
   // Get chu de list for selected grade
   const chuDeList = React.useMemo(() => {
@@ -254,7 +264,7 @@ export function EventTab({
           <Textarea
             id="event-instructions-textarea"
             name="eventInstructions"
-            placeholder="Nhập yêu cầu chi tiết hoặc điều chỉnh về nội dung kế hoạch..."
+            placeholder={smartPlaceholder}
             value={eventCustomInstructions}
             onChange={(e) => setEventCustomInstructions(e.target.value)}
             rows={3}

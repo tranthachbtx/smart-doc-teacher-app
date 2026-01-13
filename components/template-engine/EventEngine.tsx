@@ -31,6 +31,8 @@ export interface EventEngineProps {
   copyToClipboard: (text: string) => void;
   eventCustomInstructions: string;
   setEventCustomInstructions: (value: string) => void;
+  eventDuration: string;
+  setEventDuration: (value: string) => void;
 }
 
 export function EventEngine(props: EventEngineProps) {

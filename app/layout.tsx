@@ -6,9 +6,9 @@ import { ServiceWorkerCleaner } from "@/components/service-worker-cleaner";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Trá»£ lÃ½ TTCM mÃ´n HÄTN, HN & GDÄP",
+  title: "Trợ lý tổ HOẠT ĐỘNG TRẢI NGHIỆM, HƯỚNG NGHIỆP & GIÁO DỤC ĐỊA PHƯƠNG ",
   description:
-    "Tá»± Ä‘á»™ng hÃ³a vÄƒn báº£n giÃ¡o dá»¥c vá»›i AI. Há»— trá»£ táº¡o biÃªn báº£n há»p, giÃ¡o Ã¡n vÃ  cÃ¡c tÃ i liá»‡u chuyÃªn mÃ´n.",
+    "Trợ lý AI của Trần Thạch :)",
   generator: "Tranthachbtx@gmail.com",
   icons: {
     icon: [
