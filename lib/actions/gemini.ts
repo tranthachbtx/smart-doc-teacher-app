@@ -4,7 +4,7 @@ import { DEFAULT_LESSON_SYSTEM_PROMPT } from "@/lib/prompts/system-prompts";
 import {
   getMeetingPrompt,
   getEventPrompt,
-  getLessonPrompt
+  getLessonPrompt,
 } from "@/lib/prompts/ai-prompts";
 import { getAssessmentPrompt } from "@/lib/prompts/assessment-prompts";
 import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
@@ -37,11 +37,24 @@ function isKeyBlocked(key: string): boolean {
 function registerKeyFailure(key: string) {
   if (!key) return;
   FAILED_KEYS_REGISTRY[key] = Date.now();
-  console.warn(`[CIRCUIT-BREAKER] 🚨 Trip registered for key: ${key.slice(0, 8)}...`);
+  console.warn(
+    `[CIRCUIT-BREAKER] 🚨 Trip registered for key: ${key.slice(0, 8)}...`
+  );
 }
 
 // Helper to deep clean API keys
-const clean = (k: string | undefined) => k?.trim().replace(/^["']|["']$/g, '') || "";
+const clean = (k: string | undefined) =>
+  k?.trim().replace(/^["']|["']$/g, "") || "";
+
+// HELPER: Sanitize text to remove control chars (fix Error 400)
+const sanitize = (text: string | null | undefined) => {
+  if (!text) return "";
+  // Remove non-printable chars (except newline, return, tab)
+  return text
+    .toString()
+    .replace(/[\x00-\x09\x0B-\x0C\x0E-\x1F\x7F]/g, "")
+    .trim();
+};
 
 // --- DYNAMIC ROUTING CONFIGURATION v45.0 ---
 function getApiConfig(modelName: string) {
@@ -51,7 +64,7 @@ function getApiConfig(modelName: string) {
   const CANONICAL_MAP: Record<string, string> = {
     "gemini-1.5-flash": "gemini-1.5-flash-001",
     "gemini-1.5-pro": "gemini-1.5-pro-001",
-    "gemini-1.0-pro": "gemini-1.0-pro-001"
+    "gemini-1.0-pro": "gemini-1.0-pro-001",
   };
 
   if (CANONICAL_MAP[cleanName]) {
@@ -62,14 +75,14 @@ function getApiConfig(modelName: string) {
   if (cleanName.includes("2.0") || cleanName.includes("exp")) {
     return {
       version: "v1beta",
-      model: `models/${cleanName}`
+      model: `models/${cleanName}`,
     };
   }
 
   // Stable Models (1.5, 1.0) use v1 with Canonical ID
   return {
     version: "v1",
-    model: `models/${cleanName}`
+    model: `models/${cleanName}`,
   };
 }
 
@@ -77,20 +90,35 @@ function getApiConfig(modelName: string) {
 export async function callAI(
   prompt: string,
   modelName = "gemini-1.5-flash",
-  file?: { mimeType: string, data: string },
+  file?: { mimeType: string; data: string },
   systemContent: string = DEFAULT_LESSON_SYSTEM_PROMPT
 ): Promise<string> {
   const errorLogs: string[] = [];
 
   // Prepare Payload for Gemini-style APIs
+  // Prepare Payload for Gemini-style APIs
+  const contentParts: any[] = [{ text: sanitize(prompt) }];
+
+  if (file?.data) {
+    contentParts.push({
+      inlineData: {
+        mimeType: file.mimeType || "application/pdf",
+        data: file.data,
+      },
+    });
+  }
+
   const geminiBody = {
-    contents: [{
-      parts: [
-        { text: `${systemContent}\n\nPROMPT:\n${prompt}` },
-        ...(file?.data ? [{ inlineData: { mimeType: file.mimeType || "application/pdf", data: file.data } }] : [])
-      ]
-    }],
-    generationConfig: { temperature: 0.85, maxOutputTokens: 8192 }
+    systemInstruction: {
+      parts: [{ text: sanitize(systemContent) }],
+    },
+    contents: [
+      {
+        role: "user",
+        parts: contentParts,
+      },
+    ],
+    generationConfig: { temperature: 0.85 },
   };
 
   // 1. STRATEGY: PROXY (With Circuit Breaker & Key Forwarding)
@@ -98,22 +126,36 @@ export async function callAI(
   const geminiKeysForProxy = [
     process.env.GEMINI_API_KEY,
     process.env.GEMINI_API_KEY_2,
-    process.env.GEMINI_API_KEY_3
-  ].map(k => clean(k)).filter(k => k.length > 5 && !isKeyBlocked(k));
+    process.env.GEMINI_API_KEY_3,
+  ]
+    .map((k) => clean(k))
+    .filter((k) => k.length > 5 && !isKeyBlocked(k));
 
-  if (proxyUrl && !proxyUrl.includes("example.com") && !isKeyBlocked(proxyUrl) && geminiKeysForProxy.length > 0) {
+  if (
+    proxyUrl &&
+    !proxyUrl.includes("example.com") &&
+    !isKeyBlocked(proxyUrl) &&
+    geminiKeysForProxy.length > 0
+  ) {
     const { version, model } = getApiConfig(modelName);
-    const shuffledProxyKeys = [...geminiKeysForProxy].sort(() => Math.random() - 0.5);
+    const shuffledProxyKeys = [...geminiKeysForProxy].sort(
+      () => Math.random() - 0.5
+    );
 
     for (const key of shuffledProxyKeys) {
       try {
-        const url = `${proxyUrl.startsWith('http') ? '' : 'https://'}${proxyUrl.replace(/\/$/, '')}/${version}/${model}:generateContent?key=${key}`;
+        const url = `${
+          proxyUrl.startsWith("http") ? "" : "https://"
+        }${proxyUrl.replace(
+          /\/$/,
+          ""
+        )}/${version}/${model}:generateContent?key=${key}`;
 
         const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(geminiBody),
-          signal: AbortSignal.timeout(20000)
+          signal: AbortSignal.timeout(90000),
         });
 
         const data = await response.json().catch(() => ({}));
@@ -125,17 +167,26 @@ export async function callAI(
           const errMsg = data.error?.message || "";
           // 429 Limit 0 Detection
           if (response.status === 429 && errMsg.includes("limit: 0")) {
-            errorLogs.push(`💳 Lỗi 429: Bạn chưa liên kết thẻ VISA vào Google Cloud cho Key ${key.slice(0, 5)}...`);
+            errorLogs.push(
+              `💳 Lỗi 429: Bạn chưa liên kết thẻ VISA vào Google Cloud cho Key ${key.slice(
+                0,
+                5
+              )}...`
+            );
             registerKeyFailure(key);
           } else if (response.status === 403) {
-            errorLogs.push(`🌏 Lỗi 403: Chặn vùng địa lý (Geo-block). Hãy dùng AI Gateway.`);
+            errorLogs.push(
+              `🌏 Lỗi 403: Chặn vùng địa lý (Geo-block). Hãy dùng AI Gateway.`
+            );
             registerKeyFailure(key);
           } else if (response.status === 404) {
             // Keep trying next model in pool if 404
             errorLogs.push(`Model ${model} not found on ${version}`);
           } else {
             if (response.status >= 400) registerKeyFailure(key);
-            errorLogs.push(`Proxy ${response.status}: ${errMsg || 'Unknown error'}`);
+            errorLogs.push(
+              `Proxy ${response.status}: ${errMsg || "Unknown error"}`
+            );
           }
         }
       } catch (e: any) {
@@ -150,12 +201,17 @@ export async function callAI(
   let geminiKeys = [
     process.env.GEMINI_API_KEY,
     process.env.GEMINI_API_KEY_2,
-    process.env.GEMINI_API_KEY_3
-  ].map(k => clean(k)).filter(k => k.length > 5);
+    process.env.GEMINI_API_KEY_3,
+  ]
+    .map((k) => clean(k))
+    .filter((k) => k.length > 5);
 
-  geminiKeys = geminiKeys.filter(k => !isKeyBlocked(k)).sort(() => Math.random() - 0.5);
+  geminiKeys = geminiKeys
+    .filter((k) => !isKeyBlocked(k))
+    .sort(() => Math.random() - 0.5);
 
-  if (geminiKeys.length === 0) console.warn("[AI-RELAY] ⚠️ All Gemini keys blocked.");
+  if (geminiKeys.length === 0)
+    console.warn("[AI-RELAY] ⚠️ All Gemini keys blocked.");
 
   // EXPANDED MODEL POOL FOR FALLBACK (Fix 404)
   const modelFallbackPool = [
@@ -163,7 +219,7 @@ export async function callAI(
     "gemini-1.5-flash",
     "gemini-1.5-flash-latest",
     "gemini-2.0-flash-exp",
-    "gemini-1.5-pro"
+    "gemini-1.5-pro",
   ];
 
   for (const key of geminiKeys) {
@@ -174,10 +230,10 @@ export async function callAI(
         const url = `https://generativelanguage.googleapis.com/${version}/${model}:generateContent?key=${key}`;
 
         const resp = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(geminiBody),
-          signal: AbortSignal.timeout(15000)
+          signal: AbortSignal.timeout(90000),
         });
 
         const data = await resp.json().catch(() => ({}));
@@ -188,7 +244,12 @@ export async function callAI(
         } else {
           const errMsg = data.error?.message || "";
           if (resp.status === 429 && errMsg.includes("limit: 0")) {
-            errorLogs.push(`💳 Lỗi 429: Bạn cần liên kết thẻ VISA để mở khóa Key ${key.slice(0, 5)}...`);
+            errorLogs.push(
+              `💳 Lỗi 429: Bạn cần liên kết thẻ VISA để mở khóa Key ${key.slice(
+                0,
+                5
+              )}...`
+            );
             registerKeyFailure(key);
             break; // Skip models for this key
           }
@@ -209,26 +270,34 @@ export async function callAI(
   const groqKey = clean(process.env.GROQ_API_KEY);
   if (groqKey && !isKeyBlocked(groqKey)) {
     try {
-      const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${groqKey}` },
-        body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [
-            { role: "system", content: systemContent },
-            { role: "user", content: prompt }
-          ],
-          temperature: 0.7
-        }),
-        signal: AbortSignal.timeout(25000)
-      });
+      const resp = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${groqKey}`,
+          },
+          body: JSON.stringify({
+            model: "llama-3.3-70b-versatile",
+            messages: [
+              { role: "system", content: systemContent },
+              { role: "user", content: prompt },
+            ],
+            temperature: 0.7,
+          }),
+          signal: AbortSignal.timeout(90000),
+        }
+      );
       if (resp.ok) {
         const data = await resp.json();
         return data.choices[0].message.content || "";
       } else if (resp.status === 429) {
         registerKeyFailure(groqKey);
       }
-    } catch (e: any) { errorLogs.push(`Groq: ${e.message}`); }
+    } catch (e: any) {
+      errorLogs.push(`Groq: ${e.message}`);
+    }
   }
 
   // 4. STRATEGY: OPENAI FALLBACK (Last Resort)
@@ -237,13 +306,19 @@ export async function callAI(
     try {
       const resp = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${openAIKey}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${openAIKey}`,
+        },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          messages: [{ role: "system", content: systemContent }, { role: "user", content: prompt }],
-          temperature: 0.7
+          messages: [
+            { role: "system", content: systemContent },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.7,
         }),
-        signal: AbortSignal.timeout(25000)
+        signal: AbortSignal.timeout(90000),
       });
       if (resp.ok) {
         const data = await resp.json();
@@ -251,10 +326,12 @@ export async function callAI(
       } else if (resp.status === 401 || resp.status === 429) {
         registerKeyFailure(openAIKey);
       }
-    } catch (e: any) { errorLogs.push(`OpenAI: ${e.message}`); }
+    } catch (e: any) {
+      errorLogs.push(`OpenAI: ${e.message}`);
+    }
   }
 
-  throw new Error(`ALL_AI_PROVIDERS_EXHAUSTED: ${errorLogs.join(' | ')}`);
+  throw new Error(`ALL_AI_PROVIDERS_EXHAUSTED: ${errorLogs.join(" | ")}`);
 }
 
 // --- API WRAPPERS ---
@@ -265,11 +342,14 @@ export async function callAI(
 function parseSmartJSON(text: string): any {
   try {
     // 1. Try removing Markdown code blocks
-    let cleanText = text.replace(/```json\s*/g, "").replace(/```\s*$/g, "").trim();
+    let cleanText = text
+      .replace(/```json\s*/g, "")
+      .replace(/```\s*$/g, "")
+      .trim();
 
     // 2. Find first '{' and last '}'
-    const firstOpen = cleanText.indexOf('{');
-    const lastClose = cleanText.lastIndexOf('}');
+    const firstOpen = cleanText.indexOf("{");
+    const lastClose = cleanText.lastIndexOf("}");
 
     if (firstOpen !== -1 && lastClose !== -1 && lastClose > firstOpen) {
       cleanText = cleanText.substring(firstOpen, lastClose + 1);
@@ -279,7 +359,10 @@ function parseSmartJSON(text: string): any {
     // 3. Last ditch: Fallback to simple parse (might throw)
     return JSON.parse(text);
   } catch (e) {
-    console.error("[SmartJSON] Parsing failed. Raw text:", text.substring(0, 100) + "...");
+    console.error(
+      "[SmartJSON] Parsing failed. Raw text:",
+      text.substring(0, 100) + "..."
+    );
     throw new Error("AI returned text but it wasn't valid JSON.");
   }
 }
@@ -287,22 +370,36 @@ function parseSmartJSON(text: string): any {
 /**
  * Compatibility wrapper for generateAIContent
  */
-export async function generateAIContent(prompt: string, model?: string, file?: any): Promise<ActionResult<string>> {
+export async function generateAIContent(
+  prompt: string,
+  model?: string,
+  file?: any
+): Promise<ActionResult<string>> {
   try {
     const text = await callAI(prompt, model || "gemini-2.0-flash", file);
     return { success: true, content: text, data: text };
-  } catch (e: any) { return { success: false, error: e.message, content: prompt }; }
+  } catch (e: any) {
+    return { success: false, error: e.message, content: prompt };
+  }
 }
 
 /**
  * CRITICAL: Fixed signature for extractTextFromFile (matching legacy calls)
  */
-export async function extractTextFromFile(file: { mimeType: string, data: string }, prompt: string): Promise<ActionResult<string>> {
+export async function extractTextFromFile(
+  file: { mimeType: string; data: string },
+  prompt: string
+): Promise<ActionResult<string>> {
   return generateAIContent(prompt, "gemini-2.0-flash", file);
 }
 
-export async function generateLesson(...args: any[]): Promise<ActionResult<any>> {
-  return { success: false, error: "Legacy generateLesson is disabled. Use Manual Hub." };
+export async function generateLesson(
+  ...args: any[]
+): Promise<ActionResult<any>> {
+  return {
+    success: false,
+    error: "Legacy generateLesson is disabled. Use Manual Hub.",
+  };
 }
 
 // Fixed Stubs to match TemplateEngineV2.tsx requirements
@@ -314,7 +411,7 @@ export async function generateLessonPlan(
   tasks: string[],
   chuDeSo?: string,
   suggestions?: string,
-  file?: { mimeType: string, data: string },
+  file?: { mimeType: string; data: string },
   modelName = "gemini-2.0-flash"
 ): Promise<ActionResult<any>> {
   let prompt = "";
@@ -324,7 +421,9 @@ export async function generateLessonPlan(
     const sectionRequirements = `
 YÊU CẦU CHO PHẦN THIẾT KẾ: TOÀN BÀI
 Ngữ cảnh hiện tại: Thiết kế bài dạy mới
-Hướng dẫn chi tiết: ${customInstructions || "Thiết kế sư phạm cao cấp theo chuẩn 5512"}
+Hướng dẫn chi tiết: ${
+      customInstructions || "Thiết kế sư phạm cao cấp theo chuẩn 5512"
+    }
 `;
     // We construct the prompt manually using getKHDHPrompt equivalent or the wrapper
     // Actually, getLessonPrompt in ai-prompts is designed for sections.
@@ -337,7 +436,7 @@ Hướng dẫn chi tiết: ${customInstructions || "Thiết kế sư phạm cao 
       topic,
       duration,
       sectionRequirements,
-      tasks.map(t => ({ name: t, description: "" })),
+      tasks.map((t) => ({ name: t, description: "" })),
       chuDeSo ? Number(chuDeSo) : undefined,
       activitySuggestions,
       !!file
@@ -368,9 +467,18 @@ export async function generateMeetingMinutes(
       keyContent || "",
       "", // currentThemes (will be auto-filled by prompt logic if empty)
       "", // nextThemes
-      ""  // nextMonth
+      "" // nextMonth
     );
-    const text = await callAI(prompt, modelName);
+
+    // SIMPLE SYSTEM PROMPT FOR MEETING
+    const meetingSystemPrompt = `ROLE: Professional Secretary. TASK: Create meeting minutes. OUTPUT: Valid JSON. LANGUAGE: Vietnamese.`;
+
+    const text = await callAI(
+      prompt,
+      modelName,
+      undefined,
+      meetingSystemPrompt
+    );
     const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
@@ -391,9 +499,27 @@ export async function generateEventScript(
   try {
     // DIRECT USE of ai-prompts.ts (Event section)
     prompt = getEventPrompt(grade, topic);
-    if (instructions) prompt += `\n\nYÊU CẦU BỔ SUNG TỪ NGƯỜI DÙNG:\n${instructions}`;
 
-    const text = await callAI(prompt, modelName);
+    let additionalInfo = "";
+    const safeInstructions = sanitize(instructions);
+    const safeBudget = sanitize(budget);
+    const safeChecklist = sanitize(checklist);
+
+    if (safeInstructions)
+      additionalInfo += `\n- YÊU CẦU BỔ SUNG: ${safeInstructions}`;
+    if (safeBudget)
+      additionalInfo += `\n- DỰ TOÁN KINH PHÍ NGƯỜI DÙNG NHẬP: ${safeBudget}`;
+    if (safeChecklist)
+      additionalInfo += `\n- CHECKLIST CHUẨN BỊ NGƯỜI DÙNG NHẬP: ${safeChecklist}`;
+
+    if (additionalInfo) {
+      prompt += `\n\nTHÔNG TIN ĐẦU VÀO TỪ NGƯỜI DÙNG (CẦN TÍCH HỢP VÀO KẾ HOẠCH):${additionalInfo}`;
+    }
+
+    // SIMPLE SYSTEM PROMPT FOR EVENT
+    const eventSystemPrompt = `ROLE: Event Planner & Youth Union Leader. TASK: Creative Script & Logistics Plan. OUTPUT: Valid JSON. LANGUAGE: Vietnamese.`;
+
+    const text = await callAI(prompt, modelName, undefined, eventSystemPrompt);
     const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
@@ -410,8 +536,14 @@ export async function generateNCBH(
   let prompt = "";
   try {
     // DIRECT USE of ncbh-prompts.ts
-    prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${instructions || ""}`;
-    const text = await callAI(prompt, modelName);
+    prompt = `${NCBH_ROLE}\n\n${NCBH_TASK}\n\nKHỐI: ${grade}\nCHỦ ĐỀ: ${topic}\nHƯỚNG DẪN: ${
+      instructions || ""
+    }`;
+
+    // SYSTEM PROMPT FOR NCBH
+    const ncbhSystemPrompt = `ROLE: Lesson Study Expert. TASK: Analyze learning process. OUTPUT: Valid JSON. LANGUAGE: Vietnamese.`;
+
+    const text = await callAI(prompt, modelName, undefined, ncbhSystemPrompt);
     const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
@@ -430,7 +562,16 @@ export async function generateAssessmentPlan(
   try {
     // DIRECT USE of assessment-prompts.ts
     prompt = getAssessmentPrompt(grade, term, productType, topic);
-    const text = await callAI(prompt, modelName);
+
+    // SYSTEM PROMPT FOR ASSESSMENT (Focus on measurement & evaluation)
+    const assessmentSystemPrompt = `ROLE: Educational Assessment Expert. TASK: Design Rubrics & Evaluation Plan. OUTPUT: Valid JSON. LANGUAGE: Vietnamese.`;
+
+    const text = await callAI(
+      prompt,
+      modelName,
+      undefined,
+      assessmentSystemPrompt
+    );
     const data = parseSmartJSON(text);
     return { success: true, data };
   } catch (e: any) {
@@ -438,7 +579,9 @@ export async function generateAssessmentPlan(
   }
 }
 
-export async function auditLessonPlan(lessonResult: any): Promise<ActionResult<any>> {
+export async function auditLessonPlan(
+  lessonResult: any
+): Promise<ActionResult<any>> {
   // audit logic is typically handled by performAdvancedAudit but we'll provide a wrapper
   const { performAdvancedAudit } = await import("./advanced-audit");
   const result = await performAdvancedAudit(lessonResult);
@@ -456,7 +599,7 @@ export async function generateLessonSection(
   chuDeSo?: string,
   suggestions?: string,
   modelName = "gemini-2.0-flash",
-  file?: { mimeType: string, data: string },
+  file?: { mimeType: string; data: string },
   stepInstruction?: string
 ): Promise<ActionResult<any>> {
   let prompt = "";
@@ -483,7 +626,9 @@ export async function generateLessonSection(
   }
 }
 
-export async function onRefineSection(...args: any[]): Promise<ActionResult<any>> {
+export async function onRefineSection(
+  ...args: any[]
+): Promise<ActionResult<any>> {
   return { success: false, error: "Feature currently unavailable." };
 }
 

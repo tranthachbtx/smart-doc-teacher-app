@@ -152,7 +152,14 @@ export function getMeetingPrompt(
 // ============================================================
 
 export function getLessonPrompt(
-  section: "setup" | "khởi động" | "khám phá" | "luyện tập" | "vận dụng" | "shdc_shl" | "final",
+  section:
+    | "setup"
+    | "khởi động"
+    | "khám phá"
+    | "luyện tập"
+    | "vận dụng"
+    | "shdc_shl"
+    | "final",
   grade: string,
   topic: string,
   duration?: string,
@@ -167,8 +174,14 @@ export function getLessonPrompt(
   const sectionRequirements = `
 YÊU CẦU CHO PHẦN THIẾT KẾ: ${section.toUpperCase()}
 Ngữ cảnh hiện tại: ${context || "Khởi tạo bài dạy mới"}
-Hướng dẫn chi tiết: ${stepInstruction || "Thiết kế sư phạm cao cấp theo chuẩn 5512"}
-${customInstructions ? `Yêu cầu bổ sung từ người dùng: ${customInstructions}` : ""}
+Hướng dẫn chi tiết: ${
+    stepInstruction || "Thiết kế sư phạm cao cấp theo chuẩn 5512"
+  }
+${
+  customInstructions
+    ? `Yêu cầu bổ sung từ người dùng: ${customInstructions}`
+    : ""
+}
   `;
 
   // Sử dụng prompt trung tâm từ khdh-prompts.ts
@@ -209,8 +222,9 @@ Nội dung tích hợp phải GẮN VỚI TỪNG HOẠT ĐỘNG cụ thể trong
 THÔNG TIN ĐẦU VÀO:
 - Tên Bài học/Chủ đề: "${lessonTopic}"
 - Khối lớp: ${grade}
-- Đặc điểm chương trình: ${curriculum?.title || "Hoạt động trải nghiệm, Hướng nghiệp"
-    }
+- Đặc điểm chương trình: ${
+    curriculum?.title || "Hoạt động trải nghiệm, Hướng nghiệp"
+  }
 - Mức độ Bloom: ${curriculum?.bloomLevel || "Nhận biết, Hiểu"}
 - Đặc điểm học sinh: ${gradeInfo.profile}
 - Trọng tâm: ${gradeInfo.focus}
@@ -230,13 +244,17 @@ HƯỚNG DẪN VỊ TRÍ TÍCH HỢP:
 
 KHUNG NĂNG LỰC SỐ THÔNG TƯ 02/2025 (chọn 2-4 phù hợp với hoạt động):
 ${Object.entries(DIGITAL_LITERACY_FRAMEWORK)
-      .map(([k, v]) => `Miền ${k} (${v.name}):\n` + v.competencies.map(c => `  - ${c}`).join("\n"))
-      .join("\n")}
+  .map(
+    ([k, v]) =>
+      `Miền ${k} (${v.name}):\n` +
+      v.competencies.map((c) => `  - ${c}`).join("\n")
+  )
+  .join("\n")}
 
 KHUNG GIÁO DỤC ĐẠO ĐỨC (chọn 1-2 phù hợp):
 ${Object.entries(MORAL_EDUCATION_THEMES)
-      .map(([k, v]) => `- ${v.name}: ${v.description}`)
-      .join("\n")}
+  .map(([k, v]) => `- ${v.name}: ${v.description}`)
+  .join("\n")}
 
 QUY TẮC ĐỊNH DẠNG BẮT BUỘC:
 - KHÔNG dùng dấu ** trong nội dung
@@ -371,11 +389,12 @@ export function getEventPrompt(
       );
       if (hoatDongList.length > 0) {
         hoatDongContext = `
-DANH SÁCH HOẠT ĐỘNG CÓ THỂ TỔ CHỨC NGOẠI KHÓA (${hoatDongList.length
-          } hoạt động):
+DANH SÁCH HOẠT ĐỘNG CÓ THỂ TỔ CHỨC NGOẠI KHÓA (${
+          hoatDongList.length
+        } hoạt động):
 ${hoatDongList
-            .map((hd, i) => `${i + 1}. ${hd.ten}${hd.mo_ta ? ` - ${hd.mo_ta}` : ""}`)
-            .join("\n")}
+  .map((hd, i) => `${i + 1}. ${hd.ten}${hd.mo_ta ? ` - ${hd.mo_ta}` : ""}`)
+  .join("\n")}
 `;
       }
     }
@@ -436,25 +455,26 @@ ${HUONG_DAN_TAO_KICH_BAN.nguyen_tac_chung.map((n) => `- ${n}`).join("\n")}
 
 2. CẤU TRÚC TIÊU CHUẨN (45 phút):
 - Tổng thời gian: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.tong_thoi_gian}
-- Khởi động: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.thoi_gian
-    } - ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.muc_dich}
+- Khởi động: ${
+    HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.thoi_gian
+  } - ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.khoi_dong.muc_dich}
 - Phần chính: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.phan_chinh.thoi_gian}
 - Kết thúc: ${HUONG_DAN_TAO_KICH_BAN.cau_truc_tieu_chuan.ket_thuc.thoi_gian}
 
 3. CÁC LOẠI KỊCH BẢN HIỆU QUẢ:
 ${HUONG_DAN_TAO_KICH_BAN.loai_kich_ban_hieu_qua
-      .map(
-        (kb, i) =>
-          `${i + 1}. ${kb.ten}: ${kb.mo_ta} (Phù hợp: ${kb.phu_hop_voi.join(", ")})`
-      )
-      .join("\n")}
+  .map(
+    (kb, i) =>
+      `${i + 1}. ${kb.ten}: ${kb.mo_ta} (Phù hợp: ${kb.phu_hop_voi.join(", ")})`
+  )
+  .join("\n")}
 
 4. KỸ THUẬT SÂN KHẤU:
 - Âm thanh: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.am_thanh.join(", ")}
 - Sân khấu: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.san_khau.join(", ")}
 - Diễn viên: ${HUONG_DAN_TAO_KICH_BAN.ky_thuat_kich_san_khau.dien_vien.join(
-        ", "
-      )}
+    ", "
+  )}
 `;
 
   // Build curriculum context string (giữ nguyên logic cũ)
@@ -478,6 +498,7 @@ ${topicData.methods.map((m: string) => `  + ${m}`).join("\n")}
 
 VAI TRÒ NÂNG CAO: Bạn là Tổng phụ trách Đội/Bí thư Đoàn trường THPT năng động, sáng tạo - chuyên gia tổ chức sự kiện trường học.
 Bạn am hiểu sâu sắc chương trình HĐTN theo bộ sách "Kết nối tri thức với cuộc sống" và biết cách thiết kế hoạt động ngoại khóa phù hợp với mục tiêu, nội dung từng chủ đề.
+Bạn hiểu rõ quy cách văn bản hành chính của trường học Việt Nam (KH-HĐTN).
 
 ============================================================
 DỮ LIỆU TỪ CƠ SỞ DỮ LIỆU CHƯƠNG TRÌNH (ĐÃ NGHIÊN CỨU KỸ)
@@ -491,13 +512,14 @@ ${cauHoiContext}
 
 ${huongDanKichBan}
 
-${mauKichBanContext
-      ? `
+${
+  mauKichBanContext
+    ? `
 MẪU KỊCH BẢN THAM KHẢO (ĐÃ TỔ CHỨC THÀNH CÔNG):
 ${mauKichBanContext}
 `
-      : ""
-    }
+    : ""
+}
 
 ${cauHoiSauKichContext}
 
@@ -520,53 +542,70 @@ THÔNG TIN ĐẦU VÀO
 - Trọng tâm sách: ${gradeInfo.bookFocus}
 ${curriculumContext}
 
-YÊU CẦU CHI TIẾT:
+============================================================
+YÊU CẦU CHI TIẾT - CẤU TRÚC KẾ HOẠCH (PHẢI TUÂN THỦ NGHIÊM NGẶT)
+============================================================
 
-1. CHỌN HÌNH THỨC TỔ CHỨC phù hợp với HOẠT ĐỘNG CỐT LÕI của chủ đề (chọn 1-2):
-   - Tọa đàm (chia sẻ sâu, có khách mời) - phù hợp chủ đề hướng nghiệp, chia sẻ kinh nghiệm
-   - Rung chuông vàng (thi kiến thức) - phù hợp chủ đề tìm hiểu, nhận biết
-   - Sân khấu hóa (cảm xúc, kể chuyện) - phù hợp chủ đề đạo đức, gia đình, quan hệ
-   - Tranh biện (nhiều góc nhìn) - phù hợp chủ đề xây dựng quan điểm, phản biện
-   - Hội thảo thực hành (kỹ năng cụ thể) - phù hợp chủ đề kỹ năng sống, tài chính
-   - Flashmob, Hội chợ (sôi động, năng lượng) - phù hợp chủ đề cộng đồng, môi trường
+Hãy tạo ra một văn bản kế hoạch ngoại khóa đầy đủ theo mẫu chuẩn sau:
 
-2. NĂNG LỰC (Chương trình GDPT 2018) - Chọn 3-4 năng lực PHÙ HỢP VỚI KẾT QUẢ CẦN ĐẠT:
-   - Năng lực tự chủ và tự học
-   - Năng lực giao tiếp và hợp tác
-   - Năng lực giải quyết vấn đề và sáng tạo
-   - Năng lực thích ứng với cuộc sống
-   - Năng lực thiết kế và tổ chức hoạt động
-   - Năng lực định hướng nghề nghiệp
+1. TIÊU ĐỀ KẾ HOẠCH:
+   - Viết rõ ràng, in hoa: KẾ HOẠCH NGOẠI KHÓA KHỐI ... - CHỦ ĐỀ "..."
 
-3. PHẨM CHẤT (Chương trình GDPT 2018) - Chọn 2-3 phẩm chất:
-   - Yêu nước: Tự hào truyền thống, xây dựng quê hương
-   - Nhân ái: Yêu thương, tôn trọng, giúp đỡ người khác
-   - Chăm chỉ: Chịu khó, ham học, nỗ lực vượt khó
-   - Trung thực: Thật thà, ngay thẳng, có trách nhiệm
-   - Trách nhiệm: Ý thức với bản thân, gia đình, cộng đồng
+2. MỤC TIÊU (I):
+   - Yêu cầu cần đạt: Phải tương đồng với mục tiêu của chủ đề trong SGK.
+   - Năng lực: Liệt kê các năng lực đặc thù và năng lực chung.
+   - Phẩm chất: Liệt kê các phẩm chất chủ yếu.
 
-4. MỤC ĐÍCH YÊU CẦU - PHẢI TƯƠNG ĐỒNG VỚI KẾT QUẢ CẦN ĐẠT CỦA CHỦ ĐỀ
+3. THỜI GIAN – ĐỊA ĐIỂM (II):
+   - Thời gian: Sáng thứ 2, tiết Chào cờ hoặc tiết HĐTN.
+   - Địa điểm: Sân trường.
+   - Yêu cầu: Nghiêm túc thực hiện, giáo viên đánh giá tiết dạy theo quy định nhà trường.
 
-5. KỊCH BẢN CHI TIẾT - PHẢI trình bày theo văn phong hành chính nghiệp vụ:
-   - I. MỤC ĐÍCH, Ý NGHĨA: Nêu rõ tầm quan trọng của hoạt động.
-   - II. NỘI DUNG VÀ HÌNH THỨC: Mô tả chi tiết kịch bản sân khấu, các phân cảnh, lời thoại MC and các hoạt động tương tác (Sử dụng câu hỏi gợi mở từ database).
-   - III. TỔ CHỨC THỰC HIỆN: Phân công nhiệm vụ cụ thể cho các tổ/nhóm học sinh.
+4. KINH PHÍ THỰC HIỆN (III):
+   - Nêu rõ các khoản cần chi (market, phần thưởng, trang trí...).
 
-6. THÔNG ĐIỆP KẾT THÚC: Sâu sắc, truyền cảm hứng, gắn với giá trị cốt lõi của chủ đề.
+5. THÀNH PHẦN THAM DỰ:
+   - Toàn thể cán bộ, giáo viên, nhân viên.
+   - Giáo viên phụ trách chính (Giảng dạy môn HĐTN, HN).
+   - Học sinh toàn khối.
+   - Trang phục: Đồng phục trường.
 
-QUY TẮC ĐỊNH DẠNG VĂN BẢN - CỰC KỲ QUAN TRỌNG:
-- KHÔNG dùng dấu ** trong nội dung.
-- KHÔNG dùng TAB hoặc thụt dòng.
-- Sử dụng hệ thống đề mục chuẩn (I, II, III -> 1, 2, 3 -> a, b, c).
-- Mỗi đoạn văn PHẢI cách nhau bằng DÒNG TRỐNG (dùng \\n\\n).
+6. TỔ CHỨC THỰC HIỆN:
+   - 1. Chuẩn bị: Phân công cụ thể (Lớp trực tuần, Đoàn thanh niên...).
+   - 2. Nội dung, hình thức thực hiện (Phần quan trọng nhất - Kịch bản chi tiết):
+     + I. MỤC ĐÍCH, Ý NGHĨA
+     + II. NỘI DUNG VÀ HÌNH THỨC (Chia thành: Khởi động, Hoạt động chính, Tương tác)
+     + III. TỔ CHỨC THỰC HIỆN (Phân công cụ thể ai làm gì trong lúc diễn ra)
 
-ĐỊNH DẠNG KẾT QUẢ - JSON thuần túy:
+7. THÔNG ĐIỆP KẾT THÚC: Sâu sắc, truyền cảm hứng.
+
+============================================================
+ĐỊNH DẠNG KẾT QUẢ - JSON thuần túy (ĐẦY ĐỦ CÁC TRƯỜNG CHO APP):
+============================================================
 {
-  "ten_chu_de": "Tên chủ đề sáng tạo bằng tiếng Việt (IN HOA)",
-  "nang_luc": "- Năng lực tự chủ và tự học: [Mô tả cụ thể gắn với hoạt động].\\n\\n- Năng lực giao tiếp và hợp tác: [Mô tả].\\n\\n- Năng lực thích ứng với cuộc sống: [Mô tả].",
-  "pham_chat": "- Trách nhiệm: [Mô tả cụ thể].\\n\\n- Nhân ái/Trung thực: [Mô tả].",
-  "muc_dich_yeu_cau": "- [Yêu cầu cần đạt 1: chuyển hóa từ khung chương trình].\\n\\n- [Yêu cầu cần đạt 2].",
-  "kich_ban_chi_tiet": "I. MỤC ĐÍCH, Ý NGHĨA\\n\\n[Nội dung]\\n\\nII. NỘI DUNG VÀ HÌNH THỨC TỔ CHỨC\\n\\n1. Khởi động (5-7 phút): [Chi tiết]\\n\\n2. Hoạt động chính - Tiểu phẩm/Talkshow (20-25 phút): [Kịch bản chi tiết gồm Phân cảnh, Nhân vật, Lời thoại MC và Diễn viên]\\n\\n3. Hoạt động tương tác (10 phút): [Sử dụng bộ câu hỏi gợi mở để giao lưu]\\n\\nIII. TỔ CHỨC THỰC HIỆN\\n\\n[Phân công cụ thể]",
+  "ten_ke_hoach": "KẾ HOẠCH NGOẠI KHOÁ KHỐI [Khối] - Chủ đề \"[Tên Chủ Đề]\"",
+  "ten_chu_de": "[Tên Chủ Đề]",
+  "thoi_gian": "7h00 ngày ... tháng ... năm ...",
+  "dia_diem": "Sân trường THPT Bùi Thị Xuân",
+  "doi_tuong": "Học sinh khối [Khối]",
+  "so_luong": "Toàn thể học sinh khối [Khối]",
+  "muc_tieu": "- Yêu cầu cần đạt: [Nội dung chất lượng cao].\\n- Năng lực: [Nội dung].\\n- Phẩm chất: [Nội dung].",
+  "muc_dich_yeu_cau": "- [Copy nội dung Yêu cầu cần đạt vào đây để tương thích ngược]",
+  "nang_luc": "- [Copy nội dung Năng lực vào đây]",
+  "pham_chat": "- [Copy nội dung Phẩm chất vào đây]",
+  "kinh_phi": "- Market và trang trí: [Số tiền]đ\\n- Phần thưởng học sinh: [Số tiền]đ\\n- Chi phí khác: [Số tiền]đ",
+  "du_toan_kinh_phi": ["Market: 500.000đ", "Phần thưởng: 300.000đ"],
+  "checklist_chuan_bi": ["Văn nghệ chào mừng", "Kịch bản chi tiết", "Âm thanh, loa đài", "Ghế ngồi đại biểu"],
+  "thanh_phan_tham_du": "- Toàn thể cán bộ, giáo viên, nhân viên.\\n- Giáo viên phụ trách chính: GVCN và GV bộ môn HĐTN.\\n- Học sinh: Toàn thể học sinh khối [Khối].\\n- Trang phục: Đồng phục trường.",
+  "to_chuc_thuc_hien_chuan_bi": "- Lớp trực tuần: Chuẩn bị ghế ngồi, loa đài.\\n- Đoàn trường: Duyệt văn nghệ, kịch bản.\\n- GVCN: Quản lý học sinh.",
+  "noi_dung": "- Phần 1: Khởi động\\n- Phần 2: Hoạt động chính\\n- Phần 3: Giao lưu",
+  "tien_trinh": [
+    {"thoi_gian": "7h00 - 7h15", "hoat_dong": "Ổn định, Chào cờ, Tuyên bố lý do"},
+    {"thoi_gian": "7h15 - 7h40", "hoat_dong": "Nội dung chính: [Tên hoạt động]"},
+    {"thoi_gian": "7h40 - 7h50", "hoat_dong": "Giao lưu, Trò chơi khán giả"},
+    {"thoi_gian": "7h50 - 8h00", "hoat_dong": "Tổng kết, Dặn dò"}
+  ],
+  "kich_ban_chi_tiet": "I. MỤC ĐÍCH, Ý NGHĨA\\n[Nêu bật ý nghĩa giáo dục của hoạt động]\\n\\nII. NỘI DUNG VÀ HÌNH THỨC\\n1. Khởi động (5-7 phút):\\n- [Mô tả chi tiết tiết mục văn nghệ hoặc trò chơi khuấy động không khí]\\n\\n2. Hoạt động chính (20-25 phút):\\n- Chủ đề: [Tên chủ đề hoạt động]\\n- Hình thức: [Sân khấu hóa/Tọa đàm/Tranh biện]\\n- Chi tiết: [Kịch bản chi tiết phân vai, lời thoại, hành động]\\n\\n3. Hoạt động tương tác (10 phút):\\n- MC: [Câu hỏi 1]\\n- HS: [Gợi ý trả lời]\\n\\nIII. TỔ CHỨC THỰC HIỆN\\n- Phụ trách chung: [BCH Đoàn trường]\\n- Thực hiện nội dung: [Chi đoàn lớp chủ trì]",
   "thong_diep_ket_thuc": "Thông điệp truyền cảm hứng (2-3 câu) đúc kết giá trị của toàn bộ hoạt động."
 }`;
 }

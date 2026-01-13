@@ -114,12 +114,12 @@ export interface LessonResult {
 export interface SagaTask {
   id: string;
   title: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: "pending" | "processing" | "completed" | "failed";
   output?: string;
   gist?: string;
   error?: string;
   retryCount: number;
-  provider?: 'gemini' | 'openai';
+  provider?: "gemini" | "openai";
 }
 
 export interface SagaJob {
@@ -127,7 +127,7 @@ export interface SagaJob {
   grade: string;
   topic: string;
   tasks: SagaTask[];
-  status: 'idle' | 'architecting' | 'processing' | 'completed' | 'failed';
+  status: "idle" | "architecting" | "processing" | "completed" | "failed";
   startTime?: number;
   lastUpdateTime?: number;
   lessonFile?: { mimeType: string; data: string; name: string };
@@ -158,6 +158,9 @@ export interface EventResult {
   checklist_chuan_bi?: string[];
   danh_gia_sau_hoat_dong?: string;
   metadata?: any;
+  kinh_phi?: string;
+  thanh_phan_tham_du?: string;
+  to_chuc_thuc_hien_chuan_bi?: string;
 }
 
 export interface NCBHResult {
@@ -266,12 +269,22 @@ export interface LessonEngineProps {
   setLessonTopic: (value: string) => void;
   selectedModel: string;
   setSelectedModel: (value: string) => void;
-  onRefineSection: (content: string, instruction: string, model?: string) => Promise<ActionResult>;
-  onGenerateSection?: (section: any, context: any, stepInstruction?: string) => Promise<ActionResult>;
+  onRefineSection: (
+    content: string,
+    instruction: string,
+    model?: string
+  ) => Promise<ActionResult>;
+  onGenerateSection?: (
+    section: any,
+    context: any,
+    stepInstruction?: string
+  ) => Promise<ActionResult>;
   lessonFullPlanMode: boolean;
   setLessonFullPlanMode: (value: boolean) => void;
   lessonFile: { mimeType: string; data: string; name: string } | null;
-  setLessonFile: (file: { mimeType: string; data: string; name: string } | null) => void;
+  setLessonFile: (
+    file: { mimeType: string; data: string; name: string } | null
+  ) => void;
 }
 
 export interface MeetingTabProps {
