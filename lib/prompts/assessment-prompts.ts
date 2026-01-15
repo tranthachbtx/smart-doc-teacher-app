@@ -89,9 +89,11 @@ export function getAssessmentPrompt(
     }
 
     return `
-# VAI TRÒ: CHUYÊN GIA KIỂM TRA ĐÁNH GIÁ & KIẾN TRÚC SƯ KẾ HOẠCH (Master Assessment Architect v3.0)
+# VAI TRÒ: CHUYÊN GIA KIỂM TRA ĐÁNH GIÁ (Chuẩn Nghị định 30/2020/NĐ-CP)
 Hệ thống: Antigravity Deep-Dive.
 Am hiểu: Thông tư 22/2021/TT-BGDĐT, chuẩn Năng lực số Thông tư 02/2025.
+VĂN PHONG: Hành chính chuẩn mực, KHÔNG dùng biểu tượng (emoji), KHÔNG icon.
+Hệ thống cấp bậc: I. -> 1. -> a) -> gạch đầu dòng (-).
 
 # 1. BỐI CẢNH ĐÁNH GIÁ:
 - Khối: ${safeGrade}
@@ -110,21 +112,20 @@ Am hiểu: Thông tư 22/2021/TT-BGDĐT, chuẩn Năng lực số Thông tư 02/
 ## B. RUBRIC CĂNG - MINH CHỨNG SỐ:
 - TIÊU CHÍ PHẢI CÓ HÀNH VI: Không dùng "Làm tốt", "Sáng tạo".
 - PHẢI DÙNG: "Thông điệp rõ ràng, sử dụng ít nhất 3 hình ảnh minh họa thực tế", "Kỹ thuật biên tập video mượt mà, có phụ đề đúng ngữ pháp".
-- MAPPING: Mỗi tiêu chí phải chứng minh được học sinh đang hình thành Năng lực/Phẩm chất nào.
 
 # 3. ĐỊNH DẠNG ĐẦU RA (SURGICAL JSON):
-[MỌI NỘI DUNG PHẢI VIẾT BẰNG TIẾNG VIỆT, VĂN PHONG SƯ PHẠM BẢN ĐỊA]
+[MỌI NỘI DUNG PHẢI VIẾT BẰNG TIẾNG VIỆT, VĂN PHONG SƯ PHẠM CHUẨN NGHỊ ĐỊNH 30]
 
 {
   "ten_ke_hoach": "[Tên kế hoạch viết hoa, chuyên nghiệp]",
   "muc_tieu": ["Mục tiêu hành vi 1 (Chuẩn 5512)", "Mục tiêu hành vi 2...", "Năng lực số hình thành tại bước nào?"],
-  "noi_dung_nhiem_vu": "Mô tả cực kỳ chi tiết quy trình (Bối cảnh -> Nhiệm vụ -> Sản phẩm cuối -> Thời hạn). Có 'mùi vị' đặc trưng của Mũi Né/Lâm Đồng.",
-  "hinh_thuc_to_chuc": "Cách thức nộp bài, thuyết trình hoặc triển lãm ảo (virtual exhibition).",
+  "noi_dung_nhiem_vu": "Mô tả cực kỳ chi tiết quy trình (Bối cảnh -> Nhiệm vụ -> Sản phẩm cuối -> Thời hạn).",
+  "hinh_thuc_to_chuc": "Cách thức nộp bài, thuyết trình hoặc triển lãm ảo.",
   "ma_tran_dac_ta": [
     { "muc_do": "Nhận biết", "mo_ta": "Minh chứng HS nhận diện được vấn đề thông qua..." },
     { "muc_do": "Thông hiểu", "mo_ta": "Minh chứng HS giải thích được các mối liên hệ..." },
     { "muc_do": "Vận dụng", "mo_ta": "Minh chứng HS tạo ra sản phẩm hoàn chỉnh..." },
-    { "muc_do": "Vận dụng cao", "mo_ta": "Minh chứng HS có giải pháp sáng tạo, giải quyết vấn đề cộng đồng..." }
+    { "muc_do": "Vận dụng cao", "mo_ta": "Minh chứng HS có giải pháp sáng tạo..." }
   ],
   "bang_kiem_rubric": [
     { 
@@ -138,7 +139,7 @@ Am hiểu: Thông tư 22/2021/TT-BGDĐT, chuẩn Năng lực số Thông tư 02/
       }
     }
   ],
-  "loi_khuyen": "Lời khuyên thực tế cho GV để tránh HS copy-paste hoặc dùng AI không trung thực."
+  "loi_khuyen": "Lời khuyên thực tế cho GV."
 }
 
 ${rubricSuggestion ? `- THIẾT KẾ DỰA TRÊN KHUNG CHUẨN: ${rubricSuggestion}` : ""}

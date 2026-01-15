@@ -78,29 +78,29 @@ export function getEventPrompt(
   const members = getAllMembers();
 
   return `
-    BẠN LÀ: Tổng đạo diễn Sự kiện & Chuyên gia HĐTN (Master Prompt v75.10 - BUI THI XUAN SPECIAL EDITION).
-    BỐI CẢNH: Soạn Kế hoạch Ngoại khóa cho trường THPT Bùi Thị Xuân - Mũi Né.
+    BẠN LÀ: Tổng đạo diễn Sự kiện & Chuyên gia HĐTN (Master Prompt v76.0 - ADMINISTRATIVE EDITION).
+    BỐI CẢNH: Soạn Kế hoạch Ngoại khóa chuẩn Nghị định 30/2020/NĐ-CP cho trường THPT Bùi Thị Xuân - Mũi Né.
 
     [1. NHIỆM VỤ CHÍNH]
-    Tạo một bản kế hoạch ngoại khóa BÙNG NỔ, CHI TIẾT ĐẾN TỪNG CÂU CHỮ cho chủ đề: "${theme}" (Khối ${grade}).
+    Tạo một bản kế hoạch ngoại khóa chuyên nghiệp, chi tiết cho chủ đề: "${theme}" (Khối ${grade}).
     
     [2. CHỈ DẪN NỘI DUNG & PHÂN CÔNG]
-    - TUYỆT ĐỐI KHÔNG dùng dấu "..." hay "Tự soạn". 
-    - MC Script: Phải có ít nhất 10 câu dẫn sôi nổi, chuyên nghiệp.
-    - PHÂN CÔNG TỔ GIÁO VIÊN: Trong phần "chuan_bi", bạn PHẢI phân công cụ thể các nhiệm vụ chuẩn bị (Âm thanh, Băng rôn, Quản lý HS, Quà tặng, Kịch bản...) cho danh sách sau:
-      + Thầy Bùi Quang Mẫn
-      + Thầy Nguyễn Văn Linh
-      + Thầy Mai Văn Phước
-      + Thầy Trần Hoàng Thạch (Tổ trưởng - Chỉ đạo, Giám sát chung)
-      + Thầy Trần Văn Tạ
-    - Yêu cầu đặc biệt: ${instructions || "Sáng tạo tự do bùng nổ."}
-    - Đồ dùng/Checklist: ${checklist || "Vật dụng thực tế, vé loto, loa đài..."}
+    - TUYỆT ĐỐI KHÔNG dùng dấu "..." hay "Tự soạn", KHÔNG dùng biểu tượng (emoji).
+    - MC Script: Phải có ít nhất 10 câu dẫn chuyên nghiệp, lôi cuốn, phù hợp môi trường sư phạm (KHÔNG dùng từ lóng Gen Z).
+    - PHÂN CÔNG TỔ GIÁO VIÊN: Trong phần "chuan_bi", bạn PHẢI phân công cụ thể các nhiệm vụ chuẩn bị cho các thành viên:
+      + Thầy Bùi Quang Mẫn: Phụ trách trang thiết bị, âm thanh.
+      + Thầy Nguyễn Văn Linh: Phụ trách hậu cần, quà tặng.
+      + Thầy Mai Văn Phước: Thư ký, phụ trách kịch bản.
+      + Thầy Trần Hoàng Thạch (TTCM): Chỉ đạo chung, giám sát việc thực hiện.
+      + Thầy Trần Văn Tạ: Phụ trách quản lý học sinh và an ninh.
+    - Yêu cầu đặc biệt: ${instructions || "Chi tiết và khoa học."}
+    - Đồ dùng/Checklist: ${checklist || "Vật dụng thực tế, loa đài, thiết bị trình chiếu..."}
     - Ngân sách: Khoảng ${budget || "Tối ưu nhất"} VNĐ.
 
     [3. ĐỊNH DẠNG TRẢ VỀ - JSON BẮT BUỘC]
     Trả về DUY NHẤT một khối JSON sau, không kèm lời dẫn.
-    TUYỆT ĐỐI KHÔNG dùng các icon. Chỉ dùng duy nhất dấu gạch đầu dòng '-' cho toàn bộ các danh sách.
-    Trình bày theo Thông tư 30 (Canh lề trái 1.27cm).
+    TUYỆT ĐỐI KHÔNG dùng các icon hay emoji. Chỉ dùng duy nhất dấu gạch đầu dòng '-' cho các danh sách.
+    Trình bày theo quy chuẩn Nghị định 30 (Font Times New Roman, canh lề đều).
 
     {
       "so_ke_hoach": "${grade}/KHNK-HĐTN-HN",
@@ -112,31 +112,26 @@ export function getEventPrompt(
       "pham_chat": "Phẩm chất trách nhiệm... (Dùng dấu '-' gạch đầu dòng)",
       "thoi_gian": "${duration} phút - Tháng ${month || 'hiện tại'}",
       "dia_diem": "Sân trường THPT Bùi Thị Xuân - Mũi Né",
-      "chuan_bi": "- Đối với GV: ...\\n- Đối với HS: ...",
+      "chuan_bi": "- Đối với giáo viên: [Ghi rõ phân công cụ thể cho từng thầy đã nêu ở trên]\\n- Đối với học sinh: ...",
       "budget_details": [
-        {"item": "Thuê loa đài, âm thanh", "cost": "500000"},
-        {"item": "Quà tặng trò chơi (10 phần)", "cost": "300000"},
-        {"item": "In ấn băng rôn, vé loto", "cost": "200000"}
+        {"item": "Trang thiết bị âm thanh", "cost": "500000"},
+        {"item": "Quà tặng phong trào", "cost": "300000"},
+        {"item": "In ấn tài liệu, biểu ngữ", "cost": "200000"}
       ],
       "total_budget": "Tổng số tiền cụ thể",
       "timeline": [
         {
           "activity_name": "TÊN HOẠT ĐỘNG",
           "time": "5-10 phút",
-          "description": "Mô tả chi tiết. Dùng dấu '-' cho các ý con nếu có.",
-          "mc_script": "Lời dẫn MC sôi nổi, dùng dấu '-' nếu có liệt kê.",
-          "logistics": "Cần chuẩn bị những gì (Dùng dấu '-')"
+          "description": "Mô tả chi tiết các bước. Dùng dấu '-' cho các ý con.",
+          "mc_script": "Lời dẫn MC chuyên nghiệp, lịch sự.",
+          "logistics": "Chuẩn bị thiết bị, dụng cụ (Dùng dấu '-')"
         }
       ],
-      "thong_diep_ket_thuc": "Lời chúc kết thúc"
+      "thong_diep_ket_thuc": "Lời chúc và thông điệp kết thúc buổi ngoại khóa"
     }
 
-    CHÚ Ý ĐẶC BIỆT: 
-    - Tuyệt đối KHÔNG dùng các icon như ❖, 🎤, 📦, ✅. 
-    - Chỉ dùng duy nhất dấu gạch đầu dòng '-' cho toàn bộ các danh sách.
-    - Trình bày mạch lạc, canh lề trái thụt đầu dòng 1.27cm theo Thông tư 30/2020/TT-BGDĐT.
-
-    CHÚ Ý: Nội dung trong JSON phải là tiếng Việt, viết chuẩn mực hành chính nhưng phần MC Script phải sôi nổi.
+    CHÚ Ý: Nội dung phải chuẩn mực hành chính, không có icon trang trí.
   `;
 }
 

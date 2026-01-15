@@ -20,8 +20,8 @@ Dựa trên bài học nghiên cứu, hãy soạn thảo hồ sơ NCBH chuyên s
 
 2. GIAI ĐOẠN PHÂN TÍCH (ANALYSIS PHASE - BIÊN BẢN):
    - Chia sẻ của người dạy: Tập trung vào những khoảnh khắc học sinh "bừng sáng" hoặc "bị tắc".
-   - Minh chứng việc học (TRỌNG TÂM): Mô tả cụ thể các lát cắt thời gian (VD: Phút thứ 15, nhóm 1 đang lúng túng khi sử dụng lệnh AI, GV đã kịp thời hỗ trợ...).
-   - Giải mã nguyên nhân: Phân tích sâu tại sao HS chưa đạt (Lệnh bài tập khó hiểu? Học liệu chưa hấp dẫn? Tương tác nhóm rời rạc?).
+   - Minh chứng việc học (TRỌNG TÂM): Phải bao gồm ý kiến quan sát thực tế từ các thầy cô: Thầy Bùi Quang Mẫn, Thầy Nguyễn Văn Linh, Thầy Mai Văn Phước, Thầy Trần Hoàng Thạch (TTCM), Thầy Trần Văn Tạ.
+   - Giải mã nguyên nhân: Phân tích sâu tại sao HS chưa đạt.
    - Bài học cải tiến: Đề xuất thay đổi cụ thể cho lần dạy sau dựa trên minh chứng.
 
 ĐỊNH DẠNG ĐẦU RA (SURGICAL JSON):

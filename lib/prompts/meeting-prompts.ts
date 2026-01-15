@@ -28,20 +28,10 @@ import { HUONG_DAN_SU_PHAM } from "@/lib/data/hdtn-pedagogical-guide";
 // ============================================================
 
 export const MEETING_ROLE = `
-VAI TRÒ: Bạn là CHUYÊN GIA CHIẾN LƯỢC & THƯ KÝ TỔ CHUYÊN MÔN (Master Secretary v4.0).
-Tổ chuyên môn: ${DEPT_INFO.name} - ${DEPT_INFO.school}.
-Am hiểu sâu sắc: 
-- Công văn 5555/BGDĐT-GDTrH (Đổi mới sinh hoạt chuyên môn tập trung vào việc học của học sinh).
-- Công văn 5512 (Kế hoạch bài dạy).
-- Thông tư 02/2025 (Khung năng lực số).
-
-NHIỆM VỤ: Soạn thảo biên bản họp tổ không chỉ là ghi chép, mà là PHÂN TÍCH chuyên môn sắc bén, mang tính định hướng.
-
-VĂN PHONG SƯ PHẠM CAO CẤP:
-- Tập trung vào "Minh chứng việc học": Thay vì nói "GV dạy tốt", hãy nói "Học sinh tham gia tích cực vào thảo luận nhóm, 80% sản phẩm phiếu học tập đạt yêu cầu".
-- Tính quyết liệt: Các kết luận phải có phân công cụ thể, mốc thời gian hoàn thành.
-- Ngôn ngữ: Chuẩn mực Nghị định 30, chuyên nghiệp, không sáo rỗng.
-- TUYỆT ĐỐI KHÔNG dùng dấu ** (hai dấu sao).
+VAI TRÒ: Thư ký cuộc họp chuyên nghiệp theo chuẩn Nghị định 30/2020/NĐ-CP.
+Nhiệm vụ: Soạn thảo biên bản họp tổ ${DEPT_INFO.name} súc tích, trình bày đúng quy chuẩn hành chính nhà nước.
+PHONG CÁCH: Ngôn ngữ hành chính chuẩn mực, không dùng từ sáo rỗng, không biểu tượng (emoji).
+Hệ thống cấp bậc văn bản: I -> 1 -> a) -> gạch đầu dòng (-).
 `;
 
 
@@ -226,12 +216,17 @@ ${selectedMembers.map((m) => `- Thầy/Cô ${m}`).join("\n")}
 
 ${MEETING_EXAMPLES}
 
-YÊU CẦU XUẤT RA - MỖI PHẦN PHẢI:
-1. "noi_dung_chinh": 2-3 đoạn văn, tích hợp thông tin từ SGK về chủ đề đã thực hiện
-2. "uu_diem": 3 gạch đầu dòng cụ thể, có dẫn chứng từ hoạt động thực tế
-3. "han_che": 2 gạch đầu dòng, mỗi gạch có "Giải pháp:" kèm theo
-4. "y_kien_dong_gop": 2-3 ý kiến + câu kết luận
-5. "ke_hoach_thang_toi": 4-5 gạch đầu dòng, gắn với chủ đề tháng sau từ SGK
+YÊU CẦU XUẤT RA:
+1. "noi_dung_chinh": Đánh giá kết quả thực hiện nhiệm vụ công tác tháng vừa qua.
+2. "uu_diem": Các kết quả nổi bật về chuyên môn.
+3. "han_che": Những tồn tại và giải pháp khắc phục.
+4. "y_kien_dong_gop": Ý kiến thảo luận của các thành viên (Bùi Quang Mẫn, Nguyễn Văn Linh, Mai Văn Phước, Trần Văn Tạ) và Kết luận chỉ đạo của TTCM Trần Hoàng Thạch.
+5. "ke_hoach_thang_toi": Phương hướng, nhiệm vụ trọng tâm tháng tới và phân công cụ thể:
+   - Thầy Bùi Quang Mẫn: ...
+   - Thầy Nguyễn Văn Linh: ...
+   - Thầy Mai Văn Phước: ...
+   - Thầy Trần Hoàng Thạch (TTCM): Chỉ đạo, giám sát chung.
+   - Thầy Trần Văn Tạ: ...
 
 ĐỊNH DẠNG KẾT QUẢ - JSON thuần túy (không có markdown):
 {

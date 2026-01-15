@@ -157,7 +157,7 @@ export const TemplateExportService = {
       const processedTimeline = (Array.isArray(rawTimeline) ? rawTimeline : []).map((act: any) => ({
         header: clean(act.activity_name || act.name || act.hoat_dong || "HOẠT ĐỘNG").toUpperCase(),
         time: act.time ? `(${act.time})` : "",
-        content: `- MÔ TẢ TRÌNH TỰ:\n${this.flexibleRender(act.description || act.content || act.hoat_dong_chi_tiet)}\n` +
+        content: `- TRÌNH TỰ THỰC HIỆN:\n${this.flexibleRender(act.description || act.content || act.hoat_dong_chi_tiet)}\n` +
           `${act.mc_script ? `\n- LỜI DẪN MC:\n"${this.flexibleRender(act.mc_script)}"\n` : ""}` +
           `${act.logistics ? `\n- CHUẨN BỊ:\n${this.flexibleRender(act.logistics)}` : ""}`
       }));
@@ -241,23 +241,206 @@ export const TemplateExportService = {
   /**
    * 🚀 XUẤT GIÁO ÁN (STUB - Cần mở rộng nếu muốn dùng template cho KHBH)
    */
-  async exportLessonToTemplate(data: any, templatePath?: string) {
-    console.warn("⚠️ exportLessonToTemplate chưa được triển khai đầy đủ với Template DOCX.");
-    return false;
+  async exportLessonToTemplate(inputData: any, templatePath: string = "/templates/mau-ke-hoach-day-hoc.docx") {
+    console.log("🚀 [DEEP_TRACE:LESSON] Khởi động quy trình xuất giáo án...");
+    try {
+      const data = this.parseAIResult(inputData);
+      const now = new Date();
+
+      const finalData = {
+        ten_truong: (DEPT_INFO.school || "THPT Bùi Thị Xuân").toUpperCase(),
+        to_chuyen_mon: (DEPT_INFO.name || "Tổ HĐTN - HN").toUpperCase(),
+        ten_giao_vien: DEPT_INFO.head,
+        ngay_soan: `Ngày ${now.getDate()} tháng ${now.getMonth() + 1} năm ${now.getFullYear()}`,
+        chu_de: data.ma_chu_de || "10.1",
+        ten_chu_de: (data.ten_bai || "KẾ HOẠCH BÀI DẠY").toUpperCase(),
+        lop: inputData.grade || "10",
+        so_tiet: data.so_tiet || "2 tiết",
+        muc_tieu_kien_thuc: this.ensureBulletPoints(data.muc_tieu_kien_thuc),
+        muc_tieu_nang_luc: this.flexibleRender(data.muc_tieu_nang_luc),
+        muc_tieu_pham_chat: this.ensureBulletPoints(data.muc_tieu_pham_chat),
+        gv_chuanbi: this.flexibleRender(data.gv_chuan_bi),
+        hs_chuanbi: this.flexibleRender(data.hs_chuan_bi),
+        hoat_dong_duoi_co: this.flexibleRender(data.shdc),
+        hoat_dong_khoi_dong: this.flexibleRender(data.hoat_dong_khoi_dong),
+        hoat_dong_kham_pha: this.flexibleRender(data.hoat_dong_kham_pha),
+        hoat_dong_luyen_tap: this.flexibleRender(data.hoat_dong_luyen_tap),
+        hoat_dong_van_dung: this.flexibleRender(data.hoat_dong_van_dung),
+        tich_hop_nls: this.flexibleRender(data.tich_hop_nls),
+        tich_hop_dao_duc: this.flexibleRender(data.tich_hop_dao_duc),
+        ho_so_day_hoc: this.flexibleRender(data.ho_so_day_hoc),
+        huong_dan_on_tap: this.flexibleRender(data.huong_dan_ve_nha)
+      };
+
+      const response = await fetch(templatePath);
+      if (!response.ok) throw new Error(`Template not found: ${templatePath}`);
+      const buffer = await response.arrayBuffer();
+      const zip = new PizZip(buffer);
+      repairTags(zip);
+
+      const doc = new Docxtemplater(zip, this.getDocOptions());
+      doc.render(finalData);
+
+      const out = doc.getZip().generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      });
+
+      saveAs(out, `GiaoAn_${finalData.lop}_${finalData.ten_chu_de.slice(0, 20)}.docx`);
+      return true;
+    } catch (error: any) {
+      console.error("❌ [DEEP_TRACE:LESSON] Lỗi xuất giáo án:", error.message);
+      throw error;
+    }
   },
 
-  async exportMeetingToTemplate(data: any, templatePath?: string) {
-    console.warn("⚠️ exportMeetingToTemplate chưa được triển khai đầy đủ với Template DOCX.");
-    return false;
+  async exportMeetingToTemplate(inputData: any, templatePath: string = "/templates/mau-bien-ban-hop-to.docx") {
+    console.log("🚀 [DEEP_TRACE:MEETING] Khởi động quy trình xuất biên bản họp...");
+    try {
+      const data = this.parseAIResult(inputData);
+      const now = new Date();
+
+      const finalData = {
+        upper_agency: (DEPT_INFO.upperAgency || "SỞ GIÁO DỤC VÀ ĐÀO TẠO LÂM ĐỒNG").toUpperCase(),
+        ten_truong: (DEPT_INFO.school || "THPT Bùi Thị Xuân - Mũi Né").toUpperCase(),
+        to_chuyen_mon: (DEPT_INFO.name || "TỔ HĐTN, HN & GDĐP").toUpperCase(),
+        ngay: now.getDate(),
+        thang: data.thang || (now.getMonth() + 1),
+        nam: data.nam || now.getFullYear(),
+        lan_hop: (data.lan_hop || `Sinh hoạt định kỳ`).toUpperCase(),
+        chu_tri: DEPT_INFO.head,
+        thu_ky: DEPT_INFO.secretary,
+        thanh_vien: (DEPT_INFO.members.join(", ")),
+        vang: DEPT_INFO.autoFill.vang || "0",
+        ly_do: DEPT_INFO.autoFill.ly_do || "Không có",
+        noi_dung_chinh: this.flexibleRender(data.noi_dung_chinh),
+        uu_diem: this.ensureBulletPoints(data.uu_diem),
+        han_che: this.ensureBulletPoints(data.han_che),
+        ke_hoach_thang_toi: this.ensureBulletPoints(data.ke_hoach_thang_toi),
+        y_kien_dong_gop: this.flexibleRender(data.y_kien_dong_gop)
+      };
+
+      const response = await fetch(templatePath);
+      if (!response.ok) throw new Error(`Template not found at: ${templatePath}`);
+      const buffer = await response.arrayBuffer();
+      const zip = new PizZip(buffer);
+      repairTags(zip);
+
+      let doc: any;
+      try {
+        doc = new Docxtemplater(zip, this.getDocOptions());
+        doc.render(finalData);
+      } catch (e: any) {
+        console.error("❌ [DEEP_TRACE:FAIL] Docxtemplater Meeting Failure.");
+        if (e.properties && e.properties.errors) {
+          const tags = e.properties.errors.map((err: any) => err.properties?.xtag || err.properties?.tag).filter(Boolean);
+          throw new Error(`Template Meeting Error! Broken tags: ${tags.join(", ")}`);
+        }
+        throw e;
+      }
+
+      const out = doc.getZip().generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      });
+
+      saveAs(out, `BBHop_Thang${finalData.thang}_${finalData.to_chuyen_mon.replace(/\s+/g, '_')}.docx`);
+      return true;
+    } catch (error: any) {
+      console.error("❌ [DEEP_TRACE:FATAL] Meeting Export Aborted:", error.message);
+      throw error;
+    }
   },
 
-  async exportNCBHToTemplate(data: any, templatePath?: string) {
-    console.warn("⚠️ exportNCBHToTemplate chưa được triển khai đầy đủ với Template DOCX.");
-    return false;
+  async exportNCBHToTemplate(inputData: any, templatePath: string = "/templates/mau-ncbh.docx") {
+    console.log("🚀 [DEEP_TRACE:NCBH] Khởi động quy trình xuất hồ sơ NCBH...");
+    try {
+      const data = this.parseAIResult(inputData);
+      const now = new Date();
+      const finalData = {
+        upper_agency: (DEPT_INFO.upperAgency || "SỞ GIÁO DỤC VÀ ĐÀO TẠO LÂM ĐỒNG").toUpperCase(),
+        ten_truong: (DEPT_INFO.school || "THPT BÙI THỊ XUÂN - MŨI NÉ").toUpperCase(),
+        to_chuyen_mon: (DEPT_INFO.name || "TỔ HĐTN, HN & GDĐP").toUpperCase(),
+        ngay: now.getDate(),
+        thang: now.getMonth() + 1,
+        nam: now.getFullYear(),
+        chu_tri: DEPT_INFO.head,
+        ten_bai: (data.ten_bai || "BÀI HỌC NGHIÊN CỨU").toUpperCase(),
+        ly_do_chon: this.flexibleRender(data.ly_do_chon),
+        muc_tieu: this.flexibleRender(data.muc_tieu),
+        chuoi_hoat_dong: this.flexibleRender(data.chuoi_hoat_dong),
+        phuong_an_ho_tro: this.flexibleRender(data.phuong_an_ho_tro || data.phu_ong_an_ho_tro),
+        chia_se_nguoi_day: this.flexibleRender(data.chia_se_nguoi_day),
+        nhan_xet_nguoi_du: this.flexibleRender(data.nhan_xet_nguoi_du),
+        nguyen_nhan_giai_phap: this.flexibleRender(data.nguyen_nhan_giai_phap),
+        bai_hoc_kin_nghiem: this.flexibleRender(data.bai_hoc_kin_nghiem)
+      };
+
+      const response = await fetch(templatePath);
+      if (!response.ok) throw new Error(`Template not found: ${templatePath}`);
+      const buffer = await response.arrayBuffer();
+      const zip = new PizZip(buffer);
+      repairTags(zip);
+
+      const doc = new Docxtemplater(zip, this.getDocOptions());
+      doc.render(finalData);
+
+      const out = doc.getZip().generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      });
+
+      saveAs(out, `NCBH_${finalData.ten_bai.slice(0, 20)}.docx`);
+      return true;
+    } catch (error: any) {
+      console.error("❌ [DEEP_TRACE:NCBH] Lỗi xuất NCBH:", error.message);
+      throw error;
+    }
   },
 
-  async exportAssessmentToTemplate(data: any, templatePath?: string) {
-    console.warn("⚠️ exportAssessmentToTemplate chưa được triển khai đầy đủ với Template DOCX.");
-    return false;
+  async exportAssessmentToTemplate(inputData: any, templatePath: string = "/templates/Assessment_Template.docx") {
+    console.log("🚀 [DEEP_TRACE:ASSESSMENT] Khởi động quy trình xuất kế hoạch đánh giá...");
+    try {
+      const data = this.parseAIResult(inputData);
+      const now = new Date();
+      const finalData = {
+        upper_agency: (DEPT_INFO.upperAgency || "SỞ GIÁO DỤC VÀ ĐÀO TẠO LÂM ĐỒNG").toUpperCase(),
+        ten_truong: (DEPT_INFO.school || "THPT BÙI THỊ XUÂN - MŨI NÉ").toUpperCase(),
+        to_chuyen_mon: (DEPT_INFO.name || "TỔ HĐTN, HN & GDĐP").toUpperCase(),
+        ngay: now.getDate(),
+        thang: now.getMonth() + 1,
+        nam: now.getFullYear(),
+        chu_tri: DEPT_INFO.head,
+        ten_ke_hoach: (data.ten_ke_hoach || "KẾ HOẠCH KIỂM TRA ĐÁNH GIÁ").toUpperCase(),
+        hoc_ky: data.hoc_ky || "Học kỳ 1",
+        khoi: inputData.grade || "10",
+        muc_tieu: this.ensureBulletPoints(data.muc_tieu),
+        noi_dung_nhiem_vu: this.flexibleRender(data.noi_dung_nhiem_vu),
+        hinh_thuc_to_chuc: this.flexibleRender(data.hinh_thuc_to_chuc),
+        ma_tran_dac_ta: this.flexibleRender(data.ma_tran_dac_ta),
+        bang_kiem_rubric: this.flexibleRender(data.bang_kiem_rubric),
+        loi_khuyen: this.flexibleRender(data.loi_khuyen)
+      };
+
+      const response = await fetch(templatePath);
+      if (!response.ok) throw new Error(`Template not found: ${templatePath}`);
+      const buffer = await response.arrayBuffer();
+      const zip = new PizZip(buffer);
+      repairTags(zip);
+
+      const doc = new Docxtemplater(zip, this.getDocOptions());
+      doc.render(finalData);
+
+      const out = doc.getZip().generate({
+        type: "blob",
+        mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      });
+
+      saveAs(out, `DGGia_${finalData.khoi}_${finalData.ten_ke_hoach.slice(0, 20)}.docx`);
+      return true;
+    } catch (error: any) {
+      console.error("❌ [DEEP_TRACE:ASSESSMENT] Lỗi xuất đánh giá:", error.message);
+      throw error;
+    }
   }
 };
