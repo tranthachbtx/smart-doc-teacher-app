@@ -1,6 +1,7 @@
 
 import { MultiModalAIManager } from "./multi-modal-ai-manager";
 import { CurriculumService } from "./curriculum-service";
+import { JsonHealer } from "@/lib/utils/json-healer";
 
 // --- Interfaces (Consolidated) ---
 
@@ -96,7 +97,7 @@ export class PedagogicalOrchestrator {
         `;
 
         const result = await this.aiManager.processContent({ text: "Audit Level: Maximum Precision" }, prompt, 'deep');
-        return this.safeParseJSON(result.content);
+        return this.parseJSON(result.content, "PEDAGOGICAL_AUDIT");
     }
 
     /**
@@ -135,7 +136,7 @@ export class PedagogicalOrchestrator {
         `;
 
         const refinerResult = await this.aiManager.processContent({ text: "Self-Correction Phase" }, correctionPrompt, 'deep');
-        const refinedPlan = this.safeParseJSON(refinerResult.content);
+        const refinedPlan = this.parseJSON(refinerResult.content, "SELF_CORRECTION");
 
         return refinedPlan || lessonPlan;
     }
@@ -159,7 +160,7 @@ export class PedagogicalOrchestrator {
         `;
 
         const result = await this.aiManager.processContent({ text: suggestions }, prompt, 'deep');
-        const plan = this.safeParseJSON(result.content);
+        const plan = this.parseJSON(result.content, "FUSION_ENGINE");
 
         return {
             plan: plan || currentPlan,
@@ -201,7 +202,7 @@ export class PedagogicalOrchestrator {
         const metadataRes = await this.aiManager.processContent({ text: metadata.fileSummary }, metadataPrompt, 'fast');
 
         if (metadataRes.success) {
-            const metaJson = this.safeParseJSON(metadataRes.content);
+            const metaJson = this.parseJSON(metadataRes.content, "CHAINED_METADATA");
             if (metaJson) {
                 // Map metadata to modules for consistency
                 fullLessonData.manualModules.push({
@@ -238,7 +239,7 @@ export class PedagogicalOrchestrator {
             const result = await this.aiManager.processContent({ text: metadata.fileSummary }, prompt, 'deep');
 
             if (result.success) {
-                const json = this.safeParseJSON(result.content);
+                const json = this.parseJSON(result.content, `CHAINED_${act.type.toUpperCase()}`);
                 if (json) {
                     fullLessonData.manualModules.push({
                         id: act.id,
@@ -352,7 +353,7 @@ TRẢ VỀ JSON VỚI CẤU TRÚC CHÍNH XÁC:
         `;
 
         const result = await this.aiManager.processContent({ text: content }, prompt, 'fast');
-        const parsed = this.safeParseJSON(result.content);
+        const parsed = this.parseJSON(result.content, "RELEVANCE_ENGINE");
 
         return {
             activities: parsed?.activities || [],
@@ -371,7 +372,7 @@ TRẢ VỀ JSON VỚI CẤU TRÚC CHÍNH XÁC:
         ${text.substring(0, 2000)}
         `;
         const result = await this.aiManager.processContent({ text }, prompt, 'fast');
-        return this.safeParseJSON(result.content);
+        return this.parseJSON(result.content, `STRUCTURE_${type.toUpperCase()}`);
     }
 
     /**
@@ -434,12 +435,7 @@ TRẢ VỀ JSON VỚI CẤU TRÚC CHÍNH XÁC:
     }
 
     // --- Helper ---
-    private safeParseJSON(text: string): any {
-        try {
-            const match = text.match(/\{[\s\S]*\}/);
-            return match ? JSON.parse(match[0]) : null;
-        } catch {
-            return null;
-        }
+    private parseJSON(text: string, context: string): any {
+        return JsonHealer.parse(text, context);
     }
 }

@@ -152,7 +152,8 @@ export interface EventResult {
   summary?: string;
   content?: string;
   conclusion?: string;
-  tien_trinh?: Array<{ thoi_gian: string; hoat_dong: string }>;
+  tien_trinh?: Array<{ thoi_gian: string; hoat_dong: string; ghi_chu?: string }>;
+  budget?: Array<{ stt?: number; item: string; cost: string }>;
   nang_luc?: string;
   pham_chat?: string;
   muc_dich_yeu_cau?: string;
@@ -166,8 +167,24 @@ export interface EventResult {
   thanh_phan_tham_du?: string;
   to_chuc_thuc_hien_chuan_bi?: string;
   chuan_bi?: string;
+  preparation?: string; // New: Matching KHBH tech
   so_ke_hoach?: string;
   grade?: string;
+  interaction?: string;
+  footer_admin?: string;
+  // Tech V26 Standard Keys
+  timeline?: Array<{
+    activity_name: string;
+    time: string;
+    description: string;
+    mc_script?: string;
+    logistics?: string;
+  }>;
+  budget_details?: Array<{
+    item: string;
+    cost: string;
+  }>;
+  total_budget?: string;
 }
 
 export interface NCBHResult {

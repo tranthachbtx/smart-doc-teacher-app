@@ -106,56 +106,24 @@ export class ContentStructureAnalyzer {
         `;
 
         try {
-            // SỬ DỤNG CHẾ ĐỘ MULTIMODAL (Gửi file trực tiếp thay vì text trích xuất lỗi)
+            // SỬ DỤNG CHẾ ĐỘ MULTIMODAL
             const result = await generateAIContent(prompt, "gemini-2.0-flash", "lesson", filePayload);
 
             if (!result.success) {
-                console.error("[Analyzer] AI Error Response:", result.error);
+                console.error("[Analyzer] DEEP_TRACE_FAIL:", result.error);
+                // Fail Loud with forensic evidence in the log
+                if (result.content) console.log("[Analyzer] Forensic Raw Content:", result.content);
                 throw new Error(`AI Dissection failed: ${result.error}`);
             }
 
-            if (!result.content) throw new Error("AI returned empty content.");
-
-            // IMPROVED JSON EXTRACTION LOGIC
-            // 1. Try to find the first '{' and the last '}'
-            const start = result.content.indexOf('{');
-            const end = result.content.lastIndexOf('}');
-
-            let data = null;
-
-            if (start !== -1 && end !== -1 && end > start) {
-                const potentialJson = result.content.substring(start, end + 1);
-                try {
-                    data = JSON.parse(potentialJson);
-                } catch (jsonError) {
-                    console.warn("[Analyzer] Direct JSON extraction failed, trying cleanup...", jsonError);
-                    // 2. Try cleaning up common AI markdown artifacts like ```json ... ```
-                    const cleanJson = potentialJson.replace(/```json\s*|\s*```/g, "");
-                    try {
-                        data = JSON.parse(cleanJson);
-                    } catch (cleanError) {
-                        console.warn("[Analyzer] JSON cleanup failed.");
-                    }
-                }
+            // Trust the pre-parsed data from generateAIContent
+            if (!result.data) {
+                throw new Error("Analyzer: AI returned success but missing data payload.");
             }
 
-            if (!data) {
-                // Last resort: check if content is valid JSON entirely
-                try {
-                    data = JSON.parse(result.content);
-                } catch (e) {
-                    console.error("[Analyzer] Raw Content dump:", result.content);
-                }
-            }
-
-            if (!data) {
-                console.warn("[Analyzer] AI Content was not valid JSON:", result.content);
-                throw new Error("Invalid JSON format from AI.");
-            }
-
-            return data;
+            return result.data as CleanedStructure;
         } catch (e: any) {
-            console.error("[Analyzer] Final Catch Error:", e.message);
+            console.error("[Analyzer] FINAL_CATCH_ERROR:", e.message);
             throw e;
         }
     }

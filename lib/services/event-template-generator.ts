@@ -12,6 +12,66 @@ import {
     VerticalAlign,
 } from "docx";
 import { WORD_STANDARDS, NO_BORDER, createStandardHeader } from "./word-style-helper";
+import { DEPT_INFO, getAllMembers } from "@/lib/config/department";
+
+/**
+ * 🧹 TEXT CLEANER UTILS (v65.5)
+ */
+function cleanGradeName(input: string): string {
+    if (!input) return "";
+    return input.replace(/Học sinh khối|Khối|Lớp/gi, "").trim();
+}
+
+function cleanObjectiveLabel(content: string, label: string): string {
+    if (!content) return "";
+    // Xử lý linh hoạt cả trường hợp có hoặc không có dấu gạch ngang/đầu dòng
+    const regex = new RegExp(`^([-*\\s]*)${label}[:\\s-]*`, 'i');
+    return content.replace(regex, "").trim();
+}
+
+/**
+ * 🛠️ DECREE 30 TABLE ENGINE (v65.0)
+ * Chuyển đổi Markdown Table từ AI sang Table Word chính xác.
+ */
+function parseMarkdownTable(text: string): Table | null {
+    if (!text.includes("|") || !text.includes("---")) return null;
+
+    const lines = text.trim().split("\n");
+    const tableLines = lines.filter(l => l.includes("|") && !l.includes("---"));
+    if (tableLines.length < 2) return null;
+
+    try {
+        const rows = tableLines.map(line => {
+            const cells = line.split("|").filter(c => c.trim().length >= 0);
+            // Bỏ cell đầu/cuối nếu line bắt đầu/kết thúc bằng |
+            const cleanCells = line.startsWith("|") ? cells.slice(0, cells.length) : cells;
+            const finalCells = cleanCells.map(c => c.trim()).filter((c, i) => i < 10); // Giới hạn cột tránh lỗi
+
+            if (finalCells.length < 2) return null;
+
+            return new TableRow({
+                children: finalCells.map(cellText => new TableCell({
+                    width: { size: 100 / finalCells.length, type: WidthType.PERCENTAGE },
+                    children: [new Paragraph({
+                        children: [new TextRun({ text: cellText, size: 24 })], // 12pt cho bảng
+                        spacing: { before: 80, after: 80 }
+                    })],
+                    verticalAlign: VerticalAlign.CENTER,
+                }))
+            });
+        }).filter(Boolean) as TableRow[];
+
+        if (rows.length === 0) return null;
+
+        return new Table({
+            width: { size: 100, type: WidthType.PERCENTAGE },
+            rows: rows,
+        });
+    } catch (e) {
+        console.error("Table parse error:", e);
+        return null;
+    }
+}
 
 export const generateEventDocx = async (data: any): Promise<Blob> => {
     const doc = new Document({
@@ -20,7 +80,7 @@ export const generateEventDocx = async (data: any): Promise<Blob> => {
                 document: {
                     run: {
                         font: WORD_STANDARDS.font,
-                        size: WORD_STANDARDS.fontSize, // 13pt
+                        size: WORD_STANDARDS.fontSize,
                     },
                     paragraph: {
                         spacing: {
@@ -46,123 +106,116 @@ export const generateEventDocx = async (data: any): Promise<Blob> => {
                         width: { size: 100, type: WidthType.PERCENTAGE },
                         borders: NO_BORDER,
                         rows: createStandardHeader(
-                            ["SỞ GD&ĐT LÂM ĐỒNG", "Trường THPT Bùi Thị Xuân", "Tổ HĐTN, HN & GDĐP"]
+                            [DEPT_INFO.upperAgency, DEPT_INFO.school, DEPT_INFO.name]
                         ),
                     }),
 
-                    new Paragraph({
-                        alignment: AlignmentType.RIGHT,
-                        children: [
-                            new TextRun({
-                                text: `Mũi Né, ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}`,
-                                italics: true,
-                            }),
-                        ],
-                        spacing: { before: 240, after: 240 },
-                    }),
-                    new Paragraph({ text: "", spacing: { before: 240 } }),
 
                     // --- TIÊU ĐỀ ---
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
-                        children: [new TextRun({ text: "KẾ HOẠCH", bold: true, size: 28 })],
+                        children: [new TextRun({ text: "KẾ HOẠCH", bold: true, size: WORD_STANDARDS.fontSizeTitle })],
                     }),
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
-                        children: [new TextRun({ text: `Tổ chức hoạt động ngoại khóa khối ${data.khoi_lop || ""}`, bold: true, size: 28 })],
+                        children: [new TextRun({ text: `Tổ chức hoạt động ngoại khóa khối ${cleanGradeName(data.khoi_lop || data.doi_tuong || "")}`, bold: true, size: WORD_STANDARDS.fontSizeLarge })],
                     }),
                     new Paragraph({
                         alignment: AlignmentType.CENTER,
-                        children: [new TextRun({ text: `Chủ đề: "${data.ten_chu_de || ""}"`, bold: true, size: 28, italics: true })],
+                        children: [new TextRun({ text: `Chủ đề: "${data.ten_chu_de || data.title || ""}"`, bold: true, size: WORD_STANDARDS.fontSizeLarge, italics: true })],
                         spacing: { after: 300 },
                     }),
 
-                    // --- MỤC TIÊU ---
+                    // --- I. MỤC TIÊU ---
                     new Paragraph({
-                        children: [new TextRun({ text: "I. MỤC ĐÍCH - YÊU CẦU", bold: true })],
+                        children: [new TextRun({ text: "I. MỤC TIÊU", bold: true, size: 28 })],
+                        spacing: { before: 200, after: 120 },
                     }),
-                    ...formatContent(data.muc_dich_yeu_cau),
+                    new Paragraph({
+                        indent: { firstLine: WORD_STANDARDS.indent },
+                        children: [new TextRun({ text: "1. Yêu cầu cần đạt:", bold: true })],
+                    }),
+                    ...formatContent(data.muc_dich_yeu_cau, "Yêu cầu"),
 
                     new Paragraph({
-                        children: [new TextRun({ text: "II. THỜI GIAN - ĐỊA ĐIỂM", bold: true })],
-                        spacing: { before: 200 },
+                        indent: { firstLine: WORD_STANDARDS.indent },
+                        children: [new TextRun({ text: "2. Năng lực và Phẩm chất:", bold: true })],
+                        spacing: { before: 120 },
+                    }),
+                    ...formatContent(data.nang_luc, "Năng lực"),
+                    ...(data.pham_chat
+                        ? formatContent(data.pham_chat, "Phẩm chất")
+                        : formatContent("Trách nhiệm, trung thực, nhân ái.", "Phẩm chất")
+                    ),
+
+                    // --- II. THỜI GIAN - ĐỊA ĐIỂM ---
+                    new Paragraph({
+                        children: [new TextRun({ text: "II. THỜI GIAN – ĐỊA ĐIỂM", bold: true, size: 28 })],
+                        spacing: { before: 240, after: 120 },
                     }),
                     new Paragraph({
+                        indent: { firstLine: WORD_STANDARDS.indent },
                         children: [
-                            new TextRun({ text: "1. Thời gian: ", bold: true }),
-                            new TextRun({ text: data.thoi_gian || "..." }),
+                            new TextRun({ text: "- Thời gian: ", bold: true }),
+                            new TextRun({ text: data.thoi_gian || "Trong tiết Sinh hoạt dưới cờ (45 phút)" }),
                         ],
                     }),
                     new Paragraph({
+                        indent: { firstLine: WORD_STANDARDS.indent },
                         children: [
-                            new TextRun({ text: "2. Địa điểm: ", bold: true }),
-                            new TextRun({ text: data.dia_diem || "..." }),
+                            new TextRun({ text: "- Địa điểm: ", bold: true }),
+                            new TextRun({ text: data.dia_diem || "Sân trường THPT Bùi Thị Xuân" }),
                         ],
                     }),
 
+                    // --- III. NỘI DUNG VÀ TIẾN TRÌNH ---
                     new Paragraph({
-                        children: [new TextRun({ text: "III. NỘI DUNG VÀ HÌNH THỨC TỔ CHỨC", bold: true })],
-                        spacing: { before: 200 },
+                        children: [new TextRun({ text: "III. NỘI DUNG VÀ TIẾN TRÌNH", bold: true, size: 28 })],
+                        spacing: { before: 240, after: 120 },
                     }),
-                    ...formatContent(data.noi_dung),
+                    ...formatEventContent(data.interaction),
+                    ...formatEventContent(data.kich_ban_chi_tiet),
+
+                    // --- IV. KINH PHÍ DỰ KIẾN ---
+                    new Paragraph({
+                        children: [new TextRun({ text: "IV. KINH PHÍ DỰ KIẾN", bold: true, size: 28 })],
+                        spacing: { before: 240, after: 120 },
+                    }),
+                    ...formatEventContent(data.kinh_phi),
+
+                    // --- V. CHUẨN BỊ VÀ TỔ CHỨC THỰC HIỆN ---
+                    new Paragraph({
+                        children: [new TextRun({ text: "V. CHUẨN BỊ VÀ TỔ CHỨC THỰC HIỆN", bold: true, size: 28 })],
+                        spacing: { before: 240, after: 120 },
+                    }),
+                    new Paragraph({
+                        indent: { firstLine: WORD_STANDARDS.indent },
+                        children: [new TextRun({ text: "1. Công tác chuẩn bị:", bold: true })],
+                    }),
+                    ...formatEventContent(data.chuan_bi),
 
                     new Paragraph({
-                        children: [new TextRun({ text: "IV. KỊCH BẢN CHI TIẾT", bold: true })],
-                        spacing: { before: 200 },
+                        indent: { firstLine: WORD_STANDARDS.indent },
+                        children: [new TextRun({ text: "2. Tổ chức thực hiện:", bold: true })],
+                        spacing: { before: 120 },
                     }),
-                    ...formatContent(data.kich_ban_chi_tiet),
+                    ...formatEventContent(data.footer_admin),
 
                     new Paragraph({
-                        children: [new TextRun({ text: "V. DỰ TOÁN KINH PHÍ", bold: true })],
-                        spacing: { before: 200 },
+                        alignment: AlignmentType.CENTER,
+                        children: [new TextRun({ text: `* Thông điệp: ${data.thong_diep_ket_thuc || ""}`, italics: true, bold: true, color: "2E7D32" })],
+                        spacing: { before: 300, after: 400 },
                     }),
-                    ...formatContent(data.kinh_phi),
-
-                    new Paragraph({
-                        children: [new TextRun({ text: "VI. TỔ CHỨC THỰC HIỆN", bold: true })],
-                        spacing: { before: 200 },
-                    }),
-                    ...formatContent(data.to_chuc_thuc_hien_chuan_bi),
-
-                    new Paragraph({ text: "", spacing: { before: 400 } }),
 
                     // --- CHỮ KÝ ---
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
-                        borders: {
-                            top: { style: BorderStyle.NONE },
-                            bottom: { style: BorderStyle.NONE },
-                            left: { style: BorderStyle.NONE },
-                            right: { style: BorderStyle.NONE },
-                            insideHorizontal: { style: BorderStyle.NONE },
-                            insideVertical: { style: BorderStyle.NONE },
-                        },
+                        borders: NO_BORDER,
                         rows: [
                             new TableRow({
                                 children: [
                                     new TableCell({
-                                        width: { size: 40, type: WidthType.PERCENTAGE },
-                                        verticalAlign: VerticalAlign.TOP,
-                                        children: [
-                                            new Paragraph({
-                                                children: [new TextRun({ text: "Nơi nhận:", bold: true, italics: true, size: 22 })],
-                                            }),
-                                            new Paragraph({
-                                                children: [new TextRun({ text: "- BGH (để báo cáo);", size: 22 })],
-                                                spacing: { before: 0, after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                children: [new TextRun({ text: "- Tổ CM, GV thực hiện;", size: 22 })],
-                                                spacing: { before: 0, after: 0 },
-                                            }),
-                                            new Paragraph({
-                                                children: [new TextRun({ text: "- Lưu: VT, Tổ CM.", size: 22 })],
-                                                spacing: { before: 0, after: 0 },
-                                            }),
-                                        ],
-                                    }),
-                                    new TableCell({
-                                        width: { size: 60, type: WidthType.PERCENTAGE },
+                                        width: { size: 50, type: WidthType.PERCENTAGE },
                                         children: [
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
@@ -170,12 +223,30 @@ export const generateEventDocx = async (data: any): Promise<Blob> => {
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: "(Ký và ghi rõ họ tên)", italics: true, size: 20 })],
+                                                children: [new TextRun({ text: "(Ký và ghi rõ họ tên)", italics: true, size: 22 })],
                                                 spacing: { after: 1200 },
                                             }),
                                             new Paragraph({
                                                 alignment: AlignmentType.CENTER,
-                                                children: [new TextRun({ text: data.to_truong || "...", bold: true, size: 26 })],
+                                                children: [new TextRun({ text: data.to_truong || "Trần Hoàng Thạch", bold: true, size: 26 })],
+                                            }),
+                                        ],
+                                    }),
+                                    new TableCell({
+                                        width: { size: 50, type: WidthType.PERCENTAGE },
+                                        children: [
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "BAN GIÁM HIỆU", bold: true, size: 26 })],
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: "(Ký và đóng dấu)", italics: true, size: 22 })],
+                                                spacing: { after: 1200 },
+                                            }),
+                                            new Paragraph({
+                                                alignment: AlignmentType.CENTER,
+                                                children: [new TextRun({ text: " ", bold: true, size: 26 })],
                                             }),
                                         ],
                                     }),
@@ -191,60 +262,59 @@ export const generateEventDocx = async (data: any): Promise<Blob> => {
     return await Packer.toBlob(doc);
 };
 
-function formatContent(val: any): Paragraph[] {
-    if (val === null || val === undefined) return [new Paragraph({ text: "..." })];
+function formatEventContent(val: any): (Paragraph | Table)[] {
+    if (!val || val === "...") return [];
+    const text = String(val);
 
-    // Thử parse nếu là chuỗi chứa JSON (AI thường trả về stringified JSON trong field)
-    if (typeof val === "string" && (val.trim().startsWith("[") || val.trim().startsWith("{"))) {
-        try {
-            const parsed = JSON.parse(val.trim());
-            return formatContent(parsed);
-        } catch (e) {
-            // Không phải JSON chuẩn, tiếp tục xử lý như string thường
-        }
-    }
+    // 1. Kiểm tra xem có bảng Markdown không
+    const table = parseMarkdownTable(text);
+    if (table) return [table];
 
-    // Xử lý mảng (ví dụ: danh sách mục tiêu hoặc danh sách kinh phí)
-    if (Array.isArray(val)) {
-        return val.flatMap((item, index) => {
-            if (typeof item === "object") {
-                // Định dạng đối tượng trong mảng thành 1 dòng gạch đầu dòng dễ đọc
-                const summary = Object.entries(item)
-                    .map(([k, v]) => `${k}: ${v}`)
-                    .join(" | ");
-                return [
-                    new Paragraph({
-                        children: [new TextRun({ text: `- ${summary}` })],
-                        spacing: { before: 40, after: 40 },
-                        alignment: AlignmentType.JUSTIFIED
-                    })
-                ];
-            }
-            return formatContent(item);
+    // 2. Định dạng paragraph thông thườn
+    return text.split("\n").map(line => {
+        let trimmed = line.trim();
+        if (!trimmed || trimmed === "Năng lực:" || trimmed === "Phẩm chất:") return null;
+
+        // Xóa các tiêu đề trùng lặp
+        trimmed = trimmed.replace(/^(I|II|III|IV|V)\..*$/g, "").trim();
+        if (!trimmed) return null;
+
+        const hasBullet = trimmed.startsWith("-") || trimmed.startsWith("*") || /^\d+\./.test(trimmed);
+        const bullet = hasBullet ? "" : "- ";
+
+        return new Paragraph({
+            indent: { firstLine: WORD_STANDARDS.indent },
+            children: [new TextRun({ text: `${bullet}${trimmed}` })],
+            spacing: { before: 100, after: 100 },
         });
-    }
+    }).filter(Boolean) as Paragraph[];
+}
 
-    // Xử lý đối tượng đơn lẻ
-    if (typeof val === "object") {
-        return Object.entries(val).flatMap(([key, value]) => {
-            return [
-                new Paragraph({
-                    children: [
-                        new TextRun({ text: `${key}: `, bold: true }),
-                        new TextRun({ text: typeof value === "string" ? value : JSON.stringify(value) })
-                    ],
-                    spacing: { before: 80, after: 80 }
-                })
-            ];
-        });
-    }
+function formatContent(val: any, label?: string): Paragraph[] {
+    if (val === null || val === undefined || val === "" || val === "...") return [];
 
     const text = String(val);
     return text.split("\n").map(line => {
-        const trimmed = line.trim();
+        let trimmed = line.trim();
         if (!trimmed) return null;
+
+        // Làm sạch các dấu ba chấm hoặc ký tự rác còn sót lại
+        trimmed = trimmed.replace(/\.{2,}/g, "").trim();
+        if (!trimmed) return null;
+
+        // Khử nhãn nếu có (VD: Năng lực: Tự chủ -> Tự chủ)
+        if (label) {
+            trimmed = cleanObjectiveLabel(trimmed, label);
+        }
+        if (!trimmed) return null;
+
+        // Không chèn gạch đầu dòng nếu đã có hoặc là số thứ tự
+        const hasBullet = trimmed.startsWith("-") || trimmed.startsWith("*") || /^\d+\./.test(trimmed);
+        const bullet = hasBullet ? "" : "- ";
+
         return new Paragraph({
-            children: [new TextRun({ text: trimmed })],
+            indent: { firstLine: WORD_STANDARDS.indent },
+            children: [new TextRun({ text: `${bullet}${trimmed}` })],
             spacing: { before: 80, after: 80 },
             alignment: AlignmentType.JUSTIFIED
         });

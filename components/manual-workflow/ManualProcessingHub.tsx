@@ -99,10 +99,19 @@ export function ManualProcessingHub() {
                 return;
             }
 
-            const headerSlice = fullText.substring(0, 6000);
+            // DEEP_TRACE: Input auditing
+            const AUDIT_SLICE_SIZE = 12000;
+            const headerSlice = fullText.substring(0, AUDIT_SLICE_SIZE);
+            console.log(`[DEEP_TRACE:HUB] Extracted text length: ${fullText.length}. Slicing first ${AUDIT_SLICE_SIZE} chars for Audit.`);
+
+            if (fullText.length > AUDIT_SLICE_SIZE) {
+                console.warn(`[DEEP_TRACE:HUB] Large file detected. Audit will only cover first ~8 pages.`);
+            }
+
             const { ContentStructureAnalyzer } = await import('@/lib/services/content-structure-analyzer');
             const analyzer = new ContentStructureAnalyzer();
 
+            // Prepare forensic payload
             const utf8Bytes = new TextEncoder().encode(headerSlice);
             let binaryString = "";
             for (let i = 0; i < utf8Bytes.length; i++) {
@@ -110,6 +119,7 @@ export function ManualProcessingHub() {
             }
             const payloadData = window.btoa(binaryString);
 
+            console.log(`[DEEP_TRACE:HUB] Sending payload to ContentStructureAnalyzer...`);
             const struct = await analyzer.analyzeAndPreFill(
                 { mimeType: 'text/plain', data: payloadData },
                 lessonGrade,

@@ -562,20 +562,8 @@ export function taoContextCauHoiGoiMo(khoi: number, tenChuDe?: string, tenNhiemV
     }
   }
 
-  // Trả về tất cả câu hỏi của khối
-  khoiData.chu_de.forEach((chuDe) => {
-    context += `### ${chuDe.nhom_chu_de}\n`
-    context += `Chủ đề liên quan: ${chuDe.chu_de_lien_quan.join(", ")}\n\n`
-    chuDe.nhiem_vu.forEach((nv) => {
-      context += `**${nv.ten_nhiem_vu}**:\n`
-      nv.cau_hoi.forEach((ch, idx) => {
-        context += `  ${idx + 1}. [${ch.loai.toUpperCase()}] ${ch.cau_hoi}\n`
-      })
-      context += "\n"
-    })
-  })
-
-  return context
+  // NGỪNG DUMP TOÀN BỘ DATABASE ĐỂ TRÁNH LỖI TIMEOUT
+  return `### LƯU Ý: Chưa tìm thấy ngân hàng câu hỏi riêng cho chủ đề này. AI hãy tự sáng tạo các câu hỏi tương tác dựa trên tâm lý học sinh khối lớp đã cho.`;
 }
 
 /**

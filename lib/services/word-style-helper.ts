@@ -14,11 +14,12 @@ import {
 
 export const WORD_STANDARDS = {
     font: "Times New Roman",
-    fontSize: 26, // 13pt
-    fontSizeSmall: 24, // 12pt
-    fontSizeLarge: 28, // 14pt
-    fontSizeTitle: 32, // 16pt
-    lineSpacing: 276, // 1.15 line spacing
+    fontSize: 28, // 14pt (Chuẩn Nghị định 30)
+    fontSizeSmall: 26, // 13pt
+    fontSizeLarge: 32, // 16pt
+    fontSizeTitle: 36, // 18pt
+    lineSpacing: 300, // 1.25 line spacing
+    indent: 709, // ~1.25cm (Thụt lề dòng đầu)
     margins: {
         top: 1134, // 2cm
         bottom: 1134, // 2cm
@@ -102,21 +103,46 @@ export const createStandardHeader = (
                             ],
                             spacing: { after: 0 },
                         }),
-                        // Đường kẻ dưới tiêu ngữ
+                        // Đường kẻ dưới tiêu ngữ (Solid line chuẩn)
                         new Paragraph({
                             alignment: AlignmentType.CENTER,
                             children: [
                                 new TextRun({
-                                    text: "—————————",
-                                    size: WORD_STANDARDS.fontSize,
-                                    bold: true,
+                                    text: "━━━━━━━━━", // Dùng ký tự bold block
+                                    size: 16, // Nhỏ lại để thanh mảnh
                                 }),
                             ],
+                            spacing: { after: 120 },
                         }),
                     ],
                 }),
             ],
         }),
+        // Dòng 2: Số hiệu và Ngày tháng
+        new TableRow({
+            children: [
+                new TableCell({
+                    children: [
+                        new Paragraph({
+                            alignment: AlignmentType.CENTER,
+                            children: [new TextRun({ text: "Số: ..../KH-BTX", size: WORD_STANDARDS.fontSizeSmall })],
+                        })
+                    ]
+                }),
+                new TableCell({
+                    children: [
+                        new Paragraph({
+                            alignment: AlignmentType.CENTER,
+                            children: [new TextRun({
+                                text: `Mũi Né, ngày ${new Date().getDate()} tháng ${new Date().getMonth() + 1} năm ${new Date().getFullYear()}`,
+                                italics: true,
+                                size: WORD_STANDARDS.fontSizeSmall
+                            })],
+                        })
+                    ]
+                })
+            ]
+        })
     ];
 };
 

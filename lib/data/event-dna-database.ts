@@ -90,7 +90,7 @@ export const TOPICS_LIBRARY: TopicSuggestion[] = [
         id: "K12_CD8",
         grade: 12,
         name: "Nghề nghiệp và những yêu cầu với người lao động hiện đại",
-        smart_suggestion: "Mock Interview 2025 - Phỏng vấn giả định với các nhà tuyển dụng thực tế từ Hiệp hội du lịch Bình Thuận."
+        smart_suggestion: "Mock Interview 2025 - Phỏng vấn giả định với các nhà tuyển dụng thực tế từ Hiệp hội du lịch Lâm Đồng."
     },
     {
         id: "K12_CD2",

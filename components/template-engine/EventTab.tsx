@@ -373,75 +373,86 @@ export function EventTab({
               </div>
 
               {/* Objectives */}
-              {(eventResult.muc_tieu || eventResult.muc_dich_yeu_cau) && (
+              {(eventResult.muc_dich_yeu_cau || eventResult.muc_tieu) && (
                 <div className="p-3 bg-white rounded border">
-                  <h5 className="font-medium text-sm mb-2 text-purple-700 uppercase">Mục đích - Yêu cầu:</h5>
-                  <div className="text-sm text-slate-600 whitespace-pre-wrap">
-                    {formatAIValue(eventResult.muc_tieu || eventResult.muc_dich_yeu_cau)}
+                  <h5 className="font-bold text-sm mb-2 text-purple-700 uppercase">I. MỤC TIÊU - YÊU CẦU:</h5>
+                  <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
+                    {formatAIValue(eventResult.muc_dich_yeu_cau || eventResult.muc_tieu)}
                   </div>
+                  {(eventResult.nang_luc || eventResult.pham_chat) && (
+                    <div className="mt-3 pt-3 border-t border-dashed space-y-2">
+                      {eventResult.nang_luc && <p className="text-sm"><strong>Năng lực:</strong> {formatAIValue(eventResult.nang_luc)}</p>}
+                      {eventResult.pham_chat && <p className="text-sm"><strong>Phẩm chất:</strong> {formatAIValue(eventResult.pham_chat)}</p>}
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Content */}
-              {eventResult.noi_dung && (
+              {/* Organization Prep */}
+              {(eventResult.chuan_bi || eventResult.preparation) && (
                 <div className="p-3 bg-white rounded border">
-                  <h5 className="font-medium text-sm mb-2">Nội dung:</h5>
-                  <div className="text-sm text-slate-600">
-                    {formatAIValue(eventResult.noi_dung)}
-                  </div>
-                </div>
-              )}
-
-              {/* Detailed Script - CRITICAL SECTION */}
-              {eventResult.kich_ban_chi_tiet && (
-                <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
-                  <h5 className="font-bold text-sm mb-3 text-purple-900 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-purple-600" /> KỊCH BẢN CHI TIẾT (SCRIPT):
+                  <h5 className="font-bold text-sm mb-2 text-purple-700 uppercase">
+                    II. TỔ CHỨC THỰC HIỆN (CHUẨN BỊ):
                   </h5>
-                  <div className="text-sm text-slate-800 whitespace-pre-wrap leading-relaxed">
-                    {formatAIValue(eventResult.kich_ban_chi_tiet)}
+                  <div className="text-sm text-slate-700 whitespace-pre-wrap">
+                    {formatAIValue(eventResult.chuan_bi || eventResult.preparation)}
                   </div>
                 </div>
               )}
 
-              {/* Timeline (Legacy fallback) */}
-              {eventResult.tien_trinh && eventResult.tien_trinh.length > 0 && !eventResult.kich_ban_chi_tiet && (
-                <div className="p-3 bg-white rounded border">
-                  <h5 className="font-medium text-sm mb-2 text-purple-700 uppercase">Tiến trình hoạt động:</h5>
-                  <div className="space-y-2">
-                    {eventResult.tien_trinh.map((step, idx) => (
-                      <div key={idx} className="flex gap-2 text-sm">
-                        <span className="font-medium text-purple-600 whitespace-nowrap">
-                          {step.thoi_gian}:
-                        </span>
-                        <span className="text-slate-600">{formatAIValue(step.hoat_dong)}</span>
+              {/* Timeline (New 2-Column Structure) */}
+              {(eventResult.timeline && Array.isArray(eventResult.timeline)) && (
+                <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
+                  <h5 className="font-bold text-sm mb-3 text-purple-900 flex items-center gap-2 uppercase">
+                    <Sparkles className="w-4 h-4 text-purple-600" /> III. NỘI DUNG VÀ HÌNH THỨC THỰC HIỆN:
+                  </h5>
+                  <div className="space-y-4">
+                    {eventResult.timeline.map((act: any, idx: number) => (
+                      <div key={idx} className="bg-white p-3 rounded-lg border border-purple-100 shadow-sm">
+                        <div className="flex justify-between items-start mb-2 border-b pb-2">
+                          <span className="font-bold text-purple-800">{act.activity_name}</span>
+                          <span className="text-xs font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{act.time}</span>
+                        </div>
+                        <div className="space-y-2 text-sm text-slate-700">
+                          <p><strong>Mô tả:</strong> {act.description}</p>
+                          {act.mc_script && (
+                            <div className="bg-slate-50 p-2 rounded border-l-4 border-purple-400 italic">
+                              <span className="text-purple-600 font-bold not-italic">🎤 MC Script:</span> "{act.mc_script}"
+                            </div>
+                          )}
+                          {act.logistics && <p className="text-xs text-slate-500">📦 Chuẩn bị: {act.logistics}</p>}
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Participants */}
-              {eventResult.thanh_phan_tham_du && (
+              {/* Budget Details */}
+              {(eventResult.budget_details && Array.isArray(eventResult.budget_details)) && (
                 <div className="p-3 bg-white rounded border">
-                  <h5 className="font-medium text-sm mb-2">
-                    Thành phần tham dự:
-                  </h5>
-                  <p className="text-sm text-slate-600 whitespace-pre-line">
-                    {eventResult.thanh_phan_tham_du}
-                  </p>
-                </div>
-              )}
-
-              {/* Organization Prep */}
-              {(eventResult.to_chuc_thuc_hien_chuan_bi || eventResult.chuan_bi) && (
-                <div className="p-3 bg-white rounded border">
-                  <h5 className="font-medium text-sm mb-2 text-purple-700 uppercase">
-                    Tổ chức thực hiện (Chuẩn bị):
-                  </h5>
-                  <div className="text-sm text-slate-600 whitespace-pre-wrap">
-                    {formatAIValue(eventResult.to_chuc_thuc_hien_chuan_bi || eventResult.chuan_bi)}
+                  <h5 className="font-bold text-sm mb-2 text-purple-700 uppercase">IV. KINH PHÍ THỰC HIỆN:</h5>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead>
+                        <tr className="border-b bg-slate-50">
+                          <th className="p-2">Hạng mục</th>
+                          <th className="p-2 text-right">Thành tiền</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {eventResult.budget_details.map((b: any, i: number) => (
+                          <tr key={i} className="border-b">
+                            <td className="p-2">{b.item}</td>
+                            <td className="p-2 text-right">{parseInt(b.cost).toLocaleString('vi-VN')} đ</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
+                  <p className="mt-2 text-right font-bold text-purple-800">
+                    TỔNG CỘNG: {eventResult.total_budget}
+                  </p>
                 </div>
               )}
 
@@ -451,6 +462,26 @@ export function EventTab({
                   <h5 className="font-bold text-sm mb-2 text-indigo-900 uppercase">Thông điệp kết thúc:</h5>
                   <div className="text-sm text-indigo-800 italic">
                     {formatAIValue(eventResult.thong_diep_ket_thuc)}
+                  </div>
+                </div>
+              )}
+
+              {/* Interaction activities (Minigames/TikTok) */}
+              {eventResult.interaction && (
+                <div className="p-3 bg-pink-50 border border-pink-100 rounded-lg">
+                  <h5 className="font-bold text-sm mb-2 text-pink-900 uppercase">Hoạt động tương tác:</h5>
+                  <div className="text-sm text-pink-800 whitespace-pre-wrap">
+                    {formatAIValue(eventResult.interaction)}
+                  </div>
+                </div>
+              )}
+
+              {/* Footer Admin (Participants/Implementation) */}
+              {eventResult.footer_admin && (
+                <div className="p-4 bg-slate-100 border border-slate-200 rounded-xl mt-4 font-serif">
+                  <h5 className="font-bold text-xs mb-2 text-slate-500 uppercase tracking-widest">Thông tin hành chính & Ký duyệt:</h5>
+                  <div className="text-sm text-slate-700 whitespace-pre-wrap">
+                    {formatAIValue(eventResult.footer_admin)}
                   </div>
                 </div>
               )}

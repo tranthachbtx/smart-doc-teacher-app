@@ -924,58 +924,27 @@ Phong cách: Văn hóa sân khấu kịch giữa sân trường, giáo dục qua
 ### MẪU THAM KHẢO CHI TIẾT KHỐI ${khoi}:
 `
 
-  mauThamKhao.forEach((mau) => {
+  // CHỈ LẤY 1 MẪU TIÊU BIỂU ĐỂ TRÁNH QUÁ TẢI PROMPT
+  const mau = mauThamKhao[0];
+  if (mau) {
     context += `
 ========================================
-MẪU: ${mau.ten_chu_de.toUpperCase()}
+MẪU TIÊU BIỂU: ${mau.ten_chu_de.toUpperCase()}
 ========================================
 1. KHỞI ĐỘNG (${mau.cau_truc.khoi_dong.thoi_gian}):
    - Hoạt động: ${mau.cau_truc.khoi_dong.hoat_dong.ten}
-   - Cách chơi: ${mau.cau_truc.khoi_dong.hoat_dong.cach_choi}
    - Lời dẫn MC: "${mau.cau_truc.khoi_dong.loi_dan_dat_mc}"
 
-2. PHẦN CHÍNH (${mau.cau_truc.phan_chinh.thoi_gian}) - Loại: ${mau.cau_truc.phan_chinh.loai
-      }
-`
+2. PHẦN CHÍNH (${mau.cau_truc.phan_chinh.thoi_gian}) - Loại: ${mau.cau_truc.phan_chinh.loai}
+`;
 
     if (mau.cau_truc.phan_chinh.kich_ban) {
-      const kb = mau.cau_truc.phan_chinh.kich_ban
-      context += `   KỊCH BẢN: "${kb.ten}"
-   - Chủ đề: ${kb.chu_de}
-   - Bối cảnh: ${kb.boi_canh}
-   - Nhân vật: ${kb.nhan_vat.join(", ")}
-   - CÁC PHÂN CẢNH (HÃY HỌC TẬP KHAI THÁC CHI TIẾT NHƯ SAU):
-`
-      kb.phan_canh.forEach((pc: any, idx: number) => {
-        context += `     * Cảnh ${idx + 1}: ${pc.ten}
-       + Nội dung: ${pc.noi_dung}
-       + Hành động:
-${pc.hanh_dong.map((hd: string) => `         - ${hd}`).join("\n")}
-${pc.loi_thoai_mau
-            ? `       + Thoại đắt: "${pc.loi_thoai_mau.join('" / "')}"`
-            : ""
-          }
-`
-      })
-      context += `   - Thông điệp kịch: "${kb.thong_diep}"\n`
-    } else if (mau.cau_truc.phan_chinh.cuoc_thi) {
-      const ct = mau.cau_truc.phan_chinh.cuoc_thi
-      context += `   CUỘC THI: "${ct.ten}"
-   - Hình thức: ${ct.hinh_thuc}
-   - Vòng 1: ${ct.vong_1.ten} (${ct.vong_1.hinh_thuc})
-   - Vòng 2: ${ct.vong_2.ten} (${ct.vong_2.hinh_thuc})
-`
+      const kb = mau.cau_truc.phan_chinh.kich_ban;
+      context += `   KỊCH BẢN: "${kb.ten}"\n   - Phân cảnh mẫu: ${kb.phan_canh[0]?.ten || "Hành động kịch tính"}\n`;
     }
 
-    context += `
-3. KẾT THÚC (${mau.cau_truc.ket_thuc.thoi_gian}):
-   - Thông điệp chốt: "${mau.cau_truc.ket_thuc.thong_diep_ket_thuc}"
-   - Câu hỏi tương tác mẫu:
-${mau.cau_truc.ket_thuc.cau_hoi_tuong_tac
-        .map((ch: any) => `     + ${ch.cau_hoi}`)
-        .join("\n")}
-`
-  })
+    context += `3. KẾT THÚC (${mau.cau_truc.ket_thuc.thoi_gian}): "${mau.cau_truc.ket_thuc.thong_diep_ket_thuc}"\n`;
+  }
 
   if (goiY.length > 0) {
     context += `
@@ -1004,7 +973,7 @@ export function taoContextVanBanHanhChinh(thongTin: {
   nam?: number
   ten_chu_de?: string
   lop?: string
-}): string {
+} = {}): string {
   return `
 === CẤU TRÚC VĂN BẢN HÀNH CHÍNH ===
 Kế hoạch ngoại khóa phải tuân theo cấu trúc văn bản hành chính chuẩn:
