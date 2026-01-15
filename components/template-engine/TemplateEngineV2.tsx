@@ -757,6 +757,9 @@ export function TemplateEngine() {
               assessmentTemplate={assessmentData.template}
               onTemplateUpload={onTemplateUpload}
               assessmentResult={assessmentData.result}
+              setAssessmentResult={(v) =>
+                store.updateAssessmentField("result", v)
+              }
               isGenerating={store.generatingMode === "assessment"}
               onGenerate={() => handleGenerate("assessment")}
               isExporting={store.isExporting}

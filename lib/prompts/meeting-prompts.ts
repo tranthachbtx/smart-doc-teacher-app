@@ -44,7 +44,7 @@ CẤU TRÚC BIÊN BẢN CHIẾN LƯỢC:
 
 I. ĐÁNH GIÁ CÔNG TÁC THÁNG QUA {noi_dung_chinh}:
 - Tập trung vào hiệu quả thực tế: Đưa ra các con số hoặc minh chứng về việc học sinh đã đạt được Yêu cầu cần đạt.
-- Phân tích Ưu điểm {uu_diem} và Hạn chế {han_che} gắn with "Hoạt động của học sinh".
+- Phân tích Ưu điểm {uu_diem} và Hạn chế {han_che} gắn với "Hoạt động của học sinh".
 
 II. THẢO LUẬN CHUYÊN MÔN SÂU (TRỌNG TÂM):
 - Nội dung thảo luận phải xoay quanh: 
@@ -54,9 +54,9 @@ II. THẢO LUẬN CHUYÊN MÔN SÂU (TRỌNG TÂM):
 
 III. TRIỂN KHAI KẾ HOẠCH THÁNG TỚI {ke_hoach_thang_toi}:
 - Phân công cụ thể: Ai làm? Làm gì? Khi nào xong?
-- Gắn chặt with khung PPCT và chủ đề SGK tháng tới.
+- Gắn chặt với khung PPCT và chủ đề SGK tháng tới.
 
-IV. Ý KIẾN THÀO LUẬN & KẾT LUẬN {y_kien_dong_gop}:
+IV. Ý KIẾN THẢO LUẬN & KẾT LUẬN {y_kien_dong_gop}:
 - Ý kiến phản biện và đề xuất giải pháp.
 - Kết luận chốt của Tổ trưởng mang tính chỉ đạo.
 `;
@@ -70,7 +70,8 @@ QUY TẮC ĐỊNH DẠNG (STRICT RULES):
 1. KHÔNG SÁO RỖNG: Cấm dùng các cụm từ "giảng dạy nhiệt tình", "học tập sôi nổi". Phải thay bằng minh chứng hành vi cụ thể.
 2. CẤU TRÚC JSON: Các trường dữ liệu phải được làm đầy bằng nội dung phân tích sâu (Deep-Dive).
 3. ĐỊA PHƯƠNG HÓA: Liên hệ trực tiếp đến tình hình thực tế tại Mũi Né/Lâm Đồng.
-4. NGHIÊN CỨU AI (HUANLUYEN_AI): Dựa trên kết quả nghiên cứu toàn diện về cấu trúc sư phạm môn HĐTN (Circular 02, 5512, 5555), hãy đảm bảo mọi kế hoạch mang tính khoa học cao nhất.
+4. KHÔNG SỬ DỤNG KÝ TỰ LẠ: Tuyệt đối không sử dụng chữ Hán (Chinese characters) như 重点 hay bất kỳ ngôn ngữ nào khác ngoài tiếng Việt chuẩn.
+5. TRÁNH LẶP VĂN BẢN: Đảm bảo không nốt chuỗi lặp lại các đoạn văn trong cùng một trường dữ liệu.
 `;
 
 // ============================================================
@@ -115,8 +116,7 @@ export function getMeetingMinutesPrompt(
   month: string,
   session: string,
   keyContent: string,
-  currentThemes: string,
-  nextThemes: string,
+  conclusion: string,
   nextMonth: string
 ): string {
   const allMembers = getAllMembers();
@@ -125,6 +125,7 @@ export function getMeetingMinutesPrompt(
 
   const monthNumber = Number.parseInt(month) || 9;
   const nextMonthNumber = Number.parseInt(nextMonth) || (monthNumber % 12) + 1;
+  const actualNextMonth = nextMonth || String(nextMonthNumber);
 
   let chuDeThangNayContext = "";
   let chuDeThangSauContext = "";
@@ -147,7 +148,7 @@ ${grades
 `;
 
   chuDeThangSauContext = `
-THÔNG TIN CHỦ ĐỀ THÁNG ${nextMonth} TỪ SGK (để lập kế hoạch):
+THÔNG TIN CHỦ ĐỀ THÁNG ${actualNextMonth} TỪ SGK (để lập kế hoạch):
 ${grades
       .map((g) => {
         const chuDe = getChuDeTheoThang(g, nextMonthNumber);
@@ -204,12 +205,10 @@ THÔNG TIN CUỘC HỌP:
 - Tháng: ${month}
 - Lần họp: ${session}
 - Nội dung trọng tâm: ${keyContent || "Sinh hoạt chuyên môn định kỳ"}
+- Kết luận dự kiến: ${conclusion || "Thống nhất các nội dung đã thảo luận"}
 
-CHỦ ĐỀ THÁNG ${month} (Đánh giá hoạt động đã thực hiện):
-${currentThemes}
-
-CHỦ ĐỀ THÁNG ${nextMonth} (Kế hoạch triển khai):
-${nextThemes}
+CHỦ ĐỀ THÁNG ${month}: (XEM LẠI PHẦN DỮ LIỆU SGK PHÍA TRÊN)
+CHỦ ĐỀ THÁNG ${actualNextMonth}: (XEM LẠI PHẦN DỮ LIỆU SGK PHÍA TRÊN)
 
 THÀNH VIÊN ĐÓNG GÓP Ý KIẾN (chọn ngẫu nhiên):
 ${selectedMembers.map((m) => `- Thầy/Cô ${m}`).join("\n")}

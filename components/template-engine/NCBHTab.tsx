@@ -184,16 +184,31 @@ export function NCBHTab({
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <Label className="text-xs uppercase text-slate-500">Lý do chọn bài</Label>
-                                        <Textarea readOnly value={ncbhResult.ly_do_chon} className="bg-white text-sm" rows={4} />
+                                        <Textarea
+                                            value={ncbhResult.ly_do_chon}
+                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNcbhResult({ ...ncbhResult, ly_do_chon: e.target.value })}
+                                            className="bg-white text-sm"
+                                            rows={4}
+                                        />
                                     </div>
                                     <div className="space-y-1">
                                         <Label className="text-xs uppercase text-slate-500">Mục tiêu bài học</Label>
-                                        <Textarea readOnly value={ncbhResult.muc_tieu} className="bg-white text-sm" rows={4} />
+                                        <Textarea
+                                            value={ncbhResult.muc_tieu}
+                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNcbhResult({ ...ncbhResult, muc_tieu: e.target.value })}
+                                            className="bg-white text-sm"
+                                            rows={4}
+                                        />
                                     </div>
                                 </div>
                                 <div className="space-y-1">
                                     <Label className="text-xs uppercase text-slate-500">Chuỗi hoạt động thống nhất</Label>
-                                    <Textarea readOnly value={ncbhResult.chuoi_hoat_dong} className="bg-white text-sm" rows={6} />
+                                    <Textarea
+                                        value={ncbhResult.chuoi_hoat_dong}
+                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNcbhResult({ ...ncbhResult, chuoi_hoat_dong: e.target.value })}
+                                        className="bg-white text-sm"
+                                        rows={6}
+                                    />
                                 </div>
                             </div>
 
@@ -205,20 +220,40 @@ export function NCBHTab({
                                 </h4>
                                 <div className="space-y-1">
                                     <Label className="text-xs uppercase text-slate-500">Chia sẻ của giáo viên dạy</Label>
-                                    <Textarea readOnly value={ncbhResult.chia_se_nguoi_day} className="bg-white text-sm" rows={3} />
+                                    <Textarea
+                                        value={ncbhResult.chia_se_nguoi_day}
+                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNcbhResult({ ...ncbhResult, chia_se_nguoi_day: e.target.value })}
+                                        className="bg-white text-sm"
+                                        rows={3}
+                                    />
                                 </div>
                                 <div className="space-y-1">
                                     <Label className="text-xs uppercase text-slate-500">Minh chứng việc học (Người dự ghi nhận)</Label>
-                                    <Textarea readOnly value={ncbhResult.nhan_xet_nguoi_du} className="bg-white text-sm" rows={4} />
+                                    <Textarea
+                                        value={ncbhResult.nhan_xet_nguoi_du}
+                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNcbhResult({ ...ncbhResult, nhan_xet_nguoi_du: e.target.value })}
+                                        className="bg-white text-sm"
+                                        rows={4}
+                                    />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <Label className="text-xs uppercase text-slate-500">Nguyên nhân & Giải pháp điều chỉnh</Label>
-                                        <Textarea readOnly value={ncbhResult.nguyen_nhan_giai_phap} className="bg-white text-sm" rows={4} />
+                                        <Textarea
+                                            value={ncbhResult.nguyen_nhan_giai_phap}
+                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNcbhResult({ ...ncbhResult, nguyen_nhan_giai_phap: e.target.value })}
+                                            className="bg-white text-sm"
+                                            rows={4}
+                                        />
                                     </div>
                                     <div className="space-y-1">
                                         <Label className="text-xs uppercase text-slate-500">Bài học kinh nghiệm rút ra</Label>
-                                        <Textarea readOnly value={ncbhResult.bai_hoc_kinh_nghiem} className="bg-white text-sm" rows={4} />
+                                        <Textarea
+                                            value={ncbhResult.bai_hoc_kinh_nghiem}
+                                            onChange={(e) => setNcbhResult({ ...ncbhResult, bai_hoc_kinh_nghiem: e.target.value })}
+                                            className="bg-white text-sm"
+                                            rows={4}
+                                        />
                                     </div>
                                 </div>
                             </div>

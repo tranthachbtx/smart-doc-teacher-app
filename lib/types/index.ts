@@ -384,6 +384,7 @@ export interface AssessmentTabProps {
   assessmentTemplate: TemplateData | null;
   onTemplateUpload: (file: File) => void;
   assessmentResult: AssessmentResult | null;
+  setAssessmentResult: (result: AssessmentResult | null) => void;
   isGenerating: boolean;
   onGenerate: () => void;
   isExporting: boolean;

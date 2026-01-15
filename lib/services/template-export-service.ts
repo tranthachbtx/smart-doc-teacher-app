@@ -418,7 +418,8 @@ export const TemplateExportService = {
         noi_dung_nhiem_vu: this.flexibleRender(data.noi_dung_nhiem_vu),
         hinh_thuc_to_chuc: this.flexibleRender(data.hinh_thuc_to_chuc),
         ma_tran_dac_ta: this.flexibleRender(data.ma_tran_dac_ta),
-        bang_kiem_rubric: this.flexibleRender(data.bang_kiem_rubric),
+        // Ưu tiên bản text đã sửa, nếu không có mới dùng bản structured
+        bang_kiem_rubric: this.flexibleRender(data.rubric_text || data.bang_kiem_rubric),
         loi_khuyen: this.flexibleRender(data.loi_khuyen)
       };
 

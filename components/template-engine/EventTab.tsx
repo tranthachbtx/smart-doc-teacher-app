@@ -351,183 +351,263 @@ export function EventTab({
             </div>
 
             {/* Event Result Content */}
-            <div className="space-y-3">
-              <div className="p-3 bg-white rounded border">
-                <h4 className="font-medium text-purple-800 mb-2">
-                  {eventResult.ten_chu_de || eventResult.ten_ke_hoach || eventResult.title || "Kế hoạch ngoại khoa"}
-                </h4>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <p>
-                    <strong>Thời gian:</strong> {eventResult.thoi_gian}
-                  </p>
-                  <p>
-                    <strong>Địa điểm:</strong> {eventResult.dia_diem}
-                  </p>
-                  <p>
-                    <strong>Đối tượng:</strong> {eventResult.doi_tuong || eventResult.grade || "..."}
-                  </p>
-                  <p>
-                    <strong>Số lượng:</strong> {eventResult.so_luong || "Toàn khối"}
-                  </p>
+            <div className="space-y-4">
+              <div className="p-3 bg-white rounded border space-y-3">
+                <div className="space-y-1">
+                  <Label className="text-xs uppercase text-purple-600 font-bold">Tên kế hoạch / Chủ đề</Label>
+                  <Input
+                    value={eventResult.ten_chu_de || eventResult.ten_ke_hoach || eventResult.title || ""}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEventResult({ ...eventResult, ten_chu_de: e.target.value })}
+                    className="font-medium text-purple-800"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-500">Thời gian</Label>
+                    <Input
+                      value={eventResult.thoi_gian || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEventResult({ ...eventResult, thoi_gian: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-500">Địa điểm</Label>
+                    <Input
+                      value={eventResult.dia_diem || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEventResult({ ...eventResult, dia_diem: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-500">Đối tượng</Label>
+                    <Input
+                      value={eventResult.doi_tuong || eventResult.grade || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEventResult({ ...eventResult, doi_tuong: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-500">Số lượng</Label>
+                    <Input
+                      value={eventResult.so_luong || ""}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEventResult({ ...eventResult, so_luong: e.target.value })}
+                    />
+                  </div>
                 </div>
               </div>
 
               {/* Objectives */}
-              {(eventResult.muc_dich_yeu_cau || eventResult.muc_tieu) && (
-                <div className="p-3 bg-white rounded border">
-                  <h5 className="font-bold text-sm mb-2 text-purple-700 uppercase">I. MỤC TIÊU - YÊU CẦU:</h5>
-                  <div className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">
-                    {formatAIValue(eventResult.muc_dich_yeu_cau || eventResult.muc_tieu)}
+              <div className="p-3 bg-white rounded border">
+                <h5 className="font-bold text-sm mb-2 text-purple-700 uppercase">I. MỤC TIÊU - YÊU CẦU:</h5>
+                <Textarea
+                  value={typeof eventResult.muc_dich_yeu_cau === 'string' ? eventResult.muc_dich_yeu_cau : (typeof eventResult.muc_tieu === 'string' ? eventResult.muc_tieu : "")}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEventResult({ ...eventResult, muc_dich_yeu_cau: e.target.value })}
+                  rows={6}
+                  className="text-sm leading-relaxed"
+                />
+                <div className="mt-3 pt-3 border-t border-dashed space-y-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-500">Năng lực</Label>
+                    <Textarea
+                      value={eventResult.nang_luc || ""}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEventResult({ ...eventResult, nang_luc: e.target.value })}
+                      rows={2}
+                      className="text-sm"
+                    />
                   </div>
-                  {(eventResult.nang_luc || eventResult.pham_chat) && (
-                    <div className="mt-3 pt-3 border-t border-dashed space-y-2">
-                      {eventResult.nang_luc && <p className="text-sm"><strong>Năng lực:</strong> {formatAIValue(eventResult.nang_luc)}</p>}
-                      {eventResult.pham_chat && <p className="text-sm"><strong>Phẩm chất:</strong> {formatAIValue(eventResult.pham_chat)}</p>}
-                    </div>
-                  )}
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-500">Phẩm chất</Label>
+                    <Textarea
+                      value={eventResult.pham_chat || ""}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEventResult({ ...eventResult, pham_chat: e.target.value })}
+                      rows={2}
+                      className="text-sm"
+                    />
+                  </div>
                 </div>
-              )}
+              </div>
 
               {/* Organization Prep */}
-              {(eventResult.chuan_bi || eventResult.preparation) && (
-                <div className="p-3 bg-white rounded border">
-                  <h5 className="font-bold text-sm mb-2 text-purple-700 uppercase">
-                    II. TỔ CHỨC THỰC HIỆN (CHUẨN BỊ):
-                  </h5>
-                  <div className="text-sm text-slate-700 whitespace-pre-wrap">
-                    {formatAIValue(eventResult.chuan_bi || eventResult.preparation)}
-                  </div>
-                </div>
-              )}
+              <div className="p-3 bg-white rounded border">
+                <h5 className="font-bold text-sm mb-2 text-purple-700 uppercase">
+                  II. TỔ CHỨC THỰC HIỆN (CHUẨN BỊ):
+                </h5>
+                <Textarea
+                  value={eventResult.chuan_bi || eventResult.preparation || ""}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEventResult({ ...eventResult, chuan_bi: e.target.value })}
+                  rows={5}
+                  className="text-sm"
+                />
+              </div>
 
-              {/* Timeline (New 2-Column Structure) */}
-              {(eventResult.timeline && Array.isArray(eventResult.timeline)) && (
-                <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
-                  <h5 className="font-bold text-sm mb-3 text-purple-900 flex items-center gap-2 uppercase">
-                    <Sparkles className="w-4 h-4 text-purple-600" /> III. NỘI DUNG VÀ HÌNH THỨC THỰC HIỆN:
-                  </h5>
-                  <div className="space-y-4">
-                    {eventResult.timeline.map((act: any, idx: number) => (
-                      <div key={idx} className="bg-white p-3 rounded-lg border border-purple-100 shadow-sm">
-                        <div className="flex justify-between items-start mb-2 border-b pb-2">
-                          <span className="font-bold text-purple-800">{act.activity_name}</span>
-                          <span className="text-xs font-mono bg-purple-100 px-2 py-0.5 rounded text-purple-700">{act.time}</span>
-                        </div>
-                        <div className="space-y-2 text-sm text-slate-700">
-                          <p><strong>Mô tả:</strong> {act.description}</p>
-                          {act.mc_script && (
-                            <div className="bg-slate-50 p-2 rounded border-l-4 border-purple-400 italic">
-                              <span className="text-purple-600 font-bold not-italic">🎤 MC Script:</span> "{act.mc_script}"
-                            </div>
-                          )}
-                          {act.logistics && <p className="text-xs text-slate-500">📦 Chuẩn bị: {act.logistics}</p>}
-                        </div>
+              {/* Timeline (Editable) */}
+              <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-100">
+                <h5 className="font-bold text-sm mb-3 text-purple-900 flex items-center gap-2 uppercase">
+                  <Sparkles className="w-4 h-4 text-purple-600" /> III. NỘI DUNG VÀ HÌNH THỨC THỰC HIỆN:
+                </h5>
+                <div className="space-y-4">
+                  {(eventResult.timeline || []).map((act: any, idx: number) => (
+                    <div key={idx} className="bg-white p-3 rounded-lg border border-purple-100 shadow-sm space-y-3">
+                      <div className="flex gap-2">
+                        <Input
+                          value={act.activity_name}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                            const newTimeline = [...(eventResult.timeline || [])];
+                            newTimeline[idx] = { ...act, activity_name: e.target.value };
+                            setEventResult({ ...eventResult, timeline: newTimeline });
+                          }}
+                          className="font-bold text-purple-800"
+                          placeholder="Tên hoạt động"
+                        />
+                        <Input
+                          value={act.time}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                            const newTimeline = [...(eventResult.timeline || [])];
+                            newTimeline[idx] = { ...act, time: e.target.value };
+                            setEventResult({ ...eventResult, timeline: newTimeline });
+                          }}
+                          className="w-32 text-xs font-mono"
+                          placeholder="Thời gian"
+                        />
                       </div>
-                    ))}
-                  </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs text-slate-500">Mô tả hoạt động</Label>
+                        <Textarea
+                          value={act.description}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                            const newTimeline = [...(eventResult.timeline || [])];
+                            newTimeline[idx] = { ...act, description: e.target.value };
+                            setEventResult({ ...eventResult, timeline: newTimeline });
+                          }}
+                          rows={3}
+                          className="text-sm"
+                        />
+                        <Label className="text-xs text-slate-500">Kịch bản MC / Lời dẫn</Label>
+                        <Textarea
+                          value={act.mc_script || ""}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                            const newTimeline = [...(eventResult.timeline || [])];
+                            newTimeline[idx] = { ...act, mc_script: e.target.value };
+                            setEventResult({ ...eventResult, timeline: newTimeline });
+                          }}
+                          rows={2}
+                          className="text-sm italic bg-slate-50"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full border-dashed border-purple-300 text-purple-600"
+                    onClick={() => {
+                      const newTimeline = [...(eventResult.timeline || []), { activity_name: "Hoạt động mới", time: "10 phút", description: "" }];
+                      setEventResult({ ...eventResult, timeline: newTimeline });
+                    }}
+                  >
+                    + Thêm hoạt động
+                  </Button>
                 </div>
-              )}
+              </div>
 
-              {/* Budget Details */}
-              {(eventResult.budget_details && Array.isArray(eventResult.budget_details)) && (
-                <div className="p-3 bg-white rounded border">
-                  <h5 className="font-bold text-sm mb-2 text-purple-700 uppercase">IV. KINH PHÍ THỰC HIỆN:</h5>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                      <thead>
-                        <tr className="border-b bg-slate-50">
-                          <th className="p-2">Hạng mục</th>
-                          <th className="p-2 text-right">Thành tiền</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {eventResult.budget_details.map((b: any, i: number) => (
-                          <tr key={i} className="border-b">
-                            <td className="p-2">{b.item}</td>
-                            <td className="p-2 text-right">{parseInt(b.cost).toLocaleString('vi-VN')} đ</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="mt-2 text-right font-bold text-purple-800">
-                    TỔNG CỘNG: {eventResult.total_budget}
-                  </p>
+              {/* Budget Details (Editable) */}
+              <div className="p-3 bg-white rounded border">
+                <h5 className="font-bold text-sm mb-2 text-purple-700 uppercase">IV. KINH PHÍ THỰC HIỆN:</h5>
+                <div className="space-y-2">
+                  {(eventResult.budget_details || []).map((b: any, i: number) => (
+                    <div key={i} className="flex gap-2">
+                      <Input
+                        value={b.item}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const newBudget = [...(eventResult.budget_details || [])];
+                          newBudget[i] = { ...b, item: e.target.value };
+                          setEventResult({ ...eventResult, budget_details: newBudget });
+                        }}
+                        className="flex-1 text-sm"
+                      />
+                      <Input
+                        value={b.cost}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const newBudget = [...(eventResult.budget_details || [])];
+                          newBudget[i] = { ...b, cost: e.target.value };
+                          setEventResult({ ...eventResult, budget_details: newBudget });
+                        }}
+                        className="w-32 text-sm text-right"
+                      />
+                    </div>
+                  ))}
                 </div>
-              )}
+                <div className="mt-3 flex justify-between items-center border-t pt-3 font-bold text-purple-800">
+                  <span>TỔNG CỘNG:</span>
+                  <Input
+                    value={eventResult.total_budget || ""}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEventResult({ ...eventResult, total_budget: e.target.value })}
+                    className="w-48 text-right font-bold"
+                  />
+                </div>
+              </div>
 
               {/* Closing Message */}
-              {eventResult.thong_diep_ket_thuc && (
-                <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-lg">
-                  <h5 className="font-bold text-sm mb-2 text-indigo-900 uppercase">Thông điệp kết thúc:</h5>
-                  <div className="text-sm text-indigo-800 italic">
-                    {formatAIValue(eventResult.thong_diep_ket_thuc)}
-                  </div>
-                </div>
-              )}
-
-              {/* Interaction activities (Minigames/TikTok) */}
-              {eventResult.interaction && (
-                <div className="p-3 bg-pink-50 border border-pink-100 rounded-lg">
-                  <h5 className="font-bold text-sm mb-2 text-pink-900 uppercase">Hoạt động tương tác:</h5>
-                  <div className="text-sm text-pink-800 whitespace-pre-wrap">
-                    {formatAIValue(eventResult.interaction)}
-                  </div>
-                </div>
-              )}
+              <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-lg">
+                <h5 className="font-bold text-sm mb-2 text-indigo-900 uppercase">Thông điệp kết thúc:</h5>
+                <Textarea
+                  value={eventResult.thong_diep_ket_thuc || ""}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEventResult({ ...eventResult, thong_diep_ket_thuc: e.target.value })}
+                  rows={2}
+                  className="text-sm bg-transparent border-indigo-200"
+                />
+              </div>
 
               {/* Footer Admin (Participants/Implementation) */}
-              {eventResult.footer_admin && (
-                <div className="p-4 bg-slate-100 border border-slate-200 rounded-xl mt-4 font-serif">
-                  <h5 className="font-bold text-xs mb-2 text-slate-500 uppercase tracking-widest">Thông tin hành chính & Ký duyệt:</h5>
-                  <div className="text-sm text-slate-700 whitespace-pre-wrap">
-                    {formatAIValue(eventResult.footer_admin)}
-                  </div>
-                </div>
-              )}
+              <div className="p-4 bg-slate-100 border border-slate-200 rounded-xl mt-4 font-serif">
+                <h5 className="font-bold text-xs mb-2 text-slate-500 uppercase tracking-widest">Thông tin hành chính & Ký duyệt:</h5>
+                <Textarea
+                  value={eventResult.footer_admin || ""}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEventResult({ ...eventResult, footer_admin: e.target.value })}
+                  rows={4}
+                  className="text-sm bg-transparent border-slate-300"
+                />
+              </div>
+            </div>
 
-              {/* Funding Text */}
-              {eventResult.kinh_phi && (
+            {/* Funding Text */}
+            {eventResult.kinh_phi && (
+              <div className="p-3 bg-white rounded border">
+                <h5 className="font-medium text-sm mb-2">
+                  Kinh phí thực hiện:
+                </h5>
+                <div className="text-sm text-slate-600">
+                  {formatAIValue(eventResult.kinh_phi)}
+                </div>
+              </div>
+            )}
+
+            {/* Checklist */}
+            {eventResult.checklist_chuan_bi &&
+              eventResult.checklist_chuan_bi.length > 0 && (
                 <div className="p-3 bg-white rounded border">
                   <h5 className="font-medium text-sm mb-2">
-                    Kinh phí thực hiện:
+                    Công việc chuẩn bị:
                   </h5>
-                  <div className="text-sm text-slate-600">
-                    {formatAIValue(eventResult.kinh_phi)}
-                  </div>
+                  <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                    {eventResult.checklist_chuan_bi.map((item: any, idx: number) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
-              {/* Checklist */}
-              {eventResult.checklist_chuan_bi &&
-                eventResult.checklist_chuan_bi.length > 0 && (
-                  <div className="p-3 bg-white rounded border">
-                    <h5 className="font-medium text-sm mb-2">
-                      Công việc chuẩn bị:
-                    </h5>
-                    <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
-                      {eventResult.checklist_chuan_bi.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-              {/* Budget */}
-              {eventResult.du_toan_kinh_phi &&
-                eventResult.du_toan_kinh_phi.length > 0 && (
-                  <div className="p-3 bg-white rounded border">
-                    <h5 className="font-medium text-sm mb-2">
-                      Dự toán kinh phí:
-                    </h5>
-                    <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
-                      {eventResult.du_toan_kinh_phi.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-            </div>
+            {/* Budget */}
+            {eventResult.du_toan_kinh_phi &&
+              eventResult.du_toan_kinh_phi.length > 0 && (
+                <div className="p-3 bg-white rounded border">
+                  <h5 className="font-medium text-sm mb-2">
+                    Dự toán kinh phí:
+                  </h5>
+                  <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                    {eventResult.du_toan_kinh_phi.map((item: any, idx: number) => (
+                      <li key={idx}>{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
           </div>
         )}
       </CardContent>

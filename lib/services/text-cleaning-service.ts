@@ -126,10 +126,10 @@ export class TextCleaningService {
             .replace(/\(Gamification.*?\):?/gi, "")
             .replace(/\(Kỹ thuật.*?\):?/gi, "");
 
-        // 3. Loại bỏ các Tiêu đề chương mục đã có sẵn trong file Word (Tránh lặp lại)
+        // 3. Loại bỏ các Tiêu đề chương mục (Đã bị vô hiệu hóa để đảm bảo "Preview = Export")
+        /*
         cleaned = cleaned
             .replace(/^#+\s*.*?$/gm, (match) => {
-                // Chỉ xóa nếu header chứa các từ khóa hệ thống hoặc trùng lặp 5512
                 if (/(MỤC TIÊU|THIẾT BỊ|TIẾN TRÌNH|HỒ SƠ|HƯỚNG DẪN|SINH HOẠT|HOẠT ĐỘNG \d+)/i.test(match)) {
                     return "";
                 }
@@ -143,11 +143,11 @@ export class TextCleaningService {
             .replace(/^[A-C]\.\s*SINH HOẠT.*?$/gm, "")
             .replace(/^[A-D]\.\s*HOẠT ĐỘNG GIÁO DỤC.*?$/gm, "")
             .replace(/^HOẠT ĐỘNG \d+:.*?$/gm, "")
-            // Footer rác
             .replace(/^TỔ TRƯỞNG CHUYÊN MÔN$/gm, "")
             .replace(/^NGƯỜI SOẠN$/gm, "")
             .replace(/^\(Ký và ghi rõ họ tên\)$/gm, "")
             .replace(/^─────────────────$/gm, "");
+        */
 
         // 4. Các Marker nội bộ (GIỮ LẠI {{cot_1}}, {{cot_2}} cho Export System)
         cleaned = cleaned

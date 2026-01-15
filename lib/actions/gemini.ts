@@ -11,6 +11,7 @@ import { NCBH_ROLE, NCBH_TASK } from "@/lib/prompts/ncbh-prompts";
 import { getKHDHPrompt } from "@/lib/prompts/khdh-prompts";
 import { getMeetingMinutesPrompt } from "@/lib/prompts/meeting-prompts";
 import { JsonHealer } from "@/lib/utils/json-healer";
+import { KNTT_DATABASE } from "@/lib/data/kntt-curriculum-database";
 
 export interface ActionResult<T = any> {
   success: boolean;
@@ -240,6 +241,16 @@ export async function generateAIContent(
     }
 
     const data = JsonHealer.parse(text, `GENERATE_${type.toUpperCase()}`);
+
+    // Clean CJK characters from string values in the resulting object
+    if (data && typeof data === 'object') {
+      Object.keys(data).forEach(key => {
+        if (typeof data[key] === 'string') {
+          data[key] = data[key].replace(/[\u4E00-\u9FFF]/g, "").trim();
+        }
+      });
+    }
+
     return { success: true, data, content: text };
   } catch (e: any) {
     console.error(`[DEEP_TRACE:FAIL] generateAIContent failed for ${type}:`, e.message);
@@ -331,7 +342,20 @@ export async function generateEventScript(
 ): Promise<ActionResult<any>> {
   let eventPrompt = "";
   try {
-    eventPrompt = getEventPrompt(grade, topic, month, instructions, budget, checklist, duration);
+    // Smart Injection: Fetch curriculum context for the theme
+    const curriculumContext = KNTT_DATABASE.taoContextNgoaiKhoa(Number(grade), topic);
+
+    eventPrompt = getEventPrompt(
+      grade,
+      topic,
+      month,
+      instructions,
+      budget,
+      checklist,
+      duration,
+      curriculumContext
+    );
+
     const text = await callAI(eventPrompt, modelName, undefined, MASTER_SYSTEM_INSTRUCTION_V60);
     const data = parseSmartJSON(text);
     return { success: true, data };
@@ -354,9 +378,25 @@ export async function generateLessonAction(...args: any[]): Promise<ActionResult
 
 export async function genMtgMinutes(m?: string, s?: string, k?: string, c?: string, mn = "gemini-2.0-flash"): Promise<ActionResult<any>> {
   try {
-    const p = getMeetingMinutesPrompt(m || "9", s || "1", k || "", "", "", "");
-    const text = await callAI(p, mn, undefined, "ROLE: Secretary Secretary.");
-    return { success: true, data: parseSmartJSON(text) };
+    const p = getMeetingMinutesPrompt(m || "9", s || "1", k || "", c || "", "");
+    const text = await callAI(p, mn, undefined, "Bạn là thư ký cuộc họp chuyên nghiệp. Chỉ trả về JSON.");
+
+    let data = parseSmartJSON(text);
+
+    // Additional cleaning for meeting data
+    if (data) {
+      ["noi_dung_chinh", "uu_diem", "han_che", "y_kien_dong_gop", "ke_hoach_thang_toi"].forEach(key => {
+        if (typeof data[key] === 'string') {
+          // Remove Chinese characters and redundant headers
+          data[key] = data[key]
+            .replace(/[\u4E00-\u9FFF]/g, "")
+            .replace(/^(Nội dung chính|Ưu điểm|Hạn chế|Kết luận):?\s*/gi, "")
+            .trim();
+        }
+      });
+    }
+
+    return { success: true, data };
   } catch (e: any) {
     return { success: false, error: e.message };
   }
