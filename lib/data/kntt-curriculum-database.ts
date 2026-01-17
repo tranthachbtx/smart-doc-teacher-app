@@ -2759,10 +2759,29 @@ export function timChuDeTheoTen(
   // 0. Pre-process: Remove noise words like "Bài", "Chủ đề", "Tiết" to get the core topic name
   const noiseWords = [/Bài \d+[:]?/gi, /Chủ đề \d+[:]?/gi, /Tiết \d+[:]?/gi, /Hoạt động trải nghiệm/gi];
   let cleanSearch = tenHoacTuKhoa.trim();
+
+  // Special Check: Extraction of topic number (e.g., "Chủ đề 3")
+  const chuDeMatch = tenHoacTuKhoa.match(/(?:Chủ đề|CĐ)\s*(\d+)/i);
+  if (chuDeMatch) {
+    const num = chuDeMatch[1];
+    const matchByMa = chuongTrinh.chu_de.find(cd => cd.ma === `${khoi}.${num}`);
+    if (matchByMa) return matchByMa;
+  }
+
   noiseWords.forEach(regex => { cleanSearch = cleanSearch.replace(regex, ''); });
   const searchLower = cleanSearch.trim().toLowerCase();
 
-  if (!searchLower || searchLower.length < 2) return null;
+  if (!searchLower || searchLower.length < 2) {
+    // If after cleaning it's empty but we have a topic number, we handled it above.
+    // If we didn't handle it, maybe it's just a number.
+    const numOnlyMatch = tenHoacTuKhoa.match(/\d+/);
+    if (numOnlyMatch) {
+      const num = numOnlyMatch[0];
+      const matchByMa = chuongTrinh.chu_de.find(cd => cd.ma === `${khoi}.${num}`);
+      if (matchByMa) return matchByMa;
+    }
+    return null;
+  }
 
   // 1. STRATEGIC RELEVANCE: Exact Name Match (Highest Confidence)
   const exactMatch = chuongTrinh.chu_de.find(cd =>

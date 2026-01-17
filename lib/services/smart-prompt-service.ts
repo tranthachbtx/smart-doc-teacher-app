@@ -71,15 +71,26 @@ export const SmartPromptService = {
         let duration = "3 tiết"; // Default
 
         if (chuDe) {
+            // Priority 1: Get from PPCT Database (Total periods including SHDC/SHL)
+            const chuDeSoStr = chuDe.ma.split('.')[1];
+            if (chuDeSoStr) {
+                const chuDeSoNum = parseInt(chuDeSoStr);
+                const ppct = getPPCTChuDe(gradeInt, chuDeSoNum);
+                if (ppct) {
+                    duration = `${ppct.tong_tiet} tiết`;
+                } else if (chuDe.so_tiet_de_xuat) {
+                    duration = `${chuDe.so_tiet_de_xuat} tiết`;
+                }
+            } else if (chuDe.so_tiet_de_xuat) {
+                duration = `${chuDe.so_tiet_de_xuat} tiết`;
+            }
+
             curriculumContext = `
 CHỦ ĐỀ: ${chuDe.ten}
 MẠCH NỘI DUNG: ${chuDe.mach_noi_dung.toUpperCase()}
 MỤC TIÊU TỔNG QUÁT: ${chuDe.muc_tieu.join("; ")}
 KẾT QUẢ CẦN ĐẠT: ${chuDe.ket_qua_can_dat?.join("; ") || "Theo quy định chương trình GDPT 2018"}
 `;
-            if (chuDe.so_tiet_de_xuat) duration = `${chuDe.so_tiet_de_xuat} tiết`;
-
-            // Reset core missions to accumulate
             coreMissions.khoiDong = "";
             coreMissions.khamPha = "";
             coreMissions.luyenTap = "";
@@ -88,7 +99,7 @@ KẾT QUẢ CẦN ĐẠT: ${chuDe.ket_qua_can_dat?.join("; ") || "Theo quy đị
             const totalHD = chuDe.hoat_dong.length;
             chuDe.hoat_dong.forEach((hd, index) => {
                 const tasksText = hd.nhiem_vu.map(n => `- ${n.ten}: ${n.mo_ta} (Sản phẩm: ${n.san_pham_du_kien || "Kết quả thảo luận/báo cáo"})`).join("\n");
-                const fullContent = `[HĐ ${hd.so_thu_tu}: ${hd.ten}]\n${hd.mo_ta}\n${tasksText}\n* Lưu ý: ${hd.luu_y_su_pham || "Thúc đẩy học sinh tích cực trải nghiệm."}\n\n`;
+                const fullContent = `[HĐ ${hd.so_thu_tu}: ${hd.ten}]\n${hd.mo_ta} \n${tasksText} \n * Lưu ý: ${hd.luu_y_su_pham || "Thúc đẩy học sinh tích cực trải nghiệm."} \n\n`;
 
                 if (index === 0) {
                     coreMissions.khoiDong += fullContent;
@@ -105,7 +116,7 @@ KẾT QUẢ CẦN ĐẠT: ${chuDe.ket_qua_can_dat?.join("; ") || "Theo quy đị
         const trongTam = getTrongTamTheoKhoi(gradeInt);
         const studentCharacteristics = `Khối ${grade}: ${trongTam?.chu_de_chinh || "Thích ứng và Khám phá"}. 
 Trọng tâm phát triển: ${trongTam?.trong_tam || "Phát triển bản thân"}.
-Đặc điểm: ${trongTam?.dac_diem?.join(", ") || "Học sinh đang phát triển tư duy phản biện."}`;
+Đặc điểm: ${trongTam?.dac_diem?.join(", ") || "Học sinh đang phát triển tư duy phản biện."} `;
 
         const shdc_shl = taoContextSHDC_SHL(gradeInt, finalChuDeSo || 1);
         const digital = goiYNLSTheoChuDe(topicName);
@@ -122,7 +133,7 @@ Trọng tâm phát triển: ${trongTam?.trong_tam || "Phát triển bản thân"
             shdc_shl_suggestions: shdc_shl,
             digitalCompetency: digitalContext,
             assessmentTools: assessmentContext,
-            pedagogicalNotes: `Trọng tâm: ${trongTam?.trong_tam}. \nPhương pháp đề xuất: Dạy học dự án, Trải nghiệm thực tế, Thảo luận nhóm.`,
+            pedagogicalNotes: `Trọng tâm: ${trongTam?.trong_tam}.\nPhương pháp đề xuất: Dạy học dự án, Trải nghiệm thực tế, Thảo luận nhóm.`,
             duration
         };
 
@@ -146,24 +157,24 @@ ${basePrompt}
 
 ${muiNeContext}
 
-=== DỮ LIỆU THÔNG MINH TỪ DATABASE (V39.2) ===
-1. [MỤC TIÊU & YÊU CẦU CẦN ĐẠT]
+=== DỮ LIỆU THÔNG MINH TỪ DATABASE(V39.2) ===
+    1.[MỤC TIÊU & YÊU CẦU CẦN ĐẠT]
 ${smartData.objectives}
 
-2. [ĐẶC ĐIỂM HỌC SINH KHỐI ${smartData.grade}]
+2.[ĐẶC ĐIỂM HỌC SINH KHỐI ${smartData.grade}]
 ${smartData.studentCharacteristics}
 
-3. [GỢI Ý NHIỆM VỤ CỐT LÕI 5512]
+3.[GỢI Ý NHIỆM VỤ CỐT LÕI 5512]
 - Khởi động: ${smartData.coreMissions.khoiDong.substring(0, 500)}...
 - Khám phá: ${smartData.coreMissions.khamPha.substring(0, 800)}...
 - Luyện tập: ${smartData.coreMissions.luyenTap.substring(0, 500)}...
 - Vận dụng: ${smartData.coreMissions.vanDung.substring(0, 500)}...
 
-4. [CÔNG CỤ SỐ & RUBRIC]
+4.[CÔNG CỤ SỐ & RUBRIC]
 ${smartData.digitalCompetency}
 ${smartData.assessmentTools}
 
 === HẾT DỮ LIỆU ===
-`;
+    `;
     }
 };
