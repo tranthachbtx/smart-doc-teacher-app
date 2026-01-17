@@ -53,21 +53,19 @@ export function ManualProcessingHub() {
     const [activePhaseIndex, setActivePhaseIndex] = React.useState<number>(0);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    // 🚀 AUTO-INIT SCRATCH MODE (v39.2)
-    // Nếu người dùng chọn bài mới mà không có PDF, tự khởi tạo khung lộ trình
+    // 🚀 AUTO-INIT SCRATCH MODE (v40.1 - Synthetic Enabled)
     useEffect(() => {
         if (lessonAutoFilledTheme && (!manualModules || manualModules.length === 0)) {
-            console.log("[ManualHub] Initializing Scratch Mode Pipeline...");
+            console.log("[ManualHub] Initializing Synthetic Mode Pipeline v40.1...");
 
-            // Giả định mặc định 3 tiết nếu không có PDF
             const defaultPeriods = "3 tiết";
             const executionPlan = ManualWorkflowService.generateExecutionPlan(defaultPeriods);
 
-            // Khởi tạo 3 Trụ cột mặc định
             const defaultModules: ProcessingModule[] = [
-                { id: "pillar_1", title: "Trụ cột 1: Khung & Vệ tinh (Audit Mode)", type: "setup", prompt: "", content: "", isCompleted: false },
-                { id: "pillar_2", title: "Trụ cột 2: Kiến tạo & Khám phá (Deep)", type: "khac", prompt: "", content: "", isCompleted: false },
-                { id: "pillar_3", title: "Trụ cột 3: Thực chiến & Đánh giá (Premium)", type: "khac", prompt: "", content: "", isCompleted: false },
+                { id: "pillar_0", title: "Trụ cột 0: The Creator (Khung nội dung)", type: "setup", prompt: "", content: "", isCompleted: false },
+                { id: "pillar_1", title: "Trụ cột 1: Thiết lập Khung Xương sống", type: "setup", prompt: "", content: "", isCompleted: false },
+                { id: "pillar_2", title: "Trụ cột 2: Kiến tạo & Khám phá", type: "khac", prompt: "", content: "", isCompleted: false },
+                { id: "pillar_3", title: "Trụ cột 3: Thực chiến & Đánh giá", type: "khac", prompt: "", content: "", isCompleted: false },
             ];
 
             store.updateLessonField('executionPlan', executionPlan);
@@ -166,15 +164,20 @@ export function ManualProcessingHub() {
                     pdfReference: pdfReference
                 });
 
-                // Audit data is now part of the initial 'struct' from ContentStructureAnalyzer
                 if (struct.audit_analysis) {
                     store.updateLessonField('auditAnalysis', struct.audit_analysis);
                 }
 
                 store.updateLessonField('executionPlan', executionPlan);
 
-                const modules = await ManualWorkflowService.analyzeStructure(fullText, JSON.stringify(activityContent));
-                store.updateLessonField('manualModules', modules);
+                // Khởi tạo Pipeline v40.1 (Synthetic Mode)
+                const defaultModules: ProcessingModule[] = [
+                    { id: "pillar_0", title: "Trụ cột 0: The Creator (Khung nội dung)", type: "setup", prompt: "", content: "", isCompleted: false },
+                    { id: "pillar_1", title: "Trụ cột 1: Thiết lập Khung Xương sống", type: "setup", prompt: "", content: "", isCompleted: false },
+                    { id: "pillar_2", title: "Trụ cột 2: Kiến tạo & Khám phá", type: "khac", prompt: "", content: "", isCompleted: false },
+                    { id: "pillar_3", title: "Trụ cột 3: Thực chiến & Đánh giá", type: "khac", prompt: "", content: "", isCompleted: false },
+                ];
+                store.updateLessonField('manualModules', defaultModules);
 
                 toast({ title: "✅ Deep Trace hoàn tất! Đã hợp nhất Audit vào Pipeline chính." });
             }
@@ -190,30 +193,35 @@ export function ManualProcessingHub() {
         try {
             const smartData = await SmartPromptService.lookupSmartData(lessonGrade, lessonAutoFilledTheme);
             const processedContext = store.lesson.processedContext || {};
-            const fullText = processedContext.fullRawText || "";
+            // Ưu tiên lấy content từ Pillar 0 nếu có, nếu không lấy fullRawText từ PDF
+            const pillar0Content = manualModules.find(m => m.id === 'pillar_0')?.content || "";
+            const legacyText = processedContext.fullRawText || "";
             const cleanData = processedContext.cleanData;
 
-            const sanitizedFullText = fullText.replace(/"""/g, "'''").replace(/\r/g, "");
+            const baseContent = pillar0Content.length > 100 ? pillar0Content : legacyText;
+            const sanitizedContent = baseContent.replace(/"""/g, "'''").replace(/\r/g, "");
+
             const executionPlan = store.lesson.executionPlan || [];
 
             const context: any = {
                 topic: lessonAutoFilledTheme,
                 grade: lessonGrade,
-                fileSummary: sanitizedFullText.length > 500 ? sanitizedFullText : (cleanData || ""),
+                fileSummary: sanitizedContent,
                 optimizedFileSummary: store.lesson.result || cleanData,
                 pdfReference: processedContext.pdfReference,
                 smartData: smartData,
-                auditAnalysis: lesson.auditAnalysis, // Inject Module 1
-                phaseContext: executionPlan.length > 0 ? executionPlan[activePhaseIndex] : null // Inject Module 2
+                auditAnalysis: lesson.auditAnalysis,
+                phaseContext: executionPlan.length > 0 ? executionPlan[activePhaseIndex] : null
             };
 
             let prompt = "";
-            if (pillarId === 'pillar_1') prompt = await ManualWorkflowService.generatePillar1Prompt(context);
+            if (pillarId === 'pillar_0') prompt = await ManualWorkflowService.generatePillar0Prompt(context);
+            else if (pillarId === 'pillar_1') prompt = await ManualWorkflowService.generatePillar1Prompt(context);
             else if (pillarId === 'pillar_2') prompt = await ManualWorkflowService.generatePillar2Prompt(context);
             else if (pillarId === 'pillar_3') prompt = await ManualWorkflowService.generatePillar3Prompt(context);
 
             await navigator.clipboard.writeText(prompt);
-            toast({ title: "Đã Copy Siêu Prompt!" });
+            toast({ title: `Đã Copy Prompt ${pillarId.replace('pillar_', '')}!` });
         } catch (e: any) {
             toast({ title: "Lỗi tạo Prompt", description: e.message, variant: "destructive" });
         }
@@ -301,8 +309,13 @@ export function ManualProcessingHub() {
 
             store.setLessonResult(r);
             toast({ title: "🪄 Đã cập nhật dữ liệu sạch!" });
-        } catch (e) {
-            console.warn("[ManualHub] Merge error:", e);
+        } catch (e: any) {
+            console.error("[ManualHub] Merge error:", e);
+            toast({
+                title: "❌ DỮ LIỆU KHÔNG HỢP LỆ",
+                description: "Kết quả bạn dán vào không đúng định dạng JSON hoặc thiếu các trường bắt buộc. Vui lòng kiểm tra lại phản hồi từ Gemini.",
+                variant: "destructive"
+            });
         }
 
         store.updateLessonField('manualModules', manualModules.map((m: ProcessingModule) =>
@@ -329,10 +342,31 @@ export function ManualProcessingHub() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
                     <div className="flex flex-col gap-2">
+                        <Button
+                            className="w-full h-24 rounded-3xl bg-amber-500 hover:bg-amber-600 text-white shadow-xl gap-4 group transition-all"
+                            onClick={() => handleCopyPrompt('pillar_0')}
+                        >
+                            <BrainCircuit className="w-8 h-8 text-white" />
+                            <div className="text-left">
+                                <p className="text-[10px] uppercase font-black opacity-70">BƯỚC 1: THE CREATOR</p>
+                                <p className="font-black text-sm">Lấy Prompt 0 (Khung)</p>
+                            </div>
+                        </Button>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
                         <input type="file" ref={fileInputRef} className="hidden" accept=".pdf" onChange={handleFileUpload} />
-                        <Button className="w-full h-24 rounded-3xl bg-white/90 hover:bg-white text-indigo-900 border-2 border-indigo-100 shadow-xl gap-4 group transition-all" onClick={() => fileInputRef.current?.click()} disabled={isAnalyzing}>
-                            {isAnalyzing ? <Loader2 className="w-8 h-8 animate-spin" /> : <Database className="w-8 h-8 text-indigo-500" />}
-                            <div className="text-left"><p className="text-[10px] uppercase font-black opacity-50">BƯỚC 1</p><p className="font-black text-base">Deep Trace PDF</p></div>
+                        <Button
+                            variant="outline"
+                            className="w-full h-24 rounded-3xl bg-white/50 hover:bg-white text-slate-500 border-2 border-dashed border-slate-200 gap-4"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isAnalyzing}
+                        >
+                            <Database className="w-6 h-6 opacity-50" />
+                            <div className="text-left">
+                                <p className="text-[10px] uppercase font-black opacity-50">TÙY CHỌN</p>
+                                <p className="font-bold text-xs opacity-70">Nạp PDF (Nếu cần)</p>
+                            </div>
                         </Button>
                     </div>
                     <Button className="h-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 hover:scale-[1.03] text-white shadow-2xl gap-4" onClick={handleExportDocx} disabled={!lesson.result?.hoat_dong_khoi_dong}>
@@ -409,15 +443,32 @@ export function ManualProcessingHub() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {['pillar_1', 'pillar_2', 'pillar_3'].map((id, idx) => (
-                    <Card key={id} className="rounded-[3rem] border-2 border-slate-100 overflow-hidden bg-white shadow-2xl flex flex-col">
-                        <div className="bg-slate-50 px-6 py-8 border-b flex flex-col gap-6">
-                            <h3 className="font-black text-slate-900 uppercase">Trụ cột {idx + 1}</h3>
-                            <Button onClick={() => handleCopyPrompt(id)} className="bg-slate-900 text-white font-black rounded-2xl py-6">COPY PROMPT {idx + 1}</Button>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                {['pillar_0', 'pillar_1', 'pillar_2', 'pillar_3'].map((id, idx) => (
+                    <Card key={id} className={`rounded-[3rem] border-2 ${id === 'pillar_0' ? 'border-amber-200 bg-amber-50/10' : 'border-slate-100 bg-white'} overflow-hidden shadow-2xl flex flex-col`}>
+                        <div className={`${id === 'pillar_0' ? 'bg-amber-50' : 'bg-slate-50'} px-6 py-8 border-b flex flex-col gap-6`}>
+                            <h3 className="font-black text-slate-900 uppercase">
+                                {id === 'pillar_0' ? <span className="text-amber-700 flex items-center gap-2"><BrainCircuit className="w-4 h-4" /> TRỤ CỘT 0</span> : `Trụ cột ${idx}`}
+                            </h3>
+                            <Button
+                                onClick={() => handleCopyPrompt(id)}
+                                className={`${id === 'pillar_0' ? 'bg-amber-600 hover:bg-amber-700' : 'bg-slate-900'} text-white font-black rounded-2xl py-6 shadow-lg`}
+                            >
+                                COPY PROMPT {idx === 0 ? "THE CREATOR" : idx}
+                            </Button>
                         </div>
                         <div className="p-6 flex-grow">
-                            <Textarea placeholder="Dán kết quả JSON tại đây..." className="min-h-[220px] rounded-[2.5rem] font-mono text-[10px] p-6 shadow-inner" value={manualModules.find(m => m.id === id)?.content || ""} onChange={(e) => handleSmartPaste(id, e.target.value)} />
+                            <Textarea
+                                placeholder={id === 'pillar_0' ? "Dán NỘI DUNG NỀN TẢNG từ Gemini Pro vào đây..." : "Dán kết quả JSON tại đây..."}
+                                className="min-h-[220px] rounded-[2.5rem] font-mono text-[10px] p-6 shadow-inner"
+                                value={manualModules.find(m => m.id === id)?.content || ""}
+                                onChange={(e) => handleSmartPaste(id, e.target.value)}
+                            />
+                            {id === 'pillar_0' && (
+                                <p className="text-[9px] text-amber-600 mt-2 font-bold px-2">
+                                    * Đây là "Single Source of Truth" cho các Pillar còn lại.
+                                </p>
+                            )}
                         </div>
                     </Card>
                 ))}
