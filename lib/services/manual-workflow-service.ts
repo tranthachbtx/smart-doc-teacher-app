@@ -116,9 +116,19 @@ Hãy tổng hợp và trả về bản Markdown có cấu trúc:
 [DIGITAL_GREEN_TAGS]: (Danh sách năng lực số NC1 và Kỹ năng xanh sẽ hình thành).
 [PEDAGOGICAL_CONCEPT]: (Ý tưởng chủ đạo xuyên suốt cho bài dạy này dưới dạng một câu chuyện/tình huống).
 
-DỮ LIỆU ĐỊNH HƯỚNG:
+DỮ LIỆU ĐỊNH HƯỚNG (DATABASE CHUẨN):
 - Lớp: ${grade} | Bài: ${topic} | Thời lượng: ${totalPeriods}
-- Mục tiêu MOET: """${smartData.objectives}"""
+- Thông tin chủ đề: """${smartData.objectives}"""
+- Đặc điểm học sinh: """${smartData.studentCharacteristics}"""
+- Nhiệm vụ cốt lõi (Database): 
+  + Khởi động: ${smartData.coreMissions.khoiDong}
+  + Khám phá: ${smartData.coreMissions.khamPha}
+  + Luyện tập: ${smartData.coreMissions.luyenTap}
+  + Vận dụng: ${smartData.coreMissions.vanDung}
+- Gợi ý Năng lực số: """${smartData.digitalCompetency}"""
+- Gợi ý Đánh giá: """${smartData.assessmentTools}"""
+- Gợi ý SHDC & SHL: """${smartData.shdc_shl_suggestions}"""
+- Lưu ý sư phạm: """${smartData.pedagogicalNotes}"""
 `.trim();
   },
 
