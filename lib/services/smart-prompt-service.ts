@@ -15,6 +15,8 @@ import {
     taoContextDanhGiaKHBD
 } from "@/lib/data/phieu-hoc-tap-rubric-database";
 import { getTrongTamTheoKhoi, taoContextKHBD_CV5512 } from "@/lib/data/hdtn-pedagogical-guide";
+import { getMuiNeResearchPrompt } from "@/lib/data/mui-ne-research-database";
+
 
 export interface SmartPromptData {
     grade: string;
@@ -129,8 +131,20 @@ Trọng tâm phát triển: ${trongTam?.trong_tam || "Phát triển bản thân"
     },
 
     buildFinalSmartPrompt(basePrompt: string, smartData: SmartPromptData): string {
+        const isMuiNeContext =
+            smartData.topicName.toLowerCase().includes("mũi né") ||
+            smartData.topicName.toLowerCase().includes("mui ne") ||
+            smartData.topicName.toLowerCase().includes("lâm đồng") ||
+            smartData.topicName.toLowerCase().includes("bình thuận") ||
+            basePrompt.toLowerCase().includes("mũi né") ||
+            basePrompt.toLowerCase().includes("mui ne");
+
+        const muiNeContext = isMuiNeContext ? getMuiNeResearchPrompt() : "";
+
         return `
 ${basePrompt}
+
+${muiNeContext}
 
 === DỮ LIỆU THÔNG MINH TỪ DATABASE (V39.2) ===
 1. [MỤC TIÊU & YÊU CẦU CẦN ĐẠT]

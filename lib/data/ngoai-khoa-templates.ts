@@ -568,6 +568,74 @@ export const MAU_NGOAI_KHOA_THANH_CONG: MauNgoaiKhoa[] = [
       tong: 550000,
     },
   },
+
+  // Chủ đề 5 - Khối 10: Hành trình từ Biển lên Rừng (Mũi Né - Lâm Đồng Mới)
+  {
+    ma: "NK-10-MNLD",
+    ten_chu_de: "Hành trình từ Biển lên Rừng - Kết nối Lâm Đồng Mới",
+    khoi: 10,
+    thoi_luong: "45 phút",
+    muc_tieu: {
+      yeu_cau_can_dat: [
+        "Hiểu được sự giao thoa văn hóa giữa vùng biển Mũi Né và vùng cao Lâm Đồng",
+        "Nhận thức được ý nghĩa của việc sáp nhập tỉnh đối với sự phát triển kinh tế - xã hội",
+        "Rèn luyện kỹ năng thích ứng và tư duy thấu cảm văn hóa đa dạng",
+      ],
+      nang_luc: ["Thích ứng với cuộc sống", "Giao tiếp và hợp tác", "Giải quyết vấn đề"],
+      pham_chat: ["Yêu nước", "Trách nhiệm", "Nhân ái"],
+    },
+    cau_truc: {
+      khoi_dong: {
+        thoi_gian: "5 phút",
+        hoat_dong: {
+          ten: "Sóng biển và Gió ngàn",
+          muc_dich: "Khởi động vận động đồng bộ",
+          cach_choi: "Hô 'Sóng biển' -> Lắc tay cao; Hô 'Gió ngàn' -> Vỗ tay nhịp 1-2. Tăng tốc độ dần.",
+          thoi_gian: "5 phút",
+        },
+        loi_dan_dat_mc: "Chào mừng các bạn đến với hành trình kết nối Biển và Hoa của chúng ta ngày hôm nay!",
+      },
+      phan_chinh: {
+        thoi_gian: "25 phút",
+        loai: "talkshow",
+        kich_ban: {
+          ten: "Đối thoại Nông dân & Ngư dân",
+          chu_de: "Sự trao đổi sản vật và tình thân giữa hai miền xuôi ngược",
+          khoi: 10,
+          boi_canh: "Một phiên chợ giao thương giữa Mũi Né và Di Linh trên tuyến cao tốc mới.",
+          nhan_vat: ["MC", "Chú Ba Ngư Dân", "Anh Sáu Nông Dân"],
+          phan_canh: [
+            {
+              ten: "Gặp gỡ bất ngờ",
+              noi_dung: "Ngư dân mang nước mắm, Nông dân mang sầu riêng gặp nhau",
+              hanh_dong: [
+                "Âm thanh: Tiếng còi xe cao tốc chuyển động nhanh",
+                "Chú Ba và Anh Sáu tay bắt mặt mừng, khoe sản vật quê mình",
+                "Cùng thảo luận về việc giờ đây chúng ta là 'người một nhà'",
+              ],
+            },
+          ],
+          thong_diep: "Dù Biển hay Rừng, chúng ta đều là một phần của đại gia đình Lâm Đồng Mới.",
+        },
+      },
+      ket_thuc: {
+        thoi_gian: "15 phút",
+        cau_hoi_tuong_tac: [
+          {
+            cau_hoi: "Đâu là điểm chung giữa văn hóa Chăm Mũi Né và văn hóa K'Ho Lâm Đồng?",
+            dap_an: "Chế độ mẫu hệ (Matriarchy)",
+            muc_do: "trung_binh",
+          },
+        ],
+        thong_diep_ket_thuc: "Hãy cùng nhau xây dựng Lâm Đồng Mới giàu đẹp từ sự đa dạng văn hóa.",
+      },
+    },
+    kinh_phi_du_kien: {
+      bang_ngoai_khoa: 200000,
+      dao_cu_phan_thuong: 300000,
+      tong: 500000,
+    },
+  },
 ]
 
 // ==========================================
