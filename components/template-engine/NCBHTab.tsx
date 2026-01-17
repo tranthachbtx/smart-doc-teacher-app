@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
     Select,
     SelectContent,
@@ -89,38 +90,18 @@ export function NCBHTab({
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="ncbh-topic-select">Tên bài học nghiên cứu</Label>
-                    <Select
-                        value={filteredPpctItems.some(item => item.theme === ncbhTopic) ? ncbhTopic : (ncbhTopic ? "Tự nhập" : "")}
-                        onValueChange={(v) => {
-                            if (v !== "Tự nhập") setNcbhTopic(v);
-                            else if (ncbhTopic === "") setNcbhTopic("");
-                        }}
+                    <Label htmlFor="ncbh-topic-input">Tên bài học nghiên cứu (Tên bài không có trong PPCT / NCBH)</Label>
+                    <Input
+                        id="ncbh-topic-input"
                         name="ncbhTopic"
-                    >
-                        <SelectTrigger id="ncbh-topic-select">
-                            <SelectValue placeholder="Chọn bài dạy từ PPCT..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {filteredPpctItems.map((item, idx) => (
-                                <SelectItem key={idx} value={item.theme}>
-                                    {item.theme}
-                                </SelectItem>
-                            ))}
-                            <SelectItem value="Tự nhập">--- Tự nhập tên bài ---</SelectItem>
-                        </SelectContent>
-                    </Select>
-
-                    {(ncbhTopic === "" || !filteredPpctItems.some(item => item.theme === ncbhTopic)) && (
-                        <Textarea
-                            id="ncbh-topic-custom"
-                            name="ncbhTopicCustom"
-                            placeholder="VD: Giao tiếp tự tin trong các mối quan hệ (Cánh Diều/Kết nối Tri thức)..."
-                            value={ncbhTopic || ""}
-                            onChange={(e) => setNcbhTopic(e.target.value)}
-                            className="mt-2"
-                        />
-                    )}
+                        placeholder="VD: Giao tiếp tự tin trong các mối quan hệ (Cánh Diều/Kết nối Tri thức)..."
+                        value={ncbhTopic || ""}
+                        onChange={(e) => setNcbhTopic(e.target.value)}
+                        className="bg-white border-slate-200 h-12 text-base font-semibold"
+                    />
+                    <p className="text-[10px] text-slate-500 italic">
+                        * Gợi ý: {filteredPpctItems.length > 0 ? filteredPpctItems.map(i => i.theme).slice(0, 3).join(", ") + "..." : "Nhập tên bài bất kỳ để AI nghiên cứu đối soát."}
+                    </p>
                 </div>
 
                 <div className="space-y-2">
@@ -176,17 +157,27 @@ export function NCBHTab({
 
                         <div className="space-y-6">
                             {/* Part 1: Design */}
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 <h4 className="font-bold text-slate-700 flex items-center gap-2">
                                     <div className="w-2 h-6 bg-red-500 rounded-full"></div>
                                     GIAI ĐOẠN 1: THIẾT KẾ BÀI DẠY TẬP THỂ
                                 </h4>
+
+                                <div className="space-y-1">
+                                    <Label className="text-xs uppercase text-slate-500 font-bold">Tên bài học nghiên cứu (Hợp nhất)</Label>
+                                    <Input
+                                        value={ncbhResult.ten_bai || ""}
+                                        onChange={(e) => setNcbhResult({ ...ncbhResult, ten_bai: e.target.value })}
+                                        className="bg-white border-red-100 font-bold text-red-900"
+                                    />
+                                </div>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-1">
                                         <Label className="text-xs uppercase text-slate-500">Lý do chọn bài</Label>
                                         <Textarea
                                             value={ncbhResult.ly_do_chon}
-                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNcbhResult({ ...ncbhResult, ly_do_chon: e.target.value })}
+                                            onChange={(e) => setNcbhResult({ ...ncbhResult, ly_do_chon: e.target.value })}
                                             className="bg-white text-sm"
                                             rows={4}
                                         />
@@ -195,20 +186,33 @@ export function NCBHTab({
                                         <Label className="text-xs uppercase text-slate-500">Mục tiêu bài học</Label>
                                         <Textarea
                                             value={ncbhResult.muc_tieu}
-                                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNcbhResult({ ...ncbhResult, muc_tieu: e.target.value })}
+                                            onChange={(e) => setNcbhResult({ ...ncbhResult, muc_tieu: e.target.value })}
                                             className="bg-white text-sm"
                                             rows={4}
                                         />
                                     </div>
                                 </div>
-                                <div className="space-y-1">
-                                    <Label className="text-xs uppercase text-slate-500">Chuỗi hoạt động thống nhất</Label>
-                                    <Textarea
-                                        value={ncbhResult.chuoi_hoat_dong}
-                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNcbhResult({ ...ncbhResult, chuoi_hoat_dong: e.target.value })}
-                                        className="bg-white text-sm"
-                                        rows={6}
-                                    />
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label className="text-xs uppercase text-slate-500">Chuỗi hoạt động thống nhất</Label>
+                                        <Textarea
+                                            value={ncbhResult.chuoi_hoat_dong}
+                                            onChange={(e) => setNcbhResult({ ...ncbhResult, chuoi_hoat_dong: e.target.value })}
+                                            className="bg-white text-sm"
+                                            rows={6}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label className="text-xs uppercase text-slate-500">Phương án hỗ trợ (Scaffold)</Label>
+                                        <Textarea
+                                            value={ncbhResult.phuong_an_ho_tro || ""}
+                                            onChange={(e) => setNcbhResult({ ...ncbhResult, phuong_an_ho_tro: e.target.value })}
+                                            className="bg-white text-sm border-indigo-100"
+                                            rows={6}
+                                            placeholder="Kịch bản hỗ trợ HS yếu, thúc đẩy HS giỏi..."
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

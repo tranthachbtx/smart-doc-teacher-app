@@ -163,7 +163,7 @@ export function AssessmentTab({
                         <Button
                             className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg transition-all duration-200"
                             onClick={onGenerate}
-                            disabled={isGenerating || !assessmentGrade || !assessmentProductType}
+                            disabled={isGenerating || !assessmentGrade || !assessmentProductType || !assessmentTopic}
                         >
                             {isGenerating ? (
                                 <>
@@ -212,23 +212,58 @@ export function AssessmentTab({
                             </div>
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
-                            {/* Tasks */}
-                            <div className="space-y-3">
-                                <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                                    <ListOrdered className="h-4 w-4 text-indigo-600" />
-                                    Nội dung nhiệm vụ giao cho học sinh
-                                </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-b pb-4">
+                                <div className="space-y-1">
+                                    <Label className="text-xs uppercase text-indigo-500 font-bold">Tên kế hoạch</Label>
+                                    <Input
+                                        value={assessmentResult.ten_ke_hoach || ""}
+                                        onChange={(e) => setAssessmentResult({ ...assessmentResult, ten_ke_hoach: e.target.value })}
+                                        className="bg-white border-indigo-100 font-bold"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-xs uppercase text-indigo-500 font-bold">Hình thức tổ chức</Label>
+                                    <Input
+                                        value={assessmentResult.hinh_thuc_to_chuc || ""}
+                                        onChange={(e) => setAssessmentResult({ ...assessmentResult, hinh_thuc_to_chuc: e.target.value })}
+                                        className="bg-white border-indigo-100"
+                                    />
+                                </div>
+                            </div>
 
-                                <Textarea
-                                    value={typeof assessmentResult.noi_dung_nhiem_vu === 'string'
-                                        ? assessmentResult.noi_dung_nhiem_vu
-                                        : (assessmentResult.noi_dung_nhiem_vu ? JSON.stringify(assessmentResult.noi_dung_nhiem_vu, null, 2) : "")
-                                    }
-                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                                        setAssessmentResult({ ...assessmentResult, noi_dung_nhiem_vu: e.target.value });
-                                    }}
-                                    className="min-h-[200px] text-sm font-sans"
-                                />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-3">
+                                    <h3 className="font-semibold text-gray-900 flex items-center gap-2 text-sm uppercase">
+                                        <ListOrdered className="h-4 w-4 text-indigo-600" />
+                                        Ma trận / Đặc tả
+                                    </h3>
+                                    <Textarea
+                                        value={typeof assessmentResult.ma_tran_dac_ta === 'string'
+                                            ? assessmentResult.ma_tran_dac_ta
+                                            : (Array.isArray(assessmentResult.ma_tran_dac_ta) ?
+                                                assessmentResult.ma_tran_dac_ta.map((m: any) => `${m.muc_do}: ${m.mo_ta}`).join('\n') : "")
+                                        }
+                                        onChange={(e) => setAssessmentResult({ ...assessmentResult, ma_tran_dac_ta: e.target.value })}
+                                        className="min-h-[200px] text-sm font-sans"
+                                    />
+                                </div>
+
+                                <div className="space-y-3">
+                                    <h3 className="font-semibold text-gray-900 flex items-center gap-2 text-sm uppercase">
+                                        <BookOpen className="h-4 w-4 text-indigo-600" />
+                                        Nhiệm vụ giao cho HS
+                                    </h3>
+                                    <Textarea
+                                        value={typeof assessmentResult.noi_dung_nhiem_vu === 'string'
+                                            ? assessmentResult.noi_dung_nhiem_vu
+                                            : (assessmentResult.noi_dung_nhiem_vu ? JSON.stringify(assessmentResult.noi_dung_nhiem_vu, null, 2) : "")
+                                        }
+                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                                            setAssessmentResult({ ...assessmentResult, noi_dung_nhiem_vu: e.target.value });
+                                        }}
+                                        className="min-h-[200px] text-sm font-sans"
+                                    />
+                                </div>
                             </div>
 
                             {/* Rubric Preview - Simplified Editable Version */}
@@ -238,15 +273,23 @@ export function AssessmentTab({
                                     Công cụ đánh giá (Rubric / Bảng kiểm)
                                 </h3>
                                 <Textarea
-                                    value={assessmentResult.rubric_text || (assessmentResult.bang_kiem_rubric ? JSON.stringify(assessmentResult.bang_kiem_rubric, null, 2) : "")}
+                                    value={assessmentResult.rubric_text || (assessmentResult.bang_kiem_rubric ?
+                                        (Array.isArray(assessmentResult.bang_kiem_rubric) ?
+                                            assessmentResult.bang_kiem_rubric.map((r: any) =>
+                                                `TIÊU CHÍ: ${r.tieu_chi} (${r.trong_so})\n` +
+                                                `- Xuất sắc: ${r.muc_do?.xuat_sac || '...'}\n` +
+                                                `- Tốt: ${r.muc_do?.tot || '...'}\n` +
+                                                `- Đạt: ${r.muc_do?.dat || '...'}\n` +
+                                                `- Chưa đạt: ${r.muc_do?.chua_dat || '...'}\n`
+                                            ).join('\n') : JSON.stringify(assessmentResult.bang_kiem_rubric, null, 2)) : "")}
                                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                                         setAssessmentResult({ ...assessmentResult, rubric_text: e.target.value });
                                     }}
-                                    className="min-h-[300px] text-sm font-mono bg-slate-50"
+                                    className="min-h-[400px] text-sm font-sans bg-white border-indigo-100"
                                     placeholder="Nội dung Rubric chi tiết..."
                                 />
                                 <p className="text-xs text-muted-foreground italic">
-                                    * Bạn có thể chỉnh sửa văn bản trên. Khi xuất Word, hệ thống sẽ sử dụng nội dung này.
+                                    * Bạn có thể chỉnh sửa văn bản trên. Khi xuất Word, hệ thống sẽ sử dụng nội dung đã hiển thị trong ô này.
                                 </p>
                             </div>
 

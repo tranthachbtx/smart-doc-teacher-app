@@ -208,8 +208,10 @@ export interface NCBHResult {
 export interface AssessmentResult {
   title?: string;
   ten_ke_hoach?: string;
+  hinh_thuc_to_chuc?: string;
   muc_tieu?: string | string[];
   noi_dung_nhiem_vu?: string | object;
+  ma_tran_dac_ta?: string | any[];
   purpose?: string;
   matrix?: string;
   structure?: string;

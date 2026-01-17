@@ -93,130 +93,138 @@ export const ManualWorkflowService = {
     const totalPeriods = context.duration || smartData.duration || "3 tiết";
 
     return `
-# VAI TRÒ: Chuyên gia Phân tích Dữ liệu Văn hóa & Giáo dục học (The Creator - v40.1).
-# NHIỆM VỤ: Xây dựng "KHUNG NỘI DUNG NỀN TẢNG" (Synthetic Knowledge Base) cho chủ đề ${topic}.
+# VAI TRÒ: CHUYÊN GIA SƯ PHẠM & KIẾN TRÚC SƯ CHƯƠNG TRÌNH (BẢN PHAN THIẾT - LÂM ĐỒNG MỚI)
+Hệ thống: Antigravity Deep-Dive v5.0.
+Nhiệm vụ: Xây dựng "KHUNG NỘI DUNG NỀN TẢNG" (Synthetic Knowledge Base - SKB).
 
-# YÊU CẦU TỔNG HỢP (SYNTHETIC STRATEGY):
-1. **Lý thuyết chuẩn SGK:** Tóm tắt các kiến thức cốt lõi theo chương trình GDPT 2018 (Chân trời/Kết nối).
-2. **Bối cảnh địa phương (Grounding):** Tích hợp sâu dữ liệu văn hóa, địa lý vùng miền (Ví dụ: Phan Thiết, Tháp Poshanư, Bàu Trắng, Mũi Né hoặc Lâm Đồng tùy chủ đề).
-3. **Ẩn dụ sư phạm (Pedagogical Hooks):** Sáng tạo ít nhất 3 câu chuyện mồi hoặc ẩn dụ kết nối địa danh với bài học.
-4. **Năng lực số & Kỹ năng xanh 2025:** Gán nhãn các hoạt động với chỉ số năng lực số cụ thể.
+# 1. BỘ KHUNG KIẾN THỨC GIẢ LẬP (SKB) - DỮ LIỆU ĐỊA PHƯƠNG CỨNG:
+Hãy sử dụng các thực thể sau làm ngữ liệu (material), tuyệt đối không dùng ví dụ chung chung:
+- VĂN HÓA: Tháp Chăm Poshanư (Kiến trúc Hòa Lai, gạch mài chập, mẫu hệ), Trường Dục Thanh (Thầy giáo Nguyễn Tất Thành).
+- ĐỊA LÝ: Đồi Cát Bay & Bàu Trắng (Cát di động, hồ nước ngọt giữa sa mạc), Gió mùa Đông Bắc/Tây Nam.
+- KINH TẾ: Nước mắm Phan Thiết (Tỷ lệ 3 cá : 1 muối, thùng lều gỗ Bằng Lăng, kỹ thuật gài nén), Du lịch lướt ván diều Mũi Né.
+- STEM: Thanh long Bình Thuận kết hợp nông nghiệp công nghệ cao Lâm Đồng.
 
-# DỮ LIỆU ĐỊNH HƯỚNG:
-- Khối: ${grade}
-- Chủ đề: ${topic}
-- Thời lượng: ${totalPeriods}
-- Trọng tâm MOET: """${smartData.objectives}"""
+# 2. RÀNG BUỘC PHÁP LÝ & SƯ PHẠM (RULE-BASED):
+- Cấu trúc 5512: Phải đủ 4 hoạt động (Mở đầu, Hình thành, Luyện tập, Vận dụng).
+- Kỹ thuật Sư phạm Địa phương: Tích hợp "Audio Scenography" (Âm thanh định hình không gian: tiếng sóng, tiếng chiêng, tiếng gió).
+- Năng lực Số (TT 02/2025): Ánh xạ hành vi học sinh với mã NC1 (Ví dụ: 2.4.NC1.a - Hợp tác số).
 
-# YÊU CẦU OUTPUT MỚI (PHÂN TÁCH MARKDOWN):
-Hãy trả về kết quả theo cấu trúc sau:
-[KEY_KNOWLEDGE]: (Tóm tắt lý thuyết chuyên sâu)
-[LOCAL_DATA]: (Dữ liệu địa phương dùng làm học liệu)
-[PEDAGOGICAL_PROMPTS]: (Các tình huống/ẩn dụ để mở đầu hoặc dẫn dắt)
-[DIGITAL_GREEN_TAGS]: (Các kỹ năng số/xanh cần tích hợp)
+# 3. YÊU CẦU ĐẦU RA (SYNTHETIC OUTPUT):
+Hãy tổng hợp và trả về bản Markdown có cấu trúc:
+[KEY_KNOWLEDGE]: (Tóm tắt lý thuyết chuyên sâu bám sát YCCĐ của bài ${topic}).
+[LOCAL_TOUCHPOINTS]: (Phân tích ít nhất 3 điểm chạm giữa bài học và bối cảnh Phan Thiết).
+[DIGITAL_GREEN_TAGS]: (Danh sách năng lực số NC1 và Kỹ năng xanh sẽ hình thành).
+[PEDAGOGICAL_CONCEPT]: (Ý tưởng chủ đạo xuyên suốt cho bài dạy này dưới dạng một câu chuyện/tình huống).
 
-QUAN TRỌNG: Đây là tài liệu nguồn để các AI sau này "neo giữ" (Grounding) kiến thức. Hãy viết cực kỳ chi tiết và chính xác.
-    `.trim();
+DỮ LIỆU ĐỊNH HƯỚNG:
+- Lớp: ${grade} | Bài: ${topic} | Thời lượng: ${totalPeriods}
+- Mục tiêu MOET: """${smartData.objectives}"""
+`.trim();
   },
 
-  async generatePillar1Prompt(context: PromptContext): Promise<string> {
+  async generatePillar1Prompt(context: any): Promise<string> {
     this.validateContext(context, 'pillar_1');
-    const { smartData, auditAnalysis } = context;
-    const totalPeriods = context.duration || smartData.duration || "3 tiết";
+    const { topic, grade, fileSummary, smartData } = context;
 
     return `
-# VAI TRÒ: Kiến trúc sư trưởng Chương trình Giáo dục (Liberal Arts - v40.1).
-# NHIỆM VỤ: Thiết lập "FILE CẤU HÌNH CỐT LÕI" cho chủ đề (${context.topic}) - Khối ${context.grade}.
+# VAI TRÒ: KIẾN TRÚC SƯ SƯ PHẠM (STAGE 1: IDEATION & SKELETON)
+Nhiệm vụ: Xây dựng Khung xương giáo án dựa trên SKB.
 
-# NGUỒN DỮ LIỆU (SYNTHETIC KNOWLEDGE BASE):
-Sử dụng dữ liệu sau đây làm "Single Source of Truth":
-"""${context.fileSummary}"""
+# DỮ LIỆU NỀN TẢNG (SKB):
+"""
+${fileSummary}
+"""
 
-# DỮ LIỆU CỨNG & CHIẾN LƯỢC:
-1. **Trọng tâm Khối 12:** Tư duy phản biện cấp cao, Giải quyết xung đột lợi ích "Kinh tế vs Môi trường", Định hướng nghề nghiệp xanh (Green Jobs).
-2. **Yêu cầu 5512:** Phân rã mục tiêu thành Kiến thức (Luật/Quy định), Năng lực (Thiết kế/Vận động), Phẩm chất (Trách nhiệm công dân toàn cầu).
+# YÊU CẦU THIẾT KẾ:
+1. Xác định Mục tiêu bài học (Học sinh sẽ LÀM ĐƯỢC GÌ). Gán mã NC1 vào từng mục tiêu cụ thể.
+2. Đề xuất Ý tưởng chủ đạo (Key Concept) gắn bối cảnh Phan Thiết (Ví dụ: Dùng Nước mắm dạy Tỉ lệ/Câu lệnh If-Else).
+3. Phác thảo khung 4 hoạt động với thời lượng (30% Lý thuyết - 70% Thực hành).
 
-# YÊU CẦU CHIẾN LƯỢC:
-1. **Mục tiêu SMART:** Sử dụng động từ mạnh (Bloom bậc cao): "Phân tích", "Phản biện", "Vận hành", "Thiết kế".
-2. **Thiết bị:** Ưu tiên Padlet, Canva, Web-based tools.
-3. **Agenda (Flowchart):** Thiết kế SHDC/SHL tập trung vào tính tương tác và vai trò chủ trì của HS.
-
-# YÊU CẦU OUTPUT JSON:
+# JSON SCHEMA OUTPUT:
 {
-  "metadata": { "school": "THPT [Tên trường]", "grade": "${context.grade}", "duration": "${totalPeriods}" },
-  "objectives": { "knowledge": "...", "competence": "...", "quality": "..." },
-  "shdc_outline": { "theme": "...", "key_message": "...", "agenda_steps": [], "student_roles": "..." },
-  "shl_outline": { "theme": "...", "agenda_steps": [], "interaction_method": "..." },
-  "gv_hs_preparation": { "gv": "...", "hs": "..." }
-}
-
-QUAN TRỌNG: Chỉ trả về JSON.
-    `.trim();
-  },
-
-  async generatePillar2Prompt(context: PromptContext): Promise<string> {
-    this.validateContext(context, 'pillar_2');
-    const { smartData, phaseContext, optimizedFileSummary } = context;
-
-    return `
-# VAI TRÒ: Kiến trúc sư Sư phạm & Chuyên gia Hướng nghiệp (Constructivism - v40.1).
-# CHIẾN LƯỢC: Mô phỏng Môi trường Công sở (Office Simulation).
-
-# 🎯 NGỮ CẢNH ĐƯỢC NEO GIỮ (GROUNDING):
-- Dữ liệu nền: """${context.fileSummary.substring(0, 3000)}"""
-- Mục tiêu bài học (Đã chốt): """${JSON.stringify(optimizedFileSummary?.objectives)}"""
-
-# YÊU CẦU "MAX CONTENT" (NHIỆM VỤ CÔNG SỞ):
-1. **Gamification (Khởi động):** Thiết kế "Đấu thầu dự án" hoặc "Sàn giao dịch ý tưởng" dựa trên mục [PEDAGOGICAL_PROMPTS].
-2. **Mô hình 4 Phòng ban (Trạm):** Tận dụng dữ liệu [DIGITAL_GREEN_TAGS].
-   - Trạm 1: Phòng Giải pháp Số (Digital Solutions).
-   - Trạm 2: Phòng PR & Marketing.
-   - Trạm 3: Phòng Pháp chế (Legal Dept).
-   - Trạm 4: Phòng R&D.
-3. **Tài liệu học liệu:** Mô tả chi tiết các phiếu thông tin dựa trên dữ liệu [LOCAL_DATA].
-
-# YÊU CẦU OUTPUT JSON:
-{
-  "warm_up": { "name": "...", "simulation_goal": "...", "procedure": "...", "facilitator_script": "..." },
-  "discovery_stations": [
-    { "dept_name": "Phòng Giải pháp Số", "task": "...", "deliverable": "..." },
-    { "dept_name": "Phòng PR & Marketing", "task": "...", "deliverable": "..." },
-    { "dept_name": "Phòng Pháp chế", "task": "...", "deliverable": "..." },
-    { "dept_name": "Phòng R&D", "task": "...", "deliverable": "..." }
-  ],
-  "facilitator_notes": "..."
-}
-    `.trim();
-  },
-
-  async generatePillar3Prompt(context: PromptContext): Promise<string> {
-    this.validateContext(context, 'pillar_3');
-    const { smartData, phaseContext, optimizedFileSummary } = context;
-
-    return `
-# VAI TRÒ: Chuyên gia Đánh giá & Thực chiến (Circular 22 Standard - v40.1).
-# CHIẾN LƯỢC: Tích hợp Bối cảnh địa phương & Đánh giá định lượng.
-
-# 🎯 NGỮ CẢNH ĐỊA PHƯƠNG (INJECTION):
-Sử dụng dữ liệu [LOCAL_DATA] và [KEY_KNOWLEDGE] từ base:
-"""${context.fileSummary.substring(0, 3000)}"""
-
-# YÊU CẦU NÂNG CẤP (QUAN TRỌNG):
-1. **Case Study (Signature):** Xây dựng tình huống "Đối đầu quan điểm" dựa trên các mâu thuẫn thực tế đã nêu trong khung nội dung.
-2. **Dự án Vận dụng (RFP):** Thiết kế dự án "Đại sứ Số" kết hợp với [DIGITAL_GREEN_TAGS].
-3. **Rubric (Chuẩn Thông tư 22):** Định lượng 4 mức độ cho các tiêu chí sáng tạo, phản biện và trách nhiệm.
-
-# YÊU CẦU OUTPUT JSON:
-{
-  "practice_scenario": { "title": "...", "context": "...", "roles": [], "debate_questions": [] },
-  "project_proposal": { "title": "...", "timeline": "Micro-project (72h)", "requirements": "...", "submission_format": "..." },
-  "assessment_matrix": {
-    "criteria": [
-      { "name": "Giải pháp sáng tạo", "levels": { "excellent": "...", "good": "...", "pass": "...", "fail": "..." } }
-    ],
-    "grading_guide": "..."
+  "type": "framework",
+  "data": {
+    "ten_bai": "Tên bài học kết hợp bối cảnh địa phương",
+    "muc_tieu": { "kien_thuc": "...", "nang_luc": "...", "pham_chat": "..." },
+    "y_tuong_chu_dao": "Mô tả kịch bản xuyên suốt (Ví dụ: Hệ thống kiểm soát mẻ cá mắm)",
+    "ma_nang_luc_so": ["Mã 1.1.NC1.a...", "Mã 2.3.NC1.b..."],
+    "phan_bo_thoi_gian": "Chi tiết từng phút cho 4 hoạt động"
   }
 }
-    `.trim();
+`.trim();
+  },
+
+  async generatePillar2Prompt(context: any): Promise<string> {
+    this.validateContext(context, 'pillar_2');
+    const { topic, grade, fileSummary, optimizedFileSummary, phaseContext } = context;
+
+    return `
+# VAI TRÒ: CHUYÊN GIA BIÊN SOẠN KỊCH BẢN (STAGE 2: SCRIPTING)
+Nhiệm vụ: Viết chi tiết Tiến trình dạy học theo chuẩn 4 Bước của Công văn 5512.
+
+# DỮ LIỆU ĐÃ CHỐT:
+- Khung bài dạy: """${JSON.stringify(optimizedFileSummary)}"""
+- Dòng chảy tri thức: """${fileSummary}"""
+${phaseContext ? `- PHÂN ĐOẠN HIỆN TẠI: ${JSON.stringify(phaseContext)}` : ""}
+
+# YÊU CẦU CHI TIẾT (ANTI-VAGUE):
+1. Mỗi hoạt động phải mô tả hành vi GV và HS qua 4 bước: (1) Chuyển giao, (2) Thực hiện, (3) Báo cáo, (4) Kết luận.
+2. AUDIO SCENOGRAPHY: Tại Hoạt động 1 (Mở đầu), GHI RÕ cột "Audio Cue" (Ví dụ: Tiếng sóng biển Mũi Né, tiếng chuông đồng, tiếng gió cát) để tạo bối cảnh sống động.
+3. NGỮ LIỆU THỰC TẾ: Sử dụng các thông số thật từ SKB (Ví dụ: Tỷ lệ cá muối 3:1, gạch nung Poshanư, 18 màu cát Bàu Trắng) vào lời dẫn và bài tập.
+
+# JSON SCHEMA OUTPUT:
+{
+  "type": "script",
+  "hoat_dong_chi_tiet": {
+    "ten_hoat_dong": "...",
+    "audio_cue": "Gợi ý âm thanh dẫn dắt không gian bản địa",
+    "b1_chuyen_giao": "Lời dẫn truyền cảm hứng và yêu cầu cụ thể của GV",
+    "b2_thuc_hien": "Hành động cụ thể của HS (Cá nhân/Nhóm). Dùng công cụ số gì?",
+    "b3_bao_cao": "Cách thức trình bày/triển lãm sản phẩm (số hoặc thực thể)",
+    "b4_ket_luan": "Chốt kiến thức, giải mã nguyên nhân và hướng dẫn mở mở"
+  }
+}
+`.trim();
+  },
+
+  async generatePillar3Prompt(context: any): Promise<string> {
+    this.validateContext(context, 'pillar_3');
+    const { topic, grade, fileSummary, optimizedFileSummary } = context;
+
+    return `
+# VAI TRÒ: CHUYÊN GIA KIỂM TRA ĐÁNH GIÁ (STAGE 3: ASSESSMENT & OPTIMIZATION)
+Nhiệm vụ: Xây dựng công cụ đo lường và ánh xạ năng lực số NC1.
+
+# DỮ LIỆU ĐÃ SOẠN:
+- Nội dung giáo án: """${JSON.stringify(optimizedFileSummary)}"""
+- Nền tảng tri thức: """${fileSummary}"""
+
+# YÊU CẦU:
+1. Xây dựng RUBRIC ĐÁNH GIÁ: Thang điểm 10, chia làm 4 mức độ hành vi: Nhận biết - Thông hiểu - Vận dụng - Vận dụng cao (Theo TT 22).
+2. TÓM TẮT CƠ HỘI NĂNG LỰC SỐ: Liệt kê các hành vi học tập trong bài dạy tương ứng với mã NC1 (Ví dụ: Làm việc nhóm trên Padlet -> 2.4.NC1.a).
+3. Đề xuất ít nhất 2 công cụ số hỗ trợ (AI, Canva, Replit, Google Forms...) để tối ưu hóa việc đánh giá thường xuyên.
+
+# JSON SCHEMA OUTPUT:
+{
+  "type": "assessment",
+  "data": {
+    "ten_ke_hoach_dg": "Tên kế hoạch đánh giá chuyên nghiệp",
+    "rubric_chi_tiet": [
+      { 
+        "tieu_chi": "...", 
+        "trong_so": "...", 
+        "muc_do": {
+          "xuat_sac": "...",
+          "tot": "...",
+          "dat": "...",
+          "chua_dat": "..."
+        }
+      }
+    ],
+    "mapping_nc1": "Bảng đối soát: Hoạt động -> Mã Năng lực số NC1",
+    "loi_khuyen_su_pham": "Lời khuyên thực tế để triển khai bài dạy này hiệu quả nhất"
+  }
+}
+`.trim();
   }
 };

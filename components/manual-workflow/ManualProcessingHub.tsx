@@ -251,18 +251,56 @@ export function ManualProcessingHub() {
 
             if (data.type === 'framework' && data.data) {
                 const d = data.data;
-                mergeValue('ten_truong', d.ten_truong);
-                mergeValue('to_chuyen_mon', d.to_chuyen_mon);
-                mergeValue('ten_giao_vien', d.ten_giao_vien);
+                if (d.ten_bai) r.ten_bai = d.ten_bai;
                 mergeValue('muc_tieu_kien_thuc', d.muc_tieu?.kien_thuc);
                 mergeValue('muc_tieu_nang_luc', d.muc_tieu?.nang_luc);
                 mergeValue('muc_tieu_pham_chat', d.muc_tieu?.pham_chat);
-                mergeValue('gv_chuan_bi', d.thiet_bi?.gv);
-                mergeValue('hs_chuan_bi', d.thiet_bi?.hs);
-                mergeValue('shdc', d.hoat_dong_shdc);
-                mergeValue('shl', d.hoat_dong_shl);
-                if (d.ten_bai) r.ten_bai = d.ten_bai;
-                if (d.so_tiet) r.duration = d.so_tiet;
+
+                const metaInfo = [
+                    d.y_tuong_chu_dao ? `Ý TƯỞNG CHỦ ĐẠO (PHAN THIẾT): ${d.y_tuong_chu_dao}` : "",
+                    d.ma_nang_luc_so ? `MÃ NĂNG LỰC SỐ (NC1): ${Array.isArray(d.ma_nang_luc_so) ? d.ma_nang_luc_so.join(", ") : d.ma_nang_luc_so}` : "",
+                    d.phan_bo_thoi_gian ? `PHÂN BỔ THỜI GIAN: ${d.phan_bo_thoi_gian}` : ""
+                ].filter(Boolean).join("\n");
+
+                mergeValue('ho_so_day_hoc', metaInfo);
+            } else if (data.type === 'script' && data.hoat_dong_chi_tiet) {
+                const h = data.hoat_dong_chi_tiet;
+                const activePhase = store.lesson.executionPlan?.[activePhaseIndex];
+                const storePrefixRaw = activePhase?.id || 'hoat_dong_khoi_dong';
+                const storePrefix = storePrefixRaw.replace(/_cot_1|_cot_2/g, "");
+
+                // Ánh xạ 4 bước 5512 + Audio Scenography
+                const gvContent = [
+                    h.audio_cue ? `[AUDIO SCENOGRAPHY]: ${h.audio_cue}` : "",
+                    `B1. CHUYỂN GIAO NHIỆM VỤ:\n${h.b1_chuyen_giao || h.b1 || ""}`,
+                    `B4. KẾT LUẬN & NHẬN ĐỊNH:\n${h.b4_ket_luan || h.b4 || ""}`
+                ].filter(Boolean).join("\n\n");
+
+                const hsContent = [
+                    `B2. THỰC HIỆN NHIỆM VỤ:\n${h.b2_thuc_hien || h.b2 || ""}`,
+                    `B3. BÁO CÁO & THẢO LUẬN:\n${h.b3_bao_cao || h.b3 || ""}`
+                ].filter(Boolean).join("\n\n");
+
+                r[`${storePrefix}_cot_1`] = gvContent;
+                r[`${storePrefix}_cot_2`] = hsContent;
+                r[storePrefix] = `${gvContent}\n\n${hsContent}`;
+
+            } else if (data.type === 'assessment' && data.data) {
+                const d = data.data;
+                mergeValue('ho_so_day_hoc', `KẾ HOẠCH ĐÁNH GIÁ: ${d.ten_ke_hoach_dg}\n\n${d.mapping_nc1 || ""}`);
+                if (d.rubric_chi_tiet) {
+                    const rubricText = Array.isArray(d.rubric_chi_tiet) ?
+                        d.rubric_chi_tiet.map((rub: any) =>
+                            `TIÊU CHÍ: ${rub.tieu_chi} (${rub.trong_so})\n` +
+                            `- Xuất sắc: ${rub.muc_do?.xuat_sac || "..."}\n` +
+                            `- Tốt: ${rub.muc_do?.tot || "..."}\n` +
+                            `- Đạt: ${rub.muc_do?.dat || "..."}\n` +
+                            `- Chưa đạt: ${rub.muc_do?.chua_dat || "..."}`
+                        ).join("\n\n") : JSON.stringify(d.rubric_chi_tiet, null, 2);
+
+                    r.rubric_text = rubricText;
+                    if (d.loi_khuyen_su_pham) r.huong_dan_ve_nha = d.loi_khuyen_su_pham;
+                }
             } else if (data.ten_bai || data.muc_tieu_kien_thuc || data.ten_truong) {
                 mergeValue('ten_truong', data.ten_truong);
                 mergeValue('to_chuyen_mon', data.to_chuyen_mon);
@@ -340,77 +378,31 @@ export function ManualProcessingHub() {
                 <h2 className="text-2xl font-black text-indigo-900 mb-6 flex items-center gap-3">
                     <Sparkles className="w-6 h-6 fill-indigo-500" /> BỘ CÔNG CỤ BIÊN SOẠN THỦ CÔNG
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative z-10">
-                    <div className="flex flex-col gap-2">
-                        <Button
-                            className="w-full h-24 rounded-3xl bg-amber-500 hover:bg-amber-600 text-white shadow-xl gap-4 group transition-all"
-                            onClick={() => handleCopyPrompt('pillar_0')}
-                        >
-                            <BrainCircuit className="w-8 h-8 text-white" />
-                            <div className="text-left">
-                                <p className="text-[10px] uppercase font-black opacity-70">BƯỚC 1: THE CREATOR</p>
-                                <p className="font-black text-sm">Lấy Prompt 0 (Khung)</p>
-                            </div>
-                        </Button>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                        <input type="file" ref={fileInputRef} className="hidden" accept=".pdf" onChange={handleFileUpload} />
-                        <Button
-                            variant="outline"
-                            className="w-full h-24 rounded-3xl bg-white/50 hover:bg-white text-slate-500 border-2 border-dashed border-slate-200 gap-4"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isAnalyzing}
-                        >
-                            <Database className="w-6 h-6 opacity-50" />
-                            <div className="text-left">
-                                <p className="text-[10px] uppercase font-black opacity-50">TÙY CHỌN</p>
-                                <p className="font-bold text-xs opacity-70">Nạp PDF (Nếu cần)</p>
-                            </div>
-                        </Button>
-                    </div>
-                    <Button className="h-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 hover:scale-[1.03] text-white shadow-2xl gap-4" onClick={handleExportDocx} disabled={!lesson.result?.hoat_dong_khoi_dong}>
-                        <FileDown className="w-8 h-8" /><div className="text-left"><p className="text-[10px] uppercase font-black opacity-70">BƯỚC CHỐT</p><p className="font-black text-base">Xuất Word</p></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                    <Button
+                        className="h-24 rounded-3xl bg-gradient-to-br from-indigo-600 to-blue-700 hover:scale-[1.03] text-white shadow-2xl gap-4"
+                        onClick={handleExportDocx}
+                        disabled={!lesson.result?.hoat_dong_khoi_dong}
+                    >
+                        <FileDown className="w-8 h-8" />
+                        <div className="text-left">
+                            <p className="text-[10px] uppercase font-black opacity-70">BƯỚC CHỐT</p>
+                            <p className="font-black text-base">Xuất Bản Word</p>
+                        </div>
                     </Button>
 
-                    {/* 🏛️ MODULE 1 UI: Audit Summary */}
                     <Dialog>
                         <DialogTrigger asChild>
-                            <Button variant="outline" className="h-24 rounded-3xl bg-rose-50 border-2 border-rose-200 text-rose-900 gap-4" disabled={!lesson.auditAnalysis}>
-                                <AlertTriangle className="w-8 h-8 text-rose-600" />
+                            <Button
+                                variant="outline"
+                                className="h-24 rounded-3xl bg-indigo-50/50 border-2 border-indigo-200 text-indigo-900 gap-4"
+                            >
+                                <Eye className="w-8 h-8 text-indigo-600" />
                                 <div className="text-left">
-                                    <p className="text-[10px] uppercase font-black opacity-50">HỆ THỐNG PHÊ BÌNH</p>
-                                    <p className="font-black text-base">Bản Audit AI</p>
+                                    <p className="text-[10px] uppercase font-black opacity-50">X-RAY VIEW</p>
+                                    <p className="font-black text-base">Xem trước kết quả</p>
                                 </div>
                             </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl rounded-[3rem] p-8">
-                            <DialogHeader><DialogTitle className="text-2xl font-black text-slate-900 flex items-center gap-2"><Search className="text-rose-600" /> KẾT QUẢ THẨM ĐỊNH SƯ PHẠM (TRUY VẾT 5512)</DialogTitle></DialogHeader>
-                            {lesson.auditAnalysis && (
-                                <div className="space-y-6 overflow-y-auto max-h-[70vh] pr-4">
-                                    <div className="p-6 bg-rose-50 rounded-3xl border border-rose-100 italic text-rose-900">"{lesson.auditAnalysis.danh_gia_tong_quan}"</div>
-                                    <div className="grid grid-cols-1 gap-4">
-                                        {lesson.auditAnalysis.phan_tich_chi_tiet.map((item: any, i: number) => (
-                                            <div key={i} className="p-6 bg-slate-50 rounded-[2.5rem] border border-slate-100 flex flex-col gap-2">
-                                                <h4 className="font-black text-slate-900 flex items-center gap-2"><Badge variant="outline">{item.tieu_chi}</Badge></h4>
-                                                <p className="text-xs"><b>Hiện trạng:</b> {item.hien_trang}</p>
-                                                <p className="text-xs text-rose-600"><b>Điểm yếu:</b> {item.diem_yeu}</p>
-                                                <p className="text-xs text-indigo-600 font-bold"><b>Giải pháp nâng cấp:</b> {item.giai_phap_goi_y}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    <div className="p-6 bg-indigo-50 rounded-3xl border border-indigo-100">
-                                        <h4 className="font-black text-indigo-900 mb-2">⭐ CHIẾN LƯỢC LỘT XÁC:</h4>
-                                        <p className="text-sm whitespace-pre-wrap">{lesson.auditAnalysis.goi_y_nang_cap_chien_luoc}</p>
-                                    </div>
-                                </div>
-                            )}
-                        </DialogContent>
-                    </Dialog>
-
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" className="h-24 rounded-3xl bg-indigo-50/50 border-2 border-indigo-200 text-indigo-900 gap-4"><Eye className="w-8 h-8 text-indigo-600" /><div className="text-left"><p className="text-[10px] uppercase font-black opacity-50">X-RAY VIEW</p><p className="font-black text-base">Xem trước</p></div></Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-5xl rounded-[3rem] p-8">
                             <DialogHeader><DialogTitle className="text-2xl font-black text-slate-900">GIÁO ÁN X-RAY PREVIEW</DialogTitle></DialogHeader>
